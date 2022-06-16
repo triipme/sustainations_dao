@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "forceConsistentCasingInFileNames": true,
+    "jsx": "react",
+    "lib": [
+      "ES2020",
+      "DOM",
+      "dom.iterable"
+    ],
+    // "module": "ES6",
+    "strict": true,
+    "target": "es2020",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/sustainations_dao_assets/src/*"],
+      "@fuse/*": ["src/sustainations_dao_assets/src/@fuse/*"],
+      "@history*": ["src/sustainations_dao_assets/src/@history"],
+      "@lodash": ["src/sustainations_dao_assets/src/@lodash"],
+      "@mock-api": ["src/sustainations_dao_assets/src/@mock-api"],
+      "app/store/*": ["src/sustainations_dao_assets/src/app/store/*"],
+      "app/shared-components/*": ["src/sustainations_dao_assets/src/app/shared-components/*"],
+      "app/configs/*": ["src/sustainations_dao_assets/src/app/configs/*"],
+      "app/theme-layouts/*": ["src/sustainations_dao_assets/src/app/theme-layouts/*"],
+      "app/AppContext": ["src/sustainations_dao_assets/src/app/AppContext"]
+    }
+  },
+  "include": [
+    "src/**/*"
+  ],
+}
