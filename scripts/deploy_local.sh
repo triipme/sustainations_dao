@@ -1,4 +1,4 @@
-dfx start --background --clean --host 127.0.0.1:8000
+# dfx start --background --clean --host 127.0.0.1:8000
 
 ### === DEPLOY LOCAL LEDGER =====
 dfx identity new minter

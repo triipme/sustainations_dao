@@ -27,12 +27,16 @@ module {
   };
   public type ProposalPayload = {
     name : Text;
+    description : ?Text;
+    story : ?Text;
+    location : Text;
     categories : [Text];
-    document : Text;
+    document : ?Text;
     fundingType : Text;
     fundingAmount : Nat;
-    startDate : Time.Time;
-    endDate : Time.Time;
+    discussionLink : ?Text;
+    images : ?[Text];
+    video : ?Text;
   };
   public type ProposalState = {
     #failed : Text;

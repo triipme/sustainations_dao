@@ -5,14 +5,13 @@ import _ from '@lodash';
 import { setInitialSettings } from 'app/store/fuse/settingsSlice';
 import settingsConfig from 'app/configs/settingsConfig';
 
-export const setUser = createAsyncThunk('user/setUser', async (user, { dispatch, getState }) => {
+export const setUser = createAsyncThunk('user/setUser', async (user) => {
   /*
     You can redirect the logged-in user to a specific route depending on his role
     */
   if (user.loginRedirectUrl) {
     settingsConfig.loginRedirectUrl = user.loginRedirectUrl; // for example 'apps/academy'
   }
-
   return user;
 });
 
@@ -41,7 +40,9 @@ export const logoutUser = () => async (dispatch, _getState) => {
 const initialState = {
   role: [],
   actor: {},
-  principal: {},
+  depositAddress: '',
+  principal: '',
+  balance: 0,
 };
 
 const userSlice = createSlice({

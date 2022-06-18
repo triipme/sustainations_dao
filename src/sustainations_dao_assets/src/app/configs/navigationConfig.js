@@ -16,6 +16,14 @@ const navigationConfig = [
     icon: 'heroicons-outline:clipboard-check',
     url: 'dashboard',
   },
+  {
+    id: 'projects',
+    title: 'Projects',
+    translate: 'Projects',
+    type: 'item',
+    icon: 'heroicons-outline:clipboard-check',
+    url: 'projects',
+  },
 ];
 
 export default navigationConfig;

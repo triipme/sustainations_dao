@@ -3,6 +3,8 @@ import Avatar from '@mui/material/Avatar';
 import Typography from '@mui/material/Typography';
 import { useSelector } from 'react-redux';
 import { selectUser } from 'app/store/userSlice';
+import QRCode from "react-qr-code";
+import { fICP } from '../../utils/NumberFormat';
 
 const Root = styled('div')(({ theme }) => ({
   '& .username, & .email': {
@@ -31,19 +33,18 @@ function UserNavbarHeader(_props) {
   return (
     <Root className="user relative flex flex-col items-center justify-center p-16 pb-14 shadow-0">
       <div className="flex items-center justify-center mb-24">
-        <Avatar
-          sx={{
-            backgroundColor: 'background.paper',
-            color: 'text.secondary',
-          }}
-          className="avatar text-32 font-bold w-96 h-96"
-          alt={user.principal}
-        >
-          {user.principal.charAt(0)}
-        </Avatar>
+        <QRCode
+          size={256}
+          style={{ height: "auto", maxWidth: "8rem", width: "100%" }}
+          value={user.depositAddress}
+          viewBox={`0 0 256 256`}
+        />
       </div>
-      <Typography className="username text-14 truncate font-medium flex-auto w-full">
-        {user.principal}
+      <Typography title={user.depositAddress} className="username text-14 text-center break-all font-medium flex-auto w-full">
+        {user.depositAddress}
+      </Typography>
+      <Typography className="username text-14 truncate font-medium text-center w-full">
+        {fICP(user.balance)}
       </Typography>
     </Root>
   );

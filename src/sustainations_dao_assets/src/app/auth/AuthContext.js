@@ -30,10 +30,18 @@ function AuthProvider({ children }) {
             identity
           }
         });
-        const principal = await identity.getPrincipal().toText();
+        const principal = identity.getPrincipal().toText();
+        let balance, depositAddress;
+        const result = await actor.getUserInfo();
+        if ("ok" in result) {
+          balance = result.ok.balance;
+          depositAddress = result.ok.depositAddress;
+        }
         dispatch(setUser({
           role: settingsConfig.defaultAuth,
           actor,
+          depositAddress,
+          balance,
           principal,
         }));
         dispatch(showMessage({ message: "Signed in" }));
@@ -60,15 +68,15 @@ function AuthProvider({ children }) {
     });
 
     function success(message) {
-      if (message) {
-        dispatch(showMessage({ message }));
-      }
-
+      setWaitAuthCheck(true);
       Promise.all([
         initAuthClient(),
       ]).then(() => {
         setWaitAuthCheck(false);
         setIsAuthenticated(true);
+        if (message) {
+          dispatch(showMessage({ message }));
+        }
       });
     }
 

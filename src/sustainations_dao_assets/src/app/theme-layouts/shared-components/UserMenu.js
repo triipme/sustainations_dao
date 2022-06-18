@@ -10,6 +10,8 @@ import { useSelector } from 'react-redux';
 import { Link, NavLink } from 'react-router-dom';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 import { selectUser } from 'app/store/userSlice';
+import QRCode from "react-qr-code";
+import { fICP } from '../../utils/NumberFormat';
 
 function UserMenu(_props) {
   const user = useSelector(selectUser);
@@ -33,15 +35,21 @@ function UserMenu(_props) {
       >
         <div className="hidden md:flex flex-col mx-4 items-end">
           <Typography component="span" className="max-w-2xl truncate font-semibold flex">
-            {user.principal}
+            {user.depositAddress}
           </Typography>
           <Typography className="text-11 font-medium capitalize" color="text.secondary">
-            {user.role.toString()}
-            {(!user.role || (Array.isArray(user.role) && user.role.length === 0)) && 'Guest'}
+            {fICP(user.balance)}
           </Typography>
         </div>
 
-        <Avatar className="md:mx-4">{user.principal[0]}</Avatar>
+        <Avatar className="md:mx-4" alt={user.depositAddress}>
+          <QRCode
+            size={256}
+            style={{ height: "auto", maxWidth: "100%", width: "100%" }}
+            value={user.depositAddress}
+            viewBox={`0 0 256 256`}
+          />
+        </Avatar>
       </Button>
 
       <Popover

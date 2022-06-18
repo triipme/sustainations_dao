@@ -50,9 +50,9 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
     Debug.print("End postupgrade");
   };
 
-  system func heartbeat() : async () {
-    await setOutDateProposals();
-  };
+  // system func heartbeat() : async () {
+  //   await setOutDateProposals();
+  // };
 
   type Response<Ok> = Result.Result<Ok, Types.Error>;
 
@@ -103,14 +103,36 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
   };
 
   // Return the account ID specific to this user's subaccount
-  public shared({ caller }) func getDepositAddress(): async Text {
+  public shared({ caller }) func getDepositAddress() : async Text {
     Account.toText(
       Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(caller))
     );
   };
 
+  type UserInfo = {
+    principal : Text;
+    depositAddress : Text;
+    balance : Nat64;
+  };
+  public shared({ caller }) func getUserInfo() : async Response<UserInfo> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let accountId = Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(caller));
+    let balance = await Ledger.account_balance({ account = accountId });
+    let userInfo = {
+      principal = Principal.toText(caller);
+      depositAddress = Account.toText(
+        Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(caller))
+      );
+      balance = balance.e8s;
+    };
+    #ok(userInfo);
+  };
+
   // Transfer ICP from user's subaccount to system subaccount
-  private func deposit(amount : Nat64, caller : Principal): async Response<Nat64> {
+  private func deposit(amount : Nat64, caller : Principal) : async Response<Nat64> {
+    /**
     // Calculate target subaccount
     let accountId = Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(caller));
     // Check ledger for value
@@ -137,6 +159,8 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
         #ok(bIndex);
       };
     };
+    */
+    #ok(1);
   };
 
   private func recordTransaction(
@@ -205,6 +229,25 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
     };
   };
 
+  public shared({ caller }) func listProposals() : async Response<[Types.Proposal]> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    var list : [Types.Proposal] = [];
+    for((_uuid, proposal) in state.proposals.entries()){
+      list := Array.append<Types.Proposal>(list, [proposal]);
+    };
+    #ok(list);
+  };
+
+  public shared query({caller}) func getProposal(uuid : Text) : async Response<Types.Proposal>{
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let result = state.proposals.get(uuid);
+    return Result.fromOption(result, #NotFound);
+  };
+
   // Votes Proposal
   public shared({ caller }) func vote(args: Types.VoteArgs) : async Response<Types.ProposalState> {
     if (Principal.toText(caller) == "2vxsx-fae") {
@@ -245,6 +288,7 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
                     Debug.print(debug_show error);
                   };
                   case (#Ok(bIndex)) {
+                    status := #succeeded;
                     // record transaction
                     await recordTransaction(
                       caller, refundAmount, Principal.fromActor(this), proposal.proposer,
@@ -304,21 +348,21 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
     };
   };
 
-  func setOutDateProposals() : async () {
-    for ((uuid, proposal) in state.proposals.entries()) {
-      if (proposal.status == #open and proposal.payload.endDate <= Time.now()) {
-        let updated = {
-          uuid = proposal.uuid;
-          status = #rejected;
-          timestamp = proposal.timestamp;
-          proposer = proposal.proposer;
-          voters = proposal.voters;
-          votesYes = proposal.votesYes;
-          payload = proposal.payload;
-        };
-        let replaced = state.proposals.replace(uuid, updated);
-        await refundVoters(updated);
-      };
-    };
-  };
+  // func setOutDateProposals() : async () {
+  //   for ((uuid, proposal) in state.proposals.entries()) {
+  //     if (proposal.status == #open and proposal.payload.endDate <= Time.now()) {
+  //       let updated = {
+  //         uuid = proposal.uuid;
+  //         status = #rejected;
+  //         timestamp = proposal.timestamp;
+  //         proposer = proposal.proposer;
+  //         voters = proposal.voters;
+  //         votesYes = proposal.votesYes;
+  //         payload = proposal.payload;
+  //       };
+  //       let replaced = state.proposals.replace(uuid, updated);
+  //       await refundVoters(updated);
+  //     };
+  //   };
+  // };
 };

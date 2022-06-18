@@ -74,6 +74,7 @@ module.exports = {
       '@history': path.resolve(__dirname, './src/sustainations_dao_assets/src/@history'),
       '@lodash': path.resolve(__dirname, './src/sustainations_dao_assets/src/@lodash'),
       '@mock-api': path.resolve(__dirname, './src/sustainations_dao_assets/src/@mock-api'),
+      'api': path.resolve(__dirname, './src/sustainations_dao_assets/src/api'),
       'app/store': path.resolve(__dirname, './src/sustainations_dao_assets/src/app/store'),
       'app/shared-components': path.resolve(__dirname, './src/sustainations_dao_assets/src/app/shared-components'),
       'app/configs': path.resolve(__dirname, './src/sustainations_dao_assets/src/app/configs'),

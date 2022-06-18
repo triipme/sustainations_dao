@@ -6,9 +6,11 @@ import SignInConfig from '../main/sign-in/SignInConfig';
 import SignOutConfig from '../main/sign-out/SignOutConfig';
 import Error404Page from '../main/404/Error404Page';
 import ProjectDashboardAppConfig from '../main/dashboard/ProjectDashboardAppConfig';
+import ProjectsConfig from '../main/projects/ProjectsConfig';
 
 const routeConfigs = [
   ProjectDashboardAppConfig,
+  ProjectsConfig,
   SignOutConfig,
   SignInConfig,
 ];

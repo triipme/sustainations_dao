@@ -13,7 +13,7 @@ function FooterLayout1(props) {
     <ThemeProvider theme={footerTheme}>
       <AppBar
         id="fuse-footer"
-        className={clsx('relative z-20 shadow-md', props.className)}
+        className={clsx('relative z-20', props.className)}
         color="default"
         sx={{
           backgroundColor: (theme) =>
@@ -23,7 +23,7 @@ function FooterLayout1(props) {
         }}
       >
         <Toolbar className="min-h-48 md:min-h-64 px-8 sm:px-12 py-0 flex items-center overflow-x-auto">
-          Footer
+          <img className="flex-auto mx-auto w-full max-w-lg" src='images/logo/on_chain_line.svg' alt='on chain' />
         </Toolbar>
       </AppBar>
     </ThemeProvider>
