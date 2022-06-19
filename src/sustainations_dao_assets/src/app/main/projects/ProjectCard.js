@@ -49,7 +49,6 @@ function ProjectCard({ project }) {
         throw result?.err;
       }
     } catch (error) {
-      console.log(error);
       const message = {
         "NotAuthorized": "Please sign in!.",
         "NotFound": "Project is not found.",
@@ -104,7 +103,9 @@ function projectInfo(project) {
   return (
     <div className="w-full">
       <div className="mb-16">
-        {payload.categories.map((category, index) => projectCategory(category, index))}
+        {payload.categories.map((category, index) => (
+          <ProjectCategory category={category} key={index} index={index} />
+        ))}
         {"succeeded" in project.status && (
           <FuseSvgIcon className="text-green-600" size={20}>
             heroicons-solid:badge-check
@@ -120,7 +121,7 @@ function projectInfo(project) {
         {payload.description}
       </Typography>
 
-      <Divider className="w-48 my-24 border-1" light />
+      <Divider className="w-48 my-8 border-1" light />
 
       <Typography className="flex items-center space-x-6 text-13" color="text.secondary">
         <span className="whitespace-nowrap leading-none">{`Location: ${payload.location}`}</span>
@@ -130,16 +131,16 @@ function projectInfo(project) {
       </Typography>
       <Typography className="flex items-center space-x-6 text-13" color="text.secondary">
         <span className="whitespace-nowrap leading-none">Video demo:&nbsp;</span>
-        <a href={payload?.video}>{payload?.video}</a>
+        <a href={payload?.video}>here</a>
       </Typography>
     </div>
   );
 };
 
-function projectCategory(category, key) {
+const ProjectCategory = React.memo(({ category, index} ) => {
   return (
     <Chip
-      key={key}
+      key={index}
       className="font-semibold text-12 mr-4 mb-4"
       label={category}
       sx={{
@@ -155,6 +156,6 @@ function projectCategory(category, key) {
       size="small"
     />
   );
-}
+});
 
 export default ProjectCard;

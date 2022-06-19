@@ -80,23 +80,19 @@ function ProjectMedia(props) {
                         return;
                       }
                       const reader = new FileReader();
-
+                      const uuid = uuidv4();
                       reader.onload = () => {
                         resolve({
-                          id: uuidv4(),
+                          id: uuid,
                           base64data: `data:${file.type};base64,${btoa(reader.result)}`,
-                          type: file.type,
+                          path: `${process.env.NODE_ENV}/media/${uuid}.${file.type.split("/")[1]}`
                         });
                       };
-
                       reader.onerror = reject;
-
                       reader.readAsBinaryString(file);
                     });
                   }
-
                   const newImage = await readFileAsync();
-
                   onChange([newImage, ...value]);
                 }}
               />

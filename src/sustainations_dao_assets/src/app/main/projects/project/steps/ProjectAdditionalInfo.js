@@ -1,3 +1,4 @@
+import {fs} from "fs";
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
@@ -31,32 +32,14 @@ function ProjectAdditionalInfo(props) {
               id="document"
               type="file"
               onChange={async (e) => {
-                function readFileAsync() {
-                  return new Promise((resolve, reject) => {
-                    const file = e.target.files[0];
-
-                    if (!file) {
-                      return;
-                    }
-                    const reader = new FileReader();
-
-                    reader.onload = () => {
-                      resolve({
-                        id: uuidv4(),
-                        base64data: `data:${file.type};base64,${btoa(reader.result)}`,
-                        type: file.type,
-                      });
-                    };
-
-                    reader.onerror = reject;
-
-                    reader.readAsBinaryString(file);
-                  });
-                }
-
-                const newImage = await readFileAsync();
-
-                onChange(newImage);
+                const file = e.target.files[0];
+                const uuid = uuidv4();
+                const document = file ? {
+                  id: uuid,
+                  base64data: file,
+                  path: `${process.env.NODE_ENV}/media/${uuid}.${file.type.split("/")[1]}`
+                } : null;
+                onChange(document);
               }}
             />
           </div>

@@ -50,6 +50,43 @@ function FuseNavVerticalItem(props) {
 
   const itempadding = nestedLevel > 0 ? 38 + nestedLevel * 16 : 16;
 
+  if (item?.external == true) {
+    return useMemo(
+      () => (
+        <a
+          role="button"
+          href={item.url || ''}
+          className="MuiButtonBase-root MuiListItem-root MuiListItem-gutters MuiListItem-padding MuiListItem-button fuse-list-item muiltr-123wqsp-MuiButtonBase-root-MuiListItem-root"
+          itempadding={itempadding}
+          sx={item.sx}
+          disabled={item.disabled}
+          target={item?.target}
+        >
+          {item.icon && (
+            <FuseSvgIcon
+              className={clsx('fuse-list-item-icon shrink-0', item.iconClass)}
+              color="action"
+            >
+              {item.icon}
+            </FuseSvgIcon>
+          )}
+  
+          <ListItemText
+            className="fuse-list-item-text"
+            primary={item.title}
+            secondary={item.subtitle}
+            classes={{
+              primary: 'text-13 font-medium fuse-list-item-text-primary truncate',
+              secondary: 'text-11 font-medium fuse-list-item-text-secondary leading-normal truncate',
+            }}
+          />
+          {item.badge && <FuseNavBadge badge={item.badge} />}
+        </a>
+      ),
+      [item, itempadding, onItemClick]
+    );
+  }
+
   return useMemo(
     () => (
       <Root
@@ -64,6 +101,7 @@ function FuseNavVerticalItem(props) {
         role="button"
         sx={item.sx}
         disabled={item.disabled}
+        target={item?.target}
       >
         {item.icon && (
           <FuseSvgIcon

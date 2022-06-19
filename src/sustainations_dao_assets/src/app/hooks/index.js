@@ -1,2 +1,2 @@
-export { default as useUploadFile } from "./s3/up";
-export { default as useGetFile } from "./s3/get";
+export { default as setS3Object } from "./s3/setObject";
+export { default as getS3Object } from "./s3/getObject";

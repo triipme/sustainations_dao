@@ -7,32 +7,37 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
+import FuseLoading from '@fuse/core/FuseLoading';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { useAsyncMemo } from "use-async-memo";
 import { Box } from '@mui/system';
 import FusePageSimple from '@fuse/core/FusePageSimple';
 import useThemeMediaQuery from '@fuse/hooks/useThemeMediaQuery';
-import FuseLoading from '@fuse/core/FuseLoading';
 import { selectUser } from 'app/store/userSlice';
 import ProjectCard from './ProjectCard';
 
 function Projects() {
   const user = useSelector(selectUser);
   const [categories, setCategories] = useState([]);
-  const [proposals, setProposals] = useState([]);
   const isMobile = useThemeMediaQuery((theme) => theme.breakpoints.down('lg'));
 
-  // const theme = useTheme();
   const [filteredData, setFilteredData] = useState(null);
   const [searchText, setSearchText] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [loading, setLoading] = useState(true)
+
+  const proposals = useAsyncMemo(async () => {
+    setLoading(true);
+    const result = await user.actor.listProposals();
+    setLoading(false);
+    return result.ok;
+  }, [user]);
 
   useEffect(() => {
     async function loadData() {
-      const res = await user.actor.listProposals();
-      setProposals(res.ok);
       const result = await user.actor.proposalStaticAttributes()
       setCategories(result.categories);
     }
@@ -97,7 +102,7 @@ function Projects() {
             >
               <Typography
                 color="inherit"
-                className="text-16 sm:text-20 mt-16 sm:mt-24 opacity-75 tracking-tight max-w-md text-center"
+                className="text-16 sm:text-20 mt-16 sm:mt-24 opacity-75 tracking-tight text-center"
               >
                 Make an impact simply by voting for your favorite sustainable projects.
               </Typography>
@@ -197,7 +202,9 @@ function Projects() {
                 y: 0,
               },
             };
-
+            if (loading) {
+              return (<FuseLoading />);
+            }
             return (
               filteredData &&
               (filteredData.length > 0 ? (

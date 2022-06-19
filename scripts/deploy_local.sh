@@ -12,7 +12,7 @@ export LEDGER_ACC=$(dfx ledger account-id)
 rm src/ledger/ledger.did
 cp src/ledger/ledger.private.did src/ledger/ledger.did
 
-dfx deploy ledger --no-wallet --argument '(record {
+dfx deploy ledger --argument '(record {
   minting_account = "'${MINT_ACC}'";
   initial_values = vec { record { "'${LEDGER_ACC}'"; record { e8s=100_000_000_000 } }; };
   send_whitelist = vec {}
@@ -26,7 +26,7 @@ dfx canister call ledger account_balance '(record { account = '$(python3 -c 'pri
 
 ## === INSTALL FRONTEND / BACKEND ==== 
 
-dfx deploy sustainations_dao --no-wallet --argument "(opt principal \"$LEDGER_ID\")"
-dfx deploy frontend --no-wallet
+dfx deploy sustainations_dao --argument "(opt principal \"$LEDGER_ID\")"
+dfx deploy frontend
 
 # dfx canister call sustainations_dao withdraw '(100000)'

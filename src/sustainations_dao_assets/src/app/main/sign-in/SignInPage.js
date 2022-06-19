@@ -67,31 +67,6 @@ function SignInPage() {
               Sign in
             </Button>
           </div>
-          <div className="flex items-center mt-32">
-            <div className="flex-auto mt-px border-t" />
-            <Typography className="mx-8" color="text.secondary">
-              Or follow us on
-            </Typography>
-            <div className="flex-auto mt-px border-t" />
-          </div>
-
-          <div className="flex items-center mt-32 space-x-16">
-            <Button variant="outlined" className="flex-auto" onClick={() => redirectUrl("https://www.facebook.com/svn.triip.me")}>
-              <FuseSvgIcon size={20} color="action">
-                feather:facebook
-              </FuseSvgIcon>
-            </Button>
-            <Button variant="outlined" className="flex-auto" onClick={() => redirectUrl("https://twitter.com/triipme")}>
-              <FuseSvgIcon size={20} color="action">
-                feather:twitter
-              </FuseSvgIcon>
-            </Button>
-            <Button variant="outlined" className="flex-auto" onClick={() => redirectUrl("https://github.com/triipme/sustainations_dao")}>
-              <FuseSvgIcon size={20} color="action">
-                feather:github
-              </FuseSvgIcon>
-            </Button>
-          </div>
         </div>
       </Paper>
     </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
 import _ from '@lodash';
 import Box from '@mui/material/Box';
@@ -21,9 +21,9 @@ import { showMessage } from 'app/store/fuse/messageSlice';
 import { getLocations } from '../../../../api/location';
 import ProjectOverview from './steps/ProjectOverview';
 import ProjectDetails from './steps/ProjectDetails';
-import ProductAdditionalInfo from './steps/ProductAdditionalInfo';
-import ProductSubmit from './steps/ProductSubmit';
-import { useUploadFile } from "../../../hooks";
+import ProjectAdditionalInfo from './steps/ProjectAdditionalInfo';
+import ProjectSubmit from './steps/ProjectSubmit';
+import { setS3Object } from "../../../hooks";
 
 const steps = ['Project overview', 'Project details', 'Additional info', 'Submit'];
 
@@ -44,8 +44,8 @@ function NewProduct() {
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
-  const [_file, setFile] = useUploadFile();
   const theme = useTheme();
+  const navigate = useNavigate();
   const methods = useForm({
     mode: 'onChange',
     defaultValues: {
@@ -106,11 +106,11 @@ function NewProduct() {
       story: [data.story],
       location: data.location,
       categories: data.categories,
-      document: [data.document?.id || ''],
+      document: [data.document?.path || ''],
       fundingType: data.fundingType,
-      fundingAmount: parseFloat(data.fundingAmount),
+      fundingAmount: parseFloat(data.fundingAmount) * 1e9,
       discussionLink: [data.discussionLink],
-      images: [data.images.map(image => image.id)],
+      images: [data.images.map(image => image.path)],
       video: [data.video],
     }
     try {
@@ -119,19 +119,20 @@ function NewProduct() {
         const uploadFiles = images.map(image => {
           return {
             file: image.base64data,
-            name: `${process.env.NODE_ENV}/media/${image.id}.${image.type.split("/")[1]}`
+            name: image.path
           };
         });
         if (!_.isEmpty(document)) {
           uploadFiles.push({
             file: document.base64data,
-            name: `${process.env.NODE_ENV}/document/${document.id}.${document.type.split("/")[1]}`
+            name: document.path
           });
         }
-        if (!_.isEmpty(uploadFiles)) {
-          setFile(uploadFiles);
-        }
-        dispatch(showMessage({ message: 'Success!' }));
+        const data = await setS3Object(uploadFiles);
+        Promise.all(data).then(() => {
+          dispatch(showMessage({ message: 'Success!' }));
+          navigate(`/projects/${result.ok}`);
+        });
       } else {
         throw result?.err;
       }
@@ -153,22 +154,24 @@ function NewProduct() {
   return (
     <div className="flex flex-col items-center p-24 sm:p-40">
       <div className="flex flex-col w-full max-w-7xl">
-        <Button
-          to="/projects"
-          component={Link}
-          className="mb-24"
-          color="secondary"
-          variant="text"
-          startIcon={
-            <FuseSvgIcon size={20}>
-              {theme.direction === 'ltr'
-                ? 'heroicons-outline:arrow-sm-left'
-                : 'heroicons-outline:arrow-sm-right'}
-            </FuseSvgIcon>
-          }
-        >
-          Back to courses
-        </Button>
+        <div className="flex items-center">
+          <Button
+            to="/projects"
+            component={Link}
+            className="mb-8"
+            color="secondary"
+            variant="text"
+            startIcon={
+              <FuseSvgIcon size={20}>
+                {theme.direction === 'ltr'
+                  ? 'heroicons-outline:arrow-sm-left'
+                  : 'heroicons-outline:arrow-sm-right'}
+              </FuseSvgIcon>
+            }
+          >
+            Back to list
+          </Button>
+        </div>
         <Card className="w-full p-64 mx-auto rounded-2xl shadow">
           <CardContent>
             <FormProvider {...methods}>
@@ -196,10 +199,10 @@ function NewProduct() {
                 <ProjectDetails locations={locations} fundingTypes={staticAttrs.fundingTypes} />
               </div>
               <div className={activeStep !== 2 ? 'hidden' : ''}>
-                <ProductAdditionalInfo categories={staticAttrs.categories} />
+                <ProjectAdditionalInfo categories={staticAttrs.categories} />
               </div>
               <div className={activeStep !== 3 ? 'hidden' : ''}>
-                <ProductSubmit />
+                <ProjectSubmit />
               </div>
               <React.Fragment>
                 <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>

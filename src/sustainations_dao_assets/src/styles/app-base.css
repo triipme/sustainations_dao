@@ -219,3 +219,11 @@ input:-webkit-autofill:active
 .break-all {
     word-break: break-all;
 }
+
+.float-right {
+    float: right;
+}
+
+.float-left {
+    float: left;
+}
