@@ -2,6 +2,7 @@ import NavLinkAdapter from '@fuse/core/NavLinkAdapter';
 import { alpha, styled } from '@mui/material/styles';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
+import Typography from '@mui/material/Typography';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import { useMemo } from 'react';
@@ -53,35 +54,64 @@ function FuseNavVerticalItem(props) {
   if (item?.external == true) {
     return useMemo(
       () => (
-        <a
-          role="button"
-          href={item.url || ''}
-          className="MuiButtonBase-root MuiListItem-root MuiListItem-gutters MuiListItem-padding MuiListItem-button fuse-list-item muiltr-123wqsp-MuiButtonBase-root-MuiListItem-root"
-          itempadding={itempadding}
-          sx={item.sx}
-          disabled={item.disabled}
-          target={item?.target}
+        <Root
+          button
+          component={Typography}
+          className={clsx('fuse-list-item', item.active && 'active')}
         >
-          {item.icon && (
-            <FuseSvgIcon
-              className={clsx('fuse-list-item-icon shrink-0', item.iconClass)}
-              color="action"
-            >
-              {item.icon}
-            </FuseSvgIcon>
-          )}
-  
-          <ListItemText
-            className="fuse-list-item-text"
-            primary={item.title}
-            secondary={item.subtitle}
-            classes={{
-              primary: 'text-13 font-medium fuse-list-item-text-primary truncate',
-              secondary: 'text-11 font-medium fuse-list-item-text-secondary leading-normal truncate',
+          <a
+            role="button"
+            href={item.url || ''}
+            itempadding={itempadding}
+            sx={item.sx}
+            disabled={item.disabled}
+            target={item?.target}
+            style={{
+              "-webkit-tap-highlight-color": "transparent",
+              "background-color": "transparent",
+              "outline": "0px",
+              "border": "0px",
+              "user-select": "none",
+              "vertical-align": "middle",
+              "appearance": "none",
+              "display": "flex",
+              "justify-content": "flex-start",
+              "align-items": "center",
+              "position": "relative",
+              "box-sizing": "border-box",
+              "text-align": "left",
+              "transition": "background-color 150ms cubic-bezier(0.4, 0, 0.2, 1) 0ms",
+              "width": "100%",
+              "color": "rgba(17, 24, 39, 0.7)",
+              "cursor": "pointer",
+              "text-decoration": "none !important",
             }}
-          />
-          {item.badge && <FuseNavBadge badge={item.badge} />}
-        </a>
+          >
+            {item.icon && (
+              <FuseSvgIcon
+                className={clsx('fuse-list-item-icon shrink-0', item.iconClass)}
+                color="action"
+                style={{
+                  "margin-right": "16px",
+                  "color": "inherit",
+                }}
+              >
+                {item.icon}
+              </FuseSvgIcon>
+            )}
+    
+            <ListItemText
+              className="fuse-list-item-text"
+              primary={item.title}
+              secondary={item.subtitle}
+              classes={{
+                primary: 'text-13 font-medium fuse-list-item-text-primary truncate',
+                secondary: 'text-11 font-medium fuse-list-item-text-secondary leading-normal truncate',
+              }}
+            />
+            {item.badge && <FuseNavBadge badge={item.badge} />}
+          </a>
+        </Root>
       ),
       [item, itempadding, onItemClick]
     );
