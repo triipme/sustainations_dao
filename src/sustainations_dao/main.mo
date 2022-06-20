@@ -132,7 +132,6 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
 
   // Transfer ICP from user's subaccount to system subaccount
   private func deposit(amount : Nat64, caller : Principal) : async Response<Nat64> {
-    /**
     // Calculate target subaccount
     let accountId = Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(caller));
     // Check ledger for value
@@ -159,8 +158,6 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
         #ok(bIndex);
       };
     };
-    */
-    #ok(1);
   };
 
   private func recordTransaction(

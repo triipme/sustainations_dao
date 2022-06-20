@@ -127,6 +127,10 @@ function ShowProject() {
               {fICP(project.payload.fundingAmount)}
             </Typography>
             <Typography className="space-x-6 text-13">
+              <span className="whitespace-nowrap leading-none">Invested Amount:</span>
+              {fICP(project.votesYes)}
+            </Typography>
+            <Typography className="space-x-6 text-13">
               <span className="whitespace-nowrap leading-none">Video demo:&nbsp;</span>
               <a href={project.payload?.video}>{project.payload?.video}</a>
             </Typography>
