@@ -67,24 +67,24 @@ function FuseNavVerticalItem(props) {
             disabled={item.disabled}
             target={item?.target}
             style={{
-              "-webkit-tap-highlight-color": "transparent",
-              "background-color": "transparent",
+              "WebkitTapHighlightColor": "transparent",
+              "backgroundColor": "transparent",
               "outline": "0px",
               "border": "0px",
-              "user-select": "none",
-              "vertical-align": "middle",
+              "userSelect": "none",
+              "verticalAlign": "middle",
               "appearance": "none",
               "display": "flex",
-              "justify-content": "flex-start",
-              "align-items": "center",
+              "justifyContent": "flex-start",
+              "alignItems": "center",
               "position": "relative",
-              "box-sizing": "border-box",
-              "text-align": "left",
+              "boxSizing": "border-box",
+              "textAlign": "left",
               "transition": "background-color 150ms cubic-bezier(0.4, 0, 0.2, 1) 0ms",
               "width": "100%",
               "color": "rgba(17, 24, 39, 0.7)",
               "cursor": "pointer",
-              "text-decoration": "none !important",
+              "textDecoration": "none !important",
             }}
           >
             {item.icon && (
@@ -92,7 +92,7 @@ function FuseNavVerticalItem(props) {
                 className={clsx('fuse-list-item-icon shrink-0', item.iconClass)}
                 color="action"
                 style={{
-                  "margin-right": "16px",
+                  "marginRight": "16px",
                   "color": "inherit",
                 }}
               >

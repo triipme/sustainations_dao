@@ -77,7 +77,7 @@ function NavbarToggleFab(props) {
         disableRipple
       >
         <FuseSvgIcon color="action" className="button-icon">
-          heroicons-outline:view-list
+          menu_outlined
         </FuseSvgIcon>
       </Fab>
     </Root>

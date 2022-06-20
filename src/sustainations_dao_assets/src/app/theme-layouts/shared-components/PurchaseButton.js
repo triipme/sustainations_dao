@@ -13,7 +13,7 @@ function PurchaseButton({ className }) {
       className={clsx('', className)}
       variant="contained"
       color="secondary"
-      startIcon={<FuseSvgIcon size={16}>heroicons-outline:shopping-cart</FuseSvgIcon>}
+      startIcon={<FuseSvgIcon size={16}>shopping_cart_outlined</FuseSvgIcon>}
     >
       Purchase FUSE React
     </Button>

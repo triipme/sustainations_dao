@@ -97,7 +97,7 @@ function ProjectMedia(props) {
                 }}
               />
               <FuseSvgIcon size={32} color="action">
-                heroicons-outline:upload
+                cloud_upload
               </FuseSvgIcon>
             </Box>
           )}

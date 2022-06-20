@@ -31,7 +31,7 @@ function ProjectSubmit() {
                 name="termsConditions"
               />
             }
-            label="I, and all of my team members, have read and agree to bound by the Official Rule and the Devpost Terms of Service."
+            label="I, have read and agree to bound by the Official Rule and the D.A.O Terms of Service."
           />
         )}
       />

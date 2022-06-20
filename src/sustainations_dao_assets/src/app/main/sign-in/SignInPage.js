@@ -3,7 +3,6 @@ import { AuthClient } from '@dfinity/auth-client';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
-import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 import DfinityAgentService from '../../auth/services/dfinityAgentService';
 
 function SignInPage() {

@@ -50,7 +50,7 @@ function MonthlyExpensesWidget() {
         </div>
         <div className="ml-8 -mt-8 -mr-12">
           <IconButton>
-            <FuseSvgIcon size={20}>heroicons-solid:dots-vertical</FuseSvgIcon>
+            <FuseSvgIcon size={20}>more_horiz_outlined</FuseSvgIcon>
           </IconButton>
         </div>
       </div>
@@ -64,7 +64,7 @@ function MonthlyExpensesWidget() {
           </div>
           <div className="flex items-center">
             <FuseSvgIcon className="mr-4 text-red-500" size={20}>
-              heroicons-solid:trending-up
+              trending_up_outlined
             </FuseSvgIcon>
             <Typography className="font-medium text-sm text-secondary leading-none whitespace-nowrap">
               <span className="text-red-500">2%</span>

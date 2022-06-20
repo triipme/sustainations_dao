@@ -169,7 +169,7 @@ function Chat(props) {
           <div className="flex flex-col flex-1">
             <div className="flex flex-col flex-1 items-center justify-center">
               <FuseSvgIcon size={128} color="disabled">
-                heroicons-outline:chat
+                chat_bubble_outline_outlined
               </FuseSvgIcon>
             </div>
             <Typography className="px-16 pb-24 text-center" color="text.secondary">
@@ -218,7 +218,7 @@ function Chat(props) {
                     size="large"
                   >
                     <FuseSvgIcon className="rotate-90" color="action">
-                      heroicons-outline:paper-airplane
+                      send_outlined
                     </FuseSvgIcon>
                   </IconButton>
                 </Paper>

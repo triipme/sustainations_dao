@@ -42,7 +42,7 @@ function AdjustFontSize(props) {
         onClick={handleClick}
         size="large"
       >
-        <FuseSvgIcon>material-outline:format_size</FuseSvgIcon>
+        <FuseSvgIcon>format_size</FuseSvgIcon>
       </IconButton>
       <Menu
         classes={{ paper: 'w-320' }}
@@ -63,7 +63,7 @@ function AdjustFontSize(props) {
         <div className="py-12 px-24">
           <Typography className="flex items-center justify-center text-16 font-semibold mb-8">
             <FuseSvgIcon color="action" className="mr-4">
-              material-outline:format_size
+              format_size
             </FuseSvgIcon>
             Font Size
           </Typography>

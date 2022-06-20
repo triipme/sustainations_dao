@@ -39,7 +39,7 @@ function NavbarToggleButton(props) {
 NavbarToggleButton.defaultProps = {
   children: (
     <FuseSvgIcon size={20} color="action">
-      heroicons-outline:view-list
+      menu_outlined
     </FuseSvgIcon>
   ),
 };

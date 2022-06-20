@@ -87,7 +87,7 @@ const HeaderFullScreenToggle = (props) => {
         className={clsx('w-40 h-40', props.className)}
         size="large"
       >
-        <FuseSvgIcon>heroicons-outline:arrows-expand</FuseSvgIcon>
+        <FuseSvgIcon>fullscreen_outlined</FuseSvgIcon>
       </IconButton>
     </Tooltip>
   );

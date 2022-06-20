@@ -108,7 +108,7 @@ function projectInfo(project) {
         ))}
         {"succeeded" in project.status && (
           <FuseSvgIcon className="text-green-600" size={20}>
-            heroicons-solid:badge-check
+            check_circle_outlined
           </FuseSvgIcon>
         )}
       </div>

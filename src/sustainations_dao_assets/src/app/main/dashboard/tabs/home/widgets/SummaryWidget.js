@@ -41,7 +41,7 @@ function SummaryWidget() {
           })}
         </Select>
         <IconButton aria-label="more" size="large">
-          <FuseSvgIcon>heroicons-outline:dots-vertical</FuseSvgIcon>
+          <FuseSvgIcon>more_horiz_outlined</FuseSvgIcon>
         </IconButton>
       </div>
       <div className="text-center mt-8">

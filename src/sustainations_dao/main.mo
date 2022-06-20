@@ -240,12 +240,17 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
     #ok(list);
   };
 
-  public shared query({caller}) func getProposal(uuid : Text) : async Response<Types.Proposal>{
+  public shared({caller}) func getProposal(uuid : Text) : async Response<Types.Proposal> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
     let result = state.proposals.get(uuid);
     return Result.fromOption(result, #NotFound);
+  };
+
+  public shared({ caller }) func destroyProposal(uuid : Text) : async Response<Text> {
+    state.proposals.delete(uuid);
+    #ok("Success");
   };
 
   // Votes Proposal

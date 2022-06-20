@@ -68,7 +68,7 @@ function ScheduleWidget(props) {
                   {item.time && (
                     <span className="flex items-center">
                       <FuseSvgIcon size={20} color="disabled">
-                        heroicons-solid:clock
+                        access_time_outlined
                       </FuseSvgIcon>
                       <Typography component="span" className="mx-6 text-md" color="text.secondary">
                         {item.time}
@@ -79,7 +79,7 @@ function ScheduleWidget(props) {
                   {item.location && (
                     <span className="flex items-center">
                       <FuseSvgIcon size={20} color="disabled">
-                        heroicons-solid:location-marker
+                        add_location_outlined
                       </FuseSvgIcon>
                       <Typography component="span" className="mx-6 text-md" color="text.secondary">
                         {item.location}
@@ -91,7 +91,7 @@ function ScheduleWidget(props) {
             />
             <ListItemSecondaryAction>
               <IconButton aria-label="more" size="large">
-                <FuseSvgIcon>heroicons-solid:chevron-right</FuseSvgIcon>
+                <FuseSvgIcon>arrow_forward_ios_outlined</FuseSvgIcon>
               </IconButton>
             </ListItemSecondaryAction>
           </ListItem>
@@ -164,7 +164,7 @@ function ScheduleWidget(props) {
             />
             <ListItemSecondaryAction>
               <IconButton aria-label="more" size="large">
-                <FuseSvgIcon>heroicons-outline:dots-vertical</FuseSvgIcon>
+                <FuseSvgIcon>more_horiz_outlined</FuseSvgIcon>
               </IconButton>
             </ListItemSecondaryAction>
           </ListItem>

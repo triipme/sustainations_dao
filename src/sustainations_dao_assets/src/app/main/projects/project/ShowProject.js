@@ -91,8 +91,8 @@ function ShowProject() {
             startIcon={
               <FuseSvgIcon size={20}>
                 {theme.direction === 'ltr'
-                  ? 'heroicons-outline:arrow-sm-left'
-                  : 'heroicons-outline:arrow-sm-right'}
+                  ? 'arrow_back'
+                  : 'arrow_forward'}
               </FuseSvgIcon>
             }
           >

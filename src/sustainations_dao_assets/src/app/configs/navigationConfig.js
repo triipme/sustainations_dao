@@ -13,7 +13,7 @@ const navigationConfig = [
     title: 'Dashboard',
     translate: 'Dashboard',
     type: 'item',
-    icon: 'heroicons-outline:desktop-computer',
+    icon: 'dashboard_outlined',
     url: 'dashboard',
   },
   {
@@ -21,7 +21,7 @@ const navigationConfig = [
     title: 'Projects',
     translate: 'Projects',
     type: 'item',
-    icon: 'heroicons-outline:clipboard-check',
+    icon: 'assignment_outlined',
     url: 'projects',
   },
   {
@@ -29,7 +29,7 @@ const navigationConfig = [
     title: 'Metaverse',
     translate: 'Metaverse',
     type: 'item',
-    icon: 'heroicons-outline:globe-alt',
+    icon: 'public_outlined',
     url: 'https://3r6bs-jyaaa-aaaal-aaaba-cai.ic0.app/metaverse',
     target: '_blank',
     external: true,

@@ -11,7 +11,7 @@ function DocumentationButton({ className }) {
       className={className}
       variant="contained"
       color="primary"
-      startIcon={<FuseSvgIcon size={16}>heroicons-outline:book-open</FuseSvgIcon>}
+      startIcon={<FuseSvgIcon size={16}>menu_book_outlined</FuseSvgIcon>}
     >
       Documentation
     </Button>

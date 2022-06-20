@@ -32,7 +32,7 @@ function FuseSettingsViewerDialog(props) {
         color="secondary"
         className="w-full"
         onClick={handleOpenDialog}
-        startIcon={<FuseSvgIcon>heroicons-solid:code</FuseSvgIcon>}
+        startIcon={<FuseSvgIcon>code_outlined</FuseSvgIcon>}
       >
         View settings as json/query params
       </Button>

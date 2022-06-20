@@ -71,7 +71,7 @@ function UserMenu(_props) {
         <>
           <MenuItem component={Link} to="/profile" onClick={userMenuClose} role="button">
             <ListItemIcon className="min-w-40">
-              <FuseSvgIcon>heroicons-outline:user-circle</FuseSvgIcon>
+              <FuseSvgIcon>account_circle_outlined</FuseSvgIcon>
             </ListItemIcon>
             <ListItemText primary="My Profile" />
           </MenuItem>
@@ -83,7 +83,7 @@ function UserMenu(_props) {
             }}
           >
             <ListItemIcon className="min-w-40">
-              <FuseSvgIcon>heroicons-outline:logout</FuseSvgIcon>
+              <FuseSvgIcon>logout_outlined</FuseSvgIcon>
             </ListItemIcon>
             <ListItemText primary="Sign out" />
           </MenuItem>

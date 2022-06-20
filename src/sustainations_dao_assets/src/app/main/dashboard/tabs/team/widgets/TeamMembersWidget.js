@@ -50,7 +50,7 @@ function TeamMembersWidget(props) {
               role="button"
             >
               <FuseSvgIcon size={20} color="action">
-                heroicons-solid:mail
+                mail_outlined
               </FuseSvgIcon>
               <Typography className="ml-8">Email</Typography>
             </a>
@@ -60,7 +60,7 @@ function TeamMembersWidget(props) {
               role="button"
             >
               <FuseSvgIcon size={20} color="action">
-                heroicons-solid:phone
+                local_phone_outlined
               </FuseSvgIcon>
               <Typography className="ml-8">Call</Typography>
             </a>

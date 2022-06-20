@@ -176,7 +176,7 @@ function Projects() {
               variant="contained"
               startIcon={
                 <FuseSvgIcon className="" size={20}>
-                  heroicons-solid:plus
+                  add
                 </FuseSvgIcon>
               }
             >

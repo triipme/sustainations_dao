@@ -112,7 +112,7 @@ function SettingsPanel() {
           disableRipple
         >
           <span>
-            <FuseSvgIcon size={20}>heroicons-solid:cog</FuseSvgIcon>
+            <FuseSvgIcon size={20}>settings_outlined</FuseSvgIcon>
           </span>
         </Button>
 
@@ -123,7 +123,7 @@ function SettingsPanel() {
           color="inherit"
           disableRipple
         >
-          <FuseSvgIcon size={20}>heroicons-outline:color-swatch</FuseSvgIcon>
+          <FuseSvgIcon size={20}>bar_chart_outlined</FuseSvgIcon>
         </Button>
       </Root>
       <StyledDialog
@@ -144,7 +144,7 @@ function SettingsPanel() {
             onClick={handleClose}
             size="large"
           >
-            <FuseSvgIcon>heroicons-outline:x</FuseSvgIcon>
+            <FuseSvgIcon>close_outlined</FuseSvgIcon>
           </IconButton>
 
           <Typography className="mb-32 font-semibold" variant="h6">
@@ -174,7 +174,7 @@ function SettingsPanel() {
             onClick={handleClose}
             size="large"
           >
-            <FuseSvgIcon>heroicons-outline:x</FuseSvgIcon>
+            <FuseSvgIcon>close_outlined</FuseSvgIcon>
           </IconButton>
 
           <Typography className="mb-32" variant="h6">
