@@ -85,10 +85,10 @@ function TaskDistributionWidget(props) {
     return null;
   }
   return (
-    <Paper className="flex flex-col flex-auto p-24 shadow rounded-2xl overflow-hidden h-full">
+    <Paper className="flex flex-col flex-auto p-24 shadow rounded-2xl overflow-hidden h-full opacity-25">
       <div className="flex flex-col sm:flex-row items-start justify-between">
         <Typography className="text-lg font-medium tracking-tight leading-6 truncate">
-          Project Distribution
+          Project Distribution (Comming soon...)
         </Typography>
         <div className="mt-3 sm:mt-0 sm:ml-2">
           <Tabs

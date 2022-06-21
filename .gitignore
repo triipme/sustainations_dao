@@ -11,6 +11,7 @@
 .dfx/
 canister_ids.json
 .vessel/
+src/sustainations_dao/env.mo
 
 # frontend code
 node_modules/

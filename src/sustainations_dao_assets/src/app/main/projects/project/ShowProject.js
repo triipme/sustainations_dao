@@ -4,6 +4,7 @@ import { useTheme } from '@mui/material/styles';
 import { Link, useParams } from 'react-router-dom';
 import { lighten, darken } from '@mui/material/styles';
 import _ from 'lodash';
+import moment from 'moment';
 import Button from '@mui/material/Button';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Card from '@mui/material/Card';
@@ -109,7 +110,7 @@ function ShowProject() {
             {voted ? 'Invested' : 'Invest'}
           </LoadingButton>
         </div>
-        <Card className="w-full p-64 mx-auto rounded-2xl shadow">
+        <Card className="w-full py-32 mx-auto rounded-2xl shadow">
           <CardContent>
             {project.payload.categories.map((category, index) => (
               <ProjectCategory category={category} key={index} index={index} />
@@ -118,6 +119,9 @@ function ShowProject() {
             <Typography className="mt-32 mb-16 text-2xl font-bold">{project.payload?.description}</Typography>
             <Typography className="space-x-6 text-13">
               <span className="whitespace-nowrap leading-none">{`Location: ${project.payload.location}`}</span>
+            </Typography>
+            <Typography className="space-x-6 text-13">
+              <span className="whitespace-nowrap leading-none">{`Due Date: ${moment.unix(parseInt(project.payload.dueDate / BigInt(1e9))).format("dddd, MMMM Do YYYY, h:mm:ss a")}`}</span>
             </Typography>
             <Typography className="space-x-6 text-13">
               <span className="whitespace-nowrap leading-none">{`Funding Type: ${project.payload.fundingType}`}</span>

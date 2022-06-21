@@ -24,6 +24,7 @@ import ProjectDetails from './steps/ProjectDetails';
 import ProjectAdditionalInfo from './steps/ProjectAdditionalInfo';
 import ProjectSubmit from './steps/ProjectSubmit';
 import { setS3Object } from "../../../hooks";
+import moment from 'moment';
 
 const steps = ['Project overview', 'Project details', 'Additional info', 'Submit'];
 
@@ -61,6 +62,7 @@ function NewProduct() {
       images: [],
       video: '',
       termsConditions: false,
+      dueDate: '',
     },
     resolver: yupResolver(schema),
   });
@@ -112,7 +114,9 @@ function NewProduct() {
       discussionLink: [data.discussionLink],
       images: [data.images.map(image => image.path)],
       video: [data.video],
+      dueDate: moment(data.dueDate).unix() * 1e9,
     }
+
     try {
       const result = await user.actor.submitProposal(payload);
       if ("ok" in result) {
@@ -137,6 +141,7 @@ function NewProduct() {
         throw result?.err;
       }
     } catch (error) {
+      console.log(error);
       const message = {
         "NotAuthorized": "Please sign in!.",
         "BalanceLow": "You need minimum 0.00003 ICP to submit project.",

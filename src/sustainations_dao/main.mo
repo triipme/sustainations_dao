@@ -15,8 +15,8 @@ import UUID "mo:uuid/UUID";
 import Account "./plugins/Account";
 import Types "types";
 import State "state";
-// import Ledger "canister:ledger";
 import Ledger "./plugins/Ledger";
+import Env "env";
 
 shared({caller = owner}) actor class SustainationsDAO() = this {
   let transferFee : Nat64 = 10_000;
@@ -56,12 +56,12 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
     Debug.print("End postupgrade");
   };
 
-  // system func heartbeat() : async () {
-  //   await setOutDateProposals();
-  // };
+  system func heartbeat() : async () {
+    await setOutDateProposals();
+  };
 
   type Response<Ok> = Result.Result<Ok, Types.Error>;
-  private let ledger : Ledger.Interface = actor("ryjl3-tyaaa-aaaaa-aaaba-cai");
+  private let ledger : Ledger.Interface = actor(Env.LEDGER_ID);
 
   private func createUUID() : async Text {
     var ae = AsyncSource.Source();
@@ -83,6 +83,32 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
     Account.toText(
       Account.accountIdentifier(Principal.fromActor(this), Account.defaultSubaccount())
     )
+  };
+
+  type DashboardAnalysis = {
+    userAgreement: Int;
+    overdueProposal: Int;
+    openProposal: Int;
+    investedProposal: Int;
+  };
+  public func dashboardAnalysis() : async Response<DashboardAnalysis> {
+    let userAgreement = state.userAgreements.size();
+    var overdueProposal = 0;
+    var openProposal = 0;
+    var investedProposal = 0;
+    for (proposal in state.proposals.vals()) {
+      if (proposal.status == #rejected) {
+        overdueProposal += 1;
+      } else {
+        if (proposal.votesYes > 0) {
+          investedProposal += 1;
+        };
+        if (proposal.status == #open) {
+          openProposal += 1;
+        };
+      };
+    };
+    #ok({ userAgreement; overdueProposal; openProposal; investedProposal; });
   };
 
   public shared({ caller }) func submitAgreement() : async Response<Text> {
@@ -198,32 +224,33 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
 
   // Transfer ICP from user's subaccount to system subaccount
   private func deposit(amount : Nat64, caller : Principal) : async Response<Nat64> {
-    // Calculate target subaccount
-    let accountId = Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(caller));
-    // Check ledger for value
-    let balance = await ledger.account_balance({ account = accountId });
-    // Transfer to default subaccount
-    let receipt = if (balance.e8s >= amount + transferFee) {
-      await ledger.transfer({
-        memo: Nat64    = 0;
-        from_subaccount = ?Account.principalToSubaccount(caller);
-        to = Account.accountIdentifier(Principal.fromActor(this), Account.defaultSubaccount());
-        amount = { e8s = amount + transferFee };
-        fee = { e8s = transferFee };
-        created_at_time = ?{ timestamp_nanos = Nat64.fromNat(Int.abs(Time.now())) };
-      })
-    } else {
-      return #err(#BalanceLow);
-    };
+    // // Calculate target subaccount
+    // let accountId = Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(caller));
+    // // Check ledger for value
+    // let balance = await ledger.account_balance({ account = accountId });
+    // // Transfer to default subaccount
+    // let receipt = if (balance.e8s >= amount + transferFee) {
+    //   await ledger.transfer({
+    //     memo: Nat64    = 0;
+    //     from_subaccount = ?Account.principalToSubaccount(caller);
+    //     to = Account.accountIdentifier(Principal.fromActor(this), Account.defaultSubaccount());
+    //     amount = { e8s = amount + transferFee };
+    //     fee = { e8s = transferFee };
+    //     created_at_time = ?{ timestamp_nanos = Nat64.fromNat(Int.abs(Time.now())) };
+    //   })
+    // } else {
+    //   return #err(#BalanceLow);
+    // };
 
-    switch receipt {
-      case ( #Err _) {
-        #err(#TransferFailure);
-      };
-      case (#Ok(bIndex)) {
-        #ok(bIndex);
-      };
-    };
+    // switch receipt {
+    //   case ( #Err _) {
+    //     #err(#TransferFailure);
+    //   };
+    //   case (#Ok(bIndex)) {
+    //     #ok(bIndex);
+    //   };
+    // };
+    #ok(1);
   };
 
   private func recordTransaction(
@@ -274,7 +301,7 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
           timestamp = Time.now();
           proposer = caller;
           payload;
-          status = #open;
+          status = if (payload.dueDate <= Time.now()) {#rejected} else {#open};
           votesYes = 0;
           voters = List.nil();
         };
@@ -440,21 +467,21 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
     #ok(Iter.toArray(state.transactions.vals()));
   };
 
-  // func setOutDateProposals() : async () {
-  //   for ((uuid, proposal) in state.proposals.entries()) {
-  //     if (proposal.status == #open and proposal.payload.endDate <= Time.now()) {
-  //       let updated = {
-  //         uuid = proposal.uuid;
-  //         status = #rejected;
-  //         timestamp = proposal.timestamp;
-  //         proposer = proposal.proposer;
-  //         voters = proposal.voters;
-  //         votesYes = proposal.votesYes;
-  //         payload = proposal.payload;
-  //       };
-  //       let replaced = state.proposals.replace(uuid, updated);
-  //       await refundVoters(updated);
-  //     };
-  //   };
-  // };
+  func setOutDateProposals() : async () {
+    for ((uuid, proposal) in state.proposals.entries()) {
+      if (proposal.status == #open and proposal.payload.dueDate <= Time.now()) {
+        let updated = {
+          uuid = proposal.uuid;
+          status = #rejected;
+          timestamp = proposal.timestamp;
+          proposer = proposal.proposer;
+          voters = proposal.voters;
+          votesYes = proposal.votesYes;
+          payload = proposal.payload;
+        };
+        let replaced = state.proposals.replace(uuid, updated);
+        await refundVoters(updated);
+      };
+    };
+  };
 };

@@ -22,10 +22,10 @@ function ScheduleWidget(props) {
   const currentRange = Object.keys(ranges)[tabValue];
 
   return (
-    <Paper className="flex flex-col flex-auto p-24 shadow rounded-2xl overflow-hidden h-full">
+    <Paper className="flex flex-col flex-auto p-24 shadow rounded-2xl overflow-hidden h-full opacity-25">
       <div className="flex flex-col sm:flex-row items-start justify-between">
         <Typography className="text-lg font-medium tracking-tight leading-6 truncate">
-          Schedule
+          Schedule (Comming soon...)
         </Typography>
         <div className="mt-12 sm:mt-0 sm:ml-8">
           <Tabs
@@ -132,7 +132,7 @@ function ScheduleWidget(props) {
   );
 
   return (
-    <Paper className="w-full rounded-20 shadow">
+    <Paper className="w-full rounded-20 shadow opacity-25">
       <div className="flex items-center justify-between p-20 h-64 ">
         <Typography className="text-16 font-medium">{props.widget.title}</Typography>
 

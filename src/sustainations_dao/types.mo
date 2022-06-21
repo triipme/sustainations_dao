@@ -41,6 +41,7 @@ module {
     discussionLink : ?Text;
     images : ?[Text];
     video : ?Text;
+    dueDate : Time.Time;
   };
   public type ProposalState = {
     #failed : Text;

@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import Typography from '@mui/material/Typography';
 import BudgetDistributionWidget from './widgets/BudgetDistributionWidget';
 import WeeklyExpensesWidget from './widgets/WeeklyExpensesWidget';
 import MonthlyExpensesWidget from './widgets/MonthlyExpensesWidget';
@@ -20,41 +21,46 @@ function BudgetTab() {
   };
 
   return (
-    <motion.div
-      className="grid grid-cols-1 sm:grid-cols-6 gap-24 w-full min-w-0 p-24"
-      variants={container}
-      initial="hidden"
-      animate="show"
-    >
-      <motion.div variants={item} className="sm:col-span-3 lg:col-span-4">
-        <BudgetDistributionWidget />
-      </motion.div>
-
-      <div className="sm:col-span-3 lg:col-span-2 grid grid-cols-1 gap-y-24">
-        <motion.div variants={item} className="sm:col-span-2">
-          <WeeklyExpensesWidget />
+    <motion.div className="opacity-25">
+      <Typography className="text-lg font-medium tracking-tight leading-6 truncate p-24">
+        Comming soon...
+      </Typography>
+      <motion.div
+        className="grid grid-cols-1 sm:grid-cols-6 gap-24 w-full min-w-0 p-24"
+        variants={container}
+        initial="hidden"
+        animate="show"
+      >
+        <motion.div variants={item} className="sm:col-span-3 lg:col-span-4">
+          <BudgetDistributionWidget />
         </motion.div>
-        <motion.div variants={item} className="sm:col-span-2">
-          <MonthlyExpensesWidget />
-        </motion.div>
-        <motion.div variants={item} className="sm:col-span-2">
-          <YearlyExpensesWidget />
-        </motion.div>
-      </div>
 
-      <motion.div variants={item} className="sm:col-span-6">
-        <BudgetDetailsWidget />
-      </motion.div>
+        <div className="sm:col-span-3 lg:col-span-2 grid grid-cols-1 gap-y-24">
+          <motion.div variants={item} className="sm:col-span-2">
+            <WeeklyExpensesWidget />
+          </motion.div>
+          <motion.div variants={item} className="sm:col-span-2">
+            <MonthlyExpensesWidget />
+          </motion.div>
+          <motion.div variants={item} className="sm:col-span-2">
+            <YearlyExpensesWidget />
+          </motion.div>
+        </div>
 
-      {/*   <motion.div variants={item} className="widget flex w-full sm:w-1/2 p-12">
-        <Widget8 widget={widgets.widget8} />
+        <motion.div variants={item} className="sm:col-span-6">
+          <BudgetDetailsWidget />
+        </motion.div>
+
+        {/*   <motion.div variants={item} className="widget flex w-full sm:w-1/2 p-12">
+          <Widget8 widget={widgets.widget8} />
+        </motion.div>
+        <motion.div variants={item} className="widget flex w-full sm:w-1/2 p-12">
+          <Widget9 widget={widgets.widget9} />
+        </motion.div>
+        <motion.div variants={item} className="widget flex w-full p-12">
+          <Widget10 widget={widgets.widget10} />
+        </motion.div> */}
       </motion.div>
-      <motion.div variants={item} className="widget flex w-full sm:w-1/2 p-12">
-        <Widget9 widget={widgets.widget9} />
-      </motion.div>
-      <motion.div variants={item} className="widget flex w-full p-12">
-        <Widget10 widget={widgets.widget10} />
-      </motion.div> */}
     </motion.div>
   );
 }

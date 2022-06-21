@@ -100,10 +100,10 @@ function GithubIssuesWidget() {
   }
 
   return (
-    <Paper className="flex flex-col flex-auto p-24 shadow rounded-2xl overflow-hidden">
+    <Paper className="flex flex-col flex-auto p-24 shadow rounded-2xl overflow-hidden opacity-25">
       <div className="flex flex-col sm:flex-row items-start justify-between">
         <Typography className="text-lg font-medium tracking-tight leading-6 truncate">
-          Initiatives Summary
+          Initiatives Summary (Comming soon...)
         </Typography>
         <div className="mt-12 sm:mt-0 sm:ml-8">
           <Tabs

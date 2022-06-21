@@ -1,6 +1,10 @@
 import Typography from '@mui/material/Typography';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
+import TextField from '@mui/material/TextField';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { Controller, useFormContext } from 'react-hook-form';
 
 function ProjectSubmit() {
@@ -14,6 +18,37 @@ function ProjectSubmit() {
         Submit project
       </Typography>
       <div className="flex-auto mt-px border-t" />
+      <Typography className="mt-32 mb-16 text-3xl font-bold tracking-tight leading-tight">
+        Due date
+      </Typography>
+      <Controller
+        control={control}
+        name="dueDate"
+        render={({ field }) => (
+          <LocalizationProvider dateAdapter={AdapterDateFns}>
+            <DateTimePicker
+              {...field}
+              className="w-full"
+              clearable
+              showTodayButton
+              renderInput={(_props) => (
+                <TextField
+                  className=""
+                  id="due-date"
+                  label="Due date"
+                  type="date"
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  variant="outlined"
+                  fullWidth
+                  {..._props}
+                />
+              )}
+            />
+          </LocalizationProvider>
+        )}
+      />
       <Typography className="mt-32 mb-16 text-3xl font-bold tracking-tight leading-tight">
         Terms &amp; conditions
       </Typography>
