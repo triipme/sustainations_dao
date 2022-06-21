@@ -19,14 +19,10 @@ function UserAgreement() {
     try {
       const result = await user.actor.submitAgreement();
       if ("ok" in result) {
-        dispatch(setUser({
-          role: settingsConfig.defaultAuth,
-          actor: user.actor,
-          depositAddress: user.depositAddress,
-          balance: user.balance,
-          principal: user.principal,
-        }));
         dispatch(showMessage({ message: "Now you are offically our member. Please accept 0.003 ICP as our gift for your kindness ❤️" }));
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 1000);
       } else {
         throw result?.err;
       }

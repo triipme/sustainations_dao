@@ -62,8 +62,8 @@ function UserAgreements() {
           </Typography>
           <div className="text-center">
             <Button
-              className="w-full max-w-64 min-w-128 mt-32 text-white"
-              color="secondary"
+              className="w-full max-w-64 min-w-128 mt-32 text-black"
+              color="inherit"
               variant="contained"
             >
               Signed
