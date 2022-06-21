@@ -420,7 +420,7 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
         await recordTransaction(
           Principal.fromActor(this), createProposalFee + transferFee,
           Principal.fromActor(this), uid,
-          #awardUserAgreement, Principal.toText(uid), bIndex
+          #awardUserAgreement, ?Principal.toText(uid), bIndex
         );
       };
     };
