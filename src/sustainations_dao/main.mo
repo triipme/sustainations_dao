@@ -224,33 +224,32 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
 
   // Transfer ICP from user's subaccount to system subaccount
   private func deposit(amount : Nat64, caller : Principal) : async Response<Nat64> {
-    // // Calculate target subaccount
-    // let accountId = Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(caller));
-    // // Check ledger for value
-    // let balance = await ledger.account_balance({ account = accountId });
-    // // Transfer to default subaccount
-    // let receipt = if (balance.e8s >= amount + transferFee) {
-    //   await ledger.transfer({
-    //     memo: Nat64    = 0;
-    //     from_subaccount = ?Account.principalToSubaccount(caller);
-    //     to = Account.accountIdentifier(Principal.fromActor(this), Account.defaultSubaccount());
-    //     amount = { e8s = amount + transferFee };
-    //     fee = { e8s = transferFee };
-    //     created_at_time = ?{ timestamp_nanos = Nat64.fromNat(Int.abs(Time.now())) };
-    //   })
-    // } else {
-    //   return #err(#BalanceLow);
-    // };
+    // Calculate target subaccount
+    let accountId = Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(caller));
+    // Check ledger for value
+    let balance = await ledger.account_balance({ account = accountId });
+    // Transfer to default subaccount
+    let receipt = if (balance.e8s >= amount + transferFee) {
+      await ledger.transfer({
+        memo: Nat64    = 0;
+        from_subaccount = ?Account.principalToSubaccount(caller);
+        to = Account.accountIdentifier(Principal.fromActor(this), Account.defaultSubaccount());
+        amount = { e8s = amount + transferFee };
+        fee = { e8s = transferFee };
+        created_at_time = ?{ timestamp_nanos = Nat64.fromNat(Int.abs(Time.now())) };
+      })
+    } else {
+      return #err(#BalanceLow);
+    };
 
-    // switch receipt {
-    //   case ( #Err _) {
-    //     #err(#TransferFailure);
-    //   };
-    //   case (#Ok(bIndex)) {
-    //     #ok(bIndex);
-    //   };
-    // };
-    #ok(1);
+    switch receipt {
+      case ( #Err _) {
+        #err(#TransferFailure);
+      };
+      case (#Ok(bIndex)) {
+        #ok(bIndex);
+      };
+    };
   };
 
   private func recordTransaction(
