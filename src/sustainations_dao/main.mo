@@ -15,7 +15,8 @@ import UUID "mo:uuid/UUID";
 import Account "./plugins/Account";
 import Types "types";
 import State "state";
-import Ledger "canister:ledger";
+// import Ledger "canister:ledger";
+import Ledger "./plugins/Ledger";
 
 shared({caller = owner}) actor class SustainationsDAO() = this {
   let transferFee : Nat64 = 10_000;
@@ -60,6 +61,7 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
   // };
 
   type Response<Ok> = Result.Result<Ok, Types.Error>;
+  private let ledger : Ledger.Interface = actor("ryjl3-tyaaa-aaaaa-aaaba-cai");
 
   private func createUUID() : async Text {
     var ae = AsyncSource.Source();
@@ -67,9 +69,20 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
     UUID.toText(id);
   };
 
-  public shared({ caller }) func getBalance() : async Ledger.Tokens {
+  public shared({ caller }) func getBalance() : async Ledger.ICP {
     let accountId = Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(caller));
-    await Ledger.account_balance({ account = accountId });
+    await ledger.account_balance({ account = accountId });
+  };
+
+  public func getSystemBalance() : async Ledger.ICP {
+    let accountId = Account.accountIdentifier(Principal.fromActor(this), Account.defaultSubaccount());
+    await ledger.account_balance({ account = accountId });
+  };
+
+  public func getSystemAddress() : async Text {
+    Account.toText(
+      Account.accountIdentifier(Principal.fromActor(this), Account.defaultSubaccount())
+    )
   };
 
   public shared({ caller }) func submitAgreement() : async Response<Text> {
@@ -122,12 +135,12 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
 
     let sourceAccount = Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(caller));
     // Check ledger for value
-    let balance = await Ledger.account_balance({ account = sourceAccount });
+    let balance = await ledger.account_balance({ account = sourceAccount });
     let accountId = Account.accountIdentifier(address, Account.defaultSubaccount());
 
     // Transfer amount back to user
     let receipt = if (balance.e8s >= amount + transferFee) {
-      await Ledger.transfer({
+      await ledger.transfer({
         memo: Nat64    = 0;
         from_subaccount = ?Account.principalToSubaccount(caller);
         to = accountId;
@@ -149,12 +162,6 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
     #ok(amount)
   };
 
-  public shared({ caller }) func getSystemAddress() : async Text {
-    Account.toText(
-      Account.accountIdentifier(Principal.fromActor(this), Account.defaultSubaccount())
-    )
-  };
-
   // Return the account ID specific to this user's subaccount
   public shared({ caller }) func getDepositAddress() : async Text {
     Account.toText(
@@ -173,7 +180,7 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
       return #err(#NotAuthorized);//isNotAuthorized
     };
     let accountId = Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(caller));
-    let balance = await Ledger.account_balance({ account = accountId });
+    let balance = await ledger.account_balance({ account = accountId });
     let agreement = switch (state.userAgreements.get(caller)) {
       case (null) { false };
       case _ {true};
@@ -194,10 +201,10 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
     // Calculate target subaccount
     let accountId = Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(caller));
     // Check ledger for value
-    let balance = await Ledger.account_balance({ account = accountId });
+    let balance = await ledger.account_balance({ account = accountId });
     // Transfer to default subaccount
     let receipt = if (balance.e8s >= amount + transferFee) {
-      await Ledger.transfer({
+      await ledger.transfer({
         memo: Nat64    = 0;
         from_subaccount = ?Account.principalToSubaccount(caller);
         to = Account.accountIdentifier(Principal.fromActor(this), Account.defaultSubaccount());
@@ -381,7 +388,7 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
 
   func refund(amount : Nat64, toPrincipal : Principal) : async Ledger.TransferResult {
     let accountId = Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(toPrincipal));
-    await Ledger.transfer({
+    await ledger.transfer({
       memo: Nat64    = 0;
       from_subaccount = ?Account.defaultSubaccount();
       to = accountId;
