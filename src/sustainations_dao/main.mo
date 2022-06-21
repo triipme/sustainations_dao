@@ -433,6 +433,13 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
     };
   };
 
+  public shared({ caller }) func getTransactions() : async Response<[Types.TxRecord]> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    #ok(Iter.toArray(state.transactions.vals()));
+  };
+
   // func setOutDateProposals() : async () {
   //   for ((uuid, proposal) in state.proposals.entries()) {
   //     if (proposal.status == #open and proposal.payload.endDate <= Time.now()) {
