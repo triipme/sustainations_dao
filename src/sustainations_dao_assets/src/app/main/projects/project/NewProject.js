@@ -139,7 +139,7 @@ function NewProduct() {
     } catch (error) {
       const message = {
         "NotAuthorized": "Please sign in!.",
-        "BalanceLow": "You need minimum 0.003 ICP to submit project.",
+        "BalanceLow": "You need minimum 0.00003 ICP to submit project.",
         "TransferFailure": "Can not transfer ICP."
       }[Object.keys(error)[0]] || 'Error! Please try again later!'
       dispatch(showMessage({ message }));
