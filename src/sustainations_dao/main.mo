@@ -85,6 +85,7 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
           timestamp = Time.now();
         };
         let result = state.userAgreements.put(caller, payload);
+        let receipt = await rewardUserAgreement(caller);
         #ok("Success!");
       };
       case (? _v) {
@@ -404,6 +405,23 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
             #returnVoteFee, ?proposal.uuid, bIndex
           );
         };
+      };
+    };
+  };
+
+  func rewardUserAgreement(uid : Principal) : async () {
+    let receipt = await refund(createProposalFee + transferFee, uid);
+    switch (receipt) {
+      case (#Err(error)) {
+        Debug.print(debug_show error);
+      };
+      case (#Ok(bIndex)) {
+        // record transaction
+        await recordTransaction(
+          Principal.fromActor(this), createProposalFee + transferFee,
+          Principal.fromActor(this), uid,
+          #awardUserAgreement, Principal.toText(uid), bIndex
+        );
       };
     };
   };
