@@ -69,11 +69,11 @@ function UserMenu(_props) {
         }}
       >
         <>
-          <MenuItem component={Link} to="/profile" onClick={userMenuClose} role="button">
+          <MenuItem component={Link} to={`/user-agreements/${user.principal}`} onClick={userMenuClose} role="button">
             <ListItemIcon className="min-w-40">
-              <FuseSvgIcon>account_circle_outlined</FuseSvgIcon>
+              <FuseSvgIcon>assignment_turned_in_outlined</FuseSvgIcon>
             </ListItemIcon>
-            <ListItemText primary="My Profile" />
+            <ListItemText primary="My Agreement" />
           </MenuItem>
           <MenuItem
             component={NavLink}
@@ -83,7 +83,7 @@ function UserMenu(_props) {
             }}
           >
             <ListItemIcon className="min-w-40">
-              <FuseSvgIcon>logout_outlined</FuseSvgIcon>
+              <FuseSvgIcon>exit_to_app_outlined</FuseSvgIcon>
             </ListItemIcon>
             <ListItemText primary="Sign out" />
           </MenuItem>

@@ -63,7 +63,7 @@ function ShowProject() {
       const message = {
         "NotAuthorized": "Please sign in!.",
         "NotFound": "Project is not found.",
-        "BalanceLow": "Not enough ICP in your account.",
+        "BalanceLow": "You need minimum 0.003 ICP to Invest in this project.",
         "TransferFailure": "Can not transfer ICP.",
         "ProposalIsNotOpened": "Project is not opened.",
         "AlreadyVoted": "You has been invested this project."

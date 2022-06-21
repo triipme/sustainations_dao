@@ -15,6 +15,10 @@ module {
     avatar : ?Text;
     role : Role;
   };
+  // User Agreement
+  public type UserAgreement = {
+    timestamp : Time.Time;
+  };
   // Proposal
   public type Proposal = {
     uuid : Text;

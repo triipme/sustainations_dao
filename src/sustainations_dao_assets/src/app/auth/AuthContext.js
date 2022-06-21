@@ -38,7 +38,7 @@ function AuthProvider({ children }) {
           depositAddress = result.ok.depositAddress;
         }
         dispatch(setUser({
-          role: settingsConfig.defaultAuth,
+          role: result.ok.agreement ? settingsConfig.defaultAuth : ['needAgreement'],
           actor,
           depositAddress,
           balance,

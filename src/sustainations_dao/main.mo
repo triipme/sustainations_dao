@@ -27,12 +27,14 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
   private stable var profiles : [(Principal, Types.Profile)] = [];
   private stable var proposals : [(Text, Types.Proposal)] = [];
   private stable var transactions : [(Text, Types.TxRecord)] = [];
+  private stable var userAgreements : [(Principal, Types.UserAgreement)] = [];
 
   system func preupgrade() {
     Debug.print("Begin preupgrade");
     profiles := Iter.toArray(state.profiles.entries());
     proposals := Iter.toArray(state.proposals.entries());
     transactions := Iter.toArray(state.transactions.entries());
+    userAgreements := Iter.toArray(state.userAgreements.entries());
     Debug.print("End preupgrade");
   };
 
@@ -46,6 +48,9 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
     };
     for ((k, v) in Iter.fromArray(transactions)) {
       state.transactions.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(userAgreements)) {
+      state.userAgreements.put(k, v);
     };
     Debug.print("End postupgrade");
   };
@@ -65,6 +70,47 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
   public shared({ caller }) func getBalance() : async Ledger.Tokens {
     let accountId = Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(caller));
     await Ledger.account_balance({ account = accountId });
+  };
+
+  public shared({ caller }) func submitAgreement() : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    let agreement = state.userAgreements.get(caller);
+    switch (agreement) {
+      case null{
+        let payload = {
+          uid = Principal.toText(caller);
+          timestamp = Time.now();
+        };
+        let result = state.userAgreements.put(caller, payload);
+        #ok("Success!");
+      };
+      case (? _v) {
+        #ok("Success!");
+      };
+    }
+  };
+
+  type UserAgreementSerializer = {
+    address : Text;
+    timestamp : Time.Time;
+  };
+  public func getUserAgreement(uid : Text) : async Response<UserAgreementSerializer> {
+    let caller = Principal.fromText(uid);
+    switch (state.userAgreements.get(caller)) {
+      case null { #err(#NotFound) };
+      case (? agreement) {
+        let response = {
+          address = Account.toText(
+            Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(caller))
+          );
+          timestamp = agreement.timestamp;
+        };
+        #ok(response);
+      };
+    };
   };
 
   // Withdraw ICP from user's subaccount
@@ -102,6 +148,12 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
     #ok(amount)
   };
 
+  public shared({ caller }) func getSystemAddress() : async Text {
+    Account.toText(
+      Account.accountIdentifier(Principal.fromActor(this), Account.defaultSubaccount())
+    )
+  };
+
   // Return the account ID specific to this user's subaccount
   public shared({ caller }) func getDepositAddress() : async Text {
     Account.toText(
@@ -113,6 +165,7 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
     principal : Text;
     depositAddress : Text;
     balance : Nat64;
+    agreement : Bool;
   };
   public shared({ caller }) func getUserInfo() : async Response<UserInfo> {
     if (Principal.toText(caller) == "2vxsx-fae") {
@@ -120,12 +173,17 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
     };
     let accountId = Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(caller));
     let balance = await Ledger.account_balance({ account = accountId });
+    let agreement = switch (state.userAgreements.get(caller)) {
+      case (null) { false };
+      case _ {true};
+    };
     let userInfo = {
       principal = Principal.toText(caller);
       depositAddress = Account.toText(
         Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(caller))
       );
       balance = balance.e8s;
+      agreement;
     };
     #ok(userInfo);
   };

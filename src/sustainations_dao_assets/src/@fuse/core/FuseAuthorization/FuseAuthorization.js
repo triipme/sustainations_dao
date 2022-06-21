@@ -58,6 +58,9 @@ class FuseAuthorization extends Component {
     if (!userRole || userRole.length === 0) {
       setTimeout(() => history.push('/sign-in'), 0);
       loginRedirectUrl = pathname;
+    } else if (userRole.includes('needAgreement')) {
+      setTimeout(() => history.push('/user-agreement'), 0);
+      loginRedirectUrl = pathname;
     } else {
       /*
         User is member
