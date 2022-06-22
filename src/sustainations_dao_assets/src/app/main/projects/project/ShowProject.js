@@ -110,7 +110,7 @@ function ShowProject() {
             {voted ? 'Invested' : 'Invest'}
           </LoadingButton>
         </div>
-        <Card className="w-full py-32 mx-auto rounded-2xl shadow">
+        <Card className="w-full py-32 mx-auto rounded-2xl shadow break-all">
           <CardContent>
             {project.payload.categories.map((category, index) => (
               <ProjectCategory category={category} key={index} index={index} />
@@ -121,7 +121,7 @@ function ShowProject() {
               <span className="whitespace-nowrap leading-none">{`Location: ${project.payload.location}`}</span>
             </Typography>
             <Typography className="space-x-6 text-13">
-              <span className="whitespace-nowrap leading-none">{`Due Date: ${moment.unix(parseInt(project.payload.dueDate / BigInt(1e9))).format("dddd, MMMM Do YYYY, h:mm:ss a")}`}</span>
+              <span className="whitespace-nowrap leading-none">{`Due Date: ${moment.unix(parseInt(project.payload.dueDate / BigInt(1e9))).format("MM/DD/YYYY h:mm:ss a")}`}</span>
             </Typography>
             <Typography className="space-x-6 text-13">
               <span className="whitespace-nowrap leading-none">{`Funding Type: ${project.payload.fundingType}`}</span>
