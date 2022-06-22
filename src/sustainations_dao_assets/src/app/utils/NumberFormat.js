@@ -25,7 +25,7 @@ export function fData(number) {
 export function fICP(amount) {
   return (
     <NumberFormat
-      value={parseInt(amount) / 1e9} displayType={'text'}
+      value={parseInt(amount) / 1e8} displayType={'text'}
       thousandSeparator={true} suffix={' ICP'}
     />
   );

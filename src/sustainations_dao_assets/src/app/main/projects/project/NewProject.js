@@ -113,7 +113,7 @@ function NewProduct() {
       categories: data.categories,
       document: [data.document?.path || ''],
       fundingType: data.fundingType,
-      fundingAmount: parseFloat(data.fundingAmount) * 1e9,
+      fundingAmount: parseFloat(data.fundingAmount) * 1e8,
       discussionLink: [data.discussionLink],
       images: [data.images.map(image => image.path)],
       video: [data.video],
@@ -147,7 +147,7 @@ function NewProduct() {
       console.log(error);
       const message = {
         "NotAuthorized": "Please sign in!.",
-        "BalanceLow": "You need minimum 0.00004 ICP to submit project.",
+        "BalanceLow": "You need minimum 0.0004 ICP to submit project.",
         "TransferFailure": "Can not transfer ICP."
       }[Object.keys(error)[0]] || 'Error! Please try again later!'
       dispatch(showMessage({ message }));
