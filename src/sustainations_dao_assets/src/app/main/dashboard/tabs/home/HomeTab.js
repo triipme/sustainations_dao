@@ -19,7 +19,6 @@ function HomeTab() {
   const analysis = useAsyncMemo(async () => {
     setLoading(true);
     const result = await user.actor.dashboardAnalysis();
-    console.log('xxx', result)
     setLoading(false);
     return result.ok;
   }, [user]);
@@ -39,7 +38,7 @@ function HomeTab() {
   if (loading) {
     return (<FuseLoading />);
   }
-  console.log('duma', analysis);
+
   return (
     <motion.div
       className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-24 w-full min-w-0 p-24"

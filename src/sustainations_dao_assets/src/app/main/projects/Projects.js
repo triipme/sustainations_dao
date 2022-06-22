@@ -50,7 +50,6 @@ function Projects() {
         return proposals;
       }
       return _.filter(proposals, (item) => {
-        console.log('compare', selectedCategory, item, item.categories);
         if (selectedCategory !== 'all' && !_.includes(item.payload.categories, selectedCategory)) {
           return false;
         }

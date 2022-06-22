@@ -25,6 +25,7 @@ import ProjectAdditionalInfo from './steps/ProjectAdditionalInfo';
 import ProjectSubmit from './steps/ProjectSubmit';
 import { setS3Object } from "../../../hooks";
 import moment from 'moment';
+import MobileDetect from 'mobile-detect';
 
 const steps = ['Project overview', 'Project details', 'Additional info', 'Submit'];
 
@@ -38,6 +39,8 @@ const schema = yup.object().shape({
 });
 
 function NewProduct() {
+  const md = new MobileDetect(window.navigator.userAgent);
+  const isMobile = md.mobile();
   const [activeStep, setActiveStep] = useState(0);
   const [skipped, setSkipped] = useState(new Set());
   const [locations, setLocations] = useState([]);
@@ -62,7 +65,7 @@ function NewProduct() {
       images: [],
       video: '',
       termsConditions: false,
-      dueDate: '',
+      dueDate: moment(),
     },
     resolver: yupResolver(schema),
   });
@@ -177,10 +180,10 @@ function NewProduct() {
             Back to list
           </Button>
         </div>
-        <Card className="w-full p-64 mx-auto rounded-2xl shadow">
+        <Card className="w-full py-32 mx-auto rounded-2xl shadow">
           <CardContent>
             <FormProvider {...methods}>
-              <Stepper activeStep={activeStep}>
+              <Stepper activeStep={activeStep} alternativeLabel={isMobile}>
                 {steps.map((label, index) => {
                   const stepProps = {};
                   const labelProps = {};

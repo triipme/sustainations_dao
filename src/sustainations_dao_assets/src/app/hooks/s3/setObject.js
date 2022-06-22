@@ -15,7 +15,6 @@ const upload = async (item) => {
     };
     await s3Client.putObject(params).promise();
     const data = await s3Client.getObject(target).promise();
-    console.log(data);
     return data;
   } catch (err) {
     console.log("Error", err);

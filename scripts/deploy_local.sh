@@ -26,7 +26,7 @@ dfx canister call ledger account_balance '(record { account = '$(python3 -c 'pri
 
 ## === INSTALL FRONTEND / BACKEND ==== 
 
-dfx deploy sustainations_dao --argument "(opt principal \"$LEDGER_ID\")"
+dfx deploy sustainations_dao --argument "(\"$LEDGER_ID\")"
 dfx deploy frontend
 
 # dfx canister call sustainations_dao withdraw '(100000)'

@@ -16,9 +16,8 @@ import Account "./plugins/Account";
 import Types "types";
 import State "state";
 import Ledger "./plugins/Ledger";
-import Env "env";
 
-shared({caller = owner}) actor class SustainationsDAO() = this {
+shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
   let transferFee : Nat64 = 10_000;
   let createProposalFee : Nat64 = 20_000;
   let voteFee : Nat64 = 20_000;
@@ -61,7 +60,7 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
   };
 
   type Response<Ok> = Result.Result<Ok, Types.Error>;
-  private let ledger : Ledger.Interface = actor(Env.LEDGER_ID);
+  private let ledger : Ledger.Interface = actor(ledgerId);
 
   private func createUUID() : async Text {
     var ae = AsyncSource.Source();

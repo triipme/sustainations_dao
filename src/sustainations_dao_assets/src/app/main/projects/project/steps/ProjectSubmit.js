@@ -4,7 +4,7 @@ import Checkbox from '@mui/material/Checkbox';
 import TextField from '@mui/material/TextField';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { DesktopDateTimePicker } from '@mui/x-date-pickers/DesktopDateTimePicker';
 import { Controller, useFormContext } from 'react-hook-form';
 
 function ProjectSubmit() {
@@ -24,13 +24,17 @@ function ProjectSubmit() {
       <Controller
         control={control}
         name="dueDate"
-        render={({ field }) => (
+        render={({ field: { onChange, value } }) => (
           <LocalizationProvider dateAdapter={AdapterDateFns}>
-            <DateTimePicker
-              {...field}
+            <DesktopDateTimePicker
+              value={value}
               className="w-full"
               clearable
               showTodayButton
+              disablePast
+              onChange={(newValue) => {
+                onChange(newValue);
+              }}
               renderInput={(_props) => (
                 <TextField
                   className=""
