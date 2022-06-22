@@ -228,7 +228,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     // Check ledger for value
     let balance = await ledger.account_balance({ account = accountId });
     // Transfer to default subaccount
-    let receipt = if (balance.e8s >= amount + transferFee) {
+    let receipt = if (balance.e8s >= amount + transferFee + transferFee) {
       await ledger.transfer({
         memo: Nat64    = 0;
         from_subaccount = ?Account.principalToSubaccount(caller);
@@ -442,7 +442,8 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
   };
 
   func rewardUserAgreement(uid : Principal) : async () {
-    let receipt = await refund(createProposalFee + transferFee, uid);
+    let reward = createProposalFee + transferFee + transferFee;
+    let receipt = await refund(reward, uid);
     switch (receipt) {
       case (#Err(error)) {
         Debug.print(debug_show error);
@@ -450,7 +451,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
       case (#Ok(bIndex)) {
         // record transaction
         await recordTransaction(
-          Principal.fromActor(this), createProposalFee + transferFee,
+          Principal.fromActor(this), reward,
           Principal.fromActor(this), uid,
           #awardUserAgreement, ?Principal.toText(uid), bIndex
         );
