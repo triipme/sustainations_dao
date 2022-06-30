@@ -1,4 +1,15 @@
-import JungleScene from './scenes/JungleScene';
+import Scene1 from './scenes/scene1';
+import Scene2 from './scenes/scene2';
+import Scene3 from './scenes/scene3';
+import Scene4 from './scenes/scene4';
+import Scene5 from './scenes/scene5';
+import Scene6 from './scenes/scene6';
+import Scene7 from './scenes/scene7';
+import dfinityScene from './scenes/dfinityScene';
+import greetingScene from './scenes/greetingScene';
+import selectItemScene from './scenes/selectItemScene';
+
+
 import ReadyScene from './scenes/ReadyScene';
 
 const gameConfig = {
@@ -18,7 +29,7 @@ const gameConfig = {
       debug: false
     }
   },
-  scene: [ReadyScene, JungleScene]
+  scene: [dfinityScene, greetingScene, selectItemScene, Scene1, Scene2, Scene3, Scene4, Scene5, Scene6, Scene7]
 };
 
 export default gameConfig;
