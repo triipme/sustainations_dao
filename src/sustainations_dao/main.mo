@@ -10,6 +10,7 @@ import Principal "mo:base/Principal";
 import Result "mo:base/Result";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
+import Option "mo:base/Option";
 import UUID "mo:uuid/UUID";
 
 import Account "./plugins/Account";
@@ -28,6 +29,8 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
   private stable var proposals : [(Text, Types.Proposal)] = [];
   private stable var transactions : [(Text, Types.TxRecord)] = [];
   private stable var userAgreements : [(Principal, Types.UserAgreement)] = [];
+  private stable var characterClasses : [(Text, Types.CharacterClass)] = [];
+  private stable var characters : [(Text, Types.Character)] = [];
 
   system func preupgrade() {
     Debug.print("Begin preupgrade");
@@ -35,6 +38,8 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     proposals := Iter.toArray(state.proposals.entries());
     transactions := Iter.toArray(state.transactions.entries());
     userAgreements := Iter.toArray(state.userAgreements.entries());
+    characterClasses := Iter.toArray(state.characterClasses.entries());
+    characters := Iter.toArray(state.characters.entries());
     Debug.print("End preupgrade");
   };
 
@@ -51,6 +56,12 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     };
     for ((k, v) in Iter.fromArray(userAgreements)) {
       state.userAgreements.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(characterClasses)) {
+      state.characterClasses.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(characters)) {
+      state.characters.put(k, v);
     };
     Debug.print("End postupgrade");
   };
@@ -483,4 +494,138 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
       };
     };
   };
+
+  // Game
+  // Character Class
+  public shared({caller}) func createCharacterClass(characterClass : Types.CharacterClass) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let uuid : Text = await createUUID();
+    let readCharacterClass = state.characterClasses.get(uuid); 
+    switch (readCharacterClass) {
+      case (?V) { #err(#AlreadyExisting); };
+      case null {
+        let newCharacterClass : Types.CharacterClass = {
+          uuid = ?uuid;
+          name = characterClass.name;
+          specialAbility = characterClass.specialAbility;
+          description = characterClass.description;
+          baseMana = characterClass.baseMana;
+          baseHp = characterClass.baseHp;
+          baseMorale = characterClass.baseMorale;
+          baseStamina = characterClass.baseStamina;
+        };
+        let createdCharacterClass = state.characterClasses.put(uuid, newCharacterClass);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared query({caller}) func listCharacterClasses() : async Response<[(Text, Types.CharacterClass)]> {
+    var list : [(Text, Types.CharacterClass)] = [];
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    for((K,V) in state.characterClasses.entries()) {
+      list := Array.append<(Text, Types.CharacterClass)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+
+  // Character
+  public shared({caller}) func createCharacter(characterClassId : Text, characterName : Text) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let uuid : Text = await createUUID();
+    let readCharacterClass = state.characterClasses.get(characterClassId);
+    let readCharacter = state.characters.get(uuid);
+    switch (readCharacter) {
+      case (?V) { #err(#AlreadyExisting); };
+      case (null) {
+        switch (readCharacterClass) {
+          case null { #err(#NotFound) };
+          case (?characterClass) {
+            let newCharacter : Types.Character = {
+              uuid = ?uuid;
+              name = characterName;
+              level = 1;
+              currentExp = 0;
+              lvlUpExp = 100;
+              currentMana = characterClass.baseMana;
+              maxMana = characterClass.baseMana;
+              currentStamina = characterClass.baseStamina;
+              maxStamina = characterClass.baseStamina;
+              currentMorale = characterClass.baseMorale;
+              maxMorale = characterClass.baseMorale;
+              currentHp = characterClass.baseHp;
+              maxHp = characterClass.baseHp;
+              strength = 6;
+              luck = 0;
+              intelligent = 0;
+              vitality = 0;
+              classId = characterClass.uuid;
+              gearIds : ?[Text] = Option.get(null, ?[]);
+              materialIds : ?[Text] = Option.get(null, ?[]);
+            };
+            let createdCharacter = state.characters.put(uuid, newCharacter);
+            #ok("Success");
+          };
+        };
+      };
+    };
+  };
+
+  public shared query({caller}) func listCharacters() : async Response<[(Text, Types.Character)]> {
+    var list : [(Text, Types.Character)] = [];
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    for((K,V) in state.characters.entries()) {
+      list := Array.append<(Text, Types.Character)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+  
+  public shared({caller}) func updateCharacter(characterId : Text, character : Types.Character) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let readCharacter = state.characters.get(characterId);
+    switch (readCharacter) {
+      case null {
+        #err(#NotFound);
+      };
+      case (?character) {
+        let newCharacter : Types.Character = {
+          uuid = ?characterId;
+          name = character.name;
+          level = character.level;
+          currentExp = character.currentExp;
+          lvlUpExp = character.lvlUpExp;
+          currentMana = character.currentMana;
+          maxMana = character.maxMana;
+          currentStamina = character.currentStamina;
+          maxStamina = character.maxStamina;
+          currentMorale = character.currentMorale;
+          maxMorale = character.maxMorale;
+          currentHp = character.currentHp;
+          maxHp = character.maxHp;
+          strength = character.strength;
+          luck = character.luck;
+          intelligent = character.intelligent;
+          vitality = character.vitality;
+          classId = character.classId;
+          gearIds = character.gearIds;
+          materialIds = character.materialIds;
+        };
+        let updatedCharacter = state.characters.replace(characterId, newCharacter);
+        #ok("Success");
+      };
+    };
+  };
+
 };

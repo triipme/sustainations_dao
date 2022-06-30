@@ -7,11 +7,13 @@ import SignOutConfig from '../main/sign-out/SignOutConfig';
 import Error404Page from '../main/404/Error404Page';
 import ProjectDashboardAppConfig from '../main/dashboard/ProjectDashboardAppConfig';
 import ProjectsConfig from '../main/projects/ProjectsConfig';
+import GameConfig from '../main/game/GameConfig';
 import UserAgreementConfig from '../main/user-agreement/UserAgreementConfig';
 import UserAgreementsConfig from '../main/user-agreements/UserAgreementsConfig';
 const routeConfigs = [
   ProjectDashboardAppConfig,
   ProjectsConfig,
+  GameConfig,
   UserAgreementConfig,
   UserAgreementsConfig,
   SignOutConfig,

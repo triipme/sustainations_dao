@@ -184,6 +184,10 @@ module.exports = {
     new CompressionPlugin({
       test: /\.js(\?.*)?$/i
     }),
+    new webpack.DefinePlugin({
+      CANVAS_RENDERER: JSON.stringify(true),
+      WEBGL_RENDERER: JSON.stringify(true)
+    }),
   ],
   // proxy /api to port 8000 during development
   devServer: {

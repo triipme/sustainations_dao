@@ -79,6 +79,149 @@ module {
     fee : Nat64;
     timestamp : Time.Time;
   };
+
+  // Game
+  //--------------------- Character ---------------------//
+  public type Character = {
+    uuid : ?Text;
+    name : Text;
+    level : Int;
+    currentExp : Int;
+    lvlUpExp : Int;
+    currentMana : Int;
+    maxMana : Int;
+    currentStamina : Int;
+    maxStamina : Int;
+    currentMorale : Int;
+    maxMorale : Int;
+    currentHp : Int;
+    maxHp : Int;
+    strength : Int;
+    luck : Int;
+    intelligent : Int;
+    vitality : Int;
+    classId : ?Text;
+    gearIds : ?[Text];
+    materialIds : ?[Text];
+  };
+
+  public type CharacterClass = {
+    uuid : ?Text;
+    name : Text;
+    specialAbility : Text;
+    description : Text;
+    // characterIds : [Text]; 
+    baseMana : Int;
+    baseStamina : Int;
+    baseMorale : Int;
+    baseHp : Int;
+  };
+
+  public type CharacterTakeOption = {
+    characterId : Text;
+    optionId : Text;
+    pickUpTime : Time.Time;
+    currentMana : Int;
+    maxMana : Int;
+    currentStamina : Int;
+    maxStamina : Int;
+    currentMorale : Int;
+    maxMorale : Int;
+    currentHp : Int;
+    maxHp : Int;
+  };
+
+  //--------------------- Quest ---------------------//
+  public type Quest = {
+    uuid : ?Text;
+    name : Text;
+    price : Int;
+    description : Text;
+    images : ?[Text];
+    questItemIds : [Text];
+  };
+
+  public type QuestItem = {
+    uuid : ?Text;
+    name : Text;
+    strengthRequire : Float;
+    images : ?[Text];
+  };
+
+  //--------------------- Event ---------------------//
+  public type Event = {
+    uuid : ?Text;
+    questId : Text;
+    description : Text;
+    locationName : Text;
+    destinationName : Text;
+  };
+
+  //--------------------- Option ---------------------//
+  public type Option = {
+    uuid : ?Text;
+    description : Text;
+    eventId : ?Text;
+    requireItem : ?Text;
+    lossStamina : ?Int;
+    lossMorale : ?Int;
+    lossHP : ?Int;
+    lossMana : ?Int;
+    riskChance : ?Int;
+    riskLoss : ?Text;
+    lossOther : ?Text;
+    gainStamina : ?Int;
+    gainMorale : ?Int;
+    gainHP : ?Int;
+    gainMana : ?Int;
+    gainExp : ?Int;
+    luckyChance : ?Int;
+    gainByLuck : ?Int;
+    gainOther : ?Text;
+  };
+
+  //--------------------- Gear ---------------------//
+  public type Gear = {
+    uuid : ?Text;
+    name : Text;
+    description : Text;
+    images : [Text];
+  };
+
+  public type GearClass = {
+    uuid : ?Text;
+    name : Text;
+    description : Text;
+    mainStat : Int;
+  };
+
+  public type GearRarity = {
+    uuid : ?Text;
+    name : Text;
+    description : Text;
+    boxColor : Text;
+  };
+
+  public type GearSubstat = {
+    uuid : ?Text;
+    substat : Int;
+    description : Text;
+  };
+
+  //--------------------- Material ---------------------//
+  public type Material = {
+    uuid : ?Text;
+    name : Text;
+    description : Text;
+  };
+
+  //--------------------- Inventory ---------------------//
+  public type Inventory = {
+    uuid : ?Text;
+    name : Text;
+    size : Text;
+  };
+
   // Error codes
   public type Error = {
     #BalanceLow;

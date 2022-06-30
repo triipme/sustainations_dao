@@ -1,8 +1,8 @@
 import { lazy } from 'react';
 
 const Projects = lazy(() => import('./Projects'));
-const ShowProject = lazy(() => import('./Project/ShowProject'));
-const NewProject = lazy(() => import('./Project/NewProject'));
+const ShowProject = lazy(() => import('./project/ShowProject'));
+const NewProject = lazy(() => import('./project/NewProject'));
 
 const ProjectsConfig = {
   settings: {
