@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTheme } from '@mui/material/styles';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { lighten, darken } from '@mui/material/styles';
 import _ from 'lodash';
 import moment from 'moment';
@@ -22,6 +22,7 @@ import ShowProjectMedia from './ShowProjectMedia';
 
 function ShowProject() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const user = useSelector(selectUser);
   const routeParams = useParams();
   const { projectId } = routeParams;
@@ -33,12 +34,16 @@ function ShowProject() {
   useEffect(() => {
     async function loadData() {
       const res = await user.actor.getProposal(projectId);
-      if ('open' in res.ok.status) {
-        if (_.findIndex(res.ok.voters, (voter) => voter[0].uid.toText() === user.principal) !== -1) {
-          setVoted(true);
+      if ('ok' in res) {
+        if ('open' in res.ok.status) {
+          if (_.findIndex(res.ok.voters, (voter) => voter[0].uid.toText() === user.principal) !== -1) {
+            setVoted(true);
+          }
         }
+        setProject(res.ok);
+      } else {
+        navigate('404')
       }
-      setProject(res.ok);
     }
     loadData();
   }, [projectId, user]);

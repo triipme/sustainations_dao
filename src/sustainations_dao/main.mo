@@ -332,8 +332,10 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
-    let result = state.proposals.get(uuid);
-    return Result.fromOption(result, #NotFound);
+    switch (state.proposals.get(uuid)) {
+      case null { #err(#NotFound); };
+      case (? proposal) { #ok(proposal); };
+    };
   };
 
   public shared({ caller }) func destroyProposal(uuid : Text) : async Response<Text> {

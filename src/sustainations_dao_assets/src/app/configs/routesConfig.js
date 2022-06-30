@@ -9,11 +9,13 @@ import ProjectDashboardAppConfig from '../main/dashboard/ProjectDashboardAppConf
 import ProjectsConfig from '../main/projects/ProjectsConfig';
 import UserAgreementConfig from '../main/user-agreement/UserAgreementConfig';
 import UserAgreementsConfig from '../main/user-agreements/UserAgreementsConfig';
+import MetaverseConfig from '../main/metaverse/MetaverseConfig';
 const routeConfigs = [
   ProjectDashboardAppConfig,
   ProjectsConfig,
   UserAgreementConfig,
   UserAgreementsConfig,
+  MetaverseConfig,
   SignOutConfig,
   SignInConfig,
 ];

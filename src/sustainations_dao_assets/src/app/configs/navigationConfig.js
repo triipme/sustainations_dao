@@ -30,9 +30,7 @@ const navigationConfig = [
     translate: 'Metaverse',
     type: 'item',
     icon: 'public_outlined',
-    url: 'https://3r6bs-jyaaa-aaaal-aaaba-cai.ic0.app/metaverse',
-    target: '_blank',
-    external: true,
+    url: 'metaverse',
   },
 ];
 

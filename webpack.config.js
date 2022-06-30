@@ -129,6 +129,10 @@ module.exports = {
       {
         test: /\.(css|scss|sass)$/i,
         use: ["style-loader", "css-loader", "sass-loader", 'postcss-loader']
+      },
+      {
+        test: [/\.vert$/, /\.frag$/],
+        use: "raw-loader"
       }
     ]
   },
