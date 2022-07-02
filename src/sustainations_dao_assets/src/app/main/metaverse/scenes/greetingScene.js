@@ -14,11 +14,14 @@ class greetingScene extends Phaser.Scene {
     
     create() {
         this.background = this.add.image(0, 0, 'bg').setOrigin(0);
-        this.selectArea = this.add.image(850, 750, 'selectArea')
-            .setInteractive()
-            .on('pointerdown', () => {
-                this.scene.transition({target: 'selectItemScene', duration: 0 });
-            });
+        // this.selectArea = this.add.image(850, 750, 'selectArea')
+        //     .setInteractive()
+        //     .on('pointerdown', () => {
+        //         this.scene.transition({target: 'selectItemScene', duration: 0 });
+        //     });
+        this.input.on('pointerdown', () => {
+            this.scene.transition({target: 'selectItemScene', duration: 0 });
+        });
     }
 
 }
