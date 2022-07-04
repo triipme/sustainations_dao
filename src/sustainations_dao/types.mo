@@ -87,19 +87,20 @@ module {
     name : Text;
     level : Int;
     currentExp : Int;
-    lvlUpExp : Int;
-    currentMana : Int;
-    maxMana : Int;
-    currentStamina : Int;
-    maxStamina : Int;
-    currentMorale : Int;
-    maxMorale : Int;
-    currentHp : Int;
-    maxHp : Int;
+    levelUpExp : Int;
+    status : ?Text;
     strength : Int;
-    luck : Int;
     intelligent : Int;
     vitality : Int;
+    luck : Int;
+    currentHp : Float;
+    maxHp : Float;
+    currentMana : Float;
+    maxMana : Float;
+    currentStamina : Float;
+    maxStamina : Float;
+    currentMorale : Float;
+    maxMorale : Float;
     classId : ?Text;
     gearIds : ?[Text];
     materialIds : ?[Text];
@@ -110,25 +111,28 @@ module {
     name : Text;
     specialAbility : Text;
     description : Text;
-    // characterIds : [Text]; 
-    baseMana : Int;
-    baseStamina : Int;
-    baseMorale : Int;
-    baseHp : Int;
+    baseStrength : Int;
+    baseIntelligence : Int;
+    baseVitality : Int;
+    baseLuck : Int;
+    baseHp : Float;
+    baseMana : Float;
+    baseStamina : Float;
+    baseMorale : Float;
   };
 
-  public type CharacterTakeOption = {
+  public type CharacterTakeChoice = {
     characterId : Text;
-    optionId : Text;
+    choiceId : Text;
     pickUpTime : Time.Time;
-    currentMana : Int;
-    maxMana : Int;
-    currentStamina : Int;
-    maxStamina : Int;
-    currentMorale : Int;
-    maxMorale : Int;
-    currentHp : Int;
-    maxHp : Int;
+    currentHp : Float;
+    maxHp : Float;
+    currentMana : Float;
+    maxMana : Float;
+    currentStamina : Float;
+    maxStamina : Float;
+    currentMorale : Float;
+    maxMorale : Float;
   };
 
   //--------------------- Quest ---------------------//
@@ -138,7 +142,6 @@ module {
     price : Int;
     description : Text;
     images : ?[Text];
-    questItemIds : [Text];
   };
 
   public type QuestItem = {
@@ -146,6 +149,12 @@ module {
     name : Text;
     strengthRequire : Float;
     images : ?[Text];
+  };
+
+  public type QuestItemForQuest = {
+    uuid : ?Text;
+    questItemId : Text;
+    questId : Text;
   };
 
   //--------------------- Event ---------------------//
@@ -158,26 +167,26 @@ module {
   };
 
   //--------------------- Option ---------------------//
-  public type Option = {
+  public type Choice = {
     uuid : ?Text;
+    eventId : Text;
     description : Text;
-    eventId : ?Text;
-    requireItem : ?Text;
-    lossStamina : ?Int;
-    lossMorale : ?Int;
-    lossHP : ?Int;
-    lossMana : ?Int;
-    riskChance : ?Int;
-    riskLoss : ?Text;
-    lossOther : ?Text;
-    gainStamina : ?Int;
-    gainMorale : ?Int;
-    gainHP : ?Int;
-    gainMana : ?Int;
-    gainExp : ?Int;
-    luckyChance : ?Int;
-    gainByLuck : ?Int;
-    gainOther : ?Text;
+    requireItem : Text;
+    lossHP : Float;
+    lossMana : Float;
+    lossStamina : Float;
+    lossMorale : Float;
+    riskChance : Float;
+    riskLost : Text;
+    lossOther : Text;
+    gainExp : Int;
+    gainHP : Float;
+    gainStamina : Float;
+    gainMorale : Float;
+    gainMana : Float;
+    luckyChance : Float;
+    gainByLuck : Float;
+    gainOther : Float;
   };
 
   //--------------------- Gear ---------------------//
@@ -186,6 +195,9 @@ module {
     name : Text;
     description : Text;
     images : [Text];
+    gearClassId : Text;
+    gearRarity : Text;
+    substatIds : ?[Text];
   };
 
   public type GearClass = {
@@ -219,7 +231,7 @@ module {
   public type Inventory = {
     uuid : ?Text;
     name : Text;
-    size : Text;
+    size : Int;
   };
 
   // Error codes

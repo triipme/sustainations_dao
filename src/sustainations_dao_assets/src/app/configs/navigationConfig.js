@@ -25,12 +25,12 @@ const navigationConfig = [
     url: 'projects',
   },
   {
-    id: 'game',
-    title: 'Game',
-    translate: 'Game',
+    id: 'metaverse',
+    title: 'Metaverse',
+    translate: 'Metaverse',
     type: 'item',
     icon: 'public_outlined',
-    url: 'game',
+    url: 'metaverse',
   },
 ];
 
