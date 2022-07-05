@@ -9,7 +9,14 @@ class selectItemScene extends Phaser.Scene {
         super('selectItemScene');
     }
 
+    clearCache() {
+        const textures_list = ["bg", "text", 'selectArea', 'locationDetail'];
+        for (const index in textures_list){
+            this.textures.remove(textures_list[index]);
+        }
+    }
     preload() {
+        this.clearCache();
         this.load.image("startBtn", startBtn);
         this.load.image("item", item);
         this.load.image("selectItemsText", selectItemsText);

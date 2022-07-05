@@ -6,14 +6,14 @@ import Scene5 from './scenes/scene5';
 import Scene6 from './scenes/scene6';
 import Scene7 from './scenes/scene7';
 import dfinityScene from './scenes/dfinityScene';
-import greetingScene from './scenes/greetingScene';
 import selectItemScene from './scenes/selectItemScene';
-
-
-import ReadyScene from './scenes/ReadyScene';
+import menuScene from './scenes/menuScene';
+import selectMap from './scenes/selectMap';
+import thanks from './scenes/thanks';
 
 const gameConfig = {
-  type: Phaser.AUTO,
+  type: Phaser.CANVAS,
+  antialias: true,
   parent: 'sustainations-game',
   scale: {
     width: 1920,
@@ -29,7 +29,7 @@ const gameConfig = {
       debug: false
     }
   },
-  scene: [dfinityScene, greetingScene, selectItemScene, Scene1, Scene2, Scene3, Scene4, Scene5, Scene6, Scene7]
+  scene: [dfinityScene, menuScene, selectMap, selectItemScene, Scene1, Scene2, Scene3, Scene4, Scene5, Scene6, Scene7, thanks]
 };
 
 export default gameConfig;

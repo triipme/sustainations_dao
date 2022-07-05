@@ -16,7 +16,7 @@ class dfinityScene extends Phaser.Scene {
     create() {
         this.add.image(0, 0, 'bg1').setOrigin(0,0);
         this.time.addEvent({ delay: 4000, callback: () => {this.add.image(0, 0, 'bg2').setOrigin(0,0);}, callbackScope: this });
-        this.time.addEvent({ delay: 8000, callback: () => {this.scene.transition({target: 'greetingScene', duration: 0 })}, callbackScope: this });
+        this.time.addEvent({ delay: 8000, callback: () => {this.scene.transition({target: 'menuScene', duration: 0 })}, callbackScope: this });
     }
 
 }

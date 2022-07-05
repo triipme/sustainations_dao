@@ -8,8 +8,8 @@ const bg3 = 'metaverse/scenes/Scene3/PNG/front-01.png';
 const obstacle = 'metaverse/scenes/Scene3/PNG/obstacle-01-shortened.png';
 
 const utility = 'metaverse/status_utility.png';
-const selectAction = 'metaverse/selectAction.png';
-const btnBlank = 'metaverse/btn-blank.png';
+const selectAction = 'metaverse/scenes/background_menu.png';
+const btnBlank = 'metaverse/scenes/selection.png';
 
 export default class Scene3 extends Phaser.Scene {
     constructor() {
@@ -41,7 +41,7 @@ export default class Scene3 extends Phaser.Scene {
         this.load.image("background3", bg3);
         this.load.image("utility", utility);
         this.load.image("selectAction", selectAction);
-        this.load.image("btnBlank", btnBlank);
+        this.load.spritesheet('btnBlank', btnBlank, { frameWidth: 1102, frameHeight: 88});
         this.load.image("obstacle", obstacle);
     }
 
@@ -51,6 +51,16 @@ export default class Scene3 extends Phaser.Scene {
         this.veil.setVisible(true);
         this.selectAction.setVisible(true);
         this.option1.setVisible(true);
+    }
+
+    triggerContinue(){
+        this.veil.setVisible(false);
+        this.selectAction.setVisible(false);
+        this.option1.setVisible(false);
+        this.option1.text.setVisible(false);
+        this.isInteracting = false;
+        this.isInteracted = true;
+        this.player.play('running-anims');
     }
 
 
@@ -80,8 +90,6 @@ export default class Scene3 extends Phaser.Scene {
         this.player.setBounce(0.25);
         this.player.setCollideWorldBounds(false);
         this.physics.add.collider(this.player, platforms);
-
-
 
         this.anims.create({
             key: "running-anims",
@@ -119,25 +127,29 @@ export default class Scene3 extends Phaser.Scene {
         this.veil.fillStyle('0x000000', 0.2);
         this.veil.fillRect(0,0, gameConfig.scale.width, gameConfig.scale.height);
         this.selectAction = this.add.image(0, 0, 'selectAction').setOrigin(0,0);
-        this.option1 = this.add.image(gameConfig.scale.width/2, gameConfig.scale.height/2 -100, 'btnBlank').setScale(1.3);
-        this.option1.setInteractive();
 
         this.veil.setScrollFactor(0);
         this.veil.setVisible(false);
         this.selectAction.setScrollFactor(0);
         this.selectAction.setVisible(false);
+
+
+
+        this.option1 = this.add.sprite(gameConfig.scale.width/2, gameConfig.scale.height/2 -100, 'btnBlank');
+        this.option1.text = this.add.text(gameConfig.scale.width/2, gameConfig.scale.height/2 -100, "...", { fill: '#fff', align: 'center', fontSize: '30px' })
+            .setScrollFactor(0).setVisible(false).setOrigin(0.5);
+        this.option1.setInteractive();
         this.option1.setScrollFactor(0);
         this.option1.setVisible(false);
-
-
+        this.option1.on('pointerover', () => {
+            this.option1.setFrame(1);
+        });
+        this.option1.on('pointerout', () => {
+            this.option1.setFrame(0);
+        });
         this.option1.on('pointerdown', () => {
-            this.veil.setVisible(false);
-            this.selectAction.setVisible(false);
-            this.option1.setVisible(false);
-            this.isInteracting = false;
-            this.isInteracted = true;
-
-            this.player.play('running-anims');
+            this.triggerContinue();
+            // this.obstacle.setVisible(false);
         });
     }
 
