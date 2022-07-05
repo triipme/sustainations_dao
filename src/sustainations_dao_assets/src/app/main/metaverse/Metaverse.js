@@ -1,5 +1,5 @@
 import gameConfig from "./GameConfig";
-import { Link } from 'react-router-dom';
+import { Link } from "react-router-dom";
 
 class Metaverse extends React.Component {
   componentDidMount() {
@@ -16,12 +16,12 @@ class Metaverse extends React.Component {
         <div id="sustainations-game"></div>
         <div className="w-full max-w-3xl text-center">
           <Link className="block font-normal mt-48" to="/">
-              Back to Dashboard
+            Back to Dashboard
           </Link>
         </div>
       </div>
-    )
+    );
   }
-};
+}
 
 export default Metaverse;
