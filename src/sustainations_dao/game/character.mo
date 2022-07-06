@@ -31,25 +31,25 @@ module Character {
     let createdCharacter = state.characters.put(uuid, newCharacter);
   };
 
-  public func update(characterId : Text, character : Types.Character, state : State.State) {
-   let newCharacter : Types.Character = {
+  public func update(characterId : Text, character : Types.Character, eventOption : Types.EventOption, totalStrength : Float, state : State.State) {
+    let newCharacter : Types.Character = {
       uuid = ?characterId;
       name = character.name;
       level = character.level;
-      currentExp = character.currentExp;
+      currentExp = character.currentExp + eventOption.gainExp;
       levelUpExp = character.levelUpExp;
       status = character.status;
-      strength = character.strength;
+      strength = character.strength - totalStrength;
       intelligent = character.intelligent;
       vitality = character.vitality;
       luck = character.luck;
-      currentHp = character.currentHp;
+      currentHp = character.currentHp + Option.get(?eventOption.lossHP, eventOption.gainHP);
       maxHp = character.maxHp;
-      currentMana = character.currentMana;
+      currentMana = character.currentMana + Option.get(?eventOption.lossMana, eventOption.gainMana);
       maxMana = character.maxMana;
-      currentStamina = character.currentStamina;
+      currentStamina = character.currentStamina + Option.get(?eventOption.lossStamina, eventOption.gainStamina);
       maxStamina = character.maxStamina;
-      currentMorale = character.currentMorale;
+      currentMorale = character.currentMorale + Option.get(?eventOption.lossMorale, eventOption.gainMorale);
       maxMorale = character.maxMorale;
       classId = character.classId;
       gearIds = character.gearIds;
@@ -58,4 +58,3 @@ module Character {
     let updatedCharacter = state.characters.replace(characterId, newCharacter);
   };
 }
-

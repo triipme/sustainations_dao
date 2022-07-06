@@ -89,7 +89,7 @@ module {
     currentExp : Int;
     levelUpExp : Int;
     status : ?Text;
-    strength : Int;
+    strength : Float;
     intelligent : Int;
     vitality : Int;
     luck : Int;
@@ -121,9 +121,9 @@ module {
     baseMorale : Float;
   };
 
-  public type CharacterTakeChoice = {
+  public type CharacterTakeOption = {
     characterId : Text;
-    choiceId : Text;
+    optionId : Text;
     pickUpTime : Time.Time;
     currentHp : Float;
     maxHp : Float;
@@ -166,19 +166,19 @@ module {
     destinationName : Text;
   };
 
-  //--------------------- Option ---------------------//
-  public type Choice = {
+  //--------------------- Event Option ---------------------//
+  public type EventOption = {
     uuid : ?Text;
     eventId : Text;
     description : Text;
-    requireItem : Text;
+    requireItemIds : [Text];
     lossHP : Float;
     lossMana : Float;
     lossStamina : Float;
     lossMorale : Float;
     riskChance : Float;
-    riskLost : Text;
-    lossOther : Text;
+    riskLost : ?Text;
+    lossOther : ?Text;
     gainExp : Int;
     gainHP : Float;
     gainStamina : Float;
