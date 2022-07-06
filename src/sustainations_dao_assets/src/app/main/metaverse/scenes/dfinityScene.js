@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 const bg1 = 'metaverse/loading/loading1.png';
 const bg2 = 'metaverse/loading/loading2.png';
+const loadingScreen = 'metaverse/loading/LoadingScreen.png';
 
 class dfinityScene extends Phaser.Scene {
     constructor() {
@@ -11,6 +12,7 @@ class dfinityScene extends Phaser.Scene {
     preload() {
         this.load.image('bg1', bg1);
         this.load.image('bg2', bg2);
+        this.load.image('loadingScreen', loadingScreen);
     }
     
     create() {

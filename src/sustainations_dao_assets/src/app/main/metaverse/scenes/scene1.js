@@ -34,6 +34,9 @@ export default class Scene1 extends Phaser.Scene {
     }
 
     preload() {
+        //loading screen
+        this.add.image(0,0, 'loadingScreen').setOrigin(0);
+        //Preload
         this.isInteracting = false;
         this.isInteracted = false;
         this.load.spritesheet("hero-running", heroRunningSprite, {

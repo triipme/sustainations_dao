@@ -25,6 +25,9 @@ export default class Scene7 extends Phaser.Scene {
     }
 
     preload() {
+        //loading screen
+        this.add.image(0,0, 'loadingScreen').setOrigin(0);
+        //Preload
         this.clearSceneCache();
         this.isInteracting = false;
         this.isInteracted = false;
