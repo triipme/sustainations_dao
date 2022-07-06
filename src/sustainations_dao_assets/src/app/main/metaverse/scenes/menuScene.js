@@ -101,9 +101,7 @@ class menuScene extends Phaser.Scene {
             this.departure_btn.setFrame(0);
         });
         this.departure_btn.on('pointerdown', () => {
-
-            //departure button onClick logic here!!!!
-            
+            window.open('/', '_self');
         });
     }
 

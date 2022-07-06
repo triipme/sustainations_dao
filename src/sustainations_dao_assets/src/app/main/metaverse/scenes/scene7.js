@@ -6,8 +6,6 @@ const bg1 = 'metaverse/scenes/Scene7/PNG/back-01.png';
 const bg2 = 'metaverse/scenes/Scene7/PNG/mid-01.png';
 const bg3 = 'metaverse/scenes/Scene7/PNG/front-01.png';
 const obstacle = 'metaverse/scenes/Scene7/PNG/obstacle-01.png';
-
-const utility = 'metaverse/status_utility.png';
 const selectAction = 'metaverse/scenes/background_menu.png';
 const btnBlank = 'metaverse/scenes/selection.png';
 
@@ -22,7 +20,6 @@ export default class Scene7 extends Phaser.Scene {
         this.textures.remove('background2');
         this.textures.remove('background3');
         this.textures.remove('selectAction');
-        this.textures.remove('utility');
         this.textures.remove('btnBlank');
         this.textures.remove('obstacle');
     }
@@ -39,7 +36,6 @@ export default class Scene7 extends Phaser.Scene {
         this.load.image("background1", bg1);
         this.load.image("background2", bg2);
         this.load.image("background3", bg3);
-        this.load.image("utility", utility);
         this.load.image("selectAction", selectAction);
         this.load.spritesheet('btnBlank', btnBlank, { frameWidth: 1102, frameHeight: 88});
         this.load.image("obstacle", obstacle);
@@ -113,10 +109,18 @@ export default class Scene7 extends Phaser.Scene {
         this.bg_3.setOrigin(0, 0);
         this.bg_3.setScrollFactor(0);
 
-        //utility
-        this.utility = this.add.tileSprite(50, 0, 575, 964, "utility");
-        this.utility.setOrigin(0, 0);
-        this.utility.setScrollFactor(0);
+        //UI
+        this.add.image(20, 40, "UI_NameCard").setOrigin(0).setScrollFactor(0).setScale(0.95);
+        this.add.image(370, 40, "UI_HP").setOrigin(0).setScrollFactor(0).setScale(0.95);
+        this.add.image(720, 40, "UI_Mana").setOrigin(0).setScrollFactor(0).setScale(0.95);
+        this.add.image(1070, 40, "UI_Stamina").setOrigin(0).setScrollFactor(0).setScale(0.95);
+        this.add.image(1420, 40, "UI_Morale").setOrigin(0).setScrollFactor(0).setScale(0.95);
+        this.add.image(80, 830, "UI_Utility").setOrigin(0).setScrollFactor(0);
+        this.add.image(1780, 74, "BtnExit").setOrigin(0).setScrollFactor(0).setScale(0.7)
+            .setInteractive()
+            .on('pointerdown', () => {
+                window.open('/', '_self');
+            });
 
         //mycam
         this.myCam = this.cameras.main;

@@ -6,22 +6,29 @@ const bg1 = 'metaverse/scenes/Scene1/PNG/Back-01.png';
 const bg2 = 'metaverse/scenes/Scene1/PNG/Mid-01.png';
 const bg3 = 'metaverse/scenes/Scene1/PNG/Front-01.png';
 const obstacle = 'metaverse/scenes/Scene1/PNG/obstacle-01-shortened.png';
-
-const utility = 'metaverse/status_utility.png';
 const selectAction = 'metaverse/scenes/background_menu.png';
 const btnBlank = 'metaverse/scenes/selection.png';
+
+const BtnExit = 'metaverse/scenes/UI_exit.png'
+const UI_HP = 'metaverse/scenes/UI-HP.png'
+const UI_Mana = 'metaverse/scenes/UI-mana.png'
+const UI_Morale = 'metaverse/scenes/UI-morale.png'
+const UI_Stamina = 'metaverse/scenes/UI-stamina.png'
+const UI_NameCard = 'metaverse/scenes/UI-namecard.png'
+const UI_Utility = 'metaverse/scenes/UI-utility.png'
+
 
 export default class Scene1 extends Phaser.Scene {
     constructor() {
         super('Scene1');
     }
+    
     clearSceneCache(){
         this.textures.remove('ground');
         this.textures.remove('background1');
         this.textures.remove('background2');
         this.textures.remove('background3');
         this.textures.remove('selectAction');
-        this.textures.remove('utility');
         this.textures.remove('btnBlank');
         this.textures.remove('obstacle');
     }
@@ -37,10 +44,18 @@ export default class Scene1 extends Phaser.Scene {
         this.load.image("background1", bg1);
         this.load.image("background2", bg2);
         this.load.image("background3", bg3);
-        this.load.image("utility", utility);
         this.load.image("selectAction", selectAction);
         this.load.spritesheet('btnBlank', btnBlank, { frameWidth: 1102, frameHeight: 88});
         this.load.image("obstacle", obstacle);
+
+        //UI -- One time load
+        this.load.image("BtnExit", BtnExit);
+        this.load.image("UI_HP", UI_HP);
+        this.load.image("UI_Mana", UI_Mana);
+        this.load.image("UI_Morale", UI_Morale);
+        this.load.image("UI_Stamina", UI_Stamina);
+        this.load.image("UI_NameCard", UI_NameCard);
+        this.load.image("UI_Utility", UI_Utility);
     }
 
     //defined function
@@ -112,10 +127,19 @@ export default class Scene1 extends Phaser.Scene {
         this.bg_3.setOrigin(0, 0);
         this.bg_3.setScrollFactor(0);
 
-        //utility
-        this.utility = this.add.tileSprite(50, 0, 575, 964, "utility");
-        this.utility.setOrigin(0, 0);
-        this.utility.setScrollFactor(0);
+        //UI
+        this.add.image(20, 40, "UI_NameCard").setOrigin(0).setScrollFactor(0).setScale(0.95);
+        this.add.image(370, 40, "UI_HP").setOrigin(0).setScrollFactor(0).setScale(0.95);
+        this.add.image(720, 40, "UI_Mana").setOrigin(0).setScrollFactor(0).setScale(0.95);
+        this.add.image(1070, 40, "UI_Stamina").setOrigin(0).setScrollFactor(0).setScale(0.95);
+        this.add.image(1420, 40, "UI_Morale").setOrigin(0).setScrollFactor(0).setScale(0.95);
+        this.add.image(80, 830, "UI_Utility").setOrigin(0).setScrollFactor(0);
+        this.add.image(1780, 74, "BtnExit").setOrigin(0).setScrollFactor(0).setScale(0.7)
+            .setInteractive()
+            .on('pointerdown', () => {
+                window.open('/', '_self');
+            });
+
 
         //mycam
         this.myCam = this.cameras.main;
