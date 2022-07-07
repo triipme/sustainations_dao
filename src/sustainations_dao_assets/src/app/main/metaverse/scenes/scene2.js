@@ -95,8 +95,8 @@ export default class Scene2 extends Phaser.Scene {
 
         this.anims.create({
             key: "running-anims",
-            frames: this.anims.generateFrameNumbers("hero-running", {start: 1, end: 4}),
-            frameRate: 4,
+            frames: this.anims.generateFrameNumbers("hero-running", {start: 1, end: 8}),
+            frameRate: 8,
             repeat: -1
         });
 
