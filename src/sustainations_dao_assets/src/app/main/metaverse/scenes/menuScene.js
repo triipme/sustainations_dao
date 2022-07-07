@@ -14,10 +14,7 @@ class menuScene extends Phaser.Scene {
   }
 
   clearCache() {
-    const textures_list = ["bg1", "bg2"];
-    for (const index in textures_list) {
-      this.textures.remove(textures_list[index]);
-    }
+    this.textures.remove('bg1')
   }
 
   preload() {
@@ -109,7 +106,7 @@ class menuScene extends Phaser.Scene {
       this.departure_btn.setFrame(0);
     });
     this.departure_btn.on("pointerdown", () => {
-      window.open('/', '_self');
+      window.location.href = "/";
     });
   }
 }
