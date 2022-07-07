@@ -3,7 +3,7 @@ const Back = () => {
     <div
       style={{
         position: "fixed",
-        right: 90,
+        right: 35,
         top: 20,
         zIndex: 10000,
       }}
@@ -13,7 +13,7 @@ const Back = () => {
           cursor: "pointer",
         }}
         onClick={() => {
-          window.location.replace("/");
+          window.location.replace("/metaverse");
         }}
         width={70}
         height={40}

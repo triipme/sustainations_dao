@@ -5,7 +5,6 @@ import Scene4 from './scenes/scene4';
 import Scene5 from './scenes/scene5';
 import Scene6 from './scenes/scene6';
 import Scene7 from './scenes/scene7';
-import dfinityScene from './scenes/dfinityScene';
 import selectItemScene from './scenes/selectItemScene';
 import menuScene from './scenes/menuScene';
 import selectMap from './scenes/selectMap';
@@ -29,7 +28,7 @@ const gameConfig = {
       debug: false
     }
   },
-  scene: [dfinityScene, menuScene, selectMap, selectItemScene, Scene1, Scene2, Scene3, Scene4, Scene5, Scene6, Scene7, thanks]
+  scene: [menuScene, selectMap, selectItemScene, Scene1, Scene2, Scene3, Scene4, Scene5, Scene6, Scene7, thanks]
 };
 
 export default gameConfig;

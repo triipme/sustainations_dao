@@ -1,4 +1,6 @@
 import Phaser from "phaser";
+const logo = 'images/logo/sustainations-logo.png';
+const loading = 'metaverse/loading/loading-text.png';
 const bg = "metaverse/menu/background.png";
 const welcomeText = "metaverse/menu/welcome.png";
 const introduction_btn = "metaverse/menu/introduction.png";
@@ -13,11 +15,9 @@ class menuScene extends Phaser.Scene {
     super("menuScene");
   }
 
-  clearCache() {
-    this.textures.remove('bg1')
-  }
-
   preload() {
+    this.load.image('logo', logo);
+    this.load.image('loading', loading);
     this.load.image("bg", bg);
     this.load.image("welcomeText", welcomeText);
     this.load.image("cs_noti", cs_noti);
@@ -32,7 +32,6 @@ class menuScene extends Phaser.Scene {
   }
 
   create() {
-    this.clearCache();
     this.background = this.add.image(0, 0, "bg").setOrigin(0);
     this.welcomeText = this.add.image(960, 210, "welcomeText");
     this.noti = this.add.image(100, 100, "cs_noti").setOrigin(0).setVisible(false).setScale(0.7);
