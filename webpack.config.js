@@ -80,6 +80,7 @@ module.exports = {
       'app/configs': path.resolve(__dirname, './src/sustainations_dao_assets/src/app/configs'),
       'app/theme-layouts': path.resolve(__dirname, './src/sustainations_dao_assets/src/app/theme-layouts'),
       'app/AppContext': path.resolve(__dirname, './src/sustainations_dao_assets/src/app/AppContext'),
+      'react': path.resolve('./node_modules/react'),
     },
   },
   output: {

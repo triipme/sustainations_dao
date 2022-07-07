@@ -1,5 +1,5 @@
 import gameConfig from "./GameConfig";
-import { Link } from 'react-router-dom';
+import { Link } from "react-router-dom";
 
 class Metaverse extends React.Component {
   componentDidMount() {
@@ -22,6 +22,6 @@ class Metaverse extends React.Component {
       // </div>
     )
   }
-};
+}
 
 export default Metaverse;

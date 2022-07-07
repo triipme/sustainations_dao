@@ -15,6 +15,7 @@ src/sustainations_dao/env.mo
 
 # frontend code
 node_modules/
+package-lock.json
 dist/
 .env
 src/declarations
