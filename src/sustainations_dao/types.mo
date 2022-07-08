@@ -89,12 +89,12 @@ module {
     currentExp : Int;
     levelUpExp : Int;
     status : ?Text;
-    strength : Float;
-    intelligent : Int;
+    strength : Int;
+    intelligence : Int;
     vitality : Int;
     luck : Int;
-    currentHp : Float;
-    maxHp : Float;
+    currentHP : Float;
+    maxHP : Float;
     currentMana : Float;
     maxMana : Float;
     currentStamina : Float;
@@ -115,7 +115,7 @@ module {
     baseIntelligence : Int;
     baseVitality : Int;
     baseLuck : Int;
-    baseHp : Float;
+    baseHP : Float;
     baseMana : Float;
     baseStamina : Float;
     baseMorale : Float;
@@ -123,10 +123,10 @@ module {
 
   public type CharacterTakeOption = {
     characterId : Text;
-    optionId : Text;
+    optionId : ?Text;
     pickUpTime : Time.Time;
-    currentHp : Float;
-    maxHp : Float;
+    currentHP : Float;
+    maxHP : Float;
     currentMana : Float;
     maxMana : Float;
     currentStamina : Float;
@@ -147,7 +147,7 @@ module {
   public type QuestItem = {
     uuid : ?Text;
     name : Text;
-    strengthRequire : Float;
+    strengthRequire : Int;
     images : ?[Text];
   };
 
@@ -172,21 +172,21 @@ module {
     eventId : Text;
     description : Text;
     requireItemIds : [Text];
-    lossHP : Float;
-    lossMana : Float;
-    lossStamina : Float;
-    lossMorale : Float;
-    riskChance : Float;
+    lossHP : ?Float;
+    lossMana : ?Float;
+    lossStamina : ?Float;
+    lossMorale : ?Float;
+    riskChance : ?Float;
     riskLost : ?Text;
     lossOther : ?Text;
     gainExp : Int;
-    gainHP : Float;
-    gainStamina : Float;
-    gainMorale : Float;
-    gainMana : Float;
-    luckyChance : Float;
-    gainByLuck : Float;
-    gainOther : Float;
+    gainHP : ?Float;
+    gainStamina : ?Float;
+    gainMorale : ?Float;
+    gainMana : ?Float;
+    luckyChance : ?Float;
+    gainByLuck : ?Float;
+    gainOther : ?Float;
   };
 
   //--------------------- Gear ---------------------//

@@ -657,7 +657,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
   };
 
   public shared query({caller}) func readCharacter(uuid : Text) : async Response<(Types.Character)>{
-   if (Principal.toText(caller) == "2vxsx-fae") {
+    if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
     let rsCharacter = state.characters.get(uuid);
@@ -683,12 +683,12 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     let rsEventOption = state.eventOptions.get(eventOptionId);
     switch (rsCharacter) {
       case null { #err(#NotFound); };
-      case (?V) {
+      case (?character) {
         switch (rsEventOption) {
           case null { #err(#NotFound); };
-          case (?E) {
-            var totalStrength : Float = 0;
-            for(requireItemId in E.requireItemIds.vals()) {
+          case (?eventOption) {
+            var totalStrength : Int = 0;
+            for(requireItemId in eventOption.requireItemIds.vals()) {
               let rsQuestItem = state.questItems.get(requireItemId);
               switch (rsQuestItem) {
                 case null { totalStrength := 0; };
@@ -697,7 +697,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
                 };
               };
             }; 
-            Character.update(uuid, character, E, totalStrength, state);
+            Character.update(uuid, character, eventOption, totalStrength, state);
             #ok("Success");
           };
         };
@@ -989,13 +989,26 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     return Result.fromOption(rsEventOption, #NotFound);
   };
 
-  public shared query({caller}) func listEventOptions() : async Response<[(Text, Types.EventOption)]> {
+  public shared query({caller}) func listAllEventOptions() : async Response<[(Text, Types.EventOption)]> {
     var list : [(Text, Types.EventOption)] = [];
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
     for((K,V) in state.eventOptions.entries()) {
       list := Array.append<(Text, Types.EventOption)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+
+  public shared query({caller}) func listEventOptionsByEvent(eventId : Text) : async Response<[(Text, Types.EventOption)]> {
+    var list : [(Text, Types.EventOption)] = [];
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    for((K,V) in state.eventOptions.entries()) {
+      if(V.eventId == eventId){
+        list := Array.append<(Text, Types.EventOption)>(list, [(K, V)]);
+      };
     };
     #ok((list));
   };

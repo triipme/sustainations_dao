@@ -12,7 +12,7 @@ module CharacterClass {
       baseIntelligence = characterClass.baseIntelligence;
       baseVitality = characterClass.baseVitality;
       baseLuck = characterClass.baseLuck;
-      baseHp = characterClass.baseHp;
+      baseHP = characterClass.baseHP;
       baseMana = characterClass.baseMana;
       baseStamina = characterClass.baseStamina;
       baseMorale = characterClass.baseMorale;
@@ -30,7 +30,7 @@ module CharacterClass {
       baseIntelligence = characterClass.baseIntelligence;
       baseVitality = characterClass.baseVitality;
       baseLuck = characterClass.baseLuck;
-      baseHp = characterClass.baseHp;
+      baseHP = characterClass.baseHP;
       baseMana = characterClass.baseMana;
       baseStamina = characterClass.baseStamina;
       baseMorale = characterClass.baseMorale;

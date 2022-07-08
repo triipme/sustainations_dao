@@ -15,8 +15,8 @@ module EventOption {
       lossStamina = eventOption.lossStamina;
       lossMorale = eventOption.lossMorale;
       riskChance = eventOption.riskChance;
-      riskLost = Option.get(null, ?"");
-      lossOther = Option.get(null, ?"");
+      riskLost = eventOption.riskLost;
+      lossOther = eventOption.lossOther;
       gainExp = eventOption.gainExp;
       gainHP = eventOption.gainHP;
       gainStamina = eventOption.gainStamina;

@@ -136,7 +136,7 @@ export default class Scene1 extends Phaser.Scene {
     
     //option1
     this.option1 = this.add.image(gameConfig.scale.width/2, gameConfig.scale.height/2 -100, 'btnBlank').setScale(1.3);
-    this.option1.text = this.add.text(gameConfig.scale.width/2, gameConfig.scale.height/2 -100, result[0].description, { fill: '#000000', align: 'center', fontSize: '30px' })
+    this.option1.text = this.add.text(gameConfig.scale.width/2, gameConfig.scale.height/2 -100, "Cut the bushes to open the way with a Knife", { fill: '#000000', align: 'center', fontSize: '30px' })
       .setScrollFactor(0).setVisible(false).setOrigin(0.5);
     this.option1.setInteractive();
     this.option1.setScrollFactor(0);
@@ -149,7 +149,7 @@ export default class Scene1 extends Phaser.Scene {
 
     //option2
     this.option2 = this.add.image(gameConfig.scale.width/2, gameConfig.scale.height/2, 'btnBlank').setScale(1.3);
-    this.option2.text = this.add.text(gameConfig.scale.width/2, gameConfig.scale.height/2, result[1].description, { fill: '#000000', align: 'center', fontSize: '30px' })
+    this.option2.text = this.add.text(gameConfig.scale.width/2, gameConfig.scale.height/2, "Try to make your way through the bushes without chopping them down", { fill: '#000000', align: 'center', fontSize: '30px' })
       .setScrollFactor(0).setVisible(false).setOrigin(0.5);
     this.option2.setInteractive();
     this.option2.setScrollFactor(0);
