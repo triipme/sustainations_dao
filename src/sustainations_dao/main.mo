@@ -153,7 +153,9 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
   };
 
   public shared({ caller }) func getBalance() : async Ledger.ICP {
-    let accountId = Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(caller));
+    let accountId = Account.accountIdentifier(
+      Principal.fromActor(this), Account.principalToSubaccount(caller)
+    );
     await ledger.account_balance({ account = accountId });
   };
 
@@ -162,7 +164,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     await ledger.account_balance({ account = accountId });
   };
 
-  public func getSystemAddress() : async Text {
+  public query func getSystemAddress() : async Text {
     Account.toText(
       Account.accountIdentifier(Principal.fromActor(this), Account.defaultSubaccount())
     )
@@ -174,7 +176,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     openProposal: Int;
     investedProposal: Int;
   };
-  public func dashboardAnalysis() : async Response<DashboardAnalysis> {
+  public query func dashboardAnalysis() : async Response<DashboardAnalysis> {
     let userAgreement = state.userAgreements.size();
     var overdueProposal = 0;
     var openProposal = 0;
@@ -220,7 +222,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     address : Text;
     timestamp : Time.Time;
   };
-  public func getUserAgreement(uid : Text) : async Response<UserAgreementSerializer> {
+  public query func getUserAgreement(uid : Text) : async Response<UserAgreementSerializer> {
     let caller = Principal.fromText(uid);
     switch (state.userAgreements.get(caller)) {
       case null { #err(#NotFound) };
@@ -272,7 +274,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
   };
 
   // Return the account ID specific to this user's subaccount
-  public shared({ caller }) func getDepositAddress() : async Text {
+  public query({ caller }) func getDepositAddress() : async Text {
     Account.toText(
       Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(caller))
     );
@@ -363,7 +365,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     categories : [Text];
     fundingTypes : [Text];
   };
-  public func proposalStaticAttributes() : async ProposalStaticAttributes {
+  public query func proposalStaticAttributes() : async ProposalStaticAttributes {
     {
       categories = Types.proposalCategories;
       fundingTypes = Types.proposalFundingTypes;
@@ -401,7 +403,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     };
   };
 
-  public shared({ caller }) func listProposals() : async Response<[Types.Proposal]> {
+  public query({ caller }) func listProposals() : async Response<[Types.Proposal]> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
@@ -412,7 +414,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     #ok(list);
   };
 
-  public shared({caller}) func getProposal(uuid : Text) : async Response<Types.Proposal> {
+  public query({caller}) func getProposal(uuid : Text) : async Response<Types.Proposal> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
@@ -545,7 +547,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     };
   };
 
-  public shared({ caller }) func getTransactions() : async Response<[Types.TxRecord]> {
+  public query({ caller }) func getTransactions() : async Response<[Types.TxRecord]> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
