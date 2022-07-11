@@ -6,28 +6,33 @@ const bg1 = 'metaverse/scenes/Scene2/PNG/back-01.png';
 const bg2 = 'metaverse/scenes/Scene2/PNG/mid-01-shortened.png';
 const bg3 = 'metaverse/scenes/Scene2/PNG/front-01.png';
 const obstacle = 'metaverse/scenes/Scene2/PNG/obstacle-01-shortened.png';
-
-const utility = 'metaverse/status_utility.png';
-const selectAction = 'metaverse/selectAction.png';
-const btnBlank = 'metaverse/btn-blank.png';
+const selectAction = 'metaverse/scenes/background_menu.png';
+const btnBlank = 'metaverse/scenes/selection.png';
 
 export default class Scene2 extends Phaser.Scene {
   constructor() {
     super('Scene2');
   }
-
+  
   clearSceneCache(){
     this.textures.remove('ground');
     this.textures.remove('background1');
     this.textures.remove('background2');
     this.textures.remove('background3');
     this.textures.remove('selectAction');
-    this.textures.remove('utility');
     this.textures.remove('btnBlank');
     this.textures.remove('obstacle');
   }
 
   preload() {
+    //loading screen
+    this.add.image(
+      gameConfig.scale.width/2, gameConfig.scale.height/2, 'logo'
+    ).setOrigin(0.5, 0.5).setScale(0.5);
+    this.add.image(
+      gameConfig.scale.width/2, gameConfig.scale.height/2 + 250, 'loading'
+    ).setOrigin(0.5, 0.5).setScale(1.4);
+    //Preload
     this.clearSceneCache();
     this.isInteracting = false;
     this.isInteracted = false;
@@ -39,9 +44,8 @@ export default class Scene2 extends Phaser.Scene {
     this.load.image("background1", bg1);
     this.load.image("background2", bg2);
     this.load.image("background3", bg3);
-    this.load.image("utility", utility);
     this.load.image("selectAction", selectAction);
-    this.load.image("btnBlank", btnBlank);
+    this.load.spritesheet('btnBlank', btnBlank, { frameWidth: 1102, frameHeight: 88});
     this.load.image("obstacle", obstacle);
   }
 
@@ -53,9 +57,17 @@ export default class Scene2 extends Phaser.Scene {
     this.option1.setVisible(true);
   }
 
+  triggerContinue(){
+    this.veil.setVisible(false);
+    this.selectAction.setVisible(false);
+    this.option1.setVisible(false);
+    this.option1.text.setVisible(false);
+    this.isInteracting = false;
+    this.isInteracted = true;
+    this.player.play('running-anims');
+  }
 
   create() {
-
     //background
     this.bg_1 = this.add.tileSprite(0, 0, gameConfig.scale.width, gameConfig.scale.height, "background1");
     this.bg_1.setOrigin(0, 0);
@@ -81,12 +93,10 @@ export default class Scene2 extends Phaser.Scene {
     this.player.setCollideWorldBounds(false);
     this.physics.add.collider(this.player, platforms);
 
-
-
     this.anims.create({
       key: "running-anims",
-      frames: this.anims.generateFrameNumbers("hero-running", {start: 1, end: 4}),
-      frameRate: 4,
+      frames: this.anims.generateFrameNumbers("hero-running", {start: 1, end: 8}),
+      frameRate: 8,
       repeat: -1
     });
 
@@ -103,41 +113,50 @@ export default class Scene2 extends Phaser.Scene {
     this.bg_3.setOrigin(0, 0);
     this.bg_3.setScrollFactor(0);
 
-    //utility
-    this.utility = this.add.tileSprite(50, 0, 575, 964, "utility");
-    this.utility.setOrigin(0, 0);
-    this.utility.setScrollFactor(0);
+    //UI
+    this.add.image(20, 40, "UI_NameCard").setOrigin(0).setScrollFactor(0).setScale(0.95);
+    this.add.image(370, 40, "UI_HP").setOrigin(0).setScrollFactor(0).setScale(0.95);
+    this.add.image(720, 40, "UI_Mana").setOrigin(0).setScrollFactor(0).setScale(0.95);
+    this.add.image(1070, 40, "UI_Stamina").setOrigin(0).setScrollFactor(0).setScale(0.95);
+    this.add.image(1420, 40, "UI_Morale").setOrigin(0).setScrollFactor(0).setScale(0.95);
+    this.add.image(80, 830, "UI_Utility").setOrigin(0).setScrollFactor(0);
+    this.add.image(1780, 74, "BtnExit").setOrigin(0).setScrollFactor(0).setScale(0.7)
+      .setInteractive()
+      .on('pointerdown', () => {
+        window.open('/', '_self');
+      });
 
     //mycam
     this.myCam = this.cameras.main;
     this.myCam.setBounds(0, 0, gameConfig.scale.width*4, gameConfig.scale.height); //furthest distance the cam is allowed to move
     this.myCam.startFollow(this.player);
 
-
     //pause screen
     this.veil = this.add.graphics({x: 0, y: 0});
     this.veil.fillStyle('0x000000', 0.2);
     this.veil.fillRect(0,0, gameConfig.scale.width, gameConfig.scale.height);
     this.selectAction = this.add.image(0, 0, 'selectAction').setOrigin(0,0);
-    this.option1 = this.add.image(gameConfig.scale.width/2, gameConfig.scale.height/2 -100, 'btnBlank').setScale(1.3);
-    this.option1.setInteractive();
 
     this.veil.setScrollFactor(0);
     this.veil.setVisible(false);
     this.selectAction.setScrollFactor(0);
     this.selectAction.setVisible(false);
+
+    this.option1 = this.add.sprite(gameConfig.scale.width/2, gameConfig.scale.height/2 -100, 'btnBlank');
+    this.option1.text = this.add.text(gameConfig.scale.width/2, gameConfig.scale.height/2 -100, "...", { fill: '#fff', align: 'center', fontSize: '30px' })
+      .setScrollFactor(0).setVisible(false).setOrigin(0.5);
+    this.option1.setInteractive();
     this.option1.setScrollFactor(0);
     this.option1.setVisible(false);
-
-
+    this.option1.on('pointerover', () => {
+      this.option1.setFrame(1);
+    });
+    this.option1.on('pointerout', () => {
+      this.option1.setFrame(0);
+    });
     this.option1.on('pointerdown', () => {
-      this.veil.setVisible(false);
-      this.selectAction.setVisible(false);
-      this.option1.setVisible(false);
-      this.isInteracting = false;
-      this.isInteracted = true;
-
-      this.player.play('running-anims');
+      this.triggerContinue();
+      // this.obstacle.setVisible(false);
     });
   }
 
@@ -149,7 +168,6 @@ export default class Scene2 extends Phaser.Scene {
 
     if (this.player.x > 1920*4) {
       this.scene.start('Scene3');
-
     }
 
     if (this.player.x > 1920*4 -1000 && this.isInteracted == false) {

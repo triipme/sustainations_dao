@@ -1,35 +1,52 @@
-import { lazy } from 'react';
+import { lazy } from "react";
+import BootCamp from "./bootcamp/BootCamp";
+import Land from "./land/Land";
+import MetaverseLayout from "./MetaverseLayout";
 
-const Metaverse = lazy(() => import('./Metaverse'));
+const Metaverse = lazy(() => import("./Metaverse"));
 
 const MetaverseConfig = {
   settings: {
     layout: {
       config: {
         navbar: {
-          display: false,
+          display: false
         },
         toolbar: {
-          display: false,
+          display: false
         },
         footer: {
-          display: false,
+          display: false
         },
         leftSidePanel: {
-          display: false,
+          display: false
         },
         rightSidePanel: {
-          display: false,
-        },
-      },
-    },
+          display: false
+        }
+      }
+    }
   },
   routes: [
     {
-      path: 'metaverse',
-      element: <Metaverse />,
-    },
-  ],
+      path: "metaverse",
+      element: <MetaverseLayout />,
+      children: [
+        {
+          index: true,
+          element: <Metaverse />
+        },
+        {
+          path: "bootcamp",
+          element: <BootCamp />
+        },
+        {
+          path: "land",
+          element: <Land />
+        }
+      ]
+    }
+  ]
 };
 
 export default MetaverseConfig;

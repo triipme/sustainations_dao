@@ -44,7 +44,7 @@ function AuthProvider({ children }) {
           balance,
           principal,
         }));
-        dispatch(showMessage({ message: "Signed in" }));
+        // dispatch(showMessage({ message: "Signed in" }));
         setWaitAuthCheck(false);
       } else {
         pass();
