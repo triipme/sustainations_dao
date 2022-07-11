@@ -89,7 +89,7 @@ module {
     currentExp : Int;
     levelUpExp : Int;
     status : ?Text;
-    strength : Int;
+    strength : Float;
     intelligence : Int;
     vitality : Int;
     luck : Int;
@@ -111,7 +111,7 @@ module {
     name : Text;
     specialAbility : Text;
     description : Text;
-    baseStrength : Int;
+    baseStrength : Float;
     baseIntelligence : Int;
     baseVitality : Int;
     baseLuck : Int;
@@ -147,7 +147,7 @@ module {
   public type QuestItem = {
     uuid : ?Text;
     name : Text;
-    strengthRequire : Int;
+    strengthRequire : Float;
     images : ?[Text];
   };
 

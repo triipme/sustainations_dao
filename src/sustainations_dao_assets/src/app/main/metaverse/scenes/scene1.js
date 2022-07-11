@@ -162,18 +162,11 @@ export default class Scene1 extends Phaser.Scene {
     this.veil.setVisible(false);
     this.selectAction.setScrollFactor(0);
     this.selectAction.setVisible(false);
-<<<<<<< HEAD
-    
-    //option1
-    this.option1 = this.add.image(gameConfig.scale.width/2, gameConfig.scale.height/2 -100, 'btnBlank').setScale(1.3);
-    this.option1.text = this.add.text(gameConfig.scale.width/2, gameConfig.scale.height/2 -100, "Cut the bushes to open the way with a Knife", { fill: '#000000', align: 'center', fontSize: '30px' })
-=======
 
     //option1
     // this.option1 = this.add.image(gameConfig.scale.width/2, gameConfig.scale.height/2 -100, 'btnBlank').setScale(1.3);
     this.option1 = this.add.sprite(gameConfig.scale.width/2, gameConfig.scale.height/2 -100, 'btnBlank');
     this.option1.text = this.add.text(gameConfig.scale.width/2, gameConfig.scale.height/2 -100, "Cut the bush down to open the way", { fill: '#fff', align: 'center', fontSize: '30px' })
->>>>>>> 5d496caf5ee7b55dc4202ba61eb9e8647c59e37f
       .setScrollFactor(0).setVisible(false).setOrigin(0.5);
     this.option1.setInteractive();
     this.option1.setScrollFactor(0);
@@ -191,14 +184,9 @@ export default class Scene1 extends Phaser.Scene {
     });
 
     //option2
-<<<<<<< HEAD
-    this.option2 = this.add.image(gameConfig.scale.width/2, gameConfig.scale.height/2, 'btnBlank').setScale(1.3);
-    this.option2.text = this.add.text(gameConfig.scale.width/2, gameConfig.scale.height/2, "Try to make your way through the bushes without chopping them down", { fill: '#000000', align: 'center', fontSize: '30px' })
-=======
     // this.option2 = this.add.image(gameConfig.scale.width/2, gameConfig.scale.height/2, 'btnBlank').setScale(1.3);
     this.option2 = this.add.sprite(gameConfig.scale.width/2, gameConfig.scale.height/2, 'btnBlank');
     this.option2.text = this.add.text(gameConfig.scale.width/2, gameConfig.scale.height/2, "Find a way out without chopping the bush down", { fill: '#fff', align: 'center', fontSize: '30px' })
->>>>>>> 5d496caf5ee7b55dc4202ba61eb9e8647c59e37f
       .setScrollFactor(0).setVisible(false).setOrigin(0.5);
     this.option2.setInteractive();
     this.option2.setScrollFactor(0);

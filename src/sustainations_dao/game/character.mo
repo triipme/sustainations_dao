@@ -46,7 +46,7 @@ module Character {
     let createdCharacterTakeOption = state.characterTakeOptions.put(uuid, newCharacterTakeOption);
   };
 
-  public func update(characterId : Text, character : Types.Character, eventOption : Types.EventOption, totalStrength : Int, state : State.State) {
+  public func update(characterId : Text, character : Types.Character, eventOption : Types.EventOption, totalStrength : Float, state : State.State) {
     let newCharacter : Types.Character = {
       uuid = ?characterId;
       name = character.name;

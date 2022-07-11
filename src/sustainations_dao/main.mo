@@ -689,7 +689,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
         switch (rsEventOption) {
           case null { #err(#NotFound); };
           case (?eventOption) {
-            var totalStrength : Int = 0;
+            var totalStrength : Float = 0;
             for(requireItemId in eventOption.requireItemIds.vals()) {
               let rsQuestItem = state.questItems.get(requireItemId);
               switch (rsQuestItem) {
