@@ -4,6 +4,8 @@ import Nat "mo:base/Nat";
 import Nat64 "mo:base/Nat64";
 import List "mo:base/List";
 
+import MemoryCardEngineModel "models/MemoryCardEngine";
+
 module {
   // User Profile
   public type Role = {
@@ -114,4 +116,24 @@ module {
   public let proposalFundingTypes = [
     "100% Funded", "Partially Funded"
   ];
+
+  // Memory Card Engine
+  public type MemoryCardEngineSlug = MemoryCardEngineModel.Slug;
+  public type MemoryCardEngineStage = MemoryCardEngineModel.Stage;
+  public type MemoryCardEngineCard = MemoryCardEngineModel.Card;
+  public type MemoryCardEnginePlayer = MemoryCardEngineModel.Player;
+  public type MemoryCardEngineReward = MemoryCardEngineModel.Reward;
+  public type MemoryCardEnginePatternItemImport = {
+    gameId : Nat;
+    gameName : Text;
+    gameSlug : Text;
+    gameDescription : Text;
+    gameStatus : Bool;
+    stageId : Nat;
+    stageName : Text;
+    stageOrder : Nat;
+    cardId : Nat;
+    cardType : Text;
+    cardData : Text;
+  };
 };
