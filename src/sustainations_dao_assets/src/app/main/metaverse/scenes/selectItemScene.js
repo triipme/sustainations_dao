@@ -1,5 +1,4 @@
-import { useSelector } from 'react-redux';
-import { selectUser } from '../../../store/userSlice';
+import store from 'app/store';
 import Phaser from 'phaser';
 
 const startBtn = 'metaverse/startbtn.png';
@@ -22,28 +21,23 @@ class selectItemScene extends Phaser.Scene {
     this.load.image("startBtn", startBtn);
     this.load.image("item", item);
     this.load.image("selectItemsText", selectItemsText);
-
-    // Call API
-    const user = useSelector(selectUser);
-    // const loadQuestItems = async () => {
-    //   const result = await user.actor.loadQuestItemsForQuest();
-    //   if('ok' in result) {
-    //     this.questItems = result.ok;
-    //   };
-    // };
-    // loadQuestItems();
-
-    const readCharacter = async () => {
-      const result = await user.actor.readCharacter();
-      if('ok' in result) {
-        this.character = result.ok;
-      };
-    };
-    readCharacter();
   }
 
   create() {
-    console.log(this.character);
+    // const { user } = store.getState();
+    // const readCharacter = async () => {
+    //   const result = await user.actor.readCharacter();
+    //   console.log(result);
+    // }
+    // const listQuestItems = async () => {
+    //   const result = await user.actor.listQuestItemsForQuest();
+    //   console.log(result);
+    // }
+    // const character = await readCharacter();
+    // const items = await listQuestItems();
+    // console.log(items);
+    // console.log(character);
+
     //text
     this.add.image(960, 150, 'selectItemsText');
 

@@ -21,8 +21,8 @@ import Ledger "./plugins/Ledger";
 import CharacterClass "./game/characterClass";
 import Character "./game/character";
 import Quest "./game/quest";
+import Item "./game/item";
 import QuestItem "./game/questItem";
-import QuestItemForQuest "./game/questItemForQuest";
 import Event "./game/event";
 import EventOption "./game/eventOption";
 import Gear "./game/gear";
@@ -46,8 +46,8 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
   private stable var characters : [(Text, Types.Character)] = [];
   private stable var characterTakeOptions : [(Text, Types.CharacterTakeOption)] = [];
   private stable var quests : [(Text, Types.Quest)] = [];
-  private stable var questItems : [(Text, Types.QuestItem)] = [];
-  private stable var questItemForQuests : [(Text, Types.QuestItemForQuest)] = [];
+  private stable var items : [(Text, Types.Item)] = [];
+  private stable var questItems: [(Text, Types.QuestItem)] = [];
   private stable var events : [(Text, Types.Event)] = [];
   private stable var eventOptions : [(Text, Types.EventOption)] = [];
   private stable var gears : [(Text, Types.Gear)] = [];
@@ -67,8 +67,8 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     characters := Iter.toArray(state.characters.entries());
     characterTakeOptions := Iter.toArray(state.characterTakeOptions.entries());
     quests := Iter.toArray(state.quests.entries());
+    items := Iter.toArray(state.items.entries());
     questItems := Iter.toArray(state.questItems.entries());
-    questItemForQuests := Iter.toArray(state.questItemForQuests.entries());
     events := Iter.toArray(state.events.entries());
     eventOptions := Iter.toArray(state.eventOptions.entries());
     gears := Iter.toArray(state.gears.entries());
@@ -106,11 +106,11 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     for ((k, v) in Iter.fromArray(quests)) {
       state.quests.put(k, v);
     };
+    for ((k, v) in Iter.fromArray(items)) {
+      state.items.put(k, v);
+    };
     for ((k, v) in Iter.fromArray(questItems)) {
       state.questItems.put(k, v);
-    };
-    for ((k, v) in Iter.fromArray(questItemForQuests)) {
-      state.questItemForQuests.put(k, v);
     };
     for ((k, v) in Iter.fromArray(events)) {
       state.events.put(k, v);
@@ -691,8 +691,8 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
           case (?eventOption) {
             var totalStrength : Float = 0;
             for(requireItemId in eventOption.requireItemIds.vals()) {
-              let rsQuestItem = state.questItems.get(requireItemId);
-              switch (rsQuestItem) {
+              let rsItem = state.items.get(requireItemId);
+              switch (rsItem) {
                 case null { totalStrength := 0; };
                 case (?questItem) {
                   totalStrength := totalStrength + questItem.strengthRequire;
@@ -784,14 +784,77 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     };
   };
 
-  // Quest Item
+  // Item
+  public shared({caller}) func createItem(item: Types.Item) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let uuid : Text = await createUUID();
+    let rsItem = state.items.get(uuid);
+    switch (rsItem) {
+      case (?V) { #err(#NotFound); };
+      case null {
+        Item.create(uuid, item, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared query({caller}) func readItem(uuid : Text) : async Response<(Types.Item)>{
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsItem = state.items.get(uuid);
+    return Result.fromOption(rsItem, #NotFound);
+  };
+
+  public shared query({caller}) func listItems() : async Response<[(Text, Types.Item)]> {
+    var list : [(Text, Types.Item)] = [];
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    for((K,V) in state.items.entries()) {
+      list := Array.append<(Text, Types.Item)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+
+  public shared({caller}) func updateItem(uuid : Text, item: Types.Item) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsItem = state.items.get(uuid);
+    switch (rsItem) {
+      case null { #err(#NotFound); };
+      case (?V) {
+        Item.update(uuid, item, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared({caller}) func deleteItem(uuid : Text) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsItem = state.items.get(uuid);
+    switch (rsItem) {
+      case (null) { #err(#NotFound); };
+      case (?V) {
+        let deletedItem = state.items.delete(uuid);
+        #ok("Success");
+      };
+    };
+  };
+
+  // Quest Item 
   public shared({caller}) func createQuestItem(questItem: Types.QuestItem) : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
     let uuid : Text = await createUUID();
-    let rsQuestItem = state.questItems.get(uuid);
-    switch (rsQuestItem) {
+    let rsquestItem = state.questItems.get(uuid);
+    switch (rsquestItem) {
       case (?V) { #err(#NotFound); };
       case null {
         QuestItem.create(uuid, questItem, state);
@@ -800,21 +863,21 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     };
   };
 
-  public shared query({caller}) func readQuestItem(uuid : Text) : async Response<(Types.QuestItem)>{
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
-    };
-    let rsQuestItem = state.questItems.get(uuid);
-    return Result.fromOption(rsQuestItem, #NotFound);
-  };
-
-  public shared query({caller}) func listQuestItems() : async Response<[(Text, Types.QuestItem)]> {
-    var list : [(Text, Types.QuestItem)] = [];
+  public shared query({caller}) func listQuestItems(questId : Text) : async Response<[(Text, Types.Item)]> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
+    var list : [(Text, Types.Item)] = [];
     for((K,V) in state.questItems.entries()) {
-      list := Array.append<(Text, Types.QuestItem)>(list, [(K, V)]);
+      if(V.questId == questId){
+        let rsItem = state.items.get(V.itemId);
+        switch (rsItem) {
+          case null { () };
+          case (?item){
+            list := Array.append<(Text, Types.Item)>(list, [(V.itemId, item)]);
+          };
+        };
+      };
     };
     #ok((list));
   };
@@ -823,8 +886,8 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
-    let rsQuestItem = state.questItems.get(uuid);
-    switch (rsQuestItem) {
+    let rsquestItem = state.questItems.get(uuid);
+    switch (rsquestItem) {
       case null { #err(#NotFound); };
       case (?V) {
         QuestItem.update(uuid, questItem, state);
@@ -837,68 +900,11 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
-    let rsQuestItem = state.questItems.get(uuid);
-    switch (rsQuestItem) {
+    let rsquestItem = state.questItems.get(uuid);
+    switch (rsquestItem) {
       case (null) { #err(#NotFound); };
       case (?V) {
-        let deletedQuestItem = state.questItems.delete(uuid);
-        #ok("Success");
-      };
-    };
-  };
-
-  // Quest Item For Quest
-  public shared({caller}) func createQuestItemForQuest(questItemForQuest: Types.QuestItemForQuest) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
-    };
-    let uuid : Text = await createUUID();
-    let rsQuestItemForQuest = state.questItemForQuests.get(uuid);
-    switch (rsQuestItemForQuest) {
-      case (?V) { #err(#NotFound); };
-      case null {
-        QuestItemForQuest.create(uuid, questItemForQuest, state);
-        #ok("Success");
-      };
-    };
-  };
-
-  public shared({caller}) func loadQuestItemsForQuest(questId : Text) : async Response<[(Text, Types.QuestItemForQuest)]> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
-    };
-    var list : [(Text, Types.QuestItemForQuest)] = [];
-    for((K,V) in state.questItemForQuests.entries()) {
-      if(V.questId == questId){
-        list := Array.append<(Text, Types.QuestItemForQuest)>(list, [(K, V)]);
-      };
-    };
-    #ok((list));
-  };
-
-  public shared({caller}) func updateQuestItemForQuest(uuid : Text, questItemForQuest: Types.QuestItemForQuest) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
-    };
-    let rsQuestItemForQuest = state.questItems.get(uuid);
-    switch (rsQuestItemForQuest) {
-      case null { #err(#NotFound); };
-      case (?V) {
-        QuestItemForQuest.update(uuid, questItemForQuest, state);
-        #ok("Success");
-      };
-    };
-  };
-
-  public shared({caller}) func deleteQuestItemForQuest(uuid : Text) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
-    };
-    let rsQuestItemForQuest = state.questItemForQuests.get(uuid);
-    switch (rsQuestItemForQuest) {
-      case (null) { #err(#NotFound); };
-      case (?V) {
-        let deletedQuestItemForQuest = state.questItemForQuests.delete(uuid);
+        let deletedquestItem = state.questItems.delete(uuid);
         #ok("Success");
       };
     };

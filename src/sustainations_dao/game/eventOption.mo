@@ -4,9 +4,9 @@ import Types "../types";
 import State "../state";
 
 module EventOption {
-  public func create(uuid : Text, eventOption : Types.EventOption, state : State.State) {
+  public func getData(uuid : Text, eventOption : Types.EventOption) : Types.EventOption {
     let newEventOption : Types.EventOption = {
-      uuid = ?uuid;
+      uuid = uuid;
       eventId = eventOption.eventId;
       description = eventOption.description;
       requireItemIds = eventOption.requireItemIds;
@@ -26,31 +26,13 @@ module EventOption {
       gainByLuck = eventOption.gainByLuck;
       gainOther = eventOption.gainOther;
     };
-    let createdEventOption = state.eventOptions.put(uuid, newEventOption);
+    return newEventOption;
+  };
+  public func create(uuid : Text, eventOption : Types.EventOption, state : State.State) {
+    state.eventOptions.put(uuid, getData(uuid, eventOption));
   };
 
   public func update(uuid : Text, eventOption : Types.EventOption, state : State.State) {
-    let newEventOption : Types.EventOption = {
-      uuid = ?uuid;
-      eventId = eventOption.eventId;
-      description = eventOption.description;
-      requireItemIds = eventOption.requireItemIds;
-      lossHP = eventOption.lossHP;
-      lossMana = eventOption.lossMana;
-      lossStamina = eventOption.lossStamina;
-      lossMorale = eventOption.lossMorale;
-      riskChance = eventOption.riskChance;
-      riskLost = eventOption.riskLost;
-      lossOther = eventOption.lossOther;
-      gainExp = eventOption.gainExp;
-      gainHP = eventOption.gainHP;
-      gainStamina = eventOption.gainStamina;
-      gainMorale = eventOption.gainMorale;
-      gainMana = eventOption.gainMana;
-      luckyChance = eventOption.luckyChance;
-      gainByLuck = eventOption.gainByLuck;
-      gainOther = eventOption.gainOther;
-    };
-    let updatedEventOption = state.eventOptions.replace(uuid, newEventOption);
+    let updated = state.eventOptions.replace(uuid, getData(uuid, eventOption));
   };
 }

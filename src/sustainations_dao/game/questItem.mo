@@ -1,25 +1,22 @@
 import Option "mo:base/Option";
+
 import Types "../types";
 import State "../state";
 
 module QuestItem {
-  public func create(uuid : Text, questItem : Types.QuestItem, state : State.State) {
+  public func getData(questItem : Types.QuestItem) : Types.QuestItem {
     let newQuestItem : Types.QuestItem = {
-      uuid = ?uuid;
-      name = questItem.name;
-      strengthRequire = questItem.strengthRequire;
-      images : ?[Text] = Option.get(null, ?[]);
+      itemId = questItem.itemId;
+      questId = questItem.questId;
     };
-    let createdQuestItem = state.questItems.put(uuid, newQuestItem);
+    return newQuestItem;
   };
 
-  public func update(uuid : Text, questItem : Types.QuestItem, state : State.State) {
-    let newQuestItem : Types.QuestItem = {
-      uuid = ?uuid;
-      name = questItem.name;
-      strengthRequire = questItem.strengthRequire;
-      images = questItem.images;
-    };
-    let updatedQuestItem = state.questItems.replace(uuid, newQuestItem);
+  public func create(uuid : Text, questItem : Types.QuestItem, state : State.State) {
+    state.questItems.put(uuid, getData(questItem));
+  };
+
+  public func update(itemId : Text, questItem : Types.QuestItem, state : State.State) {
+    let updated = state.questItems.replace(itemId, getData(questItem));
   };
 }

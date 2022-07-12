@@ -4,22 +4,8 @@ import Types "../types";
 import State "../state";
 
 module Gear {
-  public func create(uuid : Text, gear : Types.Gear, state : State.State) {
+  public func getData(gear : Types.Gear) : Types.Gear {
     let newGear : Types.Gear = {
-      uuid = ?uuid;
-      name = gear.name;
-      description = gear.description;
-      images = gear.images;
-      gearClassId = gear.gearClassId;
-      gearRarity = gear.gearRarity;
-      substatIds : ?[Text] = Option.get(null, ?[]);
-    };
-    let createdGear = state.gears.put(uuid, newGear);
-  };
-
-  public func update(uuid : Text, gear : Types.Gear, state : State.State) {
-    let newGear : Types.Gear = {
-      uuid = ?uuid;
       name = gear.name;
       description = gear.description;
       images = gear.images;
@@ -27,6 +13,13 @@ module Gear {
       gearRarity = gear.gearRarity;
       substatIds = gear.substatIds;
     };
-    let updatedGear = state.gears.replace(uuid, newGear);
+    return newGear;
+  };
+  public func create(uuid : Text, gear : Types.Gear, state : State.State) {
+    state.gears.put(uuid, getData(gear));
+  };
+
+  public func update(uuid : Text, gear : Types.Gear, state : State.State) {
+    let updated = state.gears.replace(uuid, getData(gear));
   };
 }

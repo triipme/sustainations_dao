@@ -2,23 +2,20 @@ import Types "../types";
 import State "../state";
 
 module GearClass {
-  public func create(uuid : Text, gearClass : Types.GearClass, state : State.State) {
+  public func getData(gearClass : Types.GearClass) : Types.GearClass {
     let newGearClass : Types.GearClass = {
-      uuid = ?uuid;
       name = gearClass.name;
       description = gearClass.description;
       mainStat = gearClass.mainStat;
     };
-    let createdGearClass = state.gearClasses.put(uuid, newGearClass);
+    return newGearClass;
+  };
+
+  public func create(uuid : Text, gearClass : Types.GearClass, state : State.State) {
+    state.gearClasses.put(uuid, getData(gearClass));
   };
 
   public func update(uuid : Text, gearClass : Types.GearClass, state : State.State) {
-    let newGearClass : Types.GearClass = {
-      uuid = ?uuid;
-      name = gearClass.name;
-      description = gearClass.description;
-      mainStat = gearClass.mainStat;
-    };
-    let updatedGearClass = state.gearClasses.replace(uuid, newGearClass);
+    let updated = state.gearClasses.replace(uuid, getData(gearClass));
   };
 }

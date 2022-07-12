@@ -83,7 +83,6 @@ module {
   // Game
   //--------------------- Character ---------------------//
   public type Character = {
-    uuid : ?Text;
     name : Text;
     level : Int;
     currentExp : Int;
@@ -107,7 +106,7 @@ module {
   };
 
   public type CharacterClass = {
-    uuid : ?Text;
+    uuid : Text;
     name : Text;
     specialAbility : Text;
     description : Text;
@@ -123,7 +122,7 @@ module {
 
   public type CharacterTakeOption = {
     characterId : Text;
-    optionId : ?Text;
+    eventOptionId : ?Text;
     pickUpTime : Time.Time;
     currentHP : Float;
     maxHP : Float;
@@ -137,29 +136,25 @@ module {
 
   //--------------------- Quest ---------------------//
   public type Quest = {
-    uuid : ?Text;
     name : Text;
     price : Int;
     description : Text;
     images : ?[Text];
   };
 
-  public type QuestItem = {
-    uuid : ?Text;
+  public type Item = {
     name : Text;
     strengthRequire : Float;
     images : ?[Text];
   };
 
-  public type QuestItemForQuest = {
-    uuid : ?Text;
-    questItemId : Text;
+  public type QuestItem = {
+    itemId : Text;
     questId : Text;
   };
 
   //--------------------- Event ---------------------//
   public type Event = {
-    uuid : ?Text;
     questId : Text;
     description : Text;
     locationName : Text;
@@ -168,7 +163,7 @@ module {
 
   //--------------------- Event Option ---------------------//
   public type EventOption = {
-    uuid : ?Text;
+    uuid : Text;
     eventId : Text;
     description : Text;
     requireItemIds : [Text];
@@ -191,7 +186,6 @@ module {
 
   //--------------------- Gear ---------------------//
   public type Gear = {
-    uuid : ?Text;
     name : Text;
     description : Text;
     images : [Text];
@@ -201,35 +195,30 @@ module {
   };
 
   public type GearClass = {
-    uuid : ?Text;
     name : Text;
     description : Text;
     mainStat : Int;
   };
 
   public type GearRarity = {
-    uuid : ?Text;
     name : Text;
     description : Text;
     boxColor : Text;
   };
 
   public type GearSubstat = {
-    uuid : ?Text;
     substat : Int;
     description : Text;
   };
 
   //--------------------- Material ---------------------//
   public type Material = {
-    uuid : ?Text;
     name : Text;
     description : Text;
   };
 
   //--------------------- Inventory ---------------------//
   public type Inventory = {
-    uuid : ?Text;
     name : Text;
     size : Int;
   };
