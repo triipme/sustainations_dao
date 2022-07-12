@@ -13,25 +13,28 @@ export default class Scene3 extends Phaser.Scene {
   constructor() {
     super('Scene3');
   }
-
-  clearSceneCache(){
-    this.textures.remove('ground');
-    this.textures.remove('background1');
-    this.textures.remove('background2');
-    this.textures.remove('background3');
-    this.textures.remove('selectAction');
-    this.textures.remove('btnBlank');
-    this.textures.remove('obstacle');
+  clearSceneCache() {
+    const textures_list = ['ground', 'background1', 'background2', 
+      'background3', 'selectAction', 'btnBlank', 'obstacle'];
+    for (const index in textures_list){
+      this.textures.remove(textures_list[index]);
+    }
   }
 
   preload() {
     //loading screen
     this.add.image(
-      gameConfig.scale.width/2, gameConfig.scale.height/2, 'logo'
-    ).setOrigin(0.5, 0.5).setScale(0.5);
-    this.add.image(
-      gameConfig.scale.width/2, gameConfig.scale.height/2 + 250, 'loading'
-    ).setOrigin(0.5, 0.5).setScale(1.4);
+      gameConfig.scale.width/2, gameConfig.scale.height/2 - 50, 'logo'
+    ).setOrigin(0.5, 0.5).setScale(0.26);
+    this.anims.create({
+      key: 'loading-anims',
+      frames: this.anims.generateFrameNumbers("loading", {start: 0, end: 11}),
+      frameRate: 12,
+      repeat: -1
+    });
+    this.add.sprite(
+      gameConfig.scale.width/2, gameConfig.scale.height/2 + 150, "loading"
+    ).setScale(0.07).play('loading-anims');
     //Preload
     this.clearSceneCache();
     this.isInteracting = false;
@@ -54,20 +57,29 @@ export default class Scene3 extends Phaser.Scene {
     this.isInteracting = true;
     this.veil.setVisible(true);
     this.selectAction.setVisible(true);
-    this.option1.setVisible(true);
+    for (const idx in this.options){
+      this.options[idx].setVisible(true);
+      this.options[idx].text.setVisible(true);
+    }
   }
 
   triggerContinue(){
     this.veil.setVisible(false);
     this.selectAction.setVisible(false);
-    this.option1.setVisible(false);
-    this.option1.text.setVisible(false);
+    for (const idx in this.options){
+      this.options[idx].setVisible(false);
+      this.options[idx].text.setVisible(false);
+    }
     this.isInteracting = false;
     this.isInteracted = true;
     this.player.play('running-anims');
   }
-
   create() {
+    // add audios
+    this.hoverSound = this.sound.add('hoverSound');
+    this.clickSound = this.sound.add('clickSound');
+    this.ambientSound = this.sound.add('ambientSound', {loop: true});
+    this.ambientSound.play();
     //background
     this.bg_1 = this.add.tileSprite(0, 0, gameConfig.scale.width, gameConfig.scale.height, "background1");
     this.bg_1.setOrigin(0, 0);
@@ -123,7 +135,9 @@ export default class Scene3 extends Phaser.Scene {
     this.add.image(1780, 74, "BtnExit").setOrigin(0).setScrollFactor(0).setScale(0.7)
       .setInteractive()
       .on('pointerdown', () => {
-        window.open('/', '_self');
+        this.clickSound.play();
+        this.scene.start('menuScene');
+        this.ambientSound.stop();
       });
 
     //mycam
@@ -142,22 +156,26 @@ export default class Scene3 extends Phaser.Scene {
     this.selectAction.setScrollFactor(0);
     this.selectAction.setVisible(false);
 
-    this.option1 = this.add.sprite(gameConfig.scale.width/2, gameConfig.scale.height/2 -100, 'btnBlank');
-    this.option1.text = this.add.text(gameConfig.scale.width/2, gameConfig.scale.height/2 -100, "...", { fill: '#fff', align: 'center', fontSize: '30px' })
+    const testData = ['Give the monkeys some food', 'Ignore and find the way to pass through them'];
+    this.options = [];
+    for (const idx in testData){
+      this.options[idx] = this.add.sprite(gameConfig.scale.width/2, gameConfig.scale.height/2 -100 + idx*100, 'btnBlank');
+      this.options[idx].text = this.add.text(
+        gameConfig.scale.width/2, gameConfig.scale.height/2 - 100 + idx*100, testData[idx], { fill: '#fff', align: 'center', fontSize: '30px' })
       .setScrollFactor(0).setVisible(false).setOrigin(0.5);
-    this.option1.setInteractive();
-    this.option1.setScrollFactor(0);
-    this.option1.setVisible(false);
-    this.option1.on('pointerover', () => {
-      this.option1.setFrame(1);
-    });
-    this.option1.on('pointerout', () => {
-      this.option1.setFrame(0);
-    });
-    this.option1.on('pointerdown', () => {
-      this.triggerContinue();
-      // this.obstacle.setVisible(false);
-    });
+      this.options[idx].setInteractive().setScrollFactor(0).setVisible(false);
+      this.options[idx].on('pointerover', () => {
+        this.options[idx].setFrame(1);
+        this.hoverSound.play();
+      });
+      this.options[idx].on('pointerout', () => {
+        this.options[idx].setFrame(0);
+      });
+      this.options[idx].on('pointerdown', () => {
+        this.triggerContinue();
+        this.clickSound.play();
+      });
+    }
   }
 
   update() {
@@ -167,6 +185,7 @@ export default class Scene3 extends Phaser.Scene {
     }
 
     if (this.player.x > 1920*4) {
+      this.ambientSound.stop();
       this.scene.start("Scene4");
     }
 
