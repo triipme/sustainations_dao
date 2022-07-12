@@ -83,6 +83,7 @@ module {
   // Game
   //--------------------- Character ---------------------//
   public type Character = {
+    userId : Principal;
     name : Text;
     level : Int;
     currentExp : Int;
@@ -106,7 +107,7 @@ module {
   };
 
   public type CharacterClass = {
-    uuid : Text;
+    uuid : ?Text;
     name : Text;
     specialAbility : Text;
     description : Text;

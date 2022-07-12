@@ -650,7 +650,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
         switch (rsCharacterClass) {
           case null { #err(#NotFound) };
           case (?characterClass) {
-            Character.create(uuid, characterClass, characterName, state);
+            Character.create(caller, uuid, characterClass, characterName, state);
             #ok("Success");
           };
         };
@@ -671,8 +671,10 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
-    for((K,V) in state.characters.entries()) {
-      list := Array.append<(Text, Types.Character)>(list, [(K, V)]);
+    for((key ,character) in state.characters.entries()) {
+      if(character.userId == caller){
+        list := Array.append<(Text, Types.Character)>(list, [(key, character)]);
+      }
     };
     #ok((list));
   };
@@ -868,13 +870,13 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
       return #err(#NotAuthorized);//isNotAuthorized
     };
     var list : [(Text, Types.Item)] = [];
-    for((K,V) in state.questItems.entries()) {
-      if(V.questId == questId){
-        let rsItem = state.items.get(V.itemId);
+    for((_,questItem) in state.questItems.entries()) {
+      if(questItem.questId == questId){
+        let rsItem = state.items.get(questItem.itemId);
         switch (rsItem) {
           case null { () };
           case (?item){
-            list := Array.append<(Text, Types.Item)>(list, [(V.itemId, item)]);
+            list := Array.append<(Text, Types.Item)>(list, [(questItem.itemId, item)]);
           };
         };
       };
@@ -1008,7 +1010,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     #ok((list));
   };
 
-  public shared query({caller}) func listEventOptionsByEvent(eventId : Text) : async Response<[(Text, Types.EventOption)]> {
+  public shared query({caller}) func listEventOptions(eventId : Text) : async Response<[(Text, Types.EventOption)]> {
     var list : [(Text, Types.EventOption)] = [];
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized

@@ -23,19 +23,14 @@ class selectItemScene extends Phaser.Scene {
     this.load.image("selectItemsText", selectItemsText);
   }
 
-  create() {
-    // const { user } = store.getState();
-    // const readCharacter = async () => {
-    //   const result = await user.actor.readCharacter();
-    //   console.log(result);
-    // }
-    // const listQuestItems = async () => {
-    //   const result = await user.actor.listQuestItemsForQuest();
-    //   console.log(result);
-    // }
+  async create() {
+    const { user } = store.getState();
+    // const readCharacter = async () => await user.actor.readCharacter();
+    const listQuestItems = async () => await user.actor.listQuestItems("179230D4-1028-4A4A-A6D7-085608D23D37");
+
     // const character = await readCharacter();
-    // const items = await listQuestItems();
-    // console.log(items);
+    const items = await listQuestItems();
+    console.log(items);
     // console.log(character);
 
     //text

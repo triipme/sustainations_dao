@@ -22,8 +22,9 @@ module Character {
     return newCharacterTakeOption;
   };
 
-  public func create(uuid : Text, characterClass : Types.CharacterClass, characterName : Text, state : State.State) {
+  public func create(caller : Principal, uuid : Text, characterClass : Types.CharacterClass, characterName : Text, state : State.State) {
     let newCharacter : Types.Character = {
+      userId = caller;
       name = characterName;
       level = 1;
       currentExp = 0;
@@ -41,7 +42,7 @@ module Character {
       maxStamina = characterClass.baseStamina;
       currentMorale = characterClass.baseMorale;
       maxMorale = characterClass.baseMorale;
-      classId = ?characterClass.uuid;
+      classId = characterClass.uuid;
       gearIds : ?[Text] = Option.get(null, ?[]);
       materialIds : ?[Text] = Option.get(null, ?[]);
     };
@@ -51,6 +52,7 @@ module Character {
 
   public func update(characterId : Text, character : Types.Character, eventOption : Types.EventOption, totalStrength : Float, state : State.State) {
     let newCharacter : Types.Character = {
+      userId = character.userId;
       name = character.name;
       level = character.level;
       currentExp = character.currentExp + eventOption.gainExp;
