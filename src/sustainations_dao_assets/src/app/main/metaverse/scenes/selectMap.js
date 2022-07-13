@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import gameConfig from '../GameConfig';
 const bg = 'metaverse/selectMap/background.png';
 const text = 'metaverse/selectMap/call_to_action.png';
 const selectArea = 'metaverse/selectMap/select-area.png';
@@ -18,6 +19,20 @@ class selectMap extends Phaser.Scene {
   }
 
   preload() {
+    //loading screen
+    this.add.image(
+      gameConfig.scale.width/2, gameConfig.scale.height/2 - 50, 'logo'
+    ).setOrigin(0.5, 0.5).setScale(0.26);
+    this.anims.create({
+      key: 'loading-anims',
+      frames: this.anims.generateFrameNumbers("loading", {start: 0, end: 11}),
+      frameRate: 12,
+      repeat: -1
+    });
+    this.add.sprite(
+      gameConfig.scale.width/2, gameConfig.scale.height/2 + 150, "loading"
+    ).setScale(0.07).play('loading-anims');
+    //preload
     this.clearCache();
     this.load.image('bg', bg);
     this.load.image('text', text);
