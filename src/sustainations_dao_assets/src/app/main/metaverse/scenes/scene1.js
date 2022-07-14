@@ -100,8 +100,8 @@ export default class Scene1 extends Phaser.Scene {
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
-    this.ambientSound = this.sound.add('ambientSound', {loop: true});
-    this.ambientSound.play();
+    this.pregameSound = this.sound.add('pregameSound', {loop: true});
+    this.pregameSound.play();
     //background
     this.bg_1 = this.add.tileSprite(0, 0, gameConfig.scale.width, gameConfig.scale.height, "background1");
     this.bg_1.setOrigin(0, 0);
@@ -159,7 +159,7 @@ export default class Scene1 extends Phaser.Scene {
       .on('pointerdown', () => {
         this.clickSound.play();
         this.scene.start('menuScene');
-        this.ambientSound.stop();
+        this.pregameSound.stop();
       });
 
     //mycam
@@ -207,7 +207,7 @@ export default class Scene1 extends Phaser.Scene {
     }
 
     if (this.player.x > 1920*4+200) {
-      this.ambientSound.stop();
+      this.pregameSound.stop();
       this.scene.start("Scene2");
     }
 
