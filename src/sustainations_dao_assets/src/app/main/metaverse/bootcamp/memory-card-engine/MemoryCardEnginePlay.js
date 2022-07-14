@@ -1,6 +1,14 @@
 import FuseLoading from "@fuse/core/FuseLoading";
 import { Box, Button, Grid, Modal, Typography } from "@mui/material";
-import { forwardRef, memo, useEffect, useImperativeHandle, useRef, useState } from "react";
+import {
+  forwardRef,
+  memo,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState
+} from "react";
 import { useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import MemoryCardEngineCard from "./MemoryCardEngineCard";
@@ -23,18 +31,16 @@ const MemoryCardEnginePlay = () => {
     }
   }, []);
 
-  async function api() {
+  const api = useCallback(async () => {
     try {
-      const rs = await actor.memoryCardEngineCards(stateLocation.id);
-      if ("ok" in rs) {
-        shuffleCards(rs.ok);
-      } else {
-        throw rs.err;
+      const rsCards = await actor.memoryCardEngineCards(stateLocation.stageId);
+      if ("ok" in rsCards) {
+        shuffleCards(rsCards.ok);
       }
     } catch (error) {
       console.log(error);
     }
-  }
+  }, []);
 
   useEffect(() => {
     api();
@@ -62,7 +68,7 @@ const MemoryCardEnginePlay = () => {
   }, [choiceOne?.id, choiceTwo?.id]);
 
   //shuffle
-  const shuffleCards = cards => {
+  const shuffleCards = useCallback(cards => {
     const shuffledCards = cards
       .concat(cards)
       .map((card, cardIndex, array) => ({
@@ -79,7 +85,7 @@ const MemoryCardEnginePlay = () => {
     setChoiceTwo(null);
     setCards(shuffledCards);
     ref.current?.resetTime();
-  };
+  }, []);
 
   //handle choice
   const handleChoice = card => {
@@ -103,7 +109,7 @@ const MemoryCardEnginePlay = () => {
         <Typography variant="h4" textTransform="capitalize">
           Magic Memory {stateLocation?.game}
         </Typography>
-        {cards?.length > 0 && <TimingPlay ref={ref} turns={turns} cards={cards} />}
+        {cards?.length > 0 && <TimingPlay {...{ cards, turns, ref, stateLocation }} />}
         <Button variant="contained" size="large" onClick={btnReset} sx={{ mb: 3 }}>
           New Game
         </Button>
@@ -127,7 +133,8 @@ const MemoryCardEnginePlay = () => {
 export default MemoryCardEnginePlay;
 
 const TimingPlay = memo(
-  forwardRef(({ turns, cards }, ref) => {
+  forwardRef(({ turns, cards, stateLocation }, ref) => {
+    const { stageId, player, slugId } = stateLocation;
     const { actor } = useSelector(state => state.user);
     const [time, setTime] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
@@ -138,11 +145,15 @@ const TimingPlay = memo(
       }, 10);
       return () => clearTimeout(to);
     }, [time, isLoading]);
+
     async function apiSetPlayer() {
       try {
-        const rs = await actor?.gameGcEngineSetPlayer({
+        const rs = await actor?.memoryCardEngineSetPlayer({
+          playerId: [].concat(player?.[0] || []),
+          stageId,
+          slugId,
           turn: turns,
-          timing_play: parseFloat((time / 100).toFixed(2))
+          timing: parseFloat((time / 100).toFixed(2))
         });
         if ("ok" in rs) {
           navigate(-1);
@@ -166,9 +177,7 @@ const TimingPlay = memo(
         if (cards.every(card => card.matched)) {
           // submit to Server
           setIsLoading(true);
-          if (!!actor?.gameGcEngineSetPlayer) {
-            apiSetPlayer();
-          }
+          apiSetPlayer();
         }
       }
       if (turns === 0) {
@@ -177,9 +186,9 @@ const TimingPlay = memo(
     }, [turns]);
     return (
       <Box my={2}>
-        {isLoading && <FuseLoading />}
         <Typography variant="h6">Turns: {turns}</Typography>
         <Typography variant="h6">Time: {(time / 100).toFixed(2)}</Typography>
+        {isLoading && <FuseLoading />}
       </Box>
     );
   })

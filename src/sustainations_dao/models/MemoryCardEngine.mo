@@ -13,16 +13,16 @@ module {
   public type Card = {
     stageId : Text;
     cardType : Text; //"text" or "image"
-    // data : [Text];
     data : Text;
   };
   public type Player = {
-    uid: Principal;
+    uid : Principal;
+    slugId : Text;
     history : [
       {
         stageId : Text;
         turn : Nat;
-        timing: Float;
+        timing : Float;
       }
     ];
     createdAt : Int;

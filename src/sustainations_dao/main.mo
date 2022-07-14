@@ -14,6 +14,7 @@ import Time "mo:base/Time";
 import UUID "mo:uuid/UUID";
 
 import Account "./plugins/Account";
+import Moment "./plugins/Moment";
 import Types "types";
 import State "state";
 import Ledger "./plugins/Ledger";
@@ -560,9 +561,6 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
   };
 
   public shared({caller}) func getAllProfiles() : async Response<[(Principal, Types.Profile)]> {
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      throw Error.reject("NotAuthorized");  //isNotAuthorized
-    };
     try {
       await isAdmin(caller);
       #ok(Iter.toArray(state.profiles.entries()));
@@ -615,9 +613,6 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
 
   /* MemoryCard */
   public shared({caller}) func memoryCardEngineImportExcel(data : [Types.MemoryCardEnginePatternItemImport]) : async Response<()>{
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      throw Error.reject("NotAuthorized");  //isNotAuthorized
-    };
     try {
       await isAdmin(caller);
       for (V in Iter.fromArray(data)) {
@@ -663,9 +658,6 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
   };
 
   public shared({caller}) func memoryCardEngineAllSlugs() : async Response<[(Text, Types.MemoryCardEngineSlug)]>{
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      throw Error.reject("NotAuthorized");  //isNotAuthorized
-    };
     try {
       await isAdmin(caller);
       #ok(Iter.toArray(state.memoryCardEngine.slugs.entries()));
@@ -675,9 +667,6 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
   };
 
   public shared({caller}) func memoryCardEngineAllStages() : async Response<[(Text, Types.MemoryCardEngineStage)]>{
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      throw Error.reject("NotAuthorized");  //isNotAuthorized
-    };
     try {
       await isAdmin(caller);
       #ok(Iter.toArray(state.memoryCardEngine.stages.entries()));
@@ -687,9 +676,6 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
   };
 
   public shared({caller}) func memoryCardEngineAllCards() : async Response<[(Text, Types.MemoryCardEngineCard)]>{
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      throw Error.reject("NotAuthorized");  //isNotAuthorized
-    };
     try {
       await isAdmin(caller);
       #ok(Iter.toArray(state.memoryCardEngine.cards.entries()));
@@ -747,4 +733,108 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     };
     #ok(cards);
   };
+
+  public query func memoryCardEngineGetPlayer(uid : Principal) : async Response<(Text, Types.MemoryCardEnginePlayer)> {
+    if (Principal.toText(uid) == "2vxsx-fae") {
+      throw Error.reject("NotAuthorized");  //isNotAuthorized
+    };
+    var player : ?(Text, Types.MemoryCardEnginePlayer) = null;
+    let players = state.memoryCardEngine.players.entries();
+    label playerLabel loop {
+      switch (players.next()) {
+        case (? (K, V)) {
+          if (  
+            Int.greater(Moment.diff(?V.createdAt), 0) and
+            Principal.equal(V.uid, uid)
+          ) {
+            player := ?(K, V);
+            break playerLabel;
+          }
+        };
+        case (null) break playerLabel;
+      }
+    };
+    switch (player) {
+      case null #err(#NotFound);
+      case (?V) #ok(V);
+    };
+  };
+
+  public shared({caller}) func memoryCardEngineSetPlayer({
+    playerId : ?Text;
+    stageId : Text;
+    slugId : Text;
+    timing : Float;
+    turn : Nat
+  }) : async Response<()> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      throw Error.reject("NotAuthorized");  //isNotAuthorized
+    };
+    Debug.print(debug_show playerId);
+    switch (playerId) {
+      case null {
+        //first time - stage 1
+        let player : Types.MemoryCardEnginePlayer = {
+          uid = caller;
+          slugId;
+          history = [{
+            stageId;
+            turn;
+            timing;
+          }];
+          createdAt = Moment.now();
+          updatedAt = Moment.now();
+        };
+        state.memoryCardEngine.players.put(await createUUID(), player);
+        #ok();
+      };
+      case (?pid) {
+        switch (await memoryCardEngineGetPlayer(caller)) {
+          case (#err(error)) {
+            #err(error);
+          };
+          case (#ok(K, oldData)) {
+            //stage 2,3
+            let found = 
+              Array.find<{
+                stageId : Text;
+                turn : Nat;
+                timing : Float;
+              }>(oldData.history, func (h) : Bool {
+              Text.equal(stageId, h.stageId);
+            });
+            switch (found) {
+              case null {
+                let replacePlayer : Types.MemoryCardEnginePlayer = {
+                  uid = oldData.uid;
+                  slugId;
+                  history = Array.append(oldData.history, [{
+                    stageId;
+                    turn;
+                    timing;
+                  }]);
+                  createdAt = oldData.createdAt;
+                  updatedAt = Moment.now();
+                };
+                let _ = state.memoryCardEngine.players.replace(pid, replacePlayer);
+                #ok();
+              };
+              case (?V) {
+                #err(#AlreadyExisting);
+              }
+            }
+          }
+        }
+      }
+    };
+  };
+
+  public shared({caller}) func memoryCardEngineGetAllPlayer() : async Response<[(Text, Types.MemoryCardEnginePlayer)]> {
+    try {
+      await isAdmin(caller);
+      #ok(Iter.toArray(state.memoryCardEngine.players.entries()));
+    } catch (e) {
+      #err(#SomethingWrong);
+    }
+  }
 };
