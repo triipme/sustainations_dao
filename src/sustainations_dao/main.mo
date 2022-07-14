@@ -1,8 +1,10 @@
 import Array "mo:base/Array";
 import AsyncSource "mo:uuid/async/SourceV4";
 import Debug "mo:base/Debug";
+import Float "mo:base/Float";
 import Error "mo:base/Error";
 import Int "mo:base/Int";
+import Int64 "mo:base/Int64";
 import Iter "mo:base/Iter";
 import List "mo:base/List";
 import Nat64 "mo:base/Nat64";
@@ -770,7 +772,6 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     if (Principal.toText(caller) == "2vxsx-fae") {
       throw Error.reject("NotAuthorized");  //isNotAuthorized
     };
-    Debug.print(debug_show playerId);
     switch (playerId) {
       case null {
         //first time - stage 1
@@ -836,5 +837,92 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     } catch (e) {
       #err(#SomethingWrong);
     }
-  }
+  };
+
+  public query({caller}) func memoryCardEngineListOfDay() : async Response<[?Types.MemoryCardEnginePlayer]>{
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      throw Error.reject("NotAuthorized");  //isNotAuthorized
+    };
+    var listTop : [?Types.MemoryCardEnginePlayer] = [];
+    let stages = state.memoryCardEngine.stages.keys();
+    for((K, V) in state.memoryCardEngine.players.entries()) {
+      if(
+        Int.greater(Moment.diff(?V.createdAt), 0) and
+        Iter.size(Iter.fromArray(V.history)) == Iter.size(stages)
+      ) {
+        listTop := Array.append(listTop, [?V]);
+      }
+    };
+    #ok(listTop);
+  };
+
+  public shared({caller}) func memoryCardEngineListOfYesterday() : async Response<[?(Text, Types.MemoryCardEnginePlayer)]>{
+    try {
+      await isAdmin(caller);
+      var listTop : [?(Text,Types.MemoryCardEnginePlayer)] = [];
+      let stages = state.memoryCardEngine.stages.keys();
+      for((K, V) in state.memoryCardEngine.players.entries()) {
+        if(
+          Moment.yesterday(V.createdAt) and
+          Iter.size(Iter.fromArray(V.history)) == Iter.size(stages)
+        ) {
+          listTop := Array.append(listTop, [?(K, V)]);
+        }
+      };
+      #ok(listTop);
+    } catch (e) {
+      #err(#SomethingWrong);
+    }
+  };
+
+  public shared({caller}) func memoryCardEngineListAll() : async Response<[(Types.MemoryCardEnginePlayer)]>{
+    try {
+      await isAdmin(caller);
+      #ok(Iter.toArray(state.memoryCardEngine.players.vals()));
+    } catch (e) {
+      #err(#SomethingWrong);
+    }
+  };
+
+  public shared({caller}) func memoryCardEngineCheckReward(id : Text) : async Response<?Types.MemoryCardEngineReward>{
+    try {
+      await isAdmin(caller);
+      #ok(state.memoryCardEngine.rewards.get(id));
+    } catch (e) {
+      #err(#SomethingWrong);
+    }
+  };
+
+  public shared({caller}) func memoryCardEngineReward(
+    playerId : Text, 
+    reward : Float, 
+    uid : Principal
+  ) : async Response<()>{
+    try {
+      await isAdmin(caller);
+      let rewardAmount : Nat64 = Int64.toNat64(Float.toInt64(reward * (10 ** 8)));
+      switch (await deposit(rewardAmount, caller)) {
+        case (#ok(bIndex)) {
+          let uuid = await createUUID();
+          let recordReward = {
+            reward = rewardAmount;
+            playerId;
+            createdAt = Moment.now();
+          };
+          // record transaction
+          await recordTransaction(
+            caller, rewardAmount, caller, Principal.fromActor(this),
+            #rewardTop, ?uuid, bIndex
+          );
+          state.memoryCardEngine.rewards.put(uuid, recordReward); //put to state rewards
+          #ok();
+        };
+        case (#err(error)) {
+          #err(error);
+        };
+      };
+    } catch (e) {
+      #err(#SomethingWrong);
+    }
+  };
 };

@@ -1,11 +1,5 @@
-import MemoryCardEngine from "./containers/MemoryCardEngine";
-
 const MemoryCardLanguage = () => {
-  return (
-    <div>
-      <MemoryCardEngine />
-    </div>
-  );
+  return <div></div>;
 };
 
 export default MemoryCardLanguage;

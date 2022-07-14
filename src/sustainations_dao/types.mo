@@ -68,6 +68,7 @@ module {
     #returnVoteFee;
     #executeApprovedProposal;
     #awardUserAgreement;
+    #rewardTop;
   };
   public type TxRecord = {
     uuid : Text;

@@ -30,6 +30,7 @@ module {
   };
   public type Reward = {
     reward : Nat64;
+    playerId : Text;
     createdAt : Int;
   };
 }

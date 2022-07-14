@@ -1,11 +1,5 @@
-import MemoryCardEngine from "./containers/MemoryCardEngine";
-
 const MemoryCardPhoto = () => {
-  return (
-    <div>
-      <MemoryCardEngine />
-    </div>
-  );
+  return <div></div>;
 };
 
 export default MemoryCardPhoto;
