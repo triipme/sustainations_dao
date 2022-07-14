@@ -28,15 +28,24 @@ const AllCard = () => {
             getRowId={row => row.cardId}
             autoHeight
             pagination
+            disableSelectionOnClick
             disableColumnMenu
             pageSize={10}
             rowsPerPageOptions={[10]}
             rows={cards.map(card => ({ ...card[1], cardId: card[0] }))}
-            columns={Object.keys(cards?.[0]?.[1]).map(key => ({
-              field: key,
-              headerName: key,
-              flex: key === "data" ? 1 : 0
-            }))}
+            columns={[
+              {
+                field: "cardId",
+                headerName: "Id",
+                flex: 1
+              },
+              ,
+              ...Object.keys(cards?.[0]?.[1]).map(key => ({
+                field: key,
+                headerName: key,
+                flex: ["data", "stageId"].includes(key) ? 1 : 0
+              }))
+            ]}
           />
         </div>
       )}

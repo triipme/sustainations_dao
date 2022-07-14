@@ -124,15 +124,15 @@ module {
   public type MemoryCardEnginePlayer = MemoryCardEngineModel.Player;
   public type MemoryCardEngineReward = MemoryCardEngineModel.Reward;
   public type MemoryCardEnginePatternItemImport = {
-    gameId : Nat;
-    gameName : Text;
-    gameSlug : Text;
-    gameDescription : Text;
-    gameStatus : Bool;
-    stageId : Nat;
+    slugId : Text;
+    game : Text;
+    slugName : Text;
+    slugDescription : Text;
+    slugStatus : Bool;
+    stageId : Text;
     stageName : Text;
     stageOrder : Nat;
-    cardId : Nat;
+    cardId : Text;
     cardType : Text;
     cardData : Text;
   };

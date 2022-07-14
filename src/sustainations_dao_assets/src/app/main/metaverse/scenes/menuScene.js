@@ -9,7 +9,7 @@ const departure_btn = "metaverse/menu/departure.png";
 const land_btn = "metaverse/menu/land.png";
 const quest_btn = "metaverse/menu/quest.png";
 const cs_noti = "metaverse/menu/commingsoon.png";
-
+import history from "@history";
 class menuScene extends Phaser.Scene {
   constructor() {
     super("menuScene");
@@ -68,14 +68,7 @@ class menuScene extends Phaser.Scene {
     });
     this.bootcamp_btn.on("pointerdown", () => {
       this.noti.setVisible(true);
-      this.time.addEvent({
-        delay: 3000,
-        callback: () => {
-          this.noti.setVisible(false);
-        },
-        callbackScope: this
-      });
-      // window.location.href = "/metaverse/bootcamp";
+      history.push("/metaverse/bootcamp");
     });
 
     this.land_btn = this.add.sprite(960, 710, "land_btn").setInteractive();
@@ -86,15 +79,7 @@ class menuScene extends Phaser.Scene {
       this.land_btn.setFrame(0);
     });
     this.land_btn.on("pointerdown", () => {
-      // this.noti.setVisible(true);
-      // this.time.addEvent({
-      //   delay: 3000,
-      //   callback: () => {
-      //     this.noti.setVisible(false);
-      //   },
-      //   callbackScope: this
-      // });
-      window.location.href = "/metaverse/land";
+      history.push("/metaverse/land");
     });
 
     this.departure_btn = this.add.sprite(960, 830, "departure_btn").setInteractive();

@@ -28,14 +28,24 @@ const AllStage = () => {
             getRowId={row => row.stageId}
             autoHeight
             pagination
+            disableSelectionOnClick
             disableColumnMenu
             pageSize={10}
             rowsPerPageOptions={[10]}
             rows={stages.map(stage => ({ ...stage[1], stageId: stage[0] }))}
-            columns={Object.keys(stages?.[0]?.[1]).map(key => ({
-              field: key,
-              headerName: key
-            }))}
+            columns={[
+              {
+                field: "stageId",
+                headerName: "Id",
+                flex: 1
+              },
+              ,
+              ...Object.keys(stages?.[0]?.[1]).map(key => ({
+                field: key,
+                headerName: key,
+                flex: ["name", "slugId"].includes(key) ? 1 : 0
+              }))
+            ]}
           />
         </div>
       )}

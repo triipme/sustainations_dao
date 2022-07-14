@@ -1,12 +1,12 @@
 module {
   public type Slug = {
-    name : Text;
+    game : Text;
     slug : Text; //unique
     description : Text;
     status : Bool;
   };
   public type Stage = {
-    gameId : Text;
+    slugId : Text;
     name : Text;
     order : Nat;
   };

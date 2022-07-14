@@ -1,9 +1,16 @@
 import { lazy } from "react";
+import { Outlet } from "react-router-dom";
 import BootCamp from "./bootcamp/BootCamp";
 import Land from "./land/Land";
-import MetaverseLayout from "./MetaverseLayout";
 
 const Metaverse = lazy(() => import("./Metaverse"));
+const MetaverseLayout = lazy(() => import("./MetaverseLayout"));
+const MemoryCardEnginePlay = lazy(() =>
+  import("./bootcamp/memory-card-engine/MemoryCardEnginePlay")
+);
+const MemoryCardEngineLayout = lazy(() =>
+  import("./bootcamp/memory-card-engine/MemoryCardEngineLayout")
+);
 
 const MetaverseConfig = {
   settings: {
@@ -38,7 +45,41 @@ const MetaverseConfig = {
         },
         {
           path: "bootcamp",
-          element: <BootCamp />
+          element: <Outlet />,
+          children: [
+            {
+              index: true,
+              element: <BootCamp />
+            },
+            {
+              path: "language",
+              element: <Outlet />,
+              children: [
+                {
+                  index: true,
+                  element: <MemoryCardEngineLayout />
+                },
+                {
+                  path: "play",
+                  element: <MemoryCardEnginePlay />
+                }
+              ]
+            },
+            {
+              path: "photo",
+              element: <Outlet />,
+              children: [
+                {
+                  index: true,
+                  element: <MemoryCardEngineLayout />
+                },
+                {
+                  path: "play",
+                  element: <MemoryCardEnginePlay />
+                }
+              ]
+            }
+          ]
         },
         {
           path: "land",

@@ -3,7 +3,6 @@ import { lazy } from "react";
 import { Navigate } from "react-router-dom";
 
 const Admin = lazy(() => import("./Admin"));
-const BootCamp = lazy(() => import("./bootcamp/BootCamp"));
 const BootCampLayout = lazy(() => import("./bootcamp/BootCampLayout"));
 const MemoryCardEnginePhoto = lazy(() => import("./bootcamp/MemoryCardPhoto"));
 const MemoryCardEngineLanguage = lazy(() => import("./bootcamp/MemoryCardLanguage"));

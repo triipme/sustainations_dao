@@ -621,39 +621,40 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     try {
       await isAdmin(caller);
       for (V in Iter.fromArray(data)) {
-        switch (state.memoryCardEngine.slugs.get(Nat.toText(V.gameId))) {
+        switch (state.memoryCardEngine.slugs.get(V.slugId)) {
           case null {
             let games : Types.MemoryCardEngineSlug = {
-              name = V.gameName;
-              slug = V.gameSlug;
-              description = V.gameDescription;
-              status = V.gameStatus;
+              game = V.game;
+              slug = V.slugName;
+              description = V.slugDescription;
+              status = V.slugStatus;
             };
-            // state.memoryCardEngine.slugs.put(V.gameId, games);
-            state.memoryCardEngine.slugs.put(Nat.toText(V.gameId), games);
+            state.memoryCardEngine.slugs.put(V.slugId, games);
           };
           case (? v) {};
         };
-        switch (state.memoryCardEngine.stages.get(Nat.toText(V.stageId))) {
+        switch (state.memoryCardEngine.stages.get(V.stageId)) {
           case null {
             let stages : Types.MemoryCardEngineStage = {
-              // gameId = V.gameId;
-              gameId = Nat.toText(V.gameId);
+              slugId = V.slugId;
               name = V.stageName;
               order = V.stageOrder;
             };
-            // state.memoryCardEngine.stages.put(V.stageId, stages);
-            state.memoryCardEngine.stages.put(Nat.toText(V.stageId), stages);
+            state.memoryCardEngine.stages.put(V.stageId, stages);
           };
           case (? v){};
         };
-        let cards : Types.MemoryCardEngineCard = {
-          stageId = Nat.toText(V.stageId);
-          cardType = V.cardType;
-          data = V.cardData;
+        switch (state.memoryCardEngine.cards.get(V.cardId)) {
+          case null {
+            let cards : Types.MemoryCardEngineCard = {
+              stageId = V.stageId;
+              cardType = V.cardType;
+              data = V.cardData;
+            };
+            state.memoryCardEngine.cards.put(V.cardId, cards);
+          };
+          case (? v){};
         };
-        // state.memoryCardEngine.cards.put(V.cardId, cards);
-        state.memoryCardEngine.cards.put(Nat.toText(V.cardId), cards);
       };
       #ok();
     } catch (e) {
@@ -695,5 +696,55 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     } catch (e) {
       #err(#SomethingWrong);
     }
+  };
+
+  /* Client query data memoryCardEngine */
+  public query({caller}) func memoryCardEngineSlugEnabled(game : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      throw Error.reject("NotAuthorized");  //isNotAuthorized
+    };
+    var result : ?Text = null;
+    let slugs = state.memoryCardEngine.slugs.entries();
+    label slugLabel loop {
+      switch (slugs.next()) {
+        case (? (K, V)) {
+          if ((V.status == true) and (V.game == game)) {
+            result := ?K;
+            break slugLabel;
+          }
+        };
+        case (null) break slugLabel;
+      }
+    };
+    switch (result) {
+      case null #err(#NotFound);
+      case (?rs) #ok(rs);
+    };
+  };
+
+  public query({caller}) func memoryCardEngineStages(slugId : Text) : async Response<[?(Text, Types.MemoryCardEngineStage)]> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      throw Error.reject("NotAuthorized");  //isNotAuthorized
+    };
+    var stages : [?(Text, Types.MemoryCardEngineStage)] = [];
+    for ((K, V) in state.memoryCardEngine.stages.entries()) {
+      if (V.slugId == slugId) {
+        stages := Array.append(stages, [?(K, V)]);
+      }
+    };
+    #ok(stages);
+  };
+
+  public query({caller}) func memoryCardEngineCards(stageId : Text) : async Response<[?(Text, Types.MemoryCardEngineCard)]> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      throw Error.reject("NotAuthorized");  //isNotAuthorized
+    };
+    var cards : [?(Text, Types.MemoryCardEngineCard)] = [];
+    for ((K, V) in state.memoryCardEngine.cards.entries()) {
+      if (V.stageId == stageId) {
+        cards := Array.append(cards, [?(K, V)]);
+      }
+    };
+    #ok(cards);
   };
 };

@@ -20,22 +20,32 @@ const AllGame = () => {
   useEffect(() => {
     memoryCardEngineAllSlugs();
   }, []);
+  console.log(games);
   return (
     <>
       {games?.length > 0 && (
         <div style={{ width: "100%", marginTop: 20 }}>
           <DataGrid
-            getRowId={row => row.gameId}
+            getRowId={row => row.slugId}
             autoHeight
             pagination
+            disableSelectionOnClick
             disableColumnMenu
             pageSize={10}
             rowsPerPageOptions={[10]}
-            rows={games.map(game => ({ ...game[1], gameId: game[0] }))}
-            columns={Object.keys(games?.[0]?.[1]).map(key => ({
-              field: key,
-              headerName: key
-            }))}
+            rows={games.map(game => ({ ...game[1], slugId: game[0] }))}
+            columns={[
+              {
+                field: "slugId",
+                headerName: "Id",
+                flex: 1
+              },
+              ...Object.keys(games?.[0]?.[1]).map(key => ({
+                field: key,
+                headerName: key,
+                flex: ["description", "slug"].includes(key) ? 1 : 0
+              }))
+            ]}
           />
         </div>
       )}
