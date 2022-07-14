@@ -4,9 +4,8 @@ import { Link } from 'react-router-dom';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import LoadingButton from '@mui/lab/LoadingButton';
-import { selectUser, setUser } from 'app/store/userSlice';
+import { selectUser } from 'app/store/userSlice';
 import { showMessage } from 'app/store/fuse/messageSlice';
-import settingsConfig from 'app/configs/settingsConfig';
 import moment from 'moment';
 
 function UserAgreement() {
@@ -19,7 +18,7 @@ function UserAgreement() {
     try {
       const result = await user.actor.submitAgreement();
       if ("ok" in result) {
-        dispatch(showMessage({ message: "Now you are offically our member. Please accept 0.00003 ICP as our gift for your kindness ❤️" }));
+        dispatch(showMessage({ message: "Now you are offically our member. Please accept 0.0004 ICP as our gift for your kindness ❤️" }));
         setTimeout(() => {
           window.location.href = '/';
         }, 1000);
