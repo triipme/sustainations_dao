@@ -16,6 +16,7 @@ class selectMap extends Phaser.Scene {
     for (const index in textures_list){
       this.textures.remove(textures_list[index]);
     }
+    console.clear();
   }
 
   preload() {

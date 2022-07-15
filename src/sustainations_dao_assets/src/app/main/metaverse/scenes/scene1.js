@@ -25,8 +25,8 @@ export default class Scene1 extends Phaser.Scene {
   
   clearSceneCache() {
     const textures_list = ['bg', 'classtag', 'effect', 'UI_HP', 'UI_mana',
-      'UI_morale', 'UI_mana', 'UI_stamina', 'UI_name', 'player', 'pickItemText',
-      'itemBox', 'btnValid', 'btnClear'];
+      'UI_morale', 'UI_stamina', 'UI_name', 'player', 'pickItemText',
+      'itembox', 'btnValid', 'btnClear'];
     for (const index in textures_list){
       this.textures.remove(textures_list[index]);
     }

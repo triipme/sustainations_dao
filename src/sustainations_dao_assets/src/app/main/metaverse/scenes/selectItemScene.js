@@ -23,11 +23,15 @@ class selectItemScene extends Phaser.Scene {
   }
 
   clearCache() {
-    const textures_list = ['bg', 'text', 'selectArea', 'locationDetail'];
+    const textures_list = ['bg', 'text', 'selectArea', 'locationDetail', 'classtag', 'effect', 'UI_HP', 'UI_Mana',
+    'UI_Morale', 'UI_Stamina', 'UI_NameCard', 'UI_Utility', 'player', 'pickItemText',
+    'btnValid', 'btnClear'];
     for (const index in textures_list){
       this.textures.remove(textures_list[index]);
     }
+    console.clear();
   }
+
   preload() {
     //loading screen
     this.add.image(
