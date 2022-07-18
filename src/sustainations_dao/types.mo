@@ -3,6 +3,7 @@ import Time "mo:base/Time";
 import Nat "mo:base/Nat";
 import Nat64 "mo:base/Nat64";
 import List "mo:base/List";
+import RS "models/RefillStation";
 
 module {
   // User Profile
@@ -13,6 +14,7 @@ module {
   public type Profile = {
     username : ?Text;
     avatar : ?Text;
+    phone : ?Text;
     role : Role;
   };
   // User Agreement
@@ -89,6 +91,8 @@ module {
     #SomethingWrong;
     #ProposalIsNotOpened;
     #AlreadyVoted;
+    #AdminRoleRequired;
+    #OwnerRoleRequired;
   };
 
   public let proposalCategories = [
@@ -114,4 +118,16 @@ module {
   public let proposalFundingTypes = [
     "100% Funded", "Partially Funded"
   ];
+
+  // Refill Stations
+  public type Currency = RS.Currency;
+  public type RefillBrand = RS.Brand;
+  public type RBManager = RS.Manager;
+  public type RBStation = RS.Station;
+  public type RBCategory = RS.Category;
+  public type RBTag = RS.Tag;
+  public type RBProductUnit = RS.ProductUnit;
+  public type RBProduct = RS.Product;
+  public type RBOrderStatus = RS.OrderStatus;
+  public type RBOrder = RS.Order;
 };

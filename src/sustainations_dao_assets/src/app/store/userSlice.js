@@ -43,6 +43,7 @@ const initialState = {
   depositAddress: '',
   principal: '',
   balance: 0,
+  brandId: null,
 };
 
 const userSlice = createSlice({

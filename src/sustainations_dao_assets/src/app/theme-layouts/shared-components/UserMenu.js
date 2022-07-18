@@ -12,6 +12,7 @@ import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 import { selectUser } from 'app/store/userSlice';
 import QRCode from "react-qr-code";
 import { fICP } from '../../utils/NumberFormat';
+import _ from 'lodash';
 
 function UserMenu(_props) {
   const user = useSelector(selectUser);
@@ -69,6 +70,22 @@ function UserMenu(_props) {
         }}
       >
         <>
+          {user.role.includes('admin') && (
+            <MenuItem component={Link} to="/admin" onClick={userMenuClose} role="button">
+              <ListItemIcon className="min-w-40">
+                <FuseSvgIcon>admin_panel_settings_outlined</FuseSvgIcon>
+              </ListItemIcon>
+              <ListItemText primary="Admin Dashboard" />
+            </MenuItem>
+          )}
+          {!_.isEmpty(user.brandId) && (
+            <MenuItem component={Link} to="/refill-brand" onClick={userMenuClose} role="button">
+              <ListItemIcon className="min-w-40">
+                <FuseSvgIcon>admin_panel_settings_outlined</FuseSvgIcon>
+              </ListItemIcon>
+              <ListItemText primary="Admin Dashboard" />
+            </MenuItem>
+          )}
           <MenuItem component={Link} to={`/user-agreements/${user.principal}`} onClick={userMenuClose} role="button">
             <ListItemIcon className="min-w-40">
               <FuseSvgIcon>assignment_turned_in_outlined</FuseSvgIcon>

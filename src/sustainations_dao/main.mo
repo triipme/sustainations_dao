@@ -6,21 +6,26 @@ import Iter "mo:base/Iter";
 import List "mo:base/List";
 import Nat64 "mo:base/Nat64";
 import Nat "mo:base/Nat";
+import Option "mo:base/Option";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
+import TrieMap "mo:base/TrieMap";
 import UUID "mo:uuid/UUID";
 
 import Account "./plugins/Account";
 import Types "types";
 import State "state";
 import Ledger "./plugins/Ledger";
+import RS "./models/RefillStation";
 
-shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
-  let transferFee : Nat64 = 10_000;
-  let createProposalFee : Nat64 = 20_000;
-  let voteFee : Nat64 = 20_000;
+shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
+  stable var transferFee : Nat64 = 10_000;
+  stable var createProposalFee : Nat64 = 20_000;
+  stable var voteFee : Nat64 = 20_000;
+
+  stable var treasuryContribution : Float = 0.03;
 
   var state : State.State = State.empty();
 
@@ -28,6 +33,18 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
   private stable var proposals : [(Text, Types.Proposal)] = [];
   private stable var transactions : [(Text, Types.TxRecord)] = [];
   private stable var userAgreements : [(Principal, Types.UserAgreement)] = [];
+  private stable var currencies : [(Text, Types.Currency)] = [];
+  private stable var refillBrand = {
+    brands : [(Text, Types.RefillBrand)] = [];
+    managers : [(Principal, Types.RBManager)] = [];
+    stations : [(Text, Types.RBStation)] = [];
+    categories : [(Text, Types.RBCategory)] = [];
+    tags : [(Text, Types.RBTag)] = [];
+    productUnits : [(Text, Types.RBProductUnit)] = [];
+    products : [(Text, Types.RBProduct)] = [];
+    orderStatus : [(Text, Types.RBOrderStatus)] = [];
+    orders : [(Text, Types.RBOrder)] = [];
+  };
 
   system func preupgrade() {
     Debug.print("Begin preupgrade");
@@ -35,6 +52,18 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     proposals := Iter.toArray(state.proposals.entries());
     transactions := Iter.toArray(state.transactions.entries());
     userAgreements := Iter.toArray(state.userAgreements.entries());
+    currencies := Iter.toArray(state.currencies.entries());
+    refillBrand := {
+      brands = Iter.toArray(state.refillBrand.brands.entries());
+      managers = Iter.toArray(state.refillBrand.managers.entries());
+      stations = Iter.toArray(state.refillBrand.stations.entries());
+      categories = Iter.toArray(state.refillBrand.categories.entries());
+      tags = Iter.toArray(state.refillBrand.tags.entries());
+      productUnits = Iter.toArray(state.refillBrand.productUnits.entries());
+      products = Iter.toArray(state.refillBrand.products.entries());
+      orderStatus = Iter.toArray(state.refillBrand.orderStatus.entries());
+      orders = Iter.toArray(state.refillBrand.orders.entries());
+    };
     Debug.print("End preupgrade");
   };
 
@@ -52,6 +81,36 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     for ((k, v) in Iter.fromArray(userAgreements)) {
       state.userAgreements.put(k, v);
     };
+    for ((k, v) in Iter.fromArray(currencies)) {
+      state.currencies.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(refillBrand.brands)) {
+      state.refillBrand.brands.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(refillBrand.managers)) {
+      state.refillBrand.managers.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(refillBrand.stations)) {
+      state.refillBrand.stations.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(refillBrand.categories)) {
+      state.refillBrand.categories.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(refillBrand.tags)) {
+      state.refillBrand.tags.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(refillBrand.productUnits)) {
+      state.refillBrand.productUnits.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(refillBrand.products)) {
+      state.refillBrand.products.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(refillBrand.orderStatus)) {
+      state.refillBrand.orderStatus.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(refillBrand.orders)) {
+      state.refillBrand.orders.put(k, v);
+    };
     Debug.print("End postupgrade");
   };
 
@@ -60,7 +119,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
   };
 
   type Response<Ok> = Result.Result<Ok, Types.Error>;
-  private let ledger : Ledger.Interface = actor(ledgerId);
+  private let ledger : Ledger.Interface = actor(Option.get(ledgerId, "ryjl3-tyaaa-aaaaa-aaaba-cai"));
 
   private func createUUID() : async Text {
     var ae = AsyncSource.Source();
@@ -124,6 +183,12 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
         };
         let result = state.userAgreements.put(caller, payload);
         let receipt = await rewardUserAgreement(caller);
+        let profile = state.profiles.put(caller, {
+          username = null;
+          avatar = null;
+          phone = null;
+          role = #user;
+        });
         #ok("Success!");
       };
       case (? _v) {
@@ -195,10 +260,11 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
   };
 
   type UserInfo = {
-    principal : Text;
     depositAddress : Text;
     balance : Nat64;
     agreement : Bool;
+    role : Types.Role;
+    brandId : ?Text;
   };
   public shared({ caller }) func getUserInfo() : async Response<UserInfo> {
     if (Principal.toText(caller) == "2vxsx-fae") {
@@ -208,15 +274,24 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     let balance = await ledger.account_balance({ account = accountId });
     let agreement = switch (state.userAgreements.get(caller)) {
       case (null) { false };
-      case _ {true};
+      case _ { true };
+    };
+    let role = switch (state.profiles.get(caller)) {
+      case (null) { #user };
+      case (? profile) { profile.role };
+    };
+    let brandId = switch (state.refillBrand.managers.get(caller)) {
+      case (null) { null };
+      case (? manager) { ?manager.brandId };
     };
     let userInfo = {
-      principal = Principal.toText(caller);
       depositAddress = Account.toText(
         Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(caller))
       );
       balance = balance.e8s;
       agreement;
+      role;
+      brandId;
     };
     #ok(userInfo);
   };
@@ -484,5 +559,526 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
         await refundVoters(updated);
       };
     };
+  };
+
+  private func isAdmin(caller : Principal) : Bool {
+    if (caller == owner) { return true; };
+    switch (state.profiles.get(caller)) {
+      case (null) { return false };
+      case (? profile) { return profile.role == #admin };
+    };
+  };
+
+  // === For System Admin ===
+  public shared({ caller }) func setAdmin(principal : Text) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    if (isAdmin(caller) == false) {
+      let admin = Principal.fromText(principal);
+      switch (state.profiles.get(admin)) {
+        case (null) {
+          state.profiles.put(admin, {
+            username = null;
+            avatar = null;
+            phone = null;
+            role = #admin;
+          });
+        };
+        case (?profile) {
+          let newAdmin = state.profiles.replace(admin, {
+            username = profile.username;
+            avatar = profile.avatar;
+            phone = profile.phone;
+            role = #admin;
+          });
+        };
+      };
+      #ok("Success")
+    } else {
+      #err(#AdminRoleRequired);
+    };
+  };
+
+  public shared({ caller }) func setCurrency(payload : Types.Currency) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    if (isAdmin(caller) == false) {
+      return #err(#AdminRoleRequired);
+    };
+
+    switch (state.currencies.get(payload.code)) {
+      case (null) { state.currencies.put(payload.code, payload); };
+      case _ { let currency = state.currencies.replace(payload.code, payload); };
+    };
+    #ok(payload.code);
+  };
+
+  public query func listCurrencies() : Response<[Types.Currency]> {
+    #ok(state.currencies.vals());
+  };
+
+  public shared({ caller }) func createRefillBrand(
+    payload : Types.RefillBrand, owner : Text
+  ) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    if (isAdmin(caller) == false) {
+      return #err(#AdminRoleRequired);
+    };
+
+    let uuid = await createUUID();
+    state.refillBrand.brands.put(uuid, payload);
+    state.refillBrand.managers.put(
+      Principal.fromText(owner),
+      { brandId = uuid; role = #owner }
+    );
+    #ok(uuid);
+  };
+
+  public shared({ caller }) func updateRefillBrand(
+    uuid : Text,
+    payload : Types.RefillBrand
+  ) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    switch (state.refillBrand.brands.get(uuid)) {
+      case (null) { #err(#NotFound) };
+      case (? brand) {
+        let manager = Option.get(state.refillBrand.managers.get(caller), {
+          brandId = ""; role = "";
+        });
+        // required system admin role or brand's owner
+        if (isAdmin(caller) == true || (manager.brandId == uuid && manager.role == #owner)) {
+          state.refillBrand.brands.replace(uuid, payload);
+          #ok(uuid);
+        } else {
+          #err(#AdminRoleRequired);
+        };
+      };
+    };
+  };
+
+  public query func listRefillBrands() : Response<[(Text, Types.RefillBrand)]> {
+    #ok(state.refillBrand.brands.entries());
+  };
+
+  // === For Refill Brand's Owner/Staff ===
+  public shared({ caller }) func setRBManager(principal : Text) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let manager = Principal.fromText(principal);
+    switch (state.refillBrand.managers.get(manager)) {
+      case (null) {
+        switch (state.refillBrand.managers.get(caller)) {
+          case (null) { #err(#OwnerRoleRequired); };
+          case (?owner) {
+            if (owner.role == #owner) {
+              state.refillBrand.managers.put(
+                manager, {
+                  brandId = owner.brandId;
+                  role = #staff;
+                }
+              );
+              #ok("Success");
+            } else {
+              #err(#OwnerRoleRequired);
+            };
+          };
+        };
+      };
+      case _ { #err(#AlreadyExisting) };
+    };
+  };
+
+  public shared({ caller }) func deleteRBManager(principal : Text) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    switch (state.refillBrand.managers.get(caller)) {
+      case (null) { #err(#OwnerRoleRequired) };
+      case (?owner) {
+        if (owner.role == #owner) {
+          let user = Principal.fromText(principal);
+          switch (state.refillBrand.managers.get(user)) {
+            case (null) { #err(#NotFound); };
+            case (?manager) {
+              if (manager.brandId == owner.brandId) {
+                state.refillBrand.managers.delete(user);
+                #ok("Success");
+              } else {
+                #err(#NotFound);
+              };
+            };
+          };
+        } else {
+          #err(#OwnerRoleRequired);
+        };
+      };
+    };
+  };
+
+  public query({ caller }) func listRBManagers() : async Response<[(Text, RS.ManagerRole)]> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    switch (state.refillBrand.managers.get(caller)) {
+      case (null) { #err(#OwnerRoleRequired) };
+      case (?owner) {
+        if (owner.role == #owner) {
+          var results = [(Text, RS.ManagerRole)] = [];
+          for ((principal, manager) in state.refillBrand.managers.entries()) {
+            results := Array.append<(Text, RS.ManagerRole)>(results, [Principal.toText(principal), manager.role]);
+          };
+          #ok(results);
+        } else {
+          #err(#OwnerRoleRequired);
+        };
+      };
+    };
+  };
+
+  func setRBStation(brandId : Text, payload : Types.RBStation, uuid : ?Text) : async Text {
+    let stationPayload = {
+      brandId;
+      uid = payload.uid;
+      name = payload.name;
+      phone = payload.phone;
+      address = payload.address;
+      latitude = payload.latitude;
+      longitude = payload.longitude;
+      activate = payload.activate;
+    };
+    if (uuid == null) {
+      uuid := await createUUID();
+      state.refillBrand.stations.put(uuid, stationPayload);
+    } else {
+      state.refillBrand.stations.replace(uuid, stationPayload);
+    };
+    return uuid;
+  };
+
+  public shared({ caller }) func createRBStation(
+    payload : Types.RBStation
+  ) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    switch (state.refillBrand.managers.get(caller)) {
+      case (null) { #err(#AdminRoleRequired) };
+      case (?manager) {
+        let uuid = await setRBStation(manager.brandId, payload, null);
+        return #ok(uuid);
+      };
+    };
+  };
+
+  public shared({ caller }) func importRBStations(
+    payloads : [Types.RBStation]
+  ) : async Response<[Text]> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    switch (state.refillBrand.managers.get(caller)) {
+      case (null) { #err(#AdminRoleRequired) };
+      case (?manager) {
+        var uuids : [Text] = [];
+        for (payload in payloads) {
+          let uuid = await setRBStation(manager.brandId, payload, null);
+          uuids := Array.append<Text>(uuids, [uuid]);
+        };
+        return #ok(uuids);
+      };
+    };
+  };
+
+  public shared({ caller }) func updateRBStation(
+    uuid : Text, payload : Types.RBStation
+  ) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    switch (state.refillBrand.stations.get(uuid)) {
+      case (null) { #err(#NotFound) };
+      case (?station) {
+        switch (state.refillBrand.managers.get(caller)) {
+          case (null) { #err(#AdminRoleRequired) };
+          case (?manager) {
+            if (manager.brandId == station.brandId) {
+              await setRBStation(manager.brandId, payload, uuid);
+              #ok(uuid);
+            } else {
+              #err(#AdminRoleRequired);
+            };
+          };
+        };
+      };
+    };
+  };
+
+  public query func listRBStations(brandId : Text) : Response<[(Text, Types.RBStation)]> {
+    let results : [(Text, Types.RBStation)] = [];
+    for ((uuid, station) in state.refillBrand.stations.entries()) {
+      if (station.brandId == brandId) {
+        results := Array.append<(Text, Types.RBStation)>(results, [(uuid, station)]);
+      };
+    };
+    #ok(results);
+  };
+
+  func setRBCategory(brandId : Text, name : Text, uuid : ?Text) : async Text {
+    let payload = { brandId; name };
+    if (uuid == null) {
+      uuid := await createUUID();
+      state.refillBrand.categories.put(uuid, payload);
+    } else {
+      state.refillBrand.categories.replace(uuid, payload);
+    };
+    return uuid;
+  };
+
+  public shared({ caller }) func createRBCaregory(name : Text) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    switch (state.refillBrand.managers.get(caller)) {
+      case (null) { #err(#AdminRoleRequired) };
+      case (?manager) {
+        let uuid = await setRBCategory(manager.brandId, name, null);
+        #ok(uuid);
+      };
+    };
+  };
+
+  public shared({ caller }) func updateRBCategory(uuid : Text, name : Text) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    switch (state.refillBrand.categories.get(uuid)) {
+      case (null) { #err(#NotFound) };
+      case (?category) {
+        switch (state.refillBrand.managers.get(caller)) {
+          case (null) { #err(#AdminRoleRequired) };
+          case (?manager) {
+            if (manager.brandId == category.brandId) {
+              await setRBCategory(manager.brandId, name, uuid);
+              #ok(uuid);
+            } else {
+              #err(#AdminRoleRequired);
+            };
+          };
+        };
+      };
+    };
+  };
+
+  public shared({ caller }) func deleteRBCategory(uuid : Text) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    switch (state.refillBrand.categories.get(uuid)) {
+      case (null) { #err(#NotFound) };
+      case (?category) {
+        switch (state.refillBrand.managers.get(caller)) {
+          case (null) { #err(#AdminRoleRequired) };
+          case (?manager) {
+            if (manager.brandId == category.brandId) {
+              state.refillBrand.categories.delete(uuid);
+              #ok(uuid);
+            } else {
+              #err(#AdminRoleRequired);
+            };
+          };
+        };
+      };
+    };
+  };
+
+  public query func listRBCategories(brandId : Text) : async Response<[(Text, Types.RBCategory)]> {
+    let results : [(Text, Types.RBCategory)] = [];
+    for ((uuid, category) in state.refillBrand.categories.entries()) {
+      if (category.brandId == brandId) {
+        results := Array.append<(Text, Types.RBCategory)>(results, [(uuid, category)]);
+      };
+    };
+    #ok(results);
+  };
+
+  func setRBTag(brandId : Text, name : Text, uuid : ?Text) : async Text {
+    let payload = { brandId; name };
+    if (uuid == null) {
+      uuid := await createUUID();
+      state.refillBrand.tags.put(uuid, payload);
+    } else {
+      state.refillBrand.tags.replace(uuid, payload);
+    };
+    return uuid;
+  };
+
+  public shared({ caller }) func createRBTag(name : Text) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    switch (state.refillBrand.managers.get(caller)) {
+      case (null) { #err(#AdminRoleRequired) };
+      case (?manager) {
+        let uuid = await setRBTag(manager.brandId, name, null);
+        #ok(uuid);
+      };
+    };
+  };
+
+  public shared({ caller }) func updateRBTag(uuid : Text, name : Text) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    switch (state.refillBrand.tags.get(uuid)) {
+      case (null) { #err(#NotFound) };
+      case (?tag) {
+        switch (state.refillBrand.managers.get(caller)) {
+          case (null) { #err(#AdminRoleRequired) };
+          case (?manager) {
+            if (manager.brandId == tag.brandId) {
+              await setRBTag(manager.brandId, name, uuid);
+              #ok(uuid);
+            } else {
+              #err(#AdminRoleRequired);
+            };
+          };
+        };
+      };
+    };
+  };
+
+  public shared({ caller }) func deleteRBTag(uuid : Text) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    switch (state.refillBrand.tags.get(uuid)) {
+      case (null) { #err(#NotFound) };
+      case (?tag) {
+        switch (state.refillBrand.managers.get(caller)) {
+          case (null) { #err(#AdminRoleRequired) };
+          case (?manager) {
+            if (manager.brandId == tag.brandId) {
+              state.refillBrand.tags.delete(uuid);
+              #ok(uuid);
+            } else {
+              #err(#AdminRoleRequired);
+            };
+          };
+        };
+      };
+    };
+  };
+
+  public query func listRBTags(brandId : Text) : async Response<[(Text, Types.RBTag)]> {
+    let results : [(Text, Types.RBTag)] = [];
+    for ((uuid, tag) in state.refillBrand.tags.entries()) {
+      if (tag.brandId == brandId) {
+        results := Array.append<(Text, Types.RBTag)>(results, [(uuid, tag)]);
+      };
+    };
+    #ok(results);
+  };
+
+  func setRBProductUnit(brandId : Text, name : Text, uuid : ?Text) : async Text {
+    let payload = { brandId; name };
+    if (uuid == null) {
+      uuid := await createUUID();
+      state.refillBrand.productUnits.put(uuid, payload);
+    } else {
+      state.refillBrand.productUnits.replace(uuid, payload);
+    };
+    return uuid;
+  };
+
+  public shared({ caller }) func createRBProductUnit(name : Text) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    switch (state.refillBrand.managers.get(caller)) {
+      case (null) { #err(#AdminRoleRequired) };
+      case (?manager) {
+        let uuid = await setRBProductUnit(manager.brandId, name, null);
+        #ok(uuid);
+      };
+    };
+  };
+
+  public shared({ caller }) func updateRBProductUnit(uuid : Text, name : Text) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    switch (state.refillBrand.productUnits.get(uuid)) {
+      case (null) { #err(#NotFound) };
+      case (?pu) {
+        switch (state.refillBrand.managers.get(caller)) {
+          case (null) { #err(#AdminRoleRequired) };
+          case (?manager) {
+            if (manager.brandId == pu.brandId) {
+              await setRBProductUnit(manager.brandId, name, uuid);
+              #ok(uuid);
+            } else {
+              #err(#AdminRoleRequired);
+            };
+          };
+        };
+      };
+    };
+  };
+
+  public shared({ caller }) func deleteRBProductUnit(uuid : Text) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    switch (state.refillBrand.productUnits.get(uuid)) {
+      case (null) { #err(#NotFound) };
+      case (?pu) {
+        switch (state.refillBrand.managers.get(caller)) {
+          case (null) { #err(#AdminRoleRequired) };
+          case (?manager) {
+            if (manager.brandId == pu.brandId) {
+              state.refillBrand.productUnits.delete(uuid);
+              #ok(uuid);
+            } else {
+              #err(#AdminRoleRequired);
+            };
+          };
+        };
+      };
+    };
+  };
+
+  public query func listRBProductUnits(brandId : Text) : async Response<[(Text, Types.RBProductUnit)]> {
+    let results : [(Text, Types.RBProductUnit)] = [];
+    for ((uuid, pu) in state.refillBrand.productUnits.entries()) {
+      if (pu.brandId == brandId) {
+        results := Array.append<(Text, Types.RBProductUnit)>(results, [(uuid, pu)]);
+      };
+    };
+    #ok(results);
   };
 };

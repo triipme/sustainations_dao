@@ -9,7 +9,6 @@ import DfinityAgentService from './services/dfinityAgentService';
 
 import { AuthClient } from '@dfinity/auth-client';
 import { canisterId, createActor } from "../../../../declarations/sustainations_dao";
-import settingsConfig from 'app/configs/settingsConfig';
 
 const AuthContext = React.createContext();
 
@@ -31,20 +30,19 @@ function AuthProvider({ children }) {
           }
         });
         const principal = identity.getPrincipal().toText();
-        let balance, depositAddress;
+        let balance, depositAddress, role, brandId;
         const result = await actor.getUserInfo();
         if ("ok" in result) {
-          balance = result.ok.balance;
-          depositAddress = result.ok.depositAddress;
+          { balance, depositAddress, role, brandId } = result.ok;
         }
         dispatch(setUser({
-          role: result.ok.agreement ? settingsConfig.defaultAuth : ['needAgreement'],
+          role: result.ok.agreement ? [role] : ['needAgreement'],
           actor,
           depositAddress,
           balance,
           principal,
+          brandId,
         }));
-        // dispatch(showMessage({ message: "Signed in" }));
         setWaitAuthCheck(false);
       } else {
         pass();
