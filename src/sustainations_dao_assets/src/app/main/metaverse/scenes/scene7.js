@@ -82,6 +82,8 @@ export default class Scene7 extends Phaser.Scene {
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
+    this.ingameSound = this.sound.add('ingameSound', {loop: true});
+    this.ingameSound.isRunning = false;
     this.ambientSound = this.sound.add('ambientSound', {loop: true});
     this.ambientSound.play();
     //background
@@ -142,6 +144,8 @@ export default class Scene7 extends Phaser.Scene {
         this.clickSound.play();
         this.scene.start('menuScene');
         this.ambientSound.stop();
+        this.ingameSound.stop();
+
       });
 
     //mycam
@@ -188,12 +192,17 @@ export default class Scene7 extends Phaser.Scene {
     }
 
     if (this.player.x > 1920) {
-      this.ambientSound.stop();
+      this.ingameSound.stop();
       this.scene.start("thanks");
     }
 
     if (this.player.x > 500 && this.isInteracted == false) {
       this.triggerPause();
+      this.ambientSound.stop();
+      if (this.ingameSound.isRunning == false) {
+        this.ingameSound.play();
+        this.ingameSound.isRunning = true;
+      }
       this.player.setVelocityX(0);
       this.player.play('idle-anims');
       this.player.stop()

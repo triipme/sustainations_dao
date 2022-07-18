@@ -13,7 +13,8 @@ const cs_noti = "metaverse/menu/commingsoon.png";
 const hoverSound = "metaverse/audio/Hover_sound.mp3";
 const clickSound = "metaverse/audio/Click_sound.mp3";
 const ambientSound = "metaverse/audio/Ambient_sound.mp3";
-
+const ingameSound = 'metaverse/audio/In_game.mp3';
+const pregameSound = 'metaverse/audio/Pre_game.mp3';
 
 class menuScene extends Phaser.Scene {
   constructor() {
@@ -34,9 +35,12 @@ class menuScene extends Phaser.Scene {
       frameWidth: 630,
       frameHeight: 637
     });
+    //load audio 1 time
     this.load.audio('hoverSound', hoverSound);
     this.load.audio('clickSound', clickSound);
     this.load.audio('ambientSound', ambientSound);
+    this.load.audio('ingameSound', ingameSound);
+    this.load.audio('pregameSound', pregameSound);
 
     // preload
     this.load.image("bg", bg);

@@ -76,11 +76,13 @@ export default class Scene3 extends Phaser.Scene {
     this.player.play('running-anims');
   }
   async create() {
-    // add audios
-    this.hoverSound = this.sound.add('hoverSound');
-    this.clickSound = this.sound.add('clickSound');
-    this.ambientSound = this.sound.add('ambientSound', {loop: true});
-    this.ambientSound.play();
+   // add audios
+   this.hoverSound = this.sound.add('hoverSound');
+   this.clickSound = this.sound.add('clickSound');
+   this.ingameSound = this.sound.add('ingameSound', {loop: true});
+   this.ingameSound.isRunning = false;
+   this.ambientSound = this.sound.add('ambientSound', {loop: true});
+   this.ambientSound.play();
     //background
     this.bg_1 = this.add.tileSprite(0, 0, gameConfig.scale.width, gameConfig.scale.height, "background1");
     this.bg_1.setOrigin(0, 0);
@@ -139,6 +141,7 @@ export default class Scene3 extends Phaser.Scene {
         this.clickSound.play();
         this.scene.start('menuScene');
         this.ambientSound.stop();
+        this.ingameSound.stop();
       });
 
     //mycam
@@ -194,12 +197,17 @@ export default class Scene3 extends Phaser.Scene {
     }
 
     if (this.player.x > 1920*4) {
-      this.ambientSound.stop();
+      this.ingameSound.stop();
       this.scene.start("Scene4");
     }
 
     if (this.player.x > 1920*4 -1000 && this.isInteracted == false) {
       this.triggerPause();
+      this.ambientSound.stop();
+      if (this.ingameSound.isRunning == false) {
+        this.ingameSound.play();
+        this.ingameSound.isRunning = true;
+      }
       this.player.setVelocityX(0);
       this.player.play('idle-anims');
       this.player.stop()

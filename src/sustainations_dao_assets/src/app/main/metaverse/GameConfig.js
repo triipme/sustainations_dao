@@ -10,6 +10,8 @@ import menuScene from './scenes/menuScene';
 import selectMap from './scenes/selectMap';
 import thanks from './scenes/thanks';
 
+
+
 const gameConfig = {
   type: Phaser.CANVAS,
   antialias: true,
