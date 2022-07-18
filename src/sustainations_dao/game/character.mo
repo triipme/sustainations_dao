@@ -5,19 +5,19 @@ import Types "../types";
 import State "../state";
 
 module Character {
-  public func getData(uuid : Text, newCharacter : Types.Character, eventOptionId : Text) : Types.CharacterTakeOption {
+  public func getData(uuid : Text, character : Types.Character, eventOptionId : ?Text) : Types.CharacterTakeOption {
     let newCharacterTakeOption : Types.CharacterTakeOption = {
       characterId = uuid;
-      eventOptionId = ?eventOptionId;
+      eventOptionId = eventOptionId;
       pickUpTime = Time.now();
-      currentHP = newCharacter.currentHP;
-      maxHP = newCharacter.maxHP;
-      currentMana = newCharacter.currentMana;
-      maxMana = newCharacter.maxMana;
-      currentStamina = newCharacter.currentStamina;
-      maxStamina = newCharacter.maxStamina;
-      currentMorale = newCharacter.currentMorale;
-      maxMorale = newCharacter.maxMorale;
+      currentHP = character.currentHP;
+      maxHP = character.maxHP;
+      currentMana = character.currentMana;
+      maxMana = character.maxMana;
+      currentStamina = character.currentStamina;
+      maxStamina = character.maxStamina;
+      currentMorale = character.currentMorale;
+      maxMorale = character.maxMorale;
     };
     return newCharacterTakeOption;
   };
@@ -47,7 +47,7 @@ module Character {
       materialIds : ?[Text] = Option.get(null, ?[]);
     };
     let createdCharacter = state.characters.put(uuid, newCharacter);
-    let createdCharacterTakeOption = state.characterTakeOptions.put(uuid, getData(uuid, newCharacter, ""));
+    let createdCharacterTakeOption = state.characterTakeOptions.put(uuid, getData(uuid, newCharacter, ?""));
   };
 
   public func update(characterId : Text, character : Types.Character, eventOption : Types.EventOption, totalStrength : Float, state : State.State) {

@@ -162,27 +162,33 @@ module {
     destinationName : Text;
   };
 
+  public type EventUpdate = {
+    description : Text;
+    locationName : Text;
+    destinationName : Text;
+  };
+
   //--------------------- Event Option ---------------------//
   public type EventOption = {
-    uuid : Text;
+    uuid : ?Text;
     eventId : Text;
     description : Text;
     requireItemIds : [Text];
-    lossHP : ?Float;
-    lossMana : ?Float;
-    lossStamina : ?Float;
-    lossMorale : ?Float;
-    riskChance : ?Float;
-    riskLost : ?Text;
-    lossOther : ?Text;
+    lossHP : Float;
+    lossMana : Float;
+    lossStamina : Float;
+    lossMorale : Float;
+    riskChance : Float;
+    riskLost : Text;
+    lossOther : Text;
     gainExp : Int;
-    gainHP : ?Float;
-    gainStamina : ?Float;
-    gainMorale : ?Float;
-    gainMana : ?Float;
-    luckyChance : ?Float;
-    gainByLuck : ?Float;
-    gainOther : ?Float;
+    gainHP : Float;
+    gainStamina : Float;
+    gainMorale : Float;
+    gainMana : Float;
+    luckyChance : Float;
+    gainByLuck : Float;
+    gainOther : Float;
   };
 
   //--------------------- Gear ---------------------//

@@ -913,16 +913,20 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
   };
 
   // Event
-  public shared({caller}) func createEvent(event: Types.Event) : async Response<Text> {
+  public shared({caller}) func createEvent(questName : Text, event: Types.EventUpdate) : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
     let uuid : Text = await createUUID();
     let rsEvent = state.events.get(uuid);
     switch (rsEvent) {
-      case (?V) { #err(#NotFound); };
+      case (?V) { #err(#AlreadyExisting); };
       case null {
-        Event.create(uuid, event, state);
+        for((questId, quest) in state.quests.entries()) {
+          if(quest.name == questName){
+            Event.create(uuid, questId, event, state);
+          };
+        };
         #ok("Success");
       };
     };
@@ -983,12 +987,19 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     let uuid : Text = await createUUID();
     let rsEventOption = state.eventOptions.get(uuid);
     switch (rsEventOption) {
-      case (?V) { #err(#NotFound); };
-      case null {
-        EventOption.create(uuid, eventOption, state);
-        #ok("Success");
+      case null { #err(#NotFound); };
+      case (?eventOption){
+        let rsEvent = state.events.get(eventOption.eventId);
+        switch (rsEvent) {
+          case null { #err(#NotFound); };
+          case (?event) {
+            EventOption.create(uuid, eventOption.eventId, eventOption, state);
+            #ok("Success");
+          };
+        };
       };
     };
+    
   };
 
   public shared query({caller}) func readEventOption(uuid : Text) : async Response<(Types.EventOption)>{
@@ -1031,7 +1042,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     switch (rsEventOption) {
       case null { #err(#NotFound); };
       case (?V) {
-        EventOption.update(uuid, eventOptions, state);
+        EventOption.update(uuid, eventOptions.eventId, eventOptions, state);
         #ok("Success");
       };
     };
@@ -1052,19 +1063,26 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
   };
 
   // Gear
-  public shared({caller}) func createGear(gear: Types.Gear) : async Response<Text> {
+  public shared({caller}) func createGear(gearClassId : Text, gear: Types.Gear) : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
     let uuid : Text = await createUUID();
-    let rsGear = state.gears.get(uuid);
-    switch (rsGear) {
-      case (?V) { #err(#NotFound); };
-      case null {
-        Gear.create(uuid, gear, state);
-        #ok("Success");
+    let rsGearClass = state.gearClasses.get(gearClassId);
+    switch (rsGearClass) {
+      case null { #err(#NotFound); };
+      case (?V){
+        let rsGear = state.gears.get(uuid);
+        switch (rsGear) {
+          case (?V) { #err(#AlreadyExisting); };
+          case null {
+            Gear.create(uuid, gear, state);
+            #ok("Success");
+          };
+        };
       };
     };
+
   };
 
   public shared query({caller}) func readGear(uuid : Text) : async Response<(Types.Gear)>{

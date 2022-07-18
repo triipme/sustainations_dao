@@ -4,10 +4,10 @@ import Types "../types";
 import State "../state";
 
 module EventOption {
-  public func getData(uuid : Text, eventOption : Types.EventOption) : Types.EventOption {
+  public func getData(uuid : Text, eventId : Text, eventOption : Types.EventOption) : Types.EventOption {
     let newEventOption : Types.EventOption = {
-      uuid = uuid;
-      eventId = eventOption.eventId;
+      uuid = ?uuid;
+      eventId = eventId;
       description = eventOption.description;
       requireItemIds = eventOption.requireItemIds;
       lossHP = eventOption.lossHP;
@@ -28,11 +28,11 @@ module EventOption {
     };
     return newEventOption;
   };
-  public func create(uuid : Text, eventOption : Types.EventOption, state : State.State) {
-    state.eventOptions.put(uuid, getData(uuid, eventOption));
+  public func create(uuid : Text, eventId : Text, eventOption : Types.EventOption, state : State.State) {
+    state.eventOptions.put(uuid, getData(uuid, eventId, eventOption));
   };
 
-  public func update(uuid : Text, eventOption : Types.EventOption, state : State.State) {
-    let updated = state.eventOptions.replace(uuid, getData(uuid, eventOption));
+  public func update(uuid : Text, eventId : Text, eventOption : Types.EventOption, state : State.State) {
+    let updated = state.eventOptions.replace(uuid, getData(uuid, eventId, eventOption));
   };
 }
