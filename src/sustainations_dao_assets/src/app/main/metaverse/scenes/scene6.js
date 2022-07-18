@@ -40,6 +40,7 @@ export default class Scene6 extends Phaser.Scene {
     this.clearSceneCache();
     this.isInteracting = false;
     this.isInteracted = false;
+    this.isCloseToObstacle = false;
     this.load.spritesheet("hero-running", heroRunningSprite, {
       frameWidth: 197,
       frameHeight: 337
@@ -84,6 +85,9 @@ export default class Scene6 extends Phaser.Scene {
     this.ingameSound.isRunning = false;
     this.ambientSound = this.sound.add('ambientSound', {loop: true});
     this.ambientSound.play();
+    this.sfx_char_footstep = this.sound.add('sfx_char_footstep', {loop: true, volume: 0.2});
+    this.sfx_char_footstep.play();
+    this.sfx_small_waterfall = this.sound.add('sfx_small_waterfall', {loop: true});
     //background
     this.bg_1 = this.add.tileSprite(0, 0, gameConfig.scale.width, gameConfig.scale.height, "background1");
     this.bg_1.setOrigin(0, 0);
@@ -130,11 +134,11 @@ export default class Scene6 extends Phaser.Scene {
     this.bg_3.setScrollFactor(0);
 
     //UI
-    this.add.image(20, 40, "UI_NameCard").setOrigin(0).setScrollFactor(0).setScale(0.95);
-    this.add.image(370, 40, "UI_HP").setOrigin(0).setScrollFactor(0).setScale(0.95);
-    this.add.image(720, 40, "UI_Mana").setOrigin(0).setScrollFactor(0).setScale(0.95);
-    this.add.image(1070, 40, "UI_Stamina").setOrigin(0).setScrollFactor(0).setScale(0.95);
-    this.add.image(1420, 40, "UI_Morale").setOrigin(0).setScrollFactor(0).setScale(0.95);
+    this.add.image(20, 40, "UI_NameCard").setOrigin(0).setScrollFactor(0);
+    this.add.image(370, 40, "UI_HP").setOrigin(0).setScrollFactor(0);
+    this.add.image(720, 40, "UI_Mana").setOrigin(0).setScrollFactor(0);
+    this.add.image(1070, 40, "UI_Stamina").setOrigin(0).setScrollFactor(0);
+    this.add.image(1420, 40, "UI_Morale").setOrigin(0).setScrollFactor(0);
     this.add.image(80, 830, "UI_Utility").setOrigin(0).setScrollFactor(0);
     this.add.image(1780, 74, "BtnExit").setOrigin(0).setScrollFactor(0).setScale(0.7)
       .setInteractive()
@@ -143,6 +147,8 @@ export default class Scene6 extends Phaser.Scene {
         this.scene.start('menuScene');
         this.ambientSound.stop();
         this.ingameSound.stop();
+        this.sfx_small_waterfall.stop();
+        this.sfx_char_footstep.stop();
       });
 
     //mycam
@@ -179,6 +185,8 @@ export default class Scene6 extends Phaser.Scene {
       this.options[idx].on('pointerdown', () => {
         this.triggerContinue();
         this.clickSound.play();
+        this.sfx_char_footstep.play();
+        this.cameras.main.fadeOut(500, 0, 0, 0);
       });
     }
   }
@@ -191,12 +199,15 @@ export default class Scene6 extends Phaser.Scene {
 
     if (this.player.x > 1920*4) {
       this.ingameSound.stop();
+      this.sfx_char_footstep.stop();
+      this.sfx_small_waterfall.stop();
       this.scene.start("Scene7");
     }
 
     if (this.player.x > 1920*3 && this.isInteracted == false) {
       this.triggerPause();
       this.ambientSound.stop();
+      this.sfx_char_footstep.stop();
       if (this.ingameSound.isRunning == false) {
         this.ingameSound.play();
         this.ingameSound.isRunning = true;
@@ -206,6 +217,11 @@ export default class Scene6 extends Phaser.Scene {
       this.player.stop()
     }
 
+    if (this.player.x > 1920*2 && this.isCloseToObstacle == false) {
+      this.sfx_small_waterfall.play();
+      this.isCloseToObstacle = true;
+    }
+    
     //bg
     // scroll the texture of the tilesprites proportionally to the camera scroll
     this.bg_1.tilePositionX = this.myCam.scrollX * .3;

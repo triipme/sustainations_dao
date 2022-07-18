@@ -4,16 +4,16 @@ import gameConfig from '../GameConfig';
 const bg = 'metaverse/selectItems/UI_background.png';
 const btnBack = 'metaverse/selectItems/UI_back.png';
 const btnClear = 'metaverse/selectItems/UI_clear.png';
-const btnValid = 'metaverse/selectItems/UI_valid.png';
+const btnGo = 'metaverse/selectItems/UI_go.png';
 const itembox = 'metaverse/selectItems/UI_itembox.png';
 
-const classtag = 'metaverse/selectItems/UI_classtag.png';
+const UI_strength = 'metaverse/selectItems/UI_Strength.png';
 const effect = 'metaverse/selectItems/UI_effect.png';
 const UI_HP = 'metaverse/selectItems/UI_id_hp.png';
-const UI_mana = 'metaverse/selectItems/UI_id_mana.png';
-const UI_morale = 'metaverse/selectItems/UI_id_morale.png';
-const UI_stamina = 'metaverse/selectItems/UI_id_stamina.png';
-const UI_name = 'metaverse/selectItems/UI_id_name.png';
+const UI_Mana = 'metaverse/selectItems/UI_id_mana.png';
+const UI_Morale = 'metaverse/selectItems/UI_id_morale.png';
+const UI_Stamina = 'metaverse/selectItems/UI_id_stamina.png';
+const UI_NameCard = 'metaverse/selectItems/UI_id_name.png';
 const player = 'metaverse/selectItems/UI_player.png';
 const pickItemText = 'metaverse/selectItems/UI_pick_item.png';
 
@@ -23,11 +23,14 @@ class selectItemScene extends Phaser.Scene {
   }
 
   clearCache() {
-    const textures_list = ['bg', 'text', 'selectArea', 'locationDetail'];
+    const textures_list = ['bg', 'text', 'selectArea', 'locationDetail', 'player', 'pickItemText',
+    'btnGo', 'btnClear'];
     for (const index in textures_list){
       this.textures.remove(textures_list[index]);
     }
+    console.clear();
   }
+
   preload() {
     //loading screen
     this.add.image(
@@ -45,19 +48,19 @@ class selectItemScene extends Phaser.Scene {
     //preload
     this.clearCache();
     this.load.image("bg", bg);
-    this.load.image("classtag", classtag);
+    this.load.image("UI_strength", UI_strength);
     this.load.image("effect", effect);
     this.load.image("UI_HP", UI_HP);
-    this.load.image("UI_mana", UI_mana);
-    this.load.image("UI_morale", UI_morale);
-    this.load.image("UI_stamina", UI_stamina);
-    this.load.image("UI_name", UI_name);
+    this.load.image("UI_Mana", UI_Mana);
+    this.load.image("UI_Morale", UI_Morale);
+    this.load.image("UI_Stamina", UI_Stamina);
+    this.load.image("UI_NameCard", UI_NameCard);
     this.load.image("player", player);
     this.load.image("btnBack", btnBack);
     this.load.image("pickItemText", pickItemText);
     this.load.spritesheet("itembox", itembox, { frameWidth: 237, frameHeight: 185 });
     this.load.spritesheet("btnClear", btnClear, { frameWidth: 339, frameHeight: 141 });
-    this.load.spritesheet("btnValid", btnValid, { frameWidth: 339, frameHeight: 141 });
+    this.load.spritesheet("btnGo", btnGo, { frameWidth: 339, frameHeight: 141 });
   }
 
   create() {
@@ -74,13 +77,13 @@ class selectItemScene extends Phaser.Scene {
     });
     this.add.image(180, 0, 'effect').setOrigin(0);
     this.add.image(420, 215, 'player').setOrigin(0);
-    this.add.image(550, 390, 'classtag').setOrigin(0);
+    this.add.image(585, 390, 'UI_strength').setOrigin(0).setScale(0.55);
 
-    this.add.image(50, 200, 'UI_name').setOrigin(0);
+    this.add.image(50, 200, 'UI_NameCard').setOrigin(0);
     this.add.image(50, 320, 'UI_HP').setOrigin(0);
-    this.add.image(50, 440, 'UI_stamina').setOrigin(0);
-    this.add.image(50, 560, 'UI_mana').setOrigin(0);
-    this.add.image(50, 680, 'UI_morale').setOrigin(0);
+    this.add.image(50, 440, 'UI_Stamina').setOrigin(0);
+    this.add.image(50, 560, 'UI_Mana').setOrigin(0);
+    this.add.image(50, 680, 'UI_Morale').setOrigin(0);
 
     this.add.image(1245, 80, 'pickItemText').setOrigin(0);
     this.gridItem = [];
@@ -118,16 +121,16 @@ class selectItemScene extends Phaser.Scene {
       }
     });
 
-    this.btnValid = this.add.sprite(1400, 870, "btnValid")
+    this.btnGo = this.add.sprite(1400, 870, "btnGo")
       .setOrigin(0).setInteractive();
-    this.btnValid.on('pointerover', () => {
-      this.btnValid.setFrame(1);
+    this.btnGo.on('pointerover', () => {
+      this.btnGo.setFrame(1);
       this.hoverSound.play()
     });
-    this.btnValid.on('pointerout', () => {
-      this.btnValid.setFrame(0);
+    this.btnGo.on('pointerout', () => {
+      this.btnGo.setFrame(0);
     });
-    this.btnValid.on('pointerdown', () => {
+    this.btnGo.on('pointerdown', () => {
       this.clickSound.play();
       this.scene.transition({target: 'Scene1', duration: 0 });
     });
