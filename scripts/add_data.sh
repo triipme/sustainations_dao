@@ -2,11 +2,11 @@
 # dfx canister call sustainations_dao listQuests
 
 dfx canister call sustainations_dao createEvent '("Jungle Tour",record{description="There is one trouble is occurs : Dense bushes are blocking the way";locationName="Position 1";destinationName="The Old Tree 1000 years old on the Position 6"})'
-dfx canister call sustainations_dao createEvent '("Jungle Tour",description="Met a waterfall";locationName="Position 1";destinationName="The Old Tree 1000 years old on the Position 6"})'
-dfx canister call sustainations_dao createEvent '("Jungle Tour",description="Encouter a herd of monkeys";locationName="Position 1";destinationName="The Old Tree 1000 years old on the Position 6"})'
-dfx canister call sustainations_dao createEvent '("Jungle Tour",description="Camping Spot";locationName="Position 1";destinationName="The Old Tree 1000 years old on the Position 6"})'
-dfx canister call sustainations_dao createEvent '("Jungle Tour",description="Encounters a large tree blocking the way";locationName="Position 1";destinationName="The Old Tree 1000 years old on the Position 6"})'
-dfx canister call sustainations_dao createEvent '("Jungle Tour",description="There is a river near the path";locationName="Position 1";destinationName="The Old Tree 1000 years old on the Position 6"})'
+dfx canister call sustainations_dao createEvent '("Jungle Tour",record{description="Met a waterfall";locationName="Position 1";destinationName="The Old Tree 1000 years old on the Position 6"})'
+dfx canister call sustainations_dao createEvent '("Jungle Tour",record{description="Encouter a herd of monkeys";locationName="Position 1";destinationName="The Old Tree 1000 years old on the Position 6"})'
+dfx canister call sustainations_dao createEvent '("Jungle Tour",record{description="Camping Spot";locationName="Position 1";destinationName="The Old Tree 1000 years old on the Position 6"})'
+dfx canister call sustainations_dao createEvent '("Jungle Tour",record{description="Encounters a large tree blocking the way";locationName="Position 1";destinationName="The Old Tree 1000 years old on the Position 6"})'
+dfx canister call sustainations_dao createEvent '("Jungle Tour",record{description="There is a river near the path";locationName="Position 1";destinationName="The Old Tree 1000 years old on the Position 6"})'
 dfx canister call sustainations_dao listEvents
 
 # dfx canister call sustainations_dao createItem '(record{name="Knife";strengthRequire=0.5})'

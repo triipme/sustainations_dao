@@ -4,7 +4,7 @@ import State "../state";
 module CharacterClass {
   public func getData(uuid : Text, characterClass : Types.CharacterClass) : Types.CharacterClass {
     let newCharacterClass : Types.CharacterClass = {
-      uuid = ?uuid;
+      uuid = uuid;
       name = characterClass.name;
       specialAbility = characterClass.specialAbility;
       description = characterClass.description;

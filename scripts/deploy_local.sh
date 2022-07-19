@@ -1,7 +1,7 @@
 # dfx start --background --clean --host 127.0.0.1:8000
 
-yarn install
-vessel install
+# yarn install
+# vessel install
 
 ### === DEPLOY LOCAL LEDGER =====
 dfx identity new minter
@@ -40,4 +40,4 @@ dfx canister call sustainations_dao getSystemBalance
 
 # dfx canister call sustainations_dao withdraw '(100000)'
 
-yarn start
+# yarn start

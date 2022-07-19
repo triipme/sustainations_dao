@@ -635,23 +635,21 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
   };
 
   // Character
-  public shared({caller}) func createCharacter(characterClassUuid : Text, characterName : Text) : async Response<Text> {
+  public shared({caller}) func createCharacter(characterClassName : Text, characterName : Text) : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
     let uuid : Text = await createUUID();
-    let rsCharacterClass = state.characterClasses.get(characterClassUuid);
     let rsCharacter = state.characters.get(uuid);
     switch (rsCharacter) {
       case (?V) { #err(#AlreadyExisting); };
       case null {
-        switch (rsCharacterClass) {
-          case null { #err(#NotFound) };
-          case (?characterClass) {
+        for((classId, characterClass) in state.characterClasses.entries()) {
+          if(characterClass.name == characterClassName){
             Character.create(caller, uuid, characterClass, characterName, state);
-            #ok("Success");
           };
         };
+        #ok("Success");
       };
     };
   };

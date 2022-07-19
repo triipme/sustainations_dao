@@ -101,13 +101,13 @@ module {
     maxStamina : Float;
     currentMorale : Float;
     maxMorale : Float;
-    classId : ?Text;
+    classId : Text;
     gearIds : ?[Text];
     materialIds : ?[Text];
   };
 
   public type CharacterClass = {
-    uuid : ?Text;
+    uuid : Text;
     name : Text;
     specialAbility : Text;
     description : Text;
@@ -140,13 +140,14 @@ module {
     name : Text;
     price : Int;
     description : Text;
-    images : ?[Text];
+    images : [Text];
   };
 
+  //--------------------- Item ---------------------//
   public type Item = {
     name : Text;
     strengthRequire : Float;
-    images : ?[Text];
+    images : [Text];
   };
 
   public type QuestItem = {
@@ -187,7 +188,7 @@ module {
     gainMorale : Float;
     gainMana : Float;
     luckyChance : Float;
-    gainByLuck : Float;
+    gainByLuck : Text;
     gainOther : Float;
   };
 
@@ -198,7 +199,7 @@ module {
     images : [Text];
     gearClassId : Text;
     gearRarity : Text;
-    substatIds : ?[Text];
+    substatIds : [Text];
   };
 
   public type GearClass = {

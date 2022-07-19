@@ -7,7 +7,7 @@ module Item {
     let newItem : Types.Item = {
       name = item.name;
       strengthRequire = item.strengthRequire;
-      images : ?[Text] = Option.get(null, ?[]);
+      images = item.images;
     };
     return newItem;
   };
