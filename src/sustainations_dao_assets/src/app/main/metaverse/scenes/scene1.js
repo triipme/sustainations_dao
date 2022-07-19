@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import BaseScene from './BaseScene'
 import gameConfig from '../GameConfig';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
@@ -17,7 +18,7 @@ const BtnExit = 'metaverse/scenes/UI_exit.png'
 // const UI_NameCard = 'metaverse/scenes/UI-namecard.png'
 const UI_Utility = 'metaverse/scenes/UI-utility.png'
 
-export default class Scene1 extends Phaser.Scene {
+export default class Scene1 extends BaseScene {
   constructor() {
     super('Scene1');
   }
@@ -149,6 +150,14 @@ export default class Scene1 extends Phaser.Scene {
     this.add.image(720, 40, "UI_Mana").setOrigin(0).setScrollFactor(0);
     this.add.image(1070, 40, "UI_Stamina").setOrigin(0).setScrollFactor(0);
     this.add.image(1420, 40, "UI_Morale").setOrigin(0).setScrollFactor(0);
+    //set value
+    this.hp = this.makeBar(476, 92, 150, 22, 0x74e044).setScrollFactor(0);
+    this.mana = this.makeBar(476+350, 92, 150, 22, 0xc038f6).setScrollFactor(0);
+    this.stamina = this.makeBar(476+350*2, 92, 150, 22, 0xcf311f).setScrollFactor(0);
+    this.morale = this.makeBar(476+350*3, 92, 150, 22, 0x63dafb).setScrollFactor(0);
+    // this.setValue(this.hp, 50)
+
+    //UI2
     this.add.image(80, 830, "UI_Utility").setOrigin(0).setScrollFactor(0);
     this.add.image(1780, 74, "BtnExit").setOrigin(0).setScrollFactor(0).setScale(0.7)
       .setInteractive()
