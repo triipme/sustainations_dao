@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import BaseScene from './BaseScene'
 import gameConfig from '../GameConfig';
 const bg = 'metaverse/selectMap/background.png';
 const text = 'metaverse/selectMap/call_to_action.png';
@@ -6,7 +7,7 @@ const selectArea = 'metaverse/selectMap/select-area.png';
 const locationDetail = 'metaverse/selectMap/location_detail.png';
 const btnBack = 'metaverse/selectItems/UI_back.png';
 
-class selectMap extends Phaser.Scene {
+class selectMap extends BaseScene {
   constructor() {
     super('selectMap');
   }
