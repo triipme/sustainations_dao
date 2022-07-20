@@ -11,11 +11,6 @@ const selectAction = 'metaverse/scenes/background_menu.png';
 const btnBlank = 'metaverse/scenes/selection.png';
 
 const BtnExit = 'metaverse/scenes/UI_exit.png'
-// const UI_HP = 'metaverse/scenes/UI-HP.png'
-// const UI_Mana = 'metaverse/scenes/UI-mana.png'
-// const UI_Morale = 'metaverse/scenes/UI-morale.png'
-// const UI_Stamina = 'metaverse/scenes/UI-stamina.png'
-// const UI_NameCard = 'metaverse/scenes/UI-namecard.png'
 const UI_Utility = 'metaverse/scenes/UI-utility.png'
 
 export default class Scene1 extends BaseScene {
