@@ -12,13 +12,12 @@ const selectAction = 'metaverse/scenes/background_menu.png';
 const btnBlank = 'metaverse/scenes/selection.png';
 
 const BtnExit = 'metaverse/scenes/UI_exit.png'
-const UI_HP = 'metaverse/scenes/UI-HP.png'
-const UI_Mana = 'metaverse/scenes/UI-mana.png'
-const UI_Morale = 'metaverse/scenes/UI-morale.png'
-const UI_Stamina = 'metaverse/scenes/UI-stamina.png'
-const UI_NameCard = 'metaverse/scenes/UI-namecard.png'
+// const UI_HP = 'metaverse/scenes/UI-HP.png'
+// const UI_Mana = 'metaverse/scenes/UI-mana.png'
+// const UI_Morale = 'metaverse/scenes/UI-morale.png'
+// const UI_Stamina = 'metaverse/scenes/UI-stamina.png'
+// const UI_NameCard = 'metaverse/scenes/UI-namecard.png'
 const UI_Utility = 'metaverse/scenes/UI-utility.png'
-
 
 export default class Scene1 extends Phaser.Scene {
   constructor() {
@@ -26,9 +25,8 @@ export default class Scene1 extends Phaser.Scene {
   }
   
   clearSceneCache() {
-    const textures_list = ['bg', 'classtag', 'effect', 'UI_HP', 'UI_mana',
-      'UI_morale', 'UI_mana', 'UI_stamina', 'UI_name', 'player', 'pickItemText',
-      'itemBox', 'btnValid', 'btnClear'];
+    const textures_list = ['bg', 'UI_strength', 'effect', 'player', 'pickItemText',
+      'itembox', 'btnGo', 'btnClear'];
     for (const index in textures_list){
       this.textures.remove(textures_list[index]);
     }
@@ -67,11 +65,6 @@ export default class Scene1 extends Phaser.Scene {
 
     //UI -- One time load
     this.load.image("BtnExit", BtnExit);
-    this.load.image("UI_HP", UI_HP);
-    this.load.image("UI_Mana", UI_Mana);
-    this.load.image("UI_Morale", UI_Morale);
-    this.load.image("UI_Stamina", UI_Stamina);
-    this.load.image("UI_NameCard", UI_NameCard);
     this.load.image("UI_Utility", UI_Utility);
   }
 
@@ -104,6 +97,9 @@ export default class Scene1 extends Phaser.Scene {
     this.clickSound = this.sound.add('clickSound');
     this.pregameSound = this.sound.add('pregameSound', {loop: true});
     this.pregameSound.play();
+    this.sfx_obstacle_remove = this.sound.add('sfx_obstacle_remove');
+    this.sfx_char_footstep = this.sound.add('sfx_char_footstep', {loop: true, volume: 0.2});
+    this.sfx_char_footstep.play();
     //background
     this.bg_1 = this.add.tileSprite(0, 0, gameConfig.scale.width, gameConfig.scale.height, "background1");
     this.bg_1.setOrigin(0, 0);
@@ -150,11 +146,11 @@ export default class Scene1 extends Phaser.Scene {
     this.bg_3.setScrollFactor(0);
 
     //UI
-    this.add.image(20, 40, "UI_NameCard").setOrigin(0).setScrollFactor(0).setScale(0.95);
-    this.add.image(370, 40, "UI_HP").setOrigin(0).setScrollFactor(0).setScale(0.95);
-    this.add.image(720, 40, "UI_Mana").setOrigin(0).setScrollFactor(0).setScale(0.95);
-    this.add.image(1070, 40, "UI_Stamina").setOrigin(0).setScrollFactor(0).setScale(0.95);
-    this.add.image(1420, 40, "UI_Morale").setOrigin(0).setScrollFactor(0).setScale(0.95);
+    this.add.image(20, 40, "UI_NameCard").setOrigin(0).setScrollFactor(0);
+    this.add.image(370, 40, "UI_HP").setOrigin(0).setScrollFactor(0);
+    this.add.image(720, 40, "UI_Mana").setOrigin(0).setScrollFactor(0);
+    this.add.image(1070, 40, "UI_Stamina").setOrigin(0).setScrollFactor(0);
+    this.add.image(1420, 40, "UI_Morale").setOrigin(0).setScrollFactor(0);
     this.add.image(80, 830, "UI_Utility").setOrigin(0).setScrollFactor(0);
     this.add.image(1780, 74, "BtnExit").setOrigin(0).setScrollFactor(0).setScale(0.7)
       .setInteractive()
@@ -162,6 +158,7 @@ export default class Scene1 extends Phaser.Scene {
         this.clickSound.play();
         this.scene.start('menuScene');
         this.pregameSound.stop();
+        this.sfx_char_footstep.stop();
       });
 
     //mycam
@@ -206,6 +203,8 @@ export default class Scene1 extends Phaser.Scene {
       this.options[idx].on('pointerdown', () => {
         this.triggerContinue();
         this.clickSound.play();
+        this.sfx_char_footstep.play();
+        this.sfx_obstacle_remove.play();
         this.obstacle.setVisible(false);
       });
     }
@@ -219,14 +218,16 @@ export default class Scene1 extends Phaser.Scene {
 
     if (this.player.x > 1920*4+200) {
       this.pregameSound.stop();
+      this.sfx_char_footstep.stop();
       this.scene.start("Scene2");
     }
 
     if (this.player.x > 1920*4 -1000 && this.isInteracted == false) {
       this.triggerPause();
+      this.sfx_char_footstep.stop();
       this.player.setVelocityX(0);
       this.player.play('idle-anims');
-      this.player.stop()
+      this.player.stop();
     }
 
     //bg

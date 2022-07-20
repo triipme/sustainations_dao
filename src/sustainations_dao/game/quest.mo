@@ -6,6 +6,7 @@ import State "../state";
 module Quest {
   public func getData(quest : Types.Quest) : Types.Quest {
     let newQuest : Types.Quest = {
+      id = quest.id;
       name = quest.name;
       price = quest.price;
       description = quest.description;

@@ -26,7 +26,6 @@ const Admin = () => {
         console.log(wsnames);
         console.log("====================================");
         wsnames.forEach(function(wsname){
-          console.log(wsname);
           const ws = wb.Sheets[wsname]; // get first worksheet
           const aoa = utils.sheet_to_json(ws); // get data as array of arrays
           var headers = {};
@@ -70,15 +69,10 @@ const Admin = () => {
   const handleSubmit = () => {
     const items = data[0];
     items.forEach(async(item)=>{
-      const arg = {
-        name: item.name,
-        strengthRequire: item.strengthRequire,
-        images: [item.images]
-      };
-      try {
-        if (!!actor?.createItem) {
-          const rs = await actor.createItem(arg);
-          console.log("create item");
+        try {
+          if (!!actor?.createItem) {
+            const rs = await actor.createItem(item);
+            console.log("Create Items");
           console.log(rs);
         }
       } catch (error) {
@@ -88,15 +82,10 @@ const Admin = () => {
 
     const quests = data[1];
     quests.forEach(async(quest)=>{
-      const arg = {
-        name: quest.name,
-        price: quest.price,
-        description: quest.description,
-        images: [quest.images]
-      };
       try {
         if (!!actor?.createQuest) {
-          const rs = await actor.createQuest(arg);
+          const rs = await actor.createQuest(quest);
+          console.log("Create Quest");
           console.log(rs);
         }
       } catch (error) {
@@ -104,23 +93,38 @@ const Admin = () => {
       }
     });
 
-    const characterClasses = data[2];
+    const events = data[2];
+    events.forEach(async(event)=>{
+      try {
+        if (!!actor?.createEvent) {
+          const rs = await actor.createEvent(event.questId, event);
+          console.log("Create Events");
+          console.log(rs);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    });
+
+    const eventOptions = data[3];
+    eventOptions.forEach(async(eventOption)=>{
+      try {
+        if (!!actor?.createEventOption) {
+          const rs = await actor.createEventOption(eventOption);
+          console.log("Create Event Options");
+          console.log(rs);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    });
+
+    const characterClasses = data[4];
     characterClasses.forEach(async(characterClass)=>{
       try {
         if (!!actor?.createCharacterClass) {
           const rs = await actor.createCharacterClass(characterClass);
-          console.log(rs);
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    });
-
-    const events = data[3];
-    events.forEach(async(event)=>{
-      try {
-        if (!!actor?.createEvent) {
-          const rs = await actor.createEvent(quests[0].name, event);
+          console.log("Create Character Class");
           console.log(rs);
         }
       } catch (error) {

@@ -6,8 +6,8 @@ import State "../state";
 module QuestItem {
   public func getData(questItem : Types.QuestItem) : Types.QuestItem {
     let newQuestItem : Types.QuestItem = {
-      itemId = questItem.itemId;
-      questId = questItem.questId;
+      itemUuid = questItem.itemUuid;
+      questUuid = questItem.questUuid;
     };
     return newQuestItem;
   };

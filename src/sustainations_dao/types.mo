@@ -101,13 +101,13 @@ module {
     maxStamina : Float;
     currentMorale : Float;
     maxMorale : Float;
-    classId : Text;
+    classId : Int;
     gearIds : ?[Text];
     materialIds : ?[Text];
   };
 
   public type CharacterClass = {
-    uuid : Text;
+    id : Int;
     name : Text;
     specialAbility : Text;
     description : Text;
@@ -123,7 +123,7 @@ module {
 
   public type CharacterTakeOption = {
     characterId : Text;
-    eventOptionId : ?Text;
+    eventOptionUuid : Text;
     pickUpTime : Time.Time;
     currentHP : Float;
     maxHP : Float;
@@ -137,33 +137,30 @@ module {
 
   //--------------------- Quest ---------------------//
   public type Quest = {
+    id : Int;
     name : Text;
     price : Int;
     description : Text;
-    images : [Text];
+    images : Text;
   };
 
   //--------------------- Item ---------------------//
   public type Item = {
+    id : Int;
     name : Text;
     strengthRequire : Float;
-    images : [Text];
+    images : Text;
   };
 
   public type QuestItem = {
-    itemId : Text;
-    questId : Text;
+    itemUuid : Text;
+    questUuid : Text;
   };
 
   //--------------------- Event ---------------------//
   public type Event = {
-    questId : Text;
-    description : Text;
-    locationName : Text;
-    destinationName : Text;
-  };
-
-  public type EventUpdate = {
+    id : Int;
+    questId : Int;
     description : Text;
     locationName : Text;
     destinationName : Text;
@@ -171,10 +168,10 @@ module {
 
   //--------------------- Event Option ---------------------//
   public type EventOption = {
-    uuid : ?Text;
-    eventId : Text;
+    id : Int;
+    eventId : Int;
     description : Text;
-    requireItemIds : [Text];
+    requireItemId : Int;
     lossHP : Float;
     lossMana : Float;
     lossStamina : Float;
@@ -196,7 +193,7 @@ module {
   public type Gear = {
     name : Text;
     description : Text;
-    images : [Text];
+    images : Text;
     gearClassId : Text;
     gearRarity : Text;
     substatIds : [Text];

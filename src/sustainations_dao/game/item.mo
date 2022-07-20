@@ -5,6 +5,7 @@ import State "../state";
 module Item {
   public func getData(item : Types.Item) : Types.Item {
     let newItem : Types.Item = {
+      id = item.id;
       name = item.name;
       strengthRequire = item.strengthRequire;
       images = item.images;

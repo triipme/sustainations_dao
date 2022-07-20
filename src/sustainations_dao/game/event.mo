@@ -2,9 +2,10 @@ import Types "../types";
 import State "../state";
 
 module Event {
-  public func getData(questId : Text, event : Types.EventUpdate) : Types.Event {
+  public func getData(event : Types.Event) : Types.Event {
     let newEvent : Types.Event = {
-      questId = questId;
+      id = event.id;
+      questId = event.questId;
       description = event.description;
       locationName = event.locationName;
       destinationName = event.destinationName;
@@ -12,17 +13,11 @@ module Event {
     return newEvent;
   };
 
-  public func create(uuid : Text, questId : Text, event : Types.EventUpdate, state : State.State) {
-    state.events.put(uuid, getData(questId, event));
+  public func create(uuid : Text, event : Types.Event, state : State.State) {
+    state.events.put(uuid, getData(event));
   };
 
   public func update(uuid : Text, event : Types.Event, state : State.State) {
-    let newEvent : Types.Event = {
-      questId = event.questId;
-      description = event.description;
-      locationName = event.locationName;
-      destinationName = event.destinationName;
-    };
-    let updated = state.events.replace(uuid, newEvent);
+    let updated = state.events.replace(uuid, getData(event));
   };
 }

@@ -5,10 +5,10 @@ import Types "../types";
 import State "../state";
 
 module Character {
-  public func getData(uuid : Text, character : Types.Character, eventOptionId : ?Text) : Types.CharacterTakeOption {
+  public func getData(uuid : Text, character : Types.Character, eventOptionUuid : Text) : Types.CharacterTakeOption {
     let newCharacterTakeOption : Types.CharacterTakeOption = {
       characterId = uuid;
-      eventOptionId = eventOptionId;
+      eventOptionUuid = eventOptionUuid;
       pickUpTime = Time.now();
       currentHP = character.currentHP;
       maxHP = character.maxHP;
@@ -42,15 +42,15 @@ module Character {
       maxStamina = characterClass.baseStamina;
       currentMorale = characterClass.baseMorale;
       maxMorale = characterClass.baseMorale;
-      classId = characterClass.uuid;
+      classId = characterClass.id;
       gearIds : ?[Text] = Option.get(null, ?[]);
       materialIds : ?[Text] = Option.get(null, ?[]);
     };
     let createdCharacter = state.characters.put(uuid, newCharacter);
-    let createdCharacterTakeOption = state.characterTakeOptions.put(uuid, getData(uuid, newCharacter, ?""));
+    let createdCharacterTakeOption = state.characterTakeOptions.put(uuid, getData(uuid, newCharacter, ""));
   };
 
-  public func update(characterId : Text, character : Types.Character, eventOption : Types.EventOption, totalStrength : Float, state : State.State) {
+  public func update(uuid : Text, character : Types.Character, strengthRequire : Float, eventOption : Types.EventOption, state : State.State) {
     let newCharacter : Types.Character = {
       userId = character.userId;
       name = character.name;
@@ -58,23 +58,27 @@ module Character {
       currentExp = character.currentExp + eventOption.gainExp;
       levelUpExp = character.levelUpExp;
       status = character.status;
-      strength = character.strength - totalStrength;
+      strength = character.strength - strengthRequire;
       intelligence = character.intelligence;
       vitality = character.vitality;
       luck = character.luck;
-      currentHP = character.currentHP;
+      currentHP = character.currentHP - eventOption.lossHP + eventOption.gainHP;
       maxHP = character.maxHP;
-      currentMana = character.currentMana;
+      currentMana = character.currentMana - eventOption.lossMana + eventOption.gainMana;
       maxMana = character.maxMana;
-      currentStamina = character.currentStamina;
+      currentStamina = character.currentStamina - eventOption.lossStamina + eventOption.gainStamina;
       maxStamina = character.maxStamina;
-      currentMorale = character.currentMorale;
+      currentMorale = character.currentMorale - eventOption.lossMorale + eventOption.gainMorale;
       maxMorale = character.maxMorale;
       classId = character.classId;
       gearIds = character.gearIds;
       materialIds = character.materialIds;
     };
-    let updatedCharacter = state.characters.replace(characterId, newCharacter);
-    let updatedCharacterTakeOption = state.characterTakeOptions.replace(characterId, getData(characterId, newCharacter, eventOption.uuid));
+    let updatedCharacter = state.characters.replace(uuid, newCharacter);
+    for((K, V) in state.eventOptions.entries()){
+      if(V == eventOption){
+        let updatedCharacterTakeOption = state.characterTakeOptions.replace(uuid, getData(uuid, newCharacter, K));
+      };
+    };
   };
 }

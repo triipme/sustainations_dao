@@ -2,9 +2,9 @@ import Types "../types";
 import State "../state";
 
 module CharacterClass {
-  public func getData(uuid : Text, characterClass : Types.CharacterClass) : Types.CharacterClass {
+  public func getData(characterClass : Types.CharacterClass) : Types.CharacterClass {
     let newCharacterClass : Types.CharacterClass = {
-      uuid = uuid;
+      id = characterClass.id;
       name = characterClass.name;
       specialAbility = characterClass.specialAbility;
       description = characterClass.description;
@@ -21,10 +21,10 @@ module CharacterClass {
   };
 
   public func create(uuid : Text, characterClass : Types.CharacterClass, state : State.State) {
-    state.characterClasses.put(uuid, getData(uuid, characterClass));
+    state.characterClasses.put(uuid, getData(characterClass));
   };
 
   public func update(uuid : Text, characterClass : Types.CharacterClass, state : State.State) {
-    let updated = state.characterClasses.replace(uuid, getData(uuid, characterClass));
+    let updated = state.characterClasses.replace(uuid, getData(characterClass));
   };
 }
