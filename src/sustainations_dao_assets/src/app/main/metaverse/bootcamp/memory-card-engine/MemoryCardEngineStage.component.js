@@ -35,7 +35,11 @@ const MemoryCardEngineStage = ({ slugId, game }) => {
     return () => navigate("play", { state: { stageId, game, player, slugId } });
   };
   return stages.length > 0 && stages.length === 1 ? (
-    <Button key={stages[0][0][0]} variant="contained" onClick={handleClick(stages[0][0][0])}>
+    <Button
+      key={stages[0][0][0]}
+      variant="contained"
+      onClick={handleClick(stages[0][0][0])}
+      disabled={player?.[1].history.some(h => h.stageId === stages[0][0][0])}>
       Play
     </Button>
   ) : (

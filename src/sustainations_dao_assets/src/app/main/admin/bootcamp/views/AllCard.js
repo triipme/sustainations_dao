@@ -2,7 +2,7 @@ import { DataGrid } from "@mui/x-data-grid";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 
-const AllCard = () => {
+const AllCard = ({ status }) => {
   const [cards, setCards] = useState();
   const { actor } = useSelector(state => state.user);
   async function memoryCardEngineAllCards() {
@@ -19,7 +19,7 @@ const AllCard = () => {
   }
   useEffect(() => {
     memoryCardEngineAllCards();
-  }, []);
+  }, [status]);
   return (
     <>
       {cards?.length > 0 && (

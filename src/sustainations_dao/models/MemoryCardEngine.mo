@@ -16,8 +16,9 @@ module {
     data : Text;
   };
   public type Player = {
-    uid : Principal;
+    aId : Text;
     slugId : Text;
+    game : Text; //language or photo
     history : [
       {
         stageId : Text;

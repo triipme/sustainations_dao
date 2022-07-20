@@ -1,16 +1,14 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
-import { Stack, Box, Typography, Button } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { Avatar, Box, Typography } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
-const MemoryCardEngineTop = () => {
-  const [player, setPlayer] = useState();
+const MemoryCardEngineTop = ({ game }) => {
   const [list, setList] = useState();
-  const navigate = useNavigate();
   const { actor } = useSelector(state => state.user);
   async function initialEffect() {
     try {
-      const rs = await actor.gameGcEngineListOfDay();
+      const rs = await actor.memoryCardEngineListOfDay(game);
+      console.log(rs);
       setList(rs.ok);
     } catch (error) {
       console.log(error);
@@ -23,15 +21,19 @@ const MemoryCardEngineTop = () => {
   //   navigate("/game/magic-memory-photo/play", { state: { player_id: player?.[0]?.[0] } });
   // };
   const rows = useMemo(() => {
-    return list?.map((l, l_i) => {
-      return {
-        id: l_i,
-        col1: String(l[0]?.uid),
-        col2: parseInt(l[0]?.turn),
-        col3: l[0]?.timing,
-        col4: parseInt(l[0]?.turn) + l[0]?.timing
-      };
-    });
+    return list
+      ?.map((l, l_i) => {
+        const col2 = totalTurn(l?.[0].history);
+        const col3 = totalTime(l?.[0].history);
+        return {
+          col1: String(l?.[0].aId),
+          col2,
+          col3,
+          col4: col2 + col3
+        };
+      })
+      .sort((a, b) => a.col4 - b.col4)
+      .map((row, id) => ({ ...row, id }));
   }, [list]);
   const columns = useMemo(
     () => [
@@ -61,7 +63,7 @@ const MemoryCardEngineTop = () => {
   );
 
   return (
-    <>
+    <Box sx={{ textAlign: "center" }}>
       <Typography variant="h3" mb={3}>
         Leader Board
       </Typography>
@@ -69,7 +71,7 @@ const MemoryCardEngineTop = () => {
         rows={rows ?? []}
         columns={columns}
         pageSize={10}
-        sx={{ width: { md: 400, xs: 330 } }}
+        sx={{ width: { md: 400, xs: 330 }, my: 3 }}
         rowsPerPageOptions={[10]}
         autoHeight
         pagination
@@ -86,14 +88,24 @@ const MemoryCardEngineTop = () => {
             columnVisibilityModel: {
               col4: false
             }
-          },
-          sorting: {
-            sortModel: [{ field: "col4", sort: "asc" }]
           }
+          // sorting: {
+          //   sortModel: [{ field: "col4", sort: "asc" }]
+          // }
         }}
       />
-    </>
+    </Box>
   );
 };
 
 export default MemoryCardEngineTop;
+
+function totalTurn(array) {
+  return array?.reduce((a, b) => parseInt(a) + parseInt(b?.turn), 0n);
+}
+
+function totalTime(array) {
+  return array?.reduce((a, b) => a + b?.timing, 0);
+}
+
+// 1034009035;

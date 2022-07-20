@@ -4,8 +4,7 @@ import { Navigate } from "react-router-dom";
 
 const Admin = lazy(() => import("./Admin"));
 const BootCampLayout = lazy(() => import("./bootcamp/BootCampLayout"));
-const MemoryCardEnginePhoto = lazy(() => import("./bootcamp/MemoryCardPhoto"));
-const MemoryCardEngineLanguage = lazy(() => import("./bootcamp/MemoryCardLanguage"));
+const MemoryCardEngine = lazy(() => import("./bootcamp/MemoryCardEngine"));
 
 const AdminConfig = {
   settings: {
@@ -32,11 +31,11 @@ const AdminConfig = {
             },
             {
               path: "language",
-              element: <MemoryCardEngineLanguage />
+              element: <MemoryCardEngine />
             },
             {
               path: "photo",
-              element: <MemoryCardEnginePhoto />
+              element: <MemoryCardEngine />
             }
           ]
         }

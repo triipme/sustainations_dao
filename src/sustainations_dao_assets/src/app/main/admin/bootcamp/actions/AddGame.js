@@ -6,7 +6,7 @@ import { LoadingButton } from "@mui/lab";
 import { useSelector } from "react-redux";
 import FuseSvgIcon from "@fuse/core/FuseSvgIcon";
 
-const AddGame = () => {
+const AddGame = ({ onSuccess }) => {
   const ref = useRef(null);
   const [data, setData] = useState();
   const { actor } = useSelector(state => state.user);
@@ -41,11 +41,12 @@ const AddGame = () => {
       });
   };
   const handleSubmitGame = async () => {
-    console.log(data);
     try {
       if (!!actor?.memoryCardEngineImportExcel) {
         const rs = await actor.memoryCardEngineImportExcel(data);
         console.log(rs);
+        onSuccess(true);
+        setData();
       }
     } catch (error) {
       console.log(error);

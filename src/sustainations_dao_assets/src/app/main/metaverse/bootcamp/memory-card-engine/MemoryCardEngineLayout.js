@@ -32,7 +32,7 @@ const MemoryCardEngineLayout = () => {
   return (
     game && (
       <Stack height="100vh" direction="column" justifyContent="center" alignItems="center">
-        <MemoryCardEngineTop {...{ slugId }} />
+        <MemoryCardEngineTop {...{ slugId, game }} />
         <MemoryCardEngineStage {...{ slugId, game }} />
       </Stack>
     )

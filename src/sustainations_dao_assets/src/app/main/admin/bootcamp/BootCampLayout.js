@@ -1,11 +1,11 @@
 import BootCamp from "../../metaverse/bootcamp/BootCamp";
-import MemoryCardEngine from "./containers/MemoryCardEngine";
+import MemoryCardEngineImport from "./containers/MemoryCardEngineImport";
 
 const BootCampLayout = () => {
   return (
     <>
       <BootCamp />
-      <MemoryCardEngine />
+      <MemoryCardEngineImport />
     </>
   );
 };

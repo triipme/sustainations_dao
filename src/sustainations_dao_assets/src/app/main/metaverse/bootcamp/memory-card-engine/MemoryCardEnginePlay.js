@@ -134,7 +134,7 @@ export default MemoryCardEnginePlay;
 
 const TimingPlay = memo(
   forwardRef(({ turns, cards, stateLocation }, ref) => {
-    const { stageId, player, slugId } = stateLocation;
+    const { stageId, player, slugId, game } = stateLocation;
     const { actor } = useSelector(state => state.user);
     const [time, setTime] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
@@ -151,6 +151,7 @@ const TimingPlay = memo(
         const rs = await actor?.memoryCardEngineSetPlayer({
           playerId: [].concat(player?.[0] || []),
           stageId,
+          game,
           slugId,
           turn: turns,
           timing: parseFloat((time / 100).toFixed(2))

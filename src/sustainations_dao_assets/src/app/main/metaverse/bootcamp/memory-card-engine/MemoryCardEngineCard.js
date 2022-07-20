@@ -27,7 +27,7 @@ function MemoryCardEngineCard({ handleChoice, flipped, disabled, ...card }) {
         sx={{ height: { md: 300, xs: 160 } }}>
         {!Array.isArray(card.data) ? (
           <motion.div
-            className="absolute w-full h-full"
+            className="absolute w-full h-full grid place-items-center"
             variants={variants}
             initial={{ rotateY: 90, transition: { delay: 0 } }}
             animate={!flipped ? "back" : "front"}>
