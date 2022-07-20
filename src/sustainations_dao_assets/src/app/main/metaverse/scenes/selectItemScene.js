@@ -19,6 +19,8 @@ const UI_NameCard = 'metaverse/selectItems/UI_id_name.png';
 const player = 'metaverse/selectItems/UI_player.png';
 const pickItemText = 'metaverse/selectItems/UI_pick_item.png';
 
+const testItem = 'metaverse/selectItems/item_aid.png'
+
 class selectItemScene extends BaseScene {
   constructor() {
     super('selectItemScene');
@@ -63,6 +65,8 @@ class selectItemScene extends BaseScene {
     this.load.spritesheet("itembox", itembox, { frameWidth: 237, frameHeight: 185 });
     this.load.spritesheet("btnClear", btnClear, { frameWidth: 339, frameHeight: 141 });
     this.load.spritesheet("btnGo", btnGo, { frameWidth: 339, frameHeight: 141 });
+
+    this.load.image('testItem', testItem);
   }
 
   //async 
@@ -72,7 +76,7 @@ class selectItemScene extends BaseScene {
     this.clickSound = this.sound.add('clickSound');
 
     this.add.image(0, 0, 'bg').setOrigin(0);
-    this.btnBack = this.add.image(80, 50, 'btnBack')
+    this.btnBack = this.add.image(1700, 50, 'btnBack')
       .setOrigin(0).setInteractive();
     this.btnBack.on('pointerdown', () => {
       this.clickSound.play();
@@ -96,20 +100,24 @@ class selectItemScene extends BaseScene {
     // this.setValue(this.hp, 20);
     // call api
     const { user } = store.getState();
-    const readCharacterClass = async () => await user.actor.readCharacterClass("95467296-6EF9-42B2-953D-C2B9AE027200");
-    // const listQuestItems = async () => await user.actor.listQuestItems("179230D4-1028-4A4A-A6D7-085608D23D37");
+    const readCharacter = async () => await user.actor.readCharacter(1);
+    const listQuestItems = async () => await user.actor.listQuestItems(1);
 
-    const character = await readCharacterClass();
-    // const items = await listQuestItems();
-    // console.log(items);
+    const character = await readCharacter();
+    const items = await listQuestItems();
+    console.log(items.ok);
     console.log(character.ok);
-
-    this.add.image(1245, 80, 'pickItemText').setOrigin(0);
+    this.itemName = [];
+    for(const index in items.ok){
+      this.itemName.push(items.ok[index].name);
+    };
+    this.add.image(868, 70, 'pickItemText').setOrigin(0);
     this.gridItem = [];
+    // this.itemName = ['itemA', 'itemB', 'itemC', 'itemA', 'itemB', 'itemC', 'itemA', 'itemB', 'itemC', 'itemA', 'itemB', 'itemC'];
     for (let row = 0; row <= 3; row++){
       for (let col = 0; col <= 3; col++){
         this.gridItem.push(
-          this.add.sprite(750 + 218*(col+1), 166*(row+1), "itembox").setOrigin(0).setInteractive()
+          this.add.sprite(650 + 218*(col+1), 166*(row+1), "itembox").setOrigin(0).setInteractive()
         );
         this.gridItem[col+row*4].isSelected = false;
         this.gridItem[col+row*4].on('pointerdown', () => {
@@ -121,9 +129,12 @@ class selectItemScene extends BaseScene {
           }
           this.gridItem[col+row*4].isSelected = !this.gridItem[col+row*4].isSelected;
         });
+
+        this.add.text(650 + 100 + 218*(col+1), 120 + 166*(row+1), this.itemName[col+row*4], 
+          {fontFamily: 'Helvetica', color: 0x0f0f0f});
       }
     }
-    this.btnClear = this.add.sprite(1100, 870, "btnClear")
+    this.btnClear = this.add.sprite(1000, 870, "btnClear")
       .setOrigin(0).setInteractive();
     this.btnClear.on('pointerover', () => {
       this.btnClear.setFrame(1);
@@ -140,7 +151,7 @@ class selectItemScene extends BaseScene {
       }
     });
 
-    this.btnGo = this.add.sprite(1400, 870, "btnGo")
+    this.btnGo = this.add.sprite(1300, 870, "btnGo")
       .setOrigin(0).setInteractive();
     this.btnGo.on('pointerover', () => {
       this.btnGo.setFrame(1);

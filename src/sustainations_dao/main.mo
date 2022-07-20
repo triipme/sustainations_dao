@@ -881,18 +881,18 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     };
   };
 
-  public shared query({caller}) func listQuestItems(questId : Int) : async Response<[(Int, Types.Item)]> {
+  public shared query({caller}) func listQuestItems(questId : Int) : async Response<[Types.Item]> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
-    var list : [(Int, Types.Item)] = [];
+    var list : [Types.Item] = [];
     for((_,questItem) in state.questItems.entries()) {
       if(questItem.questId == questId){
         let rsItem = state.items.get(questItem.itemId);
         switch (rsItem) {
           case null { () };
           case (?item){
-            list := Array.append<(Int, Types.Item)>(list, [(questItem.itemId, item)]);
+            list := Array.append<Types.Item>(list, [item]);
           };
         };
       };
