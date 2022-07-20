@@ -1,6 +1,7 @@
 import store from 'app/store';
 
 import Phaser from 'phaser';
+import BaseScene from './BaseScene'
 import gameConfig from '../GameConfig';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
@@ -11,7 +12,7 @@ const obstacle = 'metaverse/scenes/Scene6/PNG/obstacle-01-shortened.png';
 const selectAction = 'metaverse/scenes/background_menu.png';
 const btnBlank = 'metaverse/scenes/selection.png';
 
-export default class Scene6 extends Phaser.Scene {
+export default class Scene6 extends BaseScene {
   constructor() {
     super('Scene6');
   }
@@ -141,16 +142,23 @@ export default class Scene6 extends Phaser.Scene {
     this.add.image(720, 40, "UI_Mana").setOrigin(0).setScrollFactor(0);
     this.add.image(1070, 40, "UI_Stamina").setOrigin(0).setScrollFactor(0);
     this.add.image(1420, 40, "UI_Morale").setOrigin(0).setScrollFactor(0);
+    //set value
+    this.hp = this.makeBar(476, 92, 150, 22, 0x74e044).setScrollFactor(0);
+    this.mana = this.makeBar(476+350, 92, 150, 22, 0xc038f6).setScrollFactor(0);
+    this.stamina = this.makeBar(476+350*2, 92, 150, 22, 0xcf311f).setScrollFactor(0);
+    this.morale = this.makeBar(476+350*3, 92, 150, 22, 0x63dafb).setScrollFactor(0);
+    // this.setValue(this.hp, 50)
+
+    //UI2
     this.add.image(80, 830, "UI_Utility").setOrigin(0).setScrollFactor(0);
     this.add.image(1780, 74, "BtnExit").setOrigin(0).setScrollFactor(0).setScale(0.7)
       .setInteractive()
       .on('pointerdown', () => {
         this.clickSound.play();
         this.scene.start('menuScene');
-        this.ambientSound.stop();
-        this.ingameSound.stop();
-        this.sfx_small_waterfall.stop();
+        this.pregameSound.stop();
         this.sfx_char_footstep.stop();
+        this.sfx_small_waterfall.stop();
       });
 
     //mycam
@@ -170,7 +178,7 @@ export default class Scene6 extends Phaser.Scene {
     this.selectAction.setVisible(false);
     // call api
     const { user } = store.getState();
-    const listEventOptions = async () => await user.actor.listEventOptions("5CEBC33D-9ED1-4B96-8F4E-B6AA48DD26D9");
+    const listEventOptions = async () => await user.actor.listEventOptions(6);
     const result = await listEventOptions();
     const testData = [];
     for(const i in result.ok){

@@ -1,7 +1,8 @@
+
 import store from 'app/store';
-import { isThisQuarter } from 'date-fns';
 import Phaser from 'phaser';
 import gameConfig from '../GameConfig';
+import BaseScene from './BaseScene'
 const bg = 'metaverse/selectItems/UI_background.png';
 const btnBack = 'metaverse/selectItems/UI_back.png';
 const btnClear = 'metaverse/selectItems/UI_clear.png';
@@ -18,7 +19,7 @@ const UI_NameCard = 'metaverse/selectItems/UI_id_name.png';
 const player = 'metaverse/selectItems/UI_player.png';
 const pickItemText = 'metaverse/selectItems/UI_pick_item.png';
 
-class selectItemScene extends Phaser.Scene {
+class selectItemScene extends BaseScene {
   constructor() {
     super('selectItemScene');
   }
@@ -65,17 +66,7 @@ class selectItemScene extends Phaser.Scene {
   }
 
   //async 
-  create() {
-    // // call api
-    // const { user } = store.getState();
-    // // const readCharacter = async () => await user.actor.readCharacter();
-    // const listQuestItems = async () => await user.actor.listQuestItems("179230D4-1028-4A4A-A6D7-085608D23D37");
-
-    // // const character = await readCharacter();
-    // const items = await listQuestItems();
-    // console.log(items);
-    // // console.log(character);
-
+  async create() {
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
@@ -96,6 +87,22 @@ class selectItemScene extends Phaser.Scene {
     this.add.image(50, 440, 'UI_Stamina').setOrigin(0);
     this.add.image(50, 560, 'UI_Mana').setOrigin(0);
     this.add.image(50, 680, 'UI_Morale').setOrigin(0);
+
+    this.hp = this.makeBar(158, 372, 150, 22, 0x74e044);
+    this.stamina =  this.makeBar(158, 372+120, 150, 22, 0xcf311f);
+    this.mana = this.makeBar(158, 372+240, 150, 22, 0xc038f6);
+    this.morale = this.makeBar(158, 372+360, 150, 22, 0x63dafb);
+
+    // this.setValue(this.hp, 20);
+    // call api
+    const { user } = store.getState();
+    const readCharacterClass = async () => await user.actor.readCharacterClass("95467296-6EF9-42B2-953D-C2B9AE027200");
+    // const listQuestItems = async () => await user.actor.listQuestItems("179230D4-1028-4A4A-A6D7-085608D23D37");
+
+    const character = await readCharacterClass();
+    // const items = await listQuestItems();
+    // console.log(items);
+    console.log(character.ok);
 
     this.add.image(1245, 80, 'pickItemText').setOrigin(0);
     this.gridItem = [];

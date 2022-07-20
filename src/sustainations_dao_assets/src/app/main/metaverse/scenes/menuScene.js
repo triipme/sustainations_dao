@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import BaseScene from './BaseScene'
 const logo = 'images/logo/sustainations-logo.png';
 const loading = 'metaverse/loading/loadingSprite.png';
 const bg = "metaverse/menu/background.png";
@@ -22,7 +23,7 @@ const sfx_small_waterfall = 'metaverse/audio/SFX_bg_small_waterfall.mp3';
 const sfx_char_footstep = 'metaverse/audio/SFX_char_footstep.mp3';
 const sfx_obstacle_remove = 'metaverse/audio/SFX_obstacle_remove.mp3';
 
-class menuScene extends Phaser.Scene {
+class menuScene extends BaseScene {
   constructor() {
     super("menuScene");
   }

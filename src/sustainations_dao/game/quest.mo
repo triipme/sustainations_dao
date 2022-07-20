@@ -15,11 +15,11 @@ module Quest {
     return newQuest;
   };
 
-  public func create(uuid : Text, quest : Types.Quest, state : State.State) {
-    state.quests.put(uuid, getData(quest));
+  public func create(quest : Types.Quest, state : State.State) {
+    state.quests.put(quest.id, getData(quest));
   };
 
-  public func update(uuid : Text, quest : Types.Quest, state : State.State) {
-    let updated = state.quests.replace(uuid, getData(quest));
+  public func update(quest : Types.Quest, state : State.State) {
+    let updated = state.quests.replace(quest.id, getData(quest));
   };
 }

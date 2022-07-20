@@ -8,6 +8,7 @@ import FuseSvgIcon from "@fuse/core/FuseSvgIcon";
 const Admin = () => {
   const [data, setData] = useState();
   const { actor } = useSelector(state => state.user);
+  const [loading, setLoading] = useState(false);
   const ref = useRef(null);
 
   const handleButton = () => {
@@ -66,71 +67,142 @@ const Admin = () => {
       });
     };
 
-  const handleSubmit = () => {
-    const items = data[0];
-    items.forEach(async(item)=>{
+  const createItem = () => {
+    return new Promise((resolve) =>{
+      const items = data[0];
+      items.forEach(async(item)=>{
         try {
           if (!!actor?.createItem) {
             const rs = await actor.createItem(item);
             console.log("Create Items");
-          console.log(rs);
+            console.log(rs);
+          }
+        } catch (error) {
+          console.log(error);
         }
-      } catch (error) {
-        console.log(error);
-      }
-    });
+      });
+      resolve();
+    })
+  };
 
-    const quests = data[1];
-    quests.forEach(async(quest)=>{
-      try {
-        if (!!actor?.createQuest) {
-          const rs = await actor.createQuest(quest);
-          console.log("Create Quest");
-          console.log(rs);
+  const createQuest = () => {
+    return new Promise((resolve) => {
+      const quests = data[1];
+      quests.forEach(async(quest)=>{
+        try {
+          if (!!actor?.createQuest) {
+            const rs = await actor.createQuest(quest);
+            console.log("Create Quest");
+            console.log(rs);
+          }
+        } catch (error) {
+          console.log(error);
         }
-      } catch (error) {
-        console.log(error);
-      }
-    });
+      });
+      resolve();
+    })
+  };
 
-    const events = data[2];
-    events.forEach(async(event)=>{
-      try {
-        if (!!actor?.createEvent) {
-          const rs = await actor.createEvent(event.questId, event);
-          console.log("Create Events");
-          console.log(rs);
+  const createCharacterClass = () => {
+    return new Promise((resolve) => {
+      const characterClasses = data[2];
+      characterClasses.forEach(async(characterClass)=>{
+        try {
+          if (!!actor?.createCharacterClass) {
+            const rs = await actor.createCharacterClass(characterClass);
+            console.log("Create Character Class");
+            console.log(rs);
+          }
+        } catch (error) {
+          console.log(error);
         }
-      } catch (error) {
-        console.log(error);
-      }
-    });
+      });
+      resolve();
+    })
+  };
 
-    const eventOptions = data[3];
-    eventOptions.forEach(async(eventOption)=>{
-      try {
-        if (!!actor?.createEventOption) {
-          const rs = await actor.createEventOption(eventOption);
-          console.log("Create Event Options");
-          console.log(rs);
+  const createEvent = () => {
+    return new Promise((resolve) => {
+      const events = data[3];
+      events.forEach(async(event)=>{
+        try {
+          if (!!actor?.createEvent) {
+            const rs = await actor.createEvent(event.questId, event);
+            console.log("Create Events");
+            console.log(rs);
+          }
+        } catch (error) {
+          console.log(error);
         }
-      } catch (error) {
-        console.log(error);
-      }
-    });
+      });
+      resolve();
+    })
+  };
 
-    const characterClasses = data[4];
-    characterClasses.forEach(async(characterClass)=>{
-      try {
-        if (!!actor?.createCharacterClass) {
-          const rs = await actor.createCharacterClass(characterClass);
-          console.log("Create Character Class");
-          console.log(rs);
+  const createEventOption = () => {
+    return new Promise((resolve) => {
+      const eventOptions = data[4];
+      eventOptions.forEach(async(eventOption)=>{
+        try {
+          if (!!actor?.createEventOption) {
+            const rs = await actor.createEventOption(eventOption);
+            console.log("Create Event Options");
+            console.log(rs);
+          }
+        } catch (error) {
+          console.log(error);
         }
-      } catch (error) {
-        console.log(error);
-      }
-    });
+      });
+      resolve();
+    })
+  };
+
+  const createCharacter = () => {
+    return new Promise((resolve) => {
+      const characters = data[5];
+      characters.forEach(async(character)=>{
+        try {
+          if (!!actor?.createCharacter) {
+            const rs = await actor.createCharacter(character.id, character.characterClassId, character.characterName);
+            console.log("Create Character");
+            console.log(rs);
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      });
+      resolve();
+    })
+  };
+
+  const createQuestItem = () => {
+    return new Promise((resolve) => {
+      const questItems = data[6];
+      questItems.forEach(async(questItem)=>{
+        try {
+          if (!!actor?.createQuestItem) {
+            const rs = await actor.createQuestItem(questItem);
+            console.log("Create Quest Item");
+            console.log(rs);
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      });
+      resolve();
+    })
+  };
+
+  const handleSubmit = async () => {
+    setLoading(true);
+    await createItem();
+    await createQuest();
+    await createQuestItem();
+    await createCharacterClass();
+    await createCharacter();
+    await createEvent();
+    await createEventOption();
+    setLoading(false);
   };  
 
   return (
@@ -143,7 +215,11 @@ const Admin = () => {
         Add
       </Button>
       {data && (
-        <LoadingButton sx={{ ml: 2 }} variant="contained" onClick={handleSubmit}>
+        <LoadingButton sx={{ ml: 2 }} 
+          variant="contained" 
+          onClick={handleSubmit}
+          loading={loading}
+        >
           Submit
         </LoadingButton>
       )}

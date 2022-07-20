@@ -13,11 +13,11 @@ module Item {
     return newItem;
   };
 
-  public func create(uuid : Text, item : Types.Item, state : State.State) {
-    state.items.put(uuid, getData(item));
+  public func create(item : Types.Item, state : State.State) {
+    state.items.put(item.id, getData(item));
   };
 
-  public func update(uuid : Text, item : Types.Item, state : State.State) {
-    let updated = state.items.replace(uuid, getData(item));
+  public func update(item : Types.Item, state : State.State) {
+    let updated = state.items.replace(item.id, getData(item));
   };
 }

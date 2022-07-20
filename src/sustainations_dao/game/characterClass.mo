@@ -20,11 +20,11 @@ module CharacterClass {
     return newCharacterClass;
   };
 
-  public func create(uuid : Text, characterClass : Types.CharacterClass, state : State.State) {
-    state.characterClasses.put(uuid, getData(characterClass));
+  public func create(characterClass : Types.CharacterClass, state : State.State) {
+    state.characterClasses.put(characterClass.id, getData(characterClass));
   };
 
-  public func update(uuid : Text, characterClass : Types.CharacterClass, state : State.State) {
-    let updated = state.characterClasses.replace(uuid, getData(characterClass));
+  public func update(characterClass : Types.CharacterClass, state : State.State) {
+    let updated = state.characterClasses.replace(characterClass.id, getData(characterClass));
   };
 }

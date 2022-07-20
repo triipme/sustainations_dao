@@ -84,6 +84,7 @@ module {
   //--------------------- Character ---------------------//
   public type Character = {
     userId : Principal;
+    id : Int;
     name : Text;
     level : Int;
     currentExp : Int;
@@ -122,8 +123,8 @@ module {
   };
 
   public type CharacterTakeOption = {
-    characterId : Text;
-    eventOptionUuid : Text;
+    characterId : Int;
+    eventOptionId : Int;
     pickUpTime : Time.Time;
     currentHP : Float;
     maxHP : Float;
@@ -153,8 +154,9 @@ module {
   };
 
   public type QuestItem = {
-    itemUuid : Text;
-    questUuid : Text;
+    id : Int;
+    itemId : Int;
+    questId : Int;
   };
 
   //--------------------- Event ---------------------//
@@ -191,6 +193,7 @@ module {
 
   //--------------------- Gear ---------------------//
   public type Gear = {
+    id : Int;
     name : Text;
     description : Text;
     images : Text;
@@ -200,30 +203,35 @@ module {
   };
 
   public type GearClass = {
+    id : Int;
     name : Text;
     description : Text;
     mainStat : Int;
   };
 
   public type GearRarity = {
+    id : Int;
     name : Text;
     description : Text;
     boxColor : Text;
   };
 
   public type GearSubstat = {
+    id : Int;
     substat : Int;
     description : Text;
   };
 
   //--------------------- Material ---------------------//
   public type Material = {
+    id : Int;
     name : Text;
     description : Text;
   };
 
   //--------------------- Inventory ---------------------//
   public type Inventory = {
+    id : Int;
     name : Text;
     size : Int;
   };
