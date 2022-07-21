@@ -113,10 +113,8 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     await ledger.account_balance({ account = accountId });
   };
 
-  public query func getSystemAddress() : async Text {
-    Account.toText(
-      Account.accountIdentifier(Principal.fromActor(this), Account.defaultSubaccount())
-    )
+  public query func getSystemAddress() : async Blob {
+    Account.accountIdentifier(Principal.fromActor(this), Account.defaultSubaccount())
   };
 
   type DashboardAnalysis = {
