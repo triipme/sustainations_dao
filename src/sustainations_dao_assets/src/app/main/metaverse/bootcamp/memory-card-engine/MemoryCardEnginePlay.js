@@ -107,7 +107,7 @@ const MemoryCardEnginePlay = () => {
     stateLocation && (
       <Box className="container text-center" py={{ md: 5, xs: 0 }} px={{ md: 20, xs: 0 }}>
         <Typography variant="h4" textTransform="capitalize">
-          Magic Memory {stateLocation?.game}
+          Magic Memory {stateLocation?.gameType}
         </Typography>
         {cards?.length > 0 && <TimingPlay {...{ cards, turns, ref, stateLocation }} />}
         <Button variant="contained" size="large" onClick={btnReset} sx={{ mb: 3 }}>
@@ -134,7 +134,7 @@ export default MemoryCardEnginePlay;
 
 const TimingPlay = memo(
   forwardRef(({ turns, cards, stateLocation }, ref) => {
-    const { stageId, player, slugId, game } = stateLocation;
+    const { stageId, player, gameId, gameType } = stateLocation;
     const { actor } = useSelector(state => state.user);
     const [time, setTime] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
@@ -151,8 +151,8 @@ const TimingPlay = memo(
         const rs = await actor?.memoryCardEngineSetPlayer({
           playerId: [].concat(player?.[0] || []),
           stageId,
-          game,
-          slugId,
+          gameType,
+          gameId,
           turn: turns,
           timing: parseFloat((time / 100).toFixed(2))
         });

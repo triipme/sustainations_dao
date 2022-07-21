@@ -43,7 +43,7 @@ const AllStage = ({ status }) => {
               ...Object.keys(stages?.[0]?.[1]).map(key => ({
                 field: key,
                 headerName: key,
-                flex: ["name", "slugId"].includes(key) ? 1 : 0
+                flex: ["name", "gameId"].includes(key) ? 1 : 0
               }))
             ]}
           />

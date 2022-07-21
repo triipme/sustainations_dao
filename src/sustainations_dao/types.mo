@@ -119,17 +119,17 @@ module {
   ];
 
   // Memory Card Engine
-  public type MemoryCardEngineSlug = MemoryCardEngineModel.Slug;
+  public type MemoryCardEngineGame = MemoryCardEngineModel.Game;
   public type MemoryCardEngineStage = MemoryCardEngineModel.Stage;
   public type MemoryCardEngineCard = MemoryCardEngineModel.Card;
   public type MemoryCardEnginePlayer = MemoryCardEngineModel.Player;
   public type MemoryCardEngineReward = MemoryCardEngineModel.Reward;
   public type MemoryCardEnginePatternItemImport = {
-    slugId : Text;
-    game : Text;
-    slugName : Text;
-    slugDescription : Text;
-    slugStatus : Bool;
+    gameId : Text;
+    gameType : Text;
+    gameName : Text;
+    gameDescription : Text;
+    gameStatus : Bool;
     stageId : Text;
     stageName : Text;
     stageOrder : Nat;

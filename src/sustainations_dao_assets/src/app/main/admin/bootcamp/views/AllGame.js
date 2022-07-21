@@ -5,9 +5,9 @@ import { useSelector } from "react-redux";
 const AllGame = ({ status }) => {
   const [games, setGames] = useState();
   const { actor } = useSelector(state => state.user);
-  async function memoryCardEngineAllSlugs() {
+  async function memoryCardEngineAllGames() {
     try {
-      const rs = await actor.memoryCardEngineAllSlugs();
+      const rs = await actor.memoryCardEngineAllGames();
       if ("ok" in rs) {
         setGames(rs.ok);
       } else {
@@ -18,24 +18,24 @@ const AllGame = ({ status }) => {
     }
   }
   useEffect(() => {
-    memoryCardEngineAllSlugs();
+    memoryCardEngineAllGames();
   }, [status]);
   return (
     <>
       {games?.length > 0 && (
         <div style={{ width: "100%", marginTop: 20 }}>
           <DataGrid
-            getRowId={row => row.slugId}
+            getRowId={row => row.gameId}
             autoHeight
             pagination
             disableSelectionOnClick
             disableColumnMenu
             pageSize={10}
             rowsPerPageOptions={[10]}
-            rows={games.map(game => ({ ...game[1], slugId: game[0] }))}
+            rows={games.map(gameType => ({ ...gameType[1], gameId: gameType[0] }))}
             columns={[
               {
-                field: "slugId",
+                field: "gameId",
                 headerName: "Id",
                 flex: 1
               },

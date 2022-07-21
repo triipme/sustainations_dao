@@ -13,7 +13,7 @@ module {
     transactions : Map<Text, Types.TxRecord>;
     userAgreements : Map<Principal, Types.UserAgreement>;
     memoryCardEngine : {
-      slugs : Map<Text, Types.MemoryCardEngineSlug>;
+      games : Map<Text, Types.MemoryCardEngineGame>;
       stages : Map<Text, Types.MemoryCardEngineStage>;
       cards : Map<Text, Types.MemoryCardEngineCard>;
       players : Map<Text, Types.MemoryCardEnginePlayer>;
@@ -28,7 +28,7 @@ module {
       transactions = TrieMap.TrieMap<Text, Types.TxRecord>(Text.equal, Text.hash);
       userAgreements = TrieMap.TrieMap<Principal, Types.UserAgreement>(Principal.equal, Principal.hash);
       memoryCardEngine  = {
-        slugs = TrieMap.TrieMap<Text, Types.MemoryCardEngineSlug>(Text.equal, Text.hash);
+        games = TrieMap.TrieMap<Text, Types.MemoryCardEngineGame>(Text.equal, Text.hash);
         stages = TrieMap.TrieMap<Text, Types.MemoryCardEngineStage>(Text.equal, Text.hash);
         cards = TrieMap.TrieMap<Text, Types.MemoryCardEngineCard>(Text.equal, Text.hash);
         players = TrieMap.TrieMap<Text, Types.MemoryCardEnginePlayer>(Text.equal, Text.hash);

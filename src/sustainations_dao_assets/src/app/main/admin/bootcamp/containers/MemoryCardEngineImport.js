@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import AddGame from "../actions/AddGame";
 import AllCard from "../views/AllCard";
-import AllGame from "../views/AllSlug";
+import AllGame from "../views/AllGame";
 import AllStage from "../views/AllStage";
 
 const MemoryCardEngineImport = () => {

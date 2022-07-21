@@ -2,7 +2,7 @@ import gameConfig from "./GameConfig";
 
 class Metaverse extends React.Component {
   componentDidMount() {
-    this.game = new Phaser.Game(gameConfig);
+    this.gameType = new Phaser.Game(gameConfig);
     document.body.classList.add("black-bg");
   }
 
@@ -15,7 +15,7 @@ class Metaverse extends React.Component {
   }
 
   render() {
-    return <div id="sustainations-game"></div>;
+    return <div id="sustainations-gameType"></div>;
   }
 }
 

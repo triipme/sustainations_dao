@@ -6,21 +6,21 @@ import MemoryCardEngineStage from "./MemoryCardEngineStage.component";
 import MemoryCardEngineTop from "./MemoryCardEngineTop.component";
 
 const MemoryCardEngineLayout = () => {
-  const [slugId, setSlugId] = useState();
+  const [gameId, setGameId] = useState();
   const { actor } = useSelector(state => state.user);
   const navigate = useNavigate();
-  const { state: game } = useLocation();
+  const { state: gameType } = useLocation();
   useEffect(() => {
-    if (!game) {
+    if (!gameType) {
       navigate(-1);
     }
   }, []);
   useEffect(() => {
     (async () => {
       try {
-        const rs = await actor.memoryCardEngineSlugEnabled(game);
+        const rs = await actor.memoryCardEngineSlugEnabled(gameType);
         if ("ok" in rs) {
-          setSlugId(rs.ok);
+          setGameId(rs.ok);
         } else {
           throw rs.err;
         }
@@ -30,10 +30,10 @@ const MemoryCardEngineLayout = () => {
     })();
   }, []);
   return (
-    game && (
+    gameType && (
       <Stack height="100vh" direction="column" justifyContent="center" alignItems="center">
-        <MemoryCardEngineTop {...{ slugId, game }} />
-        <MemoryCardEngineStage {...{ slugId, game }} />
+        <MemoryCardEngineTop {...{ gameId, gameType }} />
+        <MemoryCardEngineStage {...{ gameId, gameType }} />
       </Stack>
     )
   );
