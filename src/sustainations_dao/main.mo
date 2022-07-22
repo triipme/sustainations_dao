@@ -667,6 +667,28 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     }
   };
 
+  public shared({caller}) func memoryCardEngineGameChangeStatus(gameId : Text, newStatus : Bool) : async Response<()> {
+    try {
+      await isAdmin(caller);
+      switch (state.memoryCardEngine.games.get(gameId)) {
+        case null #err(#NotFound);
+        case (? prev) {
+          let gameUpdate : Types.MemoryCardEngineGame = {
+            slug = prev.slug;  //unique
+            name = prev.name;
+            image = prev.image;
+            description = prev.description;
+            status = newStatus;
+          };
+          let _ = state.memoryCardEngine.games.replace(gameId, gameUpdate);
+          #ok();
+        };
+      };
+    } catch (e) {
+      #err(#SomethingWrong);
+    }
+  };
+
   public shared({caller}) func memoryCardEngineAllStages() : async Response<[(Text, Types.MemoryCardEngineStage)]>{
     try {
       await isAdmin(caller);
