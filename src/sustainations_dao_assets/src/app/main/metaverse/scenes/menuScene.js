@@ -1,5 +1,7 @@
 import Phaser from "phaser";
 import BaseScene from './BaseScene'
+import history from "@history";
+
 const logo = 'images/logo/sustainations-logo.png';
 const loading = 'metaverse/loading/loadingSprite.png';
 const bg = "metaverse/menu/background.png";
@@ -23,7 +25,7 @@ const sfx_small_waterfall = 'metaverse/audio/SFX_bg_small_waterfall.mp3';
 const sfx_char_footstep = 'metaverse/audio/SFX_char_footstep.mp3';
 const sfx_obstacle_remove = 'metaverse/audio/SFX_obstacle_remove.mp3';
 
-class menuScene extends BaseScene {
+class menuScene extends Phaser.Scene {
   constructor() {
     super("menuScene");
   }
@@ -128,13 +130,7 @@ class menuScene extends BaseScene {
     this.bootcamp_btn.on("pointerdown", () => {
       this.clickSound.play();
       this.noti.setVisible(true);
-      this.time.addEvent({
-        delay: 3000,
-        callback: () => {
-          this.noti.setVisible(false);
-        },
-        callbackScope: this
-      });
+      history.push("/metaverse/bootcamp");
     });
 
     this.land_btn = this.add.sprite(960, 710, "land_btn")
@@ -147,8 +143,7 @@ class menuScene extends BaseScene {
       this.land_btn.setFrame(0);
     });
     this.land_btn.on("pointerdown", () => {
-      this.clickSound.play();
-      window.location.href = "/metaverse/land";
+      history.push("/metaverse/land");
     });
 
     this.departure_btn = this.add.sprite(960, 830, "departure_btn")
