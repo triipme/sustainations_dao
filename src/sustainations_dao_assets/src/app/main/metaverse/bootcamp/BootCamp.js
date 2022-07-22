@@ -1,37 +1,39 @@
 import { Stack, Box, Typography, CardMedia, Card, CardContent, useTheme } from "@mui/material";
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
-const games = [
-  {
-    name: "Magic Memory Language",
-    description: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Dolor, veniam!",
-    image:
-      "https://media.istockphoto.com/vectors/memory-gameType-for-preschool-children-vector-id1092896082?k=20&m=1092896082&s=612x612&w=0&h=svAq2MxT5E9viByMj4r0JGzejZ_FM4qa93NExdDSqQk=",
-    redirect: "language"
-  },
-  {
-    name: "Magic Memory Photo",
-    description: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Dolor, veniam!",
-    image:
-      "https://media.istockphoto.com/vectors/memory-gameType-for-preschool-children-vector-id1092896082?k=20&m=1092896082&s=612x612&w=0&h=svAq2MxT5E9viByMj4r0JGzejZ_FM4qa93NExdDSqQk=",
-    redirect: "photo"
-  }
-];
-
 const BootCamp = () => {
+  const [games, setGames] = useState();
   const navigate = useNavigate();
-  function onPressGame(game_i) {
-    navigate(games[game_i].redirect, { state: games[game_i].redirect });
+  const { actor } = useSelector(state => state.user);
+  useEffect(() => {
+    (async () => {
+      try {
+        const rs = await actor.memoryCardEngineSlugEnabled();
+        if ("ok" in rs) {
+          setGames(rs.ok);
+        } else {
+          throw rs.err;
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    })();
+  }, []);
+  function onPressGame(gameId) {
+    const game = games.find(g => g[0] === gameId);
+    navigate(game[1].slug, { state: game[0] });
   }
   return (
     <Stack direction={"row"} m={3}>
-      {games.map((gameType, index) => (
-        <Card key={index} sx={{ maxWidth: 240, mr: 2 }}>
-          <Box sx={{ cursor: "pointer" }} onClick={() => onPressGame(index)}>
-            <CardMedia component="img" height="140" image={gameType.image} alt={gameType.name} />
+      {games?.map((game, index) => (
+        <Card key={game[0]} sx={{ maxWidth: 240, mr: 2 }}>
+          <Box sx={{ cursor: "pointer" }} onClick={() => onPressGame(game[0])}>
+            <CardMedia component="img" height="140" image={game[1]?.image} alt={game[1].name} />
             <CardContent>
               <Typography gutterBottom variant="h5" component="div">
-                {gameType.name}
+                {game[1].name}
               </Typography>
             </CardContent>
           </Box>

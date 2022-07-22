@@ -30,11 +30,7 @@ const AdminConfig = {
               element: <BootCampLayout />
             },
             {
-              path: "language",
-              element: <MemoryCardEngine />
-            },
-            {
-              path: "photo",
+              path: ":slug",
               element: <MemoryCardEngine />
             }
           ]

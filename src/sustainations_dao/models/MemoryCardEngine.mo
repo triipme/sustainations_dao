@@ -1,7 +1,8 @@
 module {
   public type Game = {
-    gameType : Text;
-    slug : Text; //unique
+    slug : Text;  //unique
+    name : Text;
+    image : Text;
     description : Text;
     status : Bool;
   };
@@ -18,7 +19,7 @@ module {
   public type Player = {
     aId : Text;
     gameId : Text;
-    gameType : Text; //language or photo
+    gameSlug : Text;
     history : [
       {
         stageId : Text;

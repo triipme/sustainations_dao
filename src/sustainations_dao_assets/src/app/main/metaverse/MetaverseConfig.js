@@ -52,21 +52,7 @@ const MetaverseConfig = {
               element: <BootCamp />
             },
             {
-              path: "language",
-              element: <Outlet />,
-              children: [
-                {
-                  index: true,
-                  element: <MemoryCardEngineLayout />
-                },
-                {
-                  path: "play",
-                  element: <MemoryCardEnginePlay />
-                }
-              ]
-            },
-            {
-              path: "photo",
+              path: ":slug",
               element: <Outlet />,
               children: [
                 {

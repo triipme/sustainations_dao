@@ -44,7 +44,6 @@ const AddGame = ({ onSuccess }) => {
     try {
       if (!!actor?.memoryCardEngineImportExcel) {
         const rs = await actor.memoryCardEngineImportExcel(data);
-        console.log(rs);
         onSuccess(true);
         setData();
       }

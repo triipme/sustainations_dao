@@ -2,13 +2,12 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { Avatar, Box, Typography } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
-const MemoryCardEngineTop = ({ gameType }) => {
+const MemoryCardEngineTop = ({ slug, gameId }) => {
   const [list, setList] = useState();
   const { actor } = useSelector(state => state.user);
   async function initialEffect() {
     try {
-      const rs = await actor.memoryCardEngineListOfDay(gameType);
-      console.log(rs);
+      const rs = await actor.memoryCardEngineListOfDay(slug, gameId);
       setList(rs.ok);
     } catch (error) {
       console.log(error);
@@ -18,7 +17,7 @@ const MemoryCardEngineTop = ({ gameType }) => {
     initialEffect();
   }, []);
   // const handlePlay = () => {
-  //   navigate("/gameType/magic-memory-photo/play", { state: { player_id: player?.[0]?.[0] } });
+  //   navigate("/slug/magic-memory-photo/play", { state: { player_id: player?.[0]?.[0] } });
   // };
   const rows = useMemo(() => {
     return list

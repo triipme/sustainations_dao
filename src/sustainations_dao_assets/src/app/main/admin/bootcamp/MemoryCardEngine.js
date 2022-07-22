@@ -5,20 +5,21 @@ import { DataGrid } from "@mui/x-data-grid";
 import moment from "moment";
 import { Controller, useForm } from "react-hook-form";
 import { LoadingButton } from "@mui/lab";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 const Context = createContext();
 const MemoryCardEngine = () => {
   const { state } = useLocation();
+  const { slug } = useParams();
   const navigate = useNavigate();
   useEffect(() => {
-    if (!state) {
+    if (!state || !slug) {
       navigate(-1);
     }
   }, []);
   return (
     <Box>
-      <Context.Provider value={state}>
+      <Context.Provider value={{ state, slug }}>
         <TopOfYesterday />
         <ListOfDay />
         <ListAll />
@@ -28,12 +29,12 @@ const MemoryCardEngine = () => {
 };
 const ListAll = () => {
   const [list, setList] = useState();
-  const state = useContext(Context);
+  const { state, slug } = useContext(Context);
   const { actor } = useSelector(state => state.user);
   async function initialEffect() {
     try {
       if (!!actor?.memoryCardEngineListAll) {
-        const rs_list = await actor.memoryCardEngineListAll(state);
+        const rs_list = await actor.memoryCardEngineListAll(state, slug);
         if ("ok" in rs_list) setList(rs_list.ok);
       }
     } catch (error) {
@@ -101,19 +102,18 @@ const ListAll = () => {
 };
 const ListOfDay = () => {
   const [list, setList] = useState();
-  const state = useContext(Context);
+  const { state, slug } = useContext(Context);
   const { actor } = useSelector(state => state.user);
   async function initialEffect() {
     try {
       if (!!actor?.memoryCardEngineListOfDay) {
-        const rs_list = await actor.memoryCardEngineListOfDay(state);
+        const rs_list = await actor.memoryCardEngineListOfDay(state, slug);
         if ("ok" in rs_list) setList(rs_list.ok);
       }
     } catch (error) {
       console.log(error);
     }
   }
-  console.log(list);
   useEffect(() => {
     initialEffect();
   }, []);
@@ -181,7 +181,7 @@ const ListOfDay = () => {
 const TopOfYesterday = () => {
   const { actor } = useSelector(state => state.user);
   const [top, setTop] = useState();
-  const state = useContext(Context);
+  const { state, slug } = useContext(Context);
   const [disableReward, setDisableReward] = useState(true);
   const [loading, setLoading] = useState(false);
   const {
@@ -192,7 +192,7 @@ const TopOfYesterday = () => {
   async function initialTopOne() {
     try {
       if (!!actor?.memoryCardEngineListOfYesterday) {
-        const rs_list = await actor.memoryCardEngineListOfYesterday(state);
+        const rs_list = await actor.memoryCardEngineListOfYesterday(state, slug);
         if ("ok" in rs_list) {
           setTop(topOne(rs_list.ok));
         }
@@ -206,7 +206,6 @@ const TopOfYesterday = () => {
       if (!!actor?.memoryCardEngineCheckReward) {
         const rs = await actor.memoryCardEngineCheckReward(id);
         if ("ok" in rs) {
-          console.log("check", rs.ok);
           setDisableReward(!!rs.ok[0]);
         }
       }
@@ -251,25 +250,19 @@ const TopOfYesterday = () => {
       <Typography variant="h4" align="center">
         total time {totalTime(top?.[1]?.history) ?? 0}
       </Typography>
-      <Stack
-        width="10em"
-        alignItems="center"
-        justifyContent="center"
-        direction="row"
-        mx="auto"
-        my={3}>
-        {!!!disableReward && (
+      <Stack alignItems="center" justifyContent="center" direction="row" mx="auto" my={3}>
+        {!disableReward && (
           <>
             <Controller
               control={control}
               label="Reward"
               name="reward"
-              render={({ field }) => <TextField label="Reward" {...field} />}
+              render={({ field }) => <TextField label="Reward" {...field} sx={{ width: 150 }} />}
             />
-            {/* <InputText control={control} label="Reward" name="reward" helperTextError={ERRORS} /> */}
             <LoadingButton
               loading={loading}
-              sx={{ width: 100, ml: 1 }}
+              variant="contained"
+              sx={{ ml: 1 }}
               onClick={handleSubmit(handleReward)}>
               Reward
             </LoadingButton>

@@ -126,7 +126,8 @@ module {
   public type MemoryCardEngineReward = MemoryCardEngineModel.Reward;
   public type MemoryCardEnginePatternItemImport = {
     gameId : Text;
-    gameType : Text;
+    gameSlug : Text;
+    gameImage : Text;
     gameName : Text;
     gameDescription : Text;
     gameStatus : Bool;

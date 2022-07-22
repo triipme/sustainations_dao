@@ -4,20 +4,19 @@ import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
-const MemoryCardEngineStage = ({ gameId, gameType }) => {
+const MemoryCardEngineStage = ({ gameId, slug: gameSlug }) => {
   const [stages, setStages] = useState();
   const [player, setPlayer] = useState();
   const { actor, principal } = useSelector(state => state.user);
 
   const navigate = useNavigate();
-  const ref = useRef(null);
   useEffect(() => {
     if (gameId) {
       (async () => {
         try {
           const rs = await Promise.allSettled([
             actor.memoryCardEngineStages(gameId),
-            actor.memoryCardEngineGetPlayer(Principal.fromText(principal), gameId)
+            actor.memoryCardEngineGetPlayer(Principal.fromText(principal), gameId, gameSlug)
           ]);
           if ("ok" in rs[0].value) {
             setStages(rs[0].value.ok.sort((a, b) => parseInt(a[0][1].order - b[0][1].order)));
@@ -32,7 +31,7 @@ const MemoryCardEngineStage = ({ gameId, gameType }) => {
     }
   }, [gameId]);
   const handleClick = stageId => {
-    return () => navigate("play", { state: { stageId, gameType, player, gameId } });
+    return () => navigate("play", { state: { stageId, gameSlug, player, gameId } });
   };
   return stages?.length > 0 && stages?.length === 1 ? (
     <Button
@@ -53,7 +52,6 @@ const MemoryCardEngineStage = ({ gameId, gameType }) => {
         {stages?.map(stage => (
           <Button
             sx={{ mx: 1 }}
-            ref={ref}
             key={stage[0][0]}
             disabled={player?.[1].history.some(h => h.stageId === stage[0][0])}
             variant="contained"

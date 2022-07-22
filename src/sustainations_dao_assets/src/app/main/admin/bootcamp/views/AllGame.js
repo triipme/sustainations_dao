@@ -32,7 +32,7 @@ const AllGame = ({ status }) => {
             disableColumnMenu
             pageSize={10}
             rowsPerPageOptions={[10]}
-            rows={games.map(gameType => ({ ...gameType[1], gameId: gameType[0] }))}
+            rows={games.map(slug => ({ ...slug[1], gameId: slug[0] }))}
             columns={[
               {
                 field: "gameId",
@@ -42,7 +42,7 @@ const AllGame = ({ status }) => {
               ...Object.keys(games?.[0]?.[1]).map(key => ({
                 field: key,
                 headerName: key,
-                flex: ["description", "slug"].includes(key) ? 1 : 0
+                flex: ["description", "name"].includes(key) ? 1 : 0
               }))
             ]}
           />

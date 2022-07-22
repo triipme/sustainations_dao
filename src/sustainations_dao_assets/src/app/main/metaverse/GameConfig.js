@@ -10,12 +10,10 @@ import menuScene from "./scenes/menuScene";
 import selectMap from "./scenes/selectMap";
 import thanks from "./scenes/thanks";
 
-
-
 const gameConfig = {
   type: Phaser.CANVAS,
   antialias: true,
-  parent: "sustainations-gameType",
+  parent: "sustainations-slug",
   scale: {
     width: 1920,
     height: 1080,

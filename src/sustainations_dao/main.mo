@@ -619,8 +619,9 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
         switch (state.memoryCardEngine.games.get(V.gameId)) {
           case null {
             let games : Types.MemoryCardEngineGame = {
-              gameType = V.gameType;
-              slug = V.gameName;
+              slug = V.gameSlug;
+              image = V.gameImage;
+              name = V.gameName;
               description = V.gameDescription;
               status = V.gameStatus;
             };
@@ -685,27 +686,18 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
   };
 
   /* Client query data memoryCardEngine */
-  public query({caller}) func memoryCardEngineSlugEnabled(gameType : Text) : async Response<Text> {
+  public query({caller}) func memoryCardEngineSlugEnabled() : async Response<[(Text, Types.MemoryCardEngineGame)]> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       throw Error.reject("NotAuthorized");  //isNotAuthorized
     };
-    var result : ?Text = null;
+    var result : [(Text, Types.MemoryCardEngineGame)] = [];
     let games = state.memoryCardEngine.games.entries();
-    label gameLabel loop {
-      switch (games.next()) {
-        case (? (K, V)) {
-          if ((V.status == true) and (V.gameType == gameType)) {
-            result := ?K;
-            break gameLabel;
-          }
-        };
-        case (null) break gameLabel;
+    for ((K, V) in state.memoryCardEngine.games.entries()) {
+      if ((V.status == true)) {
+        result := Array.append(result, [(K, V)]);
       }
     };
-    switch (result) {
-      case null #err(#NotFound);
-      case (?rs) #ok(rs);
-    };
+    #ok(result);
   };
 
   public query({caller}) func memoryCardEngineStages(gameId : Text) : async Response<[?(Text, Types.MemoryCardEngineStage)]> {
@@ -734,7 +726,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     #ok(cards);
   };
 
-  public query func memoryCardEngineGetPlayer(caller : Principal, gameId : Text) : async Response<(Text, Types.MemoryCardEnginePlayer)> {
+  public query func memoryCardEngineGetPlayer(caller : Principal, gameId : Text, gameSlug : Text) : async Response<(Text, Types.MemoryCardEnginePlayer)> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       throw Error.reject("NotAuthorized");  //isNotAuthorized
     };
@@ -747,7 +739,8 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
           if (  
             Int.greater(Moment.diff(?V.createdAt), 0) and
             Text.equal(V.aId, accountId) and
-            Text.equal(V.gameId, gameId)
+            Text.equal(V.gameId, gameId) and
+            Text.equal(V.gameSlug, gameSlug)
           ) {
             player := ?(K, V);
             break playerLabel;
@@ -768,7 +761,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     timing : Float;
     stageId : Text;
     playerId : ?Text;
-    gameType : Text;
+    gameSlug : Text;
   }) : async Response<()> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       throw Error.reject("NotAuthorized");  //isNotAuthorized
@@ -780,7 +773,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
         let player : Types.MemoryCardEnginePlayer = {
           aId = accountId;
           gameId;
-          gameType;
+          gameSlug;
           history = [{
             stageId;
             turn;
@@ -793,7 +786,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
         #ok();
       };
       case (?pid) {
-        switch (await memoryCardEngineGetPlayer(caller, gameId)) {
+        switch (await memoryCardEngineGetPlayer(caller, gameId, gameSlug)) {
           case (#err(error)) {
             #err(error);
           };
@@ -812,7 +805,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
                 let replacePlayer : Types.MemoryCardEnginePlayer = {
                   aId = oldData.aId;
                   gameId;
-                  gameType;
+                  gameSlug;
                   history = Array.append(oldData.history, [{
                     stageId;
                     turn;
@@ -834,34 +827,12 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     };
   };
 
-  public shared({caller}) func memoryCardEngineGetAllPlayer() : async Response<[(Text, Types.MemoryCardEnginePlayer)]> {
-    try {
-      await isAdmin(caller);
-      #ok(Iter.toArray(state.memoryCardEngine.players.entries()));
-    } catch (e) {
-      #err(#SomethingWrong);
-    }
-  };
-
-  public query({caller}) func memoryCardEngineListOfDay(gameType : Text) : async Response<[?Types.MemoryCardEnginePlayer]>{
+  public query({caller}) func memoryCardEngineListOfDay(gameId : Text, gameSlug : Text) : async Response<[?Types.MemoryCardEnginePlayer]>{
     if (Principal.toText(caller) == "2vxsx-fae") {
       throw Error.reject("NotAuthorized");  //isNotAuthorized
     };
     var listTop : [?Types.MemoryCardEnginePlayer] = [];
     var stagesSize : Int = 0;
-    var gameId : Text = "";
-    let games = state.memoryCardEngine.games.entries();
-    label gameLabel loop {
-      switch (games.next()) {
-        case (? (K, V)) {
-          if (V.gameType == gameType and V.status) {
-            gameId := K;
-            break gameLabel;
-          }
-        };
-        case null break gameLabel;
-      }
-    };
     for (V in state.memoryCardEngine.stages.vals()){
       if (V.gameId == gameId) stagesSize += 1;
     };
@@ -869,7 +840,8 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
       if(
         Int.greater(Moment.diff(?V.createdAt), 0) and
         Iter.size(Iter.fromArray(V.history)) == stagesSize and
-        Text.equal(gameType, V.gameType)
+        Text.equal(gameSlug, V.gameSlug) and
+        Text.equal(gameId, V.gameId)
       ) {
         listTop := Array.append(listTop, [?V]);
       }
@@ -877,25 +849,12 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     #ok(listTop);
   };
 
-  public shared({caller}) func memoryCardEngineListOfYesterday(gameType : Text) : async Response<[?(Text, Types.MemoryCardEnginePlayer)]>{
+  public query({caller}) func memoryCardEngineListOfYesterday(gameId : Text, gameSlug : Text) : async Response<[?(Text, Types.MemoryCardEnginePlayer)]>{
     if (Principal.toText(caller) == "2vxsx-fae") {
       throw Error.reject("NotAuthorized");  //isNotAuthorized
     };
     var listTop : [?(Text,Types.MemoryCardEnginePlayer)] = [];
     var stagesSize : Int = 0;
-    var gameId : Text = "";
-    let games = state.memoryCardEngine.games.entries();
-    label gameLabel loop {
-      switch (games.next()) {
-        case (? (K, V)) {
-          if (V.gameType == gameType and V.status) {
-            gameId := K;
-            break gameLabel;
-          }
-        };
-        case null break gameLabel;
-      }
-    };
     for (V in state.memoryCardEngine.stages.vals()){
       if (V.gameId == gameId) stagesSize += 1;
     };
@@ -903,7 +862,8 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
       if(
         Moment.yesterday(V.createdAt) and
         Iter.size(Iter.fromArray(V.history)) == stagesSize and
-        Text.equal(gameType, V.gameType)
+        Text.equal(gameSlug, V.gameSlug) and
+        Text.equal(gameId, V.gameId)
       ) {
         listTop := Array.append(listTop, [?(K, V)]);
       }
@@ -911,12 +871,12 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     #ok(listTop);
   };
 
-  public shared({caller}) func memoryCardEngineListAll(gameType : Text) : async Response<[Types.MemoryCardEnginePlayer]>{
+  public shared({caller}) func memoryCardEngineListAll(gameId : Text, gameSlug : Text) : async Response<[Types.MemoryCardEnginePlayer]>{
     try {
       await isAdmin(caller);
       var listTop : [Types.MemoryCardEnginePlayer] = [];
       for(V in state.memoryCardEngine.players.vals()) {
-        if(Text.equal(gameType, V.gameType)) {
+        if(Text.equal(gameSlug, V.gameSlug) and Text.equal(gameId, V.gameId)) {
           listTop := Array.append(listTop, [V]);
         }
       };
