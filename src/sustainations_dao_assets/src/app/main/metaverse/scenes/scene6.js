@@ -1,8 +1,11 @@
-import store from 'app/store';
-
 import Phaser from 'phaser';
 import BaseScene from './BaseScene'
 import gameConfig from '../GameConfig';
+import { 
+  loadEventOptions, 
+  loadCharacter,
+  updateCharacterStats 
+} from '../GameApi';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
 const bg1 = 'metaverse/scenes/Scene6/PNG/back-01.png';
@@ -176,21 +179,22 @@ export default class Scene6 extends BaseScene {
     this.veil.setVisible(false);
     this.selectAction.setScrollFactor(0);
     this.selectAction.setVisible(false);
-    // call api
-    const { user } = store.getState();
-    const listEventOptions = async () => await user.actor.listEventOptions(6);
-    const result = await listEventOptions();
-    const testData = [];
-    for(const i in result.ok){
-      console.log(result.ok[i][1].description);
-      testData.push(result.ok[i][1].description);
-    }
-    //const testData = ['Use inflatable boat to go through the river', 'Continue to move along the river-bank'];
+
+    // load character
+    this.characterData = await loadCharacter(1);
+    // stats before choose option
+    this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
+    this.setValue(this.stamina, this.characterData.currentStamina/this.characterData.maxStamina*100);
+    this.setValue(this.mana, this.characterData.currentMana/this.characterData.maxMana*100);
+    this.setValue(this.morale, this.characterData.currentMorale/this.characterData.maxMorale*100);
+
+    // load event options
+    this.eventOptions = await loadEventOptions(6);
     this.options = [];
-    for (const idx in testData){
+    for (const idx in this.eventOptions){
       this.options[idx] = this.add.sprite(gameConfig.scale.width/2, gameConfig.scale.height/2 -100 + idx*100, 'btnBlank');
       this.options[idx].text = this.add.text(
-        gameConfig.scale.width/2, gameConfig.scale.height/2 - 100 + idx*100, testData[idx], { fill: '#fff', align: 'center', fontSize: '30px' })
+        gameConfig.scale.width/2, gameConfig.scale.height/2 - 100 + idx*100, this.eventOptions[idx].description, { fill: '#fff', align: 'center', fontSize: '30px' })
       .setScrollFactor(0).setVisible(false).setOrigin(0.5);
       this.options[idx].setInteractive().setScrollFactor(0).setVisible(false);
       this.options[idx].on('pointerover', () => {
@@ -200,13 +204,21 @@ export default class Scene6 extends BaseScene {
       this.options[idx].on('pointerout', () => {
         this.options[idx].setFrame(0);
       });
-      this.options[idx].on('pointerdown', () => {
+      this.options[idx].on('pointerdown', async () => {
         this.triggerContinue();
         this.clickSound.play();
         this.sfx_char_footstep.play();
         this.cameras.main.fadeOut(500, 0, 0, 0);
+        // update character after choose option
+        await updateCharacterStats(this.eventOptions[idx].id, this.characterData.id);
       });
     }
+  // stats after choose option
+  this.updatedCharacter = await loadCharacter(1);
+  this.setValue(this.hp, this.updatedCharacter.currentHP/this.updatedCharacter.maxHP*100);
+  this.setValue(this.stamina, this.updatedCharacter.currentStamina/this.updatedCharacter.maxStamina*100);
+  this.setValue(this.mana, this.updatedCharacter.currentMana/this.updatedCharacter.maxMana*100);
+  this.setValue(this.morale, this.updatedCharacter.currentMorale/this.updatedCharacter.maxMorale*100);
   }
 
   update() {

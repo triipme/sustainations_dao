@@ -2,6 +2,11 @@ import store from 'app/store';
 import Phaser from 'phaser';
 import BaseScene from './BaseScene'
 import gameConfig from '../GameConfig';
+import { 
+  loadEventOptions, 
+  loadCharacter,
+  updateCharacterStats 
+} from '../GameApi';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
 const bg1 = 'metaverse/scenes/Scene3/PNG/back-01.png';
@@ -77,6 +82,7 @@ export default class Scene3 extends BaseScene {
     this.isInteracted = true;
     this.player.play('running-anims');
   }
+
   async create() {
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
@@ -174,21 +180,22 @@ export default class Scene3 extends BaseScene {
     this.veil.setVisible(false);
     this.selectAction.setScrollFactor(0);
     this.selectAction.setVisible(false);
-    // call api
-    const { user } = store.getState();
-    const listEventOptions = async () => await user.actor.listEventOptions(3);
-    const result = await listEventOptions();
-    const testData = [];
-    for(const i in result.ok){
-      console.log(result.ok[i][1].description);
-      testData.push(result.ok[i][1].description);
-    }
-    // const testData = ['Give the monkeys some food', 'Ignore and find the way to pass through them'];
+
+    // load character
+    this.characterData = await loadCharacter(1);
+    // stats before choose option
+    this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
+    this.setValue(this.stamina, this.characterData.currentStamina/this.characterData.maxStamina*100);
+    this.setValue(this.mana, this.characterData.currentMana/this.characterData.maxMana*100);
+    this.setValue(this.morale, this.characterData.currentMorale/this.characterData.maxMorale*100);
+    
+    // load event options
+    this.eventOptions = await loadEventOptions(3);
     this.options = [];
-    for (const idx in testData){
+    for (const idx in this.eventOptions){
       this.options[idx] = this.add.sprite(gameConfig.scale.width/2, gameConfig.scale.height/2 -100 + idx*100, 'btnBlank');
       this.options[idx].text = this.add.text(
-        gameConfig.scale.width/2, gameConfig.scale.height/2 - 100 + idx*100, testData[idx], { fill: '#fff', align: 'center', fontSize: '30px' })
+        gameConfig.scale.width/2, gameConfig.scale.height/2 - 100 + idx*100, this.eventOptions[idx].description, { fill: '#fff', align: 'center', fontSize: '30px' })
       .setScrollFactor(0).setVisible(false).setOrigin(0.5);
       this.options[idx].setInteractive().setScrollFactor(0).setVisible(false);
       this.options[idx].on('pointerover', () => {
@@ -198,12 +205,20 @@ export default class Scene3 extends BaseScene {
       this.options[idx].on('pointerout', () => {
         this.options[idx].setFrame(0);
       });
-      this.options[idx].on('pointerdown', () => {
+      this.options[idx].on('pointerdown', async () => {
         this.triggerContinue();
         this.sfx_char_footstep.play();
         this.clickSound.play();
+        // update character after choose option
+        await updateCharacterStats(this.eventOptions[idx].id, this.characterData.id);
       });
     }
+    // stats after choose option
+    this.updatedCharacter = await loadCharacter(1);
+    this.setValue(this.hp, this.updatedCharacter.currentHP/this.updatedCharacter.maxHP*100);
+    this.setValue(this.stamina, this.updatedCharacter.currentStamina/this.updatedCharacter.maxStamina*100);
+    this.setValue(this.mana, this.updatedCharacter.currentMana/this.updatedCharacter.maxMana*100);
+    this.setValue(this.morale, this.updatedCharacter.currentMorale/this.updatedCharacter.maxMorale*100);
   }
 
   update() {

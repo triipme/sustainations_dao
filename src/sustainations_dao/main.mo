@@ -1031,14 +1031,14 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     #ok((list));
   };
 
-  public shared query({caller}) func listEventOptions(eventId : Int) : async Response<[(Int, Types.EventOption)]> {
-    var list : [(Int, Types.EventOption)] = [];
+  public shared query({caller}) func listEventOptions(eventId : Int) : async Response<[Types.EventOption]> {
+    var list : [Types.EventOption] = [];
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
-    for((K,V) in state.eventOptions.entries()) {
-      if(V.eventId == eventId){
-        list := Array.append<(Int, Types.EventOption)>(list, [(K, V)]);
+    for((K,eventOption) in state.eventOptions.entries()) {
+      if(eventOption.eventId == eventId){
+        list := Array.append<Types.EventOption>(list, [eventOption]);
       };
     };
     #ok((list));

@@ -18,7 +18,7 @@ const Admin = () => {
     console.log("change");
     const promise = new Promise((resolve, reject) => {
       const reader = new FileReader();
-      const resultData = [];
+      const excelData = [];
       reader.readAsArrayBuffer(event.target.files[0]);
       reader.addEventListener("load", e => {
         const wb = read(e.target.result, { type: "buffer" }); // workaround
@@ -49,8 +49,8 @@ const Admin = () => {
           result.shift();
           result.shift();
 
-          resultData.push(result);
-          resolve(resultData);
+          excelData.push(result);
+          resolve(excelData);
           
         })
       });
@@ -59,8 +59,8 @@ const Admin = () => {
       });
     });
     promise
-      .then(resultData => {
-        setData(resultData);
+      .then(excelData => {
+        setData(excelData);
       })
       .catch(err => {
         console.log(err);
