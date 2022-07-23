@@ -89,7 +89,7 @@ module {
     level : Int;
     currentExp : Int;
     levelUpExp : Int;
-    status : ?Text;
+    status : Text;
     strength : Float;
     intelligence : Int;
     vitality : Int;

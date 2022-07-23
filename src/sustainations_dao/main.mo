@@ -654,6 +654,39 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     };
   };
 
+  public shared({caller}) func resetCharacterStat(id : Int) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    // let uuid : Text = await createUUID();
+    let rsCharacter = state.characters.get(id);
+    switch (rsCharacter) {
+      case null { #err(#NotFound); };
+      case (?character) {
+        switch(state.characterClasses.get(character.classId)){
+          case null { #err(#NotFound); };
+          case (?characterClass){
+            Character.resetStat(caller, id, characterClass, character.name, state);
+            #ok("Success");
+          };
+        };
+      };
+    };
+  };
+
+  public shared query({caller}) func getCharacterStatus(id : Int) : async Response<Text>{
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    switch(state.characters.get(id)){
+      case null { #err(#NotFound); }; 
+      case (?character){
+        let status = character.status;
+        #ok(status);
+      };
+    };
+  };
+
   public shared query({caller}) func readCharacter(id : Int) : async Response<(Types.Character)>{
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized

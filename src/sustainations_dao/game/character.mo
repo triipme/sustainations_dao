@@ -5,7 +5,7 @@ import Types "../types";
 import State "../state";
 
 module Character {
-  public func create(caller : Principal, id : Int, characterClass : Types.CharacterClass, characterName : Text, state : State.State) {
+  public func init(caller : Principal, id : Int, characterClass : Types.CharacterClass, characterName : Text) : Types.Character{
     let newCharacter : Types.Character = {
       userId = caller;
       id = id;
@@ -13,7 +13,7 @@ module Character {
       level = 1;
       currentExp = 0;
       levelUpExp = 100;
-      status : ?Text = Option.get(null, ?"");
+      status = "Survive";
       strength = characterClass.baseStrength;
       intelligence = characterClass.baseIntelligence;
       vitality = characterClass.baseVitality;
@@ -30,7 +30,19 @@ module Character {
       gearIds : ?[Text] = Option.get(null, ?[]);
       materialIds : ?[Text] = Option.get(null, ?[]);
     };
-    let createdCharacter = state.characters.put(id, newCharacter);
+    return newCharacter;
+  };
+  public func create(caller : Principal, id : Int, characterClass : Types.CharacterClass, characterName : Text, state : State.State) {
+    state.characters.put(id, init(caller, id, characterClass, characterName));
+  };
+
+  public func resetStat(caller : Principal, id : Int, characterClass : Types.CharacterClass, characterName : Text, state : State.State) {
+    let updated = state.characters.replace(id, init(caller, id, characterClass, characterName));
+  };
+
+  public func updateCurrentStat(currentStat : Float, lossStat : Float, gainStat : Float) : Float {
+    let result = currentStat - lossStat + gainStat;
+    return if((result) <= 0) {0} else {result}; 
   };
 
   public func update(character : Types.Character, strengthRequire : Float, eventOption : Types.EventOption, state : State.State) {
@@ -42,17 +54,17 @@ module Character {
       currentExp = character.currentExp + eventOption.gainExp;
       levelUpExp = character.levelUpExp;
       status = character.status;
-      strength = character.strength - strengthRequire;
+      strength = updateCurrentStat(character.strength, strengthRequire, 0);
       intelligence = character.intelligence;
       vitality = character.vitality;
       luck = character.luck;
-      currentHP = character.currentHP - eventOption.lossHP + eventOption.gainHP;
+      currentHP = updateCurrentStat(character.currentHP, eventOption.lossHP, eventOption.gainHP);
       maxHP = character.maxHP;
-      currentMana = character.currentMana - eventOption.lossMana + eventOption.gainMana;
+      currentMana = updateCurrentStat(character.currentMana, eventOption.lossMana, eventOption.gainMana);
       maxMana = character.maxMana;
-      currentStamina = character.currentStamina - eventOption.lossStamina + eventOption.gainStamina;
+      currentStamina = updateCurrentStat(character.currentStamina, eventOption.lossStamina, eventOption.gainStamina);
       maxStamina = character.maxStamina;
-      currentMorale = character.currentMorale - eventOption.lossMorale + eventOption.gainMorale;
+      currentMorale = updateCurrentStat(character.currentMorale, eventOption.lossMorale, eventOption.gainMorale);
       maxMorale = character.maxMorale;
       classId = character.classId;
       gearIds = character.gearIds;
