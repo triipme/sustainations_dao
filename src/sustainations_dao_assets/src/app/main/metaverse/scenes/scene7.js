@@ -1,6 +1,12 @@
 import Phaser from 'phaser';
 import BaseScene from './BaseScene'
 import gameConfig from '../GameConfig';
+import { 
+  loadEventOptions, 
+  loadCharacter,
+  updateCharacterStats,
+  getCharacterStatus
+} from '../GameApi';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
 const bg1 = 'metaverse/scenes/Scene7/PNG/back-01.png';
@@ -77,7 +83,7 @@ export default class Scene7 extends BaseScene {
     this.player.play('running-anims');
   }
 
-  create() {
+  async create() {
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
@@ -171,6 +177,14 @@ export default class Scene7 extends BaseScene {
     this.selectAction.setScrollFactor(0);
     this.selectAction.setVisible(false);
 
+    // load character
+    this.characterData = await loadCharacter(1);
+    // stats before choose option
+    this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
+    this.setValue(this.stamina, this.characterData.currentStamina/this.characterData.maxStamina*100);
+    this.setValue(this.mana, this.characterData.currentMana/this.characterData.maxMana*100);
+    this.setValue(this.morale, this.characterData.currentMorale/this.characterData.maxMorale*100);
+      
     const testData = ['Interact'];
     this.options = [];
     for (const idx in testData){
@@ -192,6 +206,8 @@ export default class Scene7 extends BaseScene {
         this.clickSound.play();
       });
     }
+    this.characterStatus = await getCharacterStatus(this.characterData.id);
+    console.log(this.characterStatus);
   }
 
   update() {

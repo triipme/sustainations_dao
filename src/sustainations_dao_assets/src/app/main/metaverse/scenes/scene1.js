@@ -1,6 +1,12 @@
 import Phaser from 'phaser';
 import BaseScene from './BaseScene'
 import gameConfig from '../GameConfig';
+import { 
+  loadEventOptions, 
+  loadCharacter,
+  updateCharacterStats,
+  getCharacterStatus
+} from '../GameApi';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
 const bg1 = 'metaverse/scenes/Scene1/PNG/Back-01.png';
@@ -11,11 +17,6 @@ const selectAction = 'metaverse/scenes/background_menu.png';
 const btnBlank = 'metaverse/scenes/selection.png';
 
 const BtnExit = 'metaverse/scenes/UI_exit.png'
-// const UI_HP = 'metaverse/scenes/UI-HP.png'
-// const UI_Mana = 'metaverse/scenes/UI-mana.png'
-// const UI_Morale = 'metaverse/scenes/UI-morale.png'
-// const UI_Stamina = 'metaverse/scenes/UI-stamina.png'
-// const UI_NameCard = 'metaverse/scenes/UI-namecard.png'
 const UI_Utility = 'metaverse/scenes/UI-utility.png'
 
 export default class Scene1 extends BaseScene {
@@ -90,7 +91,7 @@ export default class Scene1 extends BaseScene {
     this.player.play('running-anims');
   }
 
-  create() {
+  async create() {
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
@@ -117,7 +118,7 @@ export default class Scene1 extends BaseScene {
     for (let x = -100; x < 1920*4; x += 1) {
       platforms.create(x, 950, "ground").refreshBody();
     }
-
+    
     //player
     this.player = this.physics.add.sprite(-80, 700, "hero-running");
     this.player.setBounce(0.25);
@@ -150,6 +151,7 @@ export default class Scene1 extends BaseScene {
     this.add.image(720, 40, "UI_Mana").setOrigin(0).setScrollFactor(0);
     this.add.image(1070, 40, "UI_Stamina").setOrigin(0).setScrollFactor(0);
     this.add.image(1420, 40, "UI_Morale").setOrigin(0).setScrollFactor(0);
+
     //set value
     this.hp = this.makeBar(476, 92, 150, 22, 0x74e044).setScrollFactor(0);
     this.mana = this.makeBar(476+350, 92, 150, 22, 0xc038f6).setScrollFactor(0);
@@ -182,13 +184,22 @@ export default class Scene1 extends BaseScene {
     this.veil.setVisible(false);
     this.selectAction.setScrollFactor(0);
     this.selectAction.setVisible(false);
+    
+    // load character
+    this.characterData = await loadCharacter(1);
+    // stats before choose option
+    this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
+    this.setValue(this.stamina, this.characterData.currentStamina/this.characterData.maxStamina*100);
+    this.setValue(this.mana, this.characterData.currentMana/this.characterData.maxMana*100);
+    this.setValue(this.morale, this.characterData.currentMorale/this.characterData.maxMorale*100);
 
-    const testData = ['Cut the bush down to open the way', 'Find a way out without chopping the bush down'];
+    // load event options
+    this.eventOptions = await loadEventOptions(1);
     this.options = [];
-    for (const idx in testData){
+    for (const idx in this.eventOptions){
       this.options[idx] = this.add.sprite(gameConfig.scale.width/2, gameConfig.scale.height/2 -100 + idx*100, 'btnBlank');
       this.options[idx].text = this.add.text(
-        gameConfig.scale.width/2, gameConfig.scale.height/2 - 100 + idx*100, testData[idx], { fill: '#fff', align: 'center', fontSize: '30px' })
+        gameConfig.scale.width/2, gameConfig.scale.height/2 - 100 + idx*100, this.eventOptions[idx].description, { fill: '#fff', align: 'center', fontSize: '30px' })
       .setScrollFactor(0).setVisible(false).setOrigin(0.5);
       this.options[idx].setInteractive().setScrollFactor(0).setVisible(false);
       this.options[idx].on('pointerover', () => {
@@ -198,14 +209,24 @@ export default class Scene1 extends BaseScene {
       this.options[idx].on('pointerout', () => {
         this.options[idx].setFrame(0);
       });
-      this.options[idx].on('pointerdown', () => {
+      this.options[idx].on('pointerdown', async () => {
         this.triggerContinue();
         this.clickSound.play();
         this.sfx_char_footstep.play();
         this.sfx_obstacle_remove.play();
         this.obstacle.setVisible(false);
+        // update character after choose option
+        await updateCharacterStats(this.eventOptions[idx].id, this.characterData.id);
       });
     }
+    this.characterStatus = await getCharacterStatus(this.characterData.id);
+    console.log(this.characterStatus);
+    this.updatedCharacter = await loadCharacter(this.characterData.id);
+    // stats after choose option
+    this.setValue(this.hp, this.updatedCharacter.currentHP/this.updatedCharacter.maxHP*100);
+    this.setValue(this.stamina, this.updatedCharacter.currentStamina/this.updatedCharacter.maxStamina*100);
+    this.setValue(this.mana, this.updatedCharacter.currentMana/this.updatedCharacter.maxMana*100);
+    this.setValue(this.morale, this.updatedCharacter.currentMorale/this.updatedCharacter.maxMorale*100);
   }
 
   update() {
