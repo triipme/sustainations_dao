@@ -187,7 +187,6 @@ export default class Scene4 extends BaseScene {
 
     // load event options
     this.eventOptions = await loadEventOptions(4);
-    console.log(this.eventOptions);
     this.options = [];
     for (const idx in this.eventOptions){
       this.options[idx] = this.add.sprite(gameConfig.scale.width/2, gameConfig.scale.height/2 -100 + idx*100, 'btnBlank');

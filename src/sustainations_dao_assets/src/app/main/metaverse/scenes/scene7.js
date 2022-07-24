@@ -4,7 +4,8 @@ import gameConfig from '../GameConfig';
 import { 
   loadEventOptions, 
   loadCharacter,
-  updateCharacterStats 
+  updateCharacterStats,
+  getCharacterStatus
 } from '../GameApi';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
@@ -205,6 +206,8 @@ export default class Scene7 extends BaseScene {
         this.clickSound.play();
       });
     }
+    this.characterStatus = await getCharacterStatus(this.characterData.id);
+    console.log(this.characterStatus);
   }
 
   update() {
