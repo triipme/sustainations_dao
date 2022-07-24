@@ -5,7 +5,8 @@ import gameConfig from '../GameConfig';
 import { 
   loadEventOptions, 
   loadCharacter,
-  updateCharacterStats 
+  updateCharacterStats,
+  getCharacterStatus
 } from '../GameApi';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
@@ -208,10 +209,13 @@ export default class Scene5 extends BaseScene {
         this.clickSound.play();
         // update character after choose option
         await updateCharacterStats(this.eventOptions[idx].id, this.characterData.id);
+        
       });
     }
+    this.characterStatus = await getCharacterStatus(this.characterData.id);
+    console.log(this.characterStatus);
+    this.updatedCharacter = await loadCharacter(this.characterData.id);
     // stats after choose option
-    this.updatedCharacter = await loadCharacter(1);
     this.setValue(this.hp, this.updatedCharacter.currentHP/this.updatedCharacter.maxHP*100);
     this.setValue(this.stamina, this.updatedCharacter.currentStamina/this.updatedCharacter.maxStamina*100);
     this.setValue(this.mana, this.updatedCharacter.currentMana/this.updatedCharacter.maxMana*100);

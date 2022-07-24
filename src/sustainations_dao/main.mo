@@ -735,10 +735,26 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
                 strengthRequire := item.strengthRequire;
               };
             };
-            Character.update(character, strengthRequire, eventOption, state);
+            Character.takeOption(character, strengthRequire, eventOption, state);
           };
         };
         #ok("Success");
+      };
+    };
+  };
+
+  public shared({caller}) func getStatus(id : Int) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsCharacter = state.characters.get(id);
+    switch (rsCharacter) {
+      case (null) { #err(#NotFound); };
+      case (?character) {
+        if(character.currentHP == 0 or character.currentMorale == 0 or character.currentStamina == 0){
+          Character.updateStatus(character, "Dead", state);
+        };
+        #ok(character.status);
       };
     };
   };

@@ -45,8 +45,8 @@ module Character {
     return if((result) <= 0) {0} else {result}; 
   };
 
-  public func update(character : Types.Character, strengthRequire : Float, eventOption : Types.EventOption, state : State.State) {
-    let newCharacter : Types.Character = {
+  public func takeOption(character : Types.Character, strengthRequire : Float, eventOption : Types.EventOption, state : State.State) {
+    var newCharacter : Types.Character = {
       userId = character.userId;
       id = character.id;
       name = character.name;
@@ -65,6 +65,34 @@ module Character {
       currentStamina = updateCurrentStat(character.currentStamina, eventOption.lossStamina, eventOption.gainStamina);
       maxStamina = character.maxStamina;
       currentMorale = updateCurrentStat(character.currentMorale, eventOption.lossMorale, eventOption.gainMorale);
+      maxMorale = character.maxMorale;
+      classId = character.classId;
+      gearIds = character.gearIds;
+      materialIds = character.materialIds;
+    };
+    let updatedCharacter = state.characters.replace(character.id, newCharacter);
+  };
+
+  public func updateStatus(character : Types.Character, status : Text, state : State.State) {
+    var newCharacter : Types.Character = {
+      userId = character.userId;
+      id = character.id;
+      name = character.name;
+      level = character.level;
+      currentExp = character.currentExp;
+      levelUpExp = character.levelUpExp;
+      status = status;
+      strength = character.strength;
+      intelligence = character.intelligence;
+      vitality = character.vitality;
+      luck = character.luck;
+      currentHP = character.currentHP;
+      maxHP = character.maxHP;
+      currentMana = character.currentMana;
+      maxMana = character.maxMana;
+      currentStamina = character.currentStamina;
+      maxStamina = character.maxStamina;
+      currentMorale = character.currentMorale;
       maxMorale = character.maxMorale;
       classId = character.classId;
       gearIds = character.gearIds;

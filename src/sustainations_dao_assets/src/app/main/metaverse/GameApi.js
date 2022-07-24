@@ -28,9 +28,17 @@ async function updateCharacterStats(eventOptionId, characterId){
   const updated = await updateCharacter();
 };
 
+async function getCharacterStatus(characterId){
+  const { user } = store.getState();
+  const getStatus = async () => await user.actor.getStatus(characterId);
+  const status = await getStatus();
+  return status;
+}
+
 export {
   loadQuestItems,
   loadCharacter,
   loadEventOptions,
-  updateCharacterStats
+  updateCharacterStats,
+  getCharacterStatus
 }
