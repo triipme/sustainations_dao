@@ -65,7 +65,7 @@ const Admin = () => {
       .catch(err => {
         console.log(err);
       });
-    };
+  };
 
   const createItem = () => {
     return new Promise((resolve) =>{

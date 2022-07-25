@@ -15,6 +15,15 @@ async function loadCharacter(characterId){
   return character;
 };
 
+// async function loadCharacter(characterId){
+//   const { user } = store.getState();
+//   return new Promise(async (resolve) => {
+//     const readCharacter = async () => await user.actor.readCharacter(characterId);
+//     const character = (await readCharacter()).ok;
+//     resolve(character);
+//   });
+// };
+
 async function loadEventOptions(eventId){
   const { user } = store.getState();
   const listEventOptions = async () => await user.actor.listEventOptions(eventId);
@@ -27,6 +36,15 @@ async function updateCharacterStats(eventOptionId, characterId){
   const updateCharacter = async () => await user.actor.updateCharacter(eventOptionId, characterId);
   const updated = await updateCharacter();
 };
+
+// function updateCharacterStats(eventOptionId, characterId){
+//   const { user } = store.getState();
+//   return new Promise(async (resolve) => {
+//     const updateCharacter = async () => await user.actor.updateCharacter(eventOptionId, characterId);
+//     const updated = await updateCharacter();
+//     resolve(updated);
+//   })
+// }
 
 async function getCharacterStatus(characterId){
   const { user } = store.getState();
