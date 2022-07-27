@@ -92,6 +92,7 @@ module {
     #SomethingWrong;
     #ProposalIsNotOpened;
     #AlreadyVoted;
+    #AdminRoleRequired;
   };
 
   public let proposalCategories = [
@@ -124,16 +125,22 @@ module {
   public type MemoryCardEngineCard = MemoryCardEngineModel.Card;
   public type MemoryCardEnginePlayer = MemoryCardEngineModel.Player;
   public type MemoryCardEngineReward = MemoryCardEngineModel.Reward;
-  public type MemoryCardEnginePatternItemImport = {
+  public type MemoryCardEnginePatternItemGames = {
     gameId : Text;
     gameSlug : Text;
     gameImage : Text;
     gameName : Text;
     gameDescription : Text;
     gameStatus : Bool;
+  };
+  public type MemoryCardEnginePatternItemStages = {
+    gameId : Text;
     stageId : Text;
     stageName : Text;
     stageOrder : Nat;
+  };
+  public type MemoryCardEnginePatternItemCards = {
+    stageId : Text;
     cardId : Text;
     cardType : Text;
     cardData : Text;

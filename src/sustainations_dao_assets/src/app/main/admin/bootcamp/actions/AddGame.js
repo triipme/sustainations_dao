@@ -9,6 +9,7 @@ import FuseSvgIcon from "@fuse/core/FuseSvgIcon";
 const AddGame = ({ onSuccess }) => {
   const ref = useRef(null);
   const [data, setData] = useState();
+  const [loading, setLoading] = useState(false);
   const { actor } = useSelector(state => state.user);
   const handleButton = () => {
     ref.current.click();
@@ -43,12 +44,16 @@ const AddGame = ({ onSuccess }) => {
   const handleSubmitGame = async () => {
     try {
       if (!!actor?.memoryCardEngineImportExcel) {
-        const rs = await actor.memoryCardEngineImportExcel(data);
+        setLoading(true);
+        const [games, stages, cards] = formatData(data);
+        const _ = await actor.memoryCardEngineImportExcel(games, stages, cards);
         onSuccess(true);
         setData();
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
   return (
@@ -62,7 +67,11 @@ const AddGame = ({ onSuccess }) => {
           Add
         </Button>
         {data && (
-          <LoadingButton sx={{ ml: 2 }} variant="contained" onClick={handleSubmitGame}>
+          <LoadingButton
+            loading={loading}
+            sx={{ ml: 2 }}
+            variant="contained"
+            onClick={handleSubmitGame}>
             Submit Game
           </LoadingButton>
         )}
@@ -88,5 +97,40 @@ const AddGame = ({ onSuccess }) => {
     </div>
   );
 };
+
+function formatData(data) {
+  let games = [];
+  let stages = [];
+  let cards = [];
+  data.forEach(ele => {
+    const {
+      gameId,
+      gameSlug,
+      gameImage,
+      gameName,
+      gameDescription,
+      gameStatus,
+      stageId,
+      stageName,
+      stageOrder,
+      cardId,
+      cardType,
+      cardData
+    } = ele;
+    const game = games.some(g => g.gameId === gameId);
+    const stage = stages.some(g => g.stageId === stageId);
+    const card = cards.some(g => g.cardId === cardId);
+    if (!game) {
+      games.push({ gameId, gameSlug, gameImage, gameName, gameDescription, gameStatus });
+    }
+    if (!stage) {
+      stages.push({ gameId, stageId, stageName, stageOrder });
+    }
+    if (!card) {
+      cards.push({ stageId, cardId, cardType, cardData });
+    }
+  });
+  return [games, stages, cards];
+}
 
 export default AddGame;

@@ -18,56 +18,41 @@ function AuthProvider({ children }) {
   const [waitAuthCheck, setWaitAuthCheck] = useState(true);
   const dispatch = useDispatch();
 
-  React.useLayoutEffect(() => {
+  useEffect(() => {
     const initAuthClient = async () => {
       const client = await AuthClient.create();
       const authenticated = await client.isAuthenticated();
       setIsAuthenticated(authenticated); //check isAuthorized first time
-      const identity = client.getIdentity();
-      const actor = createActor(canisterId, {
-        agentOptions: {
-          identity
-        }
-      });
-      const principal = identity.getPrincipal().toText();
-      let balance,
-        agreement,
-        depositAddress,
-        isAdmin = false;
-      try {
-        if (authenticated) {
-          const result = await actor.getUserInfo();
-          if ('ok' in result) {
-            balance = parseInt(result.ok.balance);
-            agreement = result.ok.agreement;
-            depositAddress = result.ok.depositAddress;
+      if (authenticated) {
+        const identity = client.getIdentity();
+        const actor = createActor(canisterId, {
+          agentOptions: {
+            identity
           }
-          await actor.isAdmin(identity.getPrincipal());
-          isAdmin = true;
-          // dispatch(showMessage({ message: "Signed in" }));
-        } else {
-          pass();
+        });
+        const principal = identity.getPrincipal().toText();
+        let balance, depositAddress, isAdmin;
+        const result = await actor.getUserInfo();
+        if ('ok' in result) {
+          balance = parseInt(result.ok.balance);
+          depositAddress = result.ok.depositAddress;
+          isAdmin = result.ok.isAdmin;
         }
-      } catch (error) {
-        console.log('====================================');
-        console.log(error);
-        console.log('====================================');
-        isAdmin = false; // catch isAdmin throw error
-      } finally {
-        if (depositAddress) {
-          dispatch(
-            setUser({
-              role: agreement
-                ? [...settingsConfig.defaultAuth, isAdmin ? 'admin' : null]
-                : ['needAgreement'],
-              actor,
-              depositAddress,
-              balance,
-              principal
-            })
-          );
-          setWaitAuthCheck(false);
-        }
+        dispatch(
+          setUser({
+            role: result.ok.agreement
+              ? [...settingsConfig.defaultAuth, isAdmin ? 'admin' : null]
+              : ['needAgreement'],
+            actor,
+            depositAddress,
+            balance,
+            principal
+          })
+        );
+        // dispatch(showMessage({ message: 'Signed in' }));
+        setWaitAuthCheck(false);
+      } else {
+        pass();
       }
     };
 

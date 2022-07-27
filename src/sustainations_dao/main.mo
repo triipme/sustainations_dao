@@ -232,6 +232,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     depositAddress : Text;
     balance : Nat64;
     agreement : Bool;
+    isAdmin : Bool;
   };
   public shared({ caller }) func getUserInfo() : async Response<UserInfo> {
     if (Principal.toText(caller) == "2vxsx-fae") {
@@ -243,12 +244,14 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
       case (null) { false };
       case _ {true};
     };
+    Debug.print(debug_show isAdmin(caller));
     let userInfo = {
       principal = Principal.toText(caller);
       depositAddress = Account.toText(
         Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(caller))
       );
       balance = balance.e8s;
+      isAdmin = isAdmin(caller);
       agreement;
     };
     #ok(userInfo);
@@ -519,103 +522,48 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     };
   };
 
-  //initial owner -> admin
-  public shared({caller}) func ownerSetFirstAdmin(principalText: Text, nameSet : ?Text) : async () {
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      throw Error.reject("NotAuthorized");  //isNotAuthorized
-    };
-    let userPrincipal = Principal.fromText(principalText);
-    assert(Principal.equal(caller, owner));
-    switch (state.profiles.get(userPrincipal)) {
-      case (null) {
-        let profile : Types.Profile = {
-          username = nameSet;
-          avatar = null;
-          role = #admin;
-        };
-        state.profiles.put(userPrincipal, profile);
-        Debug.print("created");
-      };
-      case (? admin) {
-        Debug.print("exist");
-      };
-    };
-  };
-
   //verify admin
-  public shared({caller}) func isAdmin(userPrincipal : Principal) : async () {
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      throw Error.reject("NotAuthorized");  //isNotAuthorized
-    };
-    switch (state.profiles.get(userPrincipal)) {
-      case null { throw Error.reject("NotFound") };
-      case (? u) {
-        switch (u.role) {
-          case (#admin) {};
-          case (#user) {
-            throw Error.reject("NotAdmin");
-          };
-        };
-      };
+  private func isAdmin(caller : Principal) : Bool {
+    if (Principal.equal(caller, owner)) return true;
+    switch (state.profiles.get(caller)) {
+      case null return false;
+      case (? profile) return profile.role == #admin;
     };
   };
 
-  public shared({caller}) func getAllProfiles() : async Response<[(Principal, Types.Profile)]> {
-    try {
-      await isAdmin(caller);
-      #ok(Iter.toArray(state.profiles.entries()));
-    } catch (e) {
-      #err(#SomethingWrong);
-    }
-  };
-
-  //Owner or Admin assign role
-  public shared({caller}) func adminAssignRole(
-    principalText : Text, 
-    newRole : {#admin; #user}
-  ) : async Response<()> {
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      throw Error.reject("NotAuthorized");  //isNotAuthorized
-    };
-    let userPrincipal = Principal.fromText(principalText);
-    try {
-      await isAdmin(caller);
-      switch (state.profiles.get(userPrincipal)) {
-        case null { #err(#NotFound) };
-        case (? prevProfile) {
-          let profileUpdate = {
-            username = prevProfile.username;
-            avatar = prevProfile.avatar;
-            role = newRole;
-          };
-          let updatedProfile = state.profiles.replace(userPrincipal, profileUpdate);
-          #ok();
-        };
-      };
-    } catch (e) {
-      #err(#SomethingWrong);
-    }
-  };
-
-  //check role
-  public query({caller}) func whatRole(principalText : Text) : async Response<{#admin; #user}> {
-    let userPrincipal = Principal.fromText(principalText);
+  public shared({caller})func setAdmin(principal : Text, role : Types.Role, nameSet : ?Text, avatar : ?Text) : async Response<Text>{
     if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+      return #err(#NotAuthorized);// isNotAuthorized
     };
-    switch (state.profiles.get(userPrincipal)) {
-      case null { #err(#NotFound) };
-      case (? prevProfile) {
-        #ok(prevProfile.role);
+    if(isAdmin(caller)) {
+      switch (state.profiles.get(Principal.fromText(principal))) {
+        case (null) {
+          let profile : Types.Profile = {
+            username = nameSet;
+            avatar;
+            role;
+          };
+          state.profiles.put(Principal.fromText(principal), profile);
+          Debug.print("created");
+        };
+        case (? admin) {
+          Debug.print("exist");
+        };
       };
+      #ok("Success");
+    } else {
+      #err(#AdminRoleRequired);
     };
   };
 
   /* MemoryCard */
-  public shared({caller}) func memoryCardEngineImportExcel(data : [Types.MemoryCardEnginePatternItemImport]) : async Response<()>{
-    try {
-      await isAdmin(caller);
-      for (V in Iter.fromArray(data)) {
+  public shared({caller}) func memoryCardEngineImportExcel(
+    games : [Types.MemoryCardEnginePatternItemGames], 
+    stages : [Types.MemoryCardEnginePatternItemStages], 
+    cards : [Types.MemoryCardEnginePatternItemCards]
+  ) : async Response<()>{
+    if(isAdmin(caller)) {
+      for (V in Iter.fromArray(games)) {
         switch (state.memoryCardEngine.games.get(V.gameId)) {
           case null {
             let games : Types.MemoryCardEngineGame = {
@@ -627,8 +575,10 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
             };
             state.memoryCardEngine.games.put(V.gameId, games);
           };
-          case (? v) {};
+          case (_) {};
         };
+      };
+      for (V in Iter.fromArray(stages)) {
         switch (state.memoryCardEngine.stages.get(V.stageId)) {
           case null {
             let stages : Types.MemoryCardEngineStage = {
@@ -638,8 +588,10 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
             };
             state.memoryCardEngine.stages.put(V.stageId, stages);
           };
-          case (? v){};
+          case (_) {};
         };
+      };
+      for (V in Iter.fromArray(cards)) {
         switch (state.memoryCardEngine.cards.get(V.cardId)) {
           case null {
             let cards : Types.MemoryCardEngineCard = {
@@ -649,27 +601,31 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
             };
             state.memoryCardEngine.cards.put(V.cardId, cards);
           };
-          case (? v){};
+          case (_) {};
         };
       };
       #ok();
-    } catch (e) {
-      #err(#SomethingWrong);
+    } else {
+      #err(#AdminRoleRequired);
     }
   };
 
   public shared({caller}) func memoryCardEngineAllGames() : async Response<[(Text, Types.MemoryCardEngineGame)]>{
-    try {
-      await isAdmin(caller);
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);// isNotAuthorized
+    };
+    if(isAdmin(caller)) {
       #ok(Iter.toArray(state.memoryCardEngine.games.entries()));
-    } catch (e) {
-      #err(#SomethingWrong);
+    } else {
+      #err(#AdminRoleRequired);
     }
   };
 
   public shared({caller}) func memoryCardEngineGameChangeStatus(gameId : Text, newStatus : Bool) : async Response<()> {
-    try {
-      await isAdmin(caller);
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);// isNotAuthorized
+    };
+    if(isAdmin(caller)) {
       switch (state.memoryCardEngine.games.get(gameId)) {
         case null #err(#NotFound);
         case (? prev) {
@@ -684,26 +640,30 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
           #ok();
         };
       };
-    } catch (e) {
-      #err(#SomethingWrong);
+    } else {
+      #err(#AdminRoleRequired);
     }
   };
 
   public shared({caller}) func memoryCardEngineAllStages() : async Response<[(Text, Types.MemoryCardEngineStage)]>{
-    try {
-      await isAdmin(caller);
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);// isNotAuthorized
+    };
+    if(isAdmin(caller)) {
       #ok(Iter.toArray(state.memoryCardEngine.stages.entries()));
-    } catch (e) {
-      #err(#SomethingWrong);
+    } else {
+      #err(#AdminRoleRequired);
     }
   };
 
   public shared({caller}) func memoryCardEngineAllCards() : async Response<[(Text, Types.MemoryCardEngineCard)]>{
-    try {
-      await isAdmin(caller);
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);// isNotAuthorized
+    };
+    if(isAdmin(caller)) {
       #ok(Iter.toArray(state.memoryCardEngine.cards.entries()));
-    } catch (e) {
-      #err(#SomethingWrong);
+    } else {
+      #err(#AdminRoleRequired);
     }
   };
 
@@ -894,8 +854,10 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
   };
 
   public shared({caller}) func memoryCardEngineListAll(gameId : Text, gameSlug : Text) : async Response<[Types.MemoryCardEnginePlayer]>{
-    try {
-      await isAdmin(caller);
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);// isNotAuthorized
+    };
+    if(isAdmin(caller)) {
       var listTop : [Types.MemoryCardEnginePlayer] = [];
       for(V in state.memoryCardEngine.players.vals()) {
         if(Text.equal(gameSlug, V.gameSlug) and Text.equal(gameId, V.gameId)) {
@@ -903,17 +865,19 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
         }
       };
       #ok(listTop);
-    } catch (e) {
-      #err(#SomethingWrong);
+    } else {
+      #err(#AdminRoleRequired);
     }
   };
 
   public shared({caller}) func memoryCardEngineCheckReward(id : Text) : async Response<?Types.MemoryCardEngineReward>{
-    try {
-      await isAdmin(caller);
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);// isNotAuthorized
+    };
+    if(isAdmin(caller)) {
       #ok(state.memoryCardEngine.rewards.get(id));
-    } catch (e) {
-      #err(#SomethingWrong);
+    } else {
+      #err(#AdminRoleRequired);
     }
   };
 
@@ -922,8 +886,10 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     reward : Float, 
     uid : Principal
   ) : async Response<()>{
-    try {
-      await isAdmin(caller);
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);// isNotAuthorized
+    };
+    if(isAdmin(caller)) {
       let rewardAmount : Nat64 = Int64.toNat64(Float.toInt64(reward * (10 ** 8)));
       switch (await refund(rewardAmount, uid)) {
         case (#Err(error)) {
@@ -952,8 +918,8 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
           #ok();
         };
       };
-    } catch (e) {
-      #err(#SomethingWrong);
+    } else {
+      #err(#AdminRoleRequired);
     }
   };
 };
