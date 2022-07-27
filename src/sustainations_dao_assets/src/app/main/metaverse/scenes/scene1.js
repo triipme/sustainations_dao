@@ -5,7 +5,8 @@ import {
   loadEventOptions, 
   loadCharacter,
   updateCharacterStats,
-  getCharacterStatus
+  getCharacterStatus,
+  characterTakeOption
 } from '../GameApi';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
@@ -33,6 +34,29 @@ export default class Scene1 extends BaseScene {
   }
 
   preload() {
+    this.eventId = 1;
+    this.characterId = 1;
+    this.load.rexAwait(function(successCallback, failureCallback) {
+      loadEventOptions(this.eventId).then( (result) => {
+        this.eventOptions = result;
+        successCallback();
+      });
+    }, this);
+
+    this.load.rexAwait(function(successCallback, failureCallback) {
+      characterTakeOption(this.eventId, this.characterId).then( (result) => {
+        this.characterTakeOptions = result;
+        successCallback();
+      });
+    }, this);
+
+    this.load.rexAwait(function(successCallback, failureCallback) {
+      getCharacterStatus(this.characterId).then( (result) => {
+        this.characterStatus = result;
+        successCallback();
+      });
+    }, this);
+
     //loading screen
     this.add.image(
       gameConfig.scale.width/2, gameConfig.scale.height/2 - 50, 'logo'
@@ -66,8 +90,9 @@ export default class Scene1 extends BaseScene {
     //UI -- One time load
     this.load.image("BtnExit", BtnExit);
     this.load.image("UI_Utility", UI_Utility);
+    console.log("before");
   }
-
+  
   //defined function
   triggerPause(){
     this.isInteracting = true;
@@ -78,7 +103,7 @@ export default class Scene1 extends BaseScene {
       this.options[idx].text.setVisible(true);
     }
   }
-
+  
   triggerContinue(){
     this.veil.setVisible(false);
     this.selectAction.setVisible(false);
@@ -90,8 +115,11 @@ export default class Scene1 extends BaseScene {
     this.isInteracted = true;
     this.player.play('running-anims');
   }
-
+  
   async create() {
+    console.log("after");
+    console.log(this.eventOptions);
+    console.log(this.characterTakeOptions);
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
@@ -108,11 +136,11 @@ export default class Scene1 extends BaseScene {
     this.bg_2 = this.add.tileSprite(0, 0, gameConfig.scale.width, gameConfig.scale.height, "background2");
     this.bg_2.setOrigin(0, 0);
     this.bg_2.setScrollFactor(0);
-
+    
     this.obstacle = this.add.tileSprite(0, 0, gameConfig.scale.width, gameConfig.scale.height, "obstacle")
-      .setOrigin(0,0)
-      .setScrollFactor(0);
-
+    .setOrigin(0,0)
+    .setScrollFactor(0);
+    
     // platforms
     const platforms = this.physics.add.staticGroup();
     for (let x = -100; x < 1920*4; x += 1) {
@@ -124,14 +152,14 @@ export default class Scene1 extends BaseScene {
     this.player.setBounce(0.25);
     this.player.setCollideWorldBounds(false);
     this.physics.add.collider(this.player, platforms);
-
+    
     this.anims.create({
       key: "running-anims",
       frames: this.anims.generateFrameNumbers("hero-running", {start: 1, end: 8}),
       frameRate: 8,
       repeat: -1
     });
-
+    
     this.anims.create({
       key: "idle-anims",
       frames: this.anims.generateFrameNumbers("hero-running", {start: 0, end: 0}),
@@ -139,30 +167,30 @@ export default class Scene1 extends BaseScene {
       repeat: -1
     });
     this.player.play('running-anims');
-
+    
     //frontlayer
     this.bg_3 = this.add.tileSprite(0, 0, gameConfig.scale.width, gameConfig.scale.height, "background3");
     this.bg_3.setOrigin(0, 0);
     this.bg_3.setScrollFactor(0);
-
+    
     //UI
     this.add.image(20, 40, "UI_NameCard").setOrigin(0).setScrollFactor(0);
     this.add.image(370, 40, "UI_HP").setOrigin(0).setScrollFactor(0);
     this.add.image(720, 40, "UI_Mana").setOrigin(0).setScrollFactor(0);
     this.add.image(1070, 40, "UI_Stamina").setOrigin(0).setScrollFactor(0);
     this.add.image(1420, 40, "UI_Morale").setOrigin(0).setScrollFactor(0);
-
+    
     //set value
     this.hp = this.makeBar(476, 92, 150, 22, 0x74e044).setScrollFactor(0);
     this.mana = this.makeBar(476+350, 92, 150, 22, 0xc038f6).setScrollFactor(0);
     this.stamina = this.makeBar(476+350*2, 92, 150, 22, 0xcf311f).setScrollFactor(0);
     this.morale = this.makeBar(476+350*3, 92, 150, 22, 0x63dafb).setScrollFactor(0);
     // this.setValue(this.hp, 50)
-
+    
     //UI2
     this.add.image(80, 830, "UI_Utility").setOrigin(0).setScrollFactor(0);
     this.add.image(1780, 74, "BtnExit").setOrigin(0).setScrollFactor(0).setScale(0.7)
-      .setInteractive()
+    .setInteractive()
       .on('pointerdown', () => {
         this.clickSound.play();
         this.scene.start('menuScene');
@@ -174,7 +202,7 @@ export default class Scene1 extends BaseScene {
     this.myCam = this.cameras.main;
     this.myCam.setBounds(0, 0, gameConfig.scale.width*4, gameConfig.scale.height); //furthest distance the cam is allowed to move
     this.myCam.startFollow(this.player);
-
+    
     //pause screen
     this.veil = this.add.graphics({x: 0, y: 0});
     this.veil.fillStyle('0x000000', 0.2);
@@ -184,9 +212,9 @@ export default class Scene1 extends BaseScene {
     this.veil.setVisible(false);
     this.selectAction.setScrollFactor(0);
     this.selectAction.setVisible(false);
-    
+
     // load character
-    this.characterData = await loadCharacter(1);
+    this.characterData = await loadCharacter(this.characterId);
     // stats before choose option
     this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
     this.setValue(this.stamina, this.characterData.currentStamina/this.characterData.maxStamina*100);
@@ -194,7 +222,6 @@ export default class Scene1 extends BaseScene {
     this.setValue(this.morale, this.characterData.currentMorale/this.characterData.maxMorale*100);
 
     // load event options
-    this.eventOptions = await loadEventOptions(1);
     this.options = [];
     for (const idx in this.eventOptions){
       this.options[idx] = this.add.sprite(gameConfig.scale.width/2, gameConfig.scale.height/2 -100 + idx*100, 'btnBlank');
@@ -215,18 +242,18 @@ export default class Scene1 extends BaseScene {
         this.sfx_char_footstep.play();
         this.sfx_obstacle_remove.play();
         this.obstacle.setVisible(false);
+        // stats after choose option
+        this.setValue(this.hp, this.characterTakeOptions[idx].currentHP/this.characterTakeOptions[idx].maxHP*100);
+        this.setValue(this.stamina, this.characterTakeOptions[idx].currentStamina/this.characterTakeOptions[idx].maxStamina*100);
+        this.setValue(this.mana, this.characterTakeOptions[idx].currentMana/this.characterTakeOptions[idx].maxMana*100);
+        this.setValue(this.morale, this.characterTakeOptions[idx].currentMorale/this.characterTakeOptions[idx].maxMorale*100);
         // update character after choose option
-        await updateCharacterStats(this.eventOptions[idx].id, this.characterData.id);
+        await updateCharacterStats(this.characterTakeOptions[idx]);
+        this.updatedCharacter = await loadCharacter(this.characterData.id);
       });
     }
-    this.characterStatus = await getCharacterStatus(this.characterData.id);
+    // this.characterStatus = await getCharacterStatus(this.characterData.id);
     console.log(this.characterStatus);
-    this.updatedCharacter = await loadCharacter(this.characterData.id);
-    // stats after choose option
-    this.setValue(this.hp, this.updatedCharacter.currentHP/this.updatedCharacter.maxHP*100);
-    this.setValue(this.stamina, this.updatedCharacter.currentStamina/this.updatedCharacter.maxStamina*100);
-    this.setValue(this.mana, this.updatedCharacter.currentMana/this.updatedCharacter.maxMana*100);
-    this.setValue(this.morale, this.updatedCharacter.currentMorale/this.updatedCharacter.maxMorale*100);
   }
 
   update() {

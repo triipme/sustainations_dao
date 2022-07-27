@@ -6,7 +6,8 @@ import {
   loadEventOptions, 
   loadCharacter,
   updateCharacterStats,
-  getCharacterStatus
+  getCharacterStatus,
+  characterTakeOption
 } from '../GameApi';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
@@ -30,6 +31,29 @@ export default class Scene3 extends BaseScene {
   }
 
   preload() {
+    this.eventId = 3;
+    this.characterId = 1;
+    this.load.rexAwait(function(successCallback, failureCallback) {
+      loadEventOptions(this.eventId).then( (result) => {
+        this.eventOptions = result;
+        successCallback();
+      });
+    }, this);
+
+    this.load.rexAwait(function(successCallback, failureCallback) {
+      characterTakeOption(this.eventId, this.characterId).then( (result) => {
+        this.characterTakeOptions = result;
+        successCallback();
+      });
+    }, this);
+
+    this.load.rexAwait(function(successCallback, failureCallback) {
+      getCharacterStatus(this.characterId).then( (result) => {
+        this.characterStatus = result;
+        successCallback();
+      });
+    }, this);
+
     //loading screen
     this.add.image(
       gameConfig.scale.width/2, gameConfig.scale.height/2 - 50, 'logo'
@@ -59,6 +83,7 @@ export default class Scene3 extends BaseScene {
     this.load.image("selectAction", selectAction);
     this.load.spritesheet('btnBlank', btnBlank, { frameWidth: 1102, frameHeight: 88});
     this.load.image("obstacle", obstacle);
+    console.log("before");
   }
 
   //defined function
@@ -85,6 +110,9 @@ export default class Scene3 extends BaseScene {
   }
 
   async create() {
+    console.log("after");
+    console.log(this.eventOptions);
+    console.log(this.characterTakeOptions);
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
@@ -182,16 +210,15 @@ export default class Scene3 extends BaseScene {
     this.selectAction.setScrollFactor(0);
     this.selectAction.setVisible(false);
 
-    // load character
-    this.characterData = await loadCharacter(1);
+    /// load character
+    this.characterData = await loadCharacter(this.characterId);
     // stats before choose option
     this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
     this.setValue(this.stamina, this.characterData.currentStamina/this.characterData.maxStamina*100);
     this.setValue(this.mana, this.characterData.currentMana/this.characterData.maxMana*100);
     this.setValue(this.morale, this.characterData.currentMorale/this.characterData.maxMorale*100);
-    
+
     // load event options
-    this.eventOptions = await loadEventOptions(3);
     this.options = [];
     for (const idx in this.eventOptions){
       this.options[idx] = this.add.sprite(gameConfig.scale.width/2, gameConfig.scale.height/2 -100 + idx*100, 'btnBlank');
@@ -210,19 +237,18 @@ export default class Scene3 extends BaseScene {
         this.triggerContinue();
         this.sfx_char_footstep.play();
         this.clickSound.play();
+        // stats after choose option
+        this.setValue(this.hp, this.characterTakeOptions[idx].currentHP/this.characterTakeOptions[idx].maxHP*100);
+        this.setValue(this.stamina, this.characterTakeOptions[idx].currentStamina/this.characterTakeOptions[idx].maxStamina*100);
+        this.setValue(this.mana, this.characterTakeOptions[idx].currentMana/this.characterTakeOptions[idx].maxMana*100);
+        this.setValue(this.morale, this.characterTakeOptions[idx].currentMorale/this.characterTakeOptions[idx].maxMorale*100);
         // update character after choose option
-        await updateCharacterStats(this.eventOptions[idx].id, this.characterData.id);
-        
+        await updateCharacterStats(this.characterTakeOptions[idx]);
+        this.updatedCharacter = await loadCharacter(this.characterData.id);
       });
     }
-    this.characterStatus = await getCharacterStatus(this.characterData.id);
+    // this.characterStatus = await getCharacterStatus(this.characterData.id);
     console.log(this.characterStatus);
-    this.updatedCharacter = await loadCharacter(this.characterData.id);
-    // stats after choose option
-    this.setValue(this.hp, this.updatedCharacter.currentHP/this.updatedCharacter.maxHP*100);
-    this.setValue(this.stamina, this.updatedCharacter.currentStamina/this.updatedCharacter.maxStamina*100);
-    this.setValue(this.mana, this.updatedCharacter.currentMana/this.updatedCharacter.maxMana*100);
-    this.setValue(this.morale, this.updatedCharacter.currentMorale/this.updatedCharacter.maxMorale*100);
   }
 
   update() {

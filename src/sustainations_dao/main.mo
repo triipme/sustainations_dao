@@ -719,25 +719,40 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     #ok((list));
   };
   
-  public shared({caller}) func updateCharacter(eventOptionId : Int, characterId : Int) : async Response<Text> {
+  public shared({caller}) func takeOption(eventId : Int, characterId : Int) : async Response<[Types.Character]> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
     let rsCharacter = state.characters.get(characterId);
+    var result : [Types.Character] = [];
     switch (rsCharacter) {
       case null { #err(#NotFound); };
       case (?character) {
         for((K, eventOption) in state.eventOptions.entries()){
-          if(eventOption.id == eventOptionId){
+          if(eventOption.eventId == eventId){
             var strengthRequire : Float = 0;
             for(item in state.items.vals()){
               if(item.id == eventOption.requireItemId){
                 strengthRequire := item.strengthRequire;
               };
             };
-            Character.takeOption(character, strengthRequire, eventOption, state);
+            result := Array.append<Types.Character>(result, [Character.takeOption(character, strengthRequire, eventOption, state)]);
           };
         };
+        #ok(result);
+      };
+    };
+  };
+
+  public shared({caller}) func updateCharacter(character : Types.Character) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsCharacter = state.characters.get(character.id);
+    switch (rsCharacter) {
+      case (null) { #err(#NotFound); };
+      case (?V) {
+        Character.update(character, state);
         #ok("Success");
       };
     };

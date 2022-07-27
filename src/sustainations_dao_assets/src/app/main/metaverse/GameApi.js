@@ -15,15 +15,6 @@ async function loadCharacter(characterId){
   return character;
 };
 
-// async function loadCharacter(characterId){
-//   const { user } = store.getState();
-//   return new Promise(async (resolve) => {
-//     const readCharacter = async () => await user.actor.readCharacter(characterId);
-//     const character = (await readCharacter()).ok;
-//     resolve(character);
-//   });
-// };
-
 async function loadEventOptions(eventId){
   const { user } = store.getState();
   const listEventOptions = async () => await user.actor.listEventOptions(eventId);
@@ -31,20 +22,19 @@ async function loadEventOptions(eventId){
   return eventOptions;
 };
 
-async function updateCharacterStats(eventOptionId, characterId){
+async function characterTakeOption(eventId, characterId){
   const { user } = store.getState();
-  const updateCharacter = async () => await user.actor.updateCharacter(eventOptionId, characterId);
+  const takeOption = async () => await user.actor.takeOption(eventId, characterId);
+  const result = (await takeOption()).ok;
+  return result;
+};
+
+async function updateCharacterStats(character){
+  const { user } = store.getState();
+  const updateCharacter = async () => await user.actor.updateCharacter(character);
   const updated = await updateCharacter();
 };
 
-// function updateCharacterStats(eventOptionId, characterId){
-//   const { user } = store.getState();
-//   return new Promise(async (resolve) => {
-//     const updateCharacter = async () => await user.actor.updateCharacter(eventOptionId, characterId);
-//     const updated = await updateCharacter();
-//     resolve(updated);
-//   })
-// }
 
 async function getCharacterStatus(characterId){
   const { user } = store.getState();
@@ -58,5 +48,6 @@ export {
   loadCharacter,
   loadEventOptions,
   updateCharacterStats,
-  getCharacterStatus
+  getCharacterStatus,
+  characterTakeOption
 }

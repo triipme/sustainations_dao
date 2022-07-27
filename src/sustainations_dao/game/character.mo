@@ -36,6 +36,10 @@ module Character {
     state.characters.put(id, init(caller, id, characterClass, characterName));
   };
 
+  public func update(character : Types.Character, state : State.State) {
+    let updated = state.characters.replace(character.id, character);
+  };
+
   public func resetStat(caller : Principal, id : Int, characterClass : Types.CharacterClass, characterName : Text, state : State.State) {
     let updated = state.characters.replace(id, init(caller, id, characterClass, characterName));
   };
@@ -45,8 +49,8 @@ module Character {
     return if((result) <= 0) {0} else {result}; 
   };
 
-  public func takeOption(character : Types.Character, strengthRequire : Float, eventOption : Types.EventOption, state : State.State) {
-    var newCharacter : Types.Character = {
+  public func takeOption(character : Types.Character, strengthRequire : Float, eventOption : Types.EventOption, state : State.State) : Types.Character {
+    let newCharacter : Types.Character = {
       userId = character.userId;
       id = character.id;
       name = character.name;
@@ -70,7 +74,8 @@ module Character {
       gearIds = character.gearIds;
       materialIds = character.materialIds;
     };
-    let updatedCharacter = state.characters.replace(character.id, newCharacter);
+    // let updatedCharacter = state.characters.replace(character.id, newCharacter);
+    return newCharacter;
   };
 
   public func updateStatus(character : Types.Character, status : Text, state : State.State) {

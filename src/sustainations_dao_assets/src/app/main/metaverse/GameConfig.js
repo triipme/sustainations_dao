@@ -1,3 +1,5 @@
+import Phaser from 'phaser';
+import AwaitLoaderPlugin from 'phaser3-rex-plugins/plugins/awaitloader-plugin.js';
 import Scene1 from './scenes/scene1';
 import Scene2 from './scenes/scene2';
 import Scene3 from './scenes/scene3';
@@ -22,6 +24,15 @@ const gameConfig = {
     pixelArt: true,
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
+  },
+  plugins: {
+    global: [{
+        key: 'rexAwaitLoader',
+        plugin: AwaitLoaderPlugin,
+        start: true
+    },
+    // ...
+    ]
   },
   physics: {
     default: 'arcade',

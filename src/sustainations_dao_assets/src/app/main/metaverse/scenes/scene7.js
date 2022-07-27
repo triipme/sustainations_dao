@@ -30,6 +30,13 @@ export default class Scene7 extends BaseScene {
   }
 
   preload() {
+    this.characterId = 1;
+    this.load.rexAwait(function(successCallback, failureCallback) {
+      getCharacterStatus(this.characterId).then( (result) => {
+        this.characterStatus = result;
+        successCallback();
+      });
+    }, this);
     //loading screen
     this.add.image(
       gameConfig.scale.width/2, gameConfig.scale.height/2 - 50, 'logo'
@@ -206,7 +213,7 @@ export default class Scene7 extends BaseScene {
         this.clickSound.play();
       });
     }
-    this.characterStatus = await getCharacterStatus(this.characterData.id);
+    // this.characterStatus = await getCharacterStatus(this.characterData.id);
     console.log(this.characterStatus);
   }
 
