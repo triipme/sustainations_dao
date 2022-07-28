@@ -28,26 +28,21 @@ function Projects({ proposalType }) {
   const [searchText, setSearchText] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [loading, setLoading] = useState(true)
-  const [proposals, setProposals] = useState([]);
   const isProduct = _.has(proposalType, 'product');
   const proposalTypeName = isProduct ? 'Product' : 'Project';
 
-  // const proposals = useAsyncMemo(async (proposalType) => {
-  //   setLoading(true);
-  //   const result = await user.actor.listProposals(proposalType);
-  //   console.log('abc');
-  //   setLoading(false);
-  //   return result.ok;
-  // }, [user]);
+  const proposals = useAsyncMemo(async (proposalType) => {
+    setLoading(true);
+    const result = await user.actor.listProposals(proposalType);
+    setLoading(false);
+    return result.ok;
+  }, [user]);
 
   useEffect(() => {
     async function loadData() {
       setLoading(true);
-      let result = await user.actor.proposalStaticAttributes()
+      const result = await user.actor.proposalStaticAttributes()
       setCategories(result.categories);
-      result = await user.actor.listProposals(proposalType);
-      console.log('abc');
-      setProposals(result.ok);
       setLoading(false);
     }
     loadData();
@@ -101,7 +96,7 @@ function Projects({ proposalType }) {
                 color="inherit"
                 className="text-center text-32 sm:text-48 font-extrabold tracking-tight mt-4"
               >
-                What change do you want to make today?
+                {isProduct ? 'What product do you want to share today?' : 'What change do you want to make today?'}
               </Typography>
             </motion.div>
             <motion.div
