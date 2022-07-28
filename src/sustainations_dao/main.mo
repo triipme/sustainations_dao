@@ -313,9 +313,16 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     categories : [Text];
     fundingTypes : [Text];
   };
-  public query func proposalStaticAttributes() : async ProposalStaticAttributes {
+  public query func proposalStaticAttributes(
+    proposalType : Types.ProposalType
+  ) : async ProposalStaticAttributes {
+    let categories = if (proposalType == #product) {
+      Types.refillProductCategories;
+    } else {
+      Types.proposalCategories
+    };
     {
-      categories = Types.proposalCategories;
+      categories;
       fundingTypes = Types.proposalFundingTypes;
     }
   };

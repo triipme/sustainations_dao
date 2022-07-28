@@ -116,6 +116,10 @@ module {
     "GOAL 17: Partnerships to achieve the Goal"
   ];
 
+  public let refillProductCategories = [
+    "Food", "Spices", "Body Care", "Household Goods"
+  ];
+
   public let proposalFundingTypes = [
     "100% Funded", "Partially Funded"
   ];

@@ -41,7 +41,7 @@ function Projects({ proposalType }) {
   useEffect(() => {
     async function loadData() {
       setLoading(true);
-      const result = await user.actor.proposalStaticAttributes()
+      const result = await user.actor.proposalStaticAttributes(proposalType)
       setCategories(result.categories);
       setLoading(false);
     }
@@ -88,7 +88,7 @@ function Projects({ proposalType }) {
           <div className="flex flex-col items-center justify-center  mx-auto w-full">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 0 } }}>
               <Typography color="inherit" className="text-18 font-semibold">
-                {proposalTypeName}s
+                {isProduct ? 'One Refill Network' : 'Projects'}
               </Typography>
             </motion.div>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 0 } }}>
