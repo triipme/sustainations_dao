@@ -37,7 +37,6 @@ function updateCharacterStats(character){
     resolve(rs);
   })
   promise.then((data)=>{
-    console.log(data);
     return data;
   })
 };

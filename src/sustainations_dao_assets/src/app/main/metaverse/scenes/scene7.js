@@ -2,9 +2,7 @@ import Phaser from 'phaser';
 import BaseScene from './BaseScene'
 import gameConfig from '../GameConfig';
 import { 
-  loadEventOptions, 
   loadCharacter,
-  updateCharacterStats,
   getCharacterStatus
 } from '../GameApi';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
@@ -33,7 +31,7 @@ export default class Scene7 extends BaseScene {
     this.characterId = 1;
     this.load.rexAwait(function(successCallback, failureCallback) {
       getCharacterStatus(this.characterId).then( (result) => {
-        this.characterStatus = result;
+        this.characterStatus = result.ok;
         successCallback();
       });
     }, this);
@@ -91,15 +89,21 @@ export default class Scene7 extends BaseScene {
   }
 
   async create() {
+    if(this.characterStatus == 'Exhausted') {
+      this.scene.start('exhausted');
+    }
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
     this.ingameSound = this.sound.add('ingameSound', {loop: true});
     this.ingameSound.isRunning = false;
     this.ambientSound = this.sound.add('ambientSound', {loop: true});
-    this.ambientSound.play();
     this.sfx_char_footstep = this.sound.add('sfx_char_footstep', {loop: true, volume: 0.2});
-    this.sfx_char_footstep.play();
+
+    if(this.characterStatus != 'Exhausted') {
+      this.ambientSound.play();
+      this.sfx_char_footstep.play();
+    }
     //background
     this.bg_1 = this.add.tileSprite(0, 0, gameConfig.scale.width, gameConfig.scale.height, "background1");
     this.bg_1.setOrigin(0, 0);
@@ -212,9 +216,7 @@ export default class Scene7 extends BaseScene {
         this.sfx_char_footstep.play();
         this.clickSound.play();
       });
-    }
-    // this.characterStatus = await getCharacterStatus(this.characterData.id);
-    console.log(this.characterStatus);
+    };
   }
 
   update() {

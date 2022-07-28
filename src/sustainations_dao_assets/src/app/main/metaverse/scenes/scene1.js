@@ -52,7 +52,10 @@ export default class Scene1 extends BaseScene {
 
     this.load.rexAwait(function(successCallback, failureCallback) {
       getCharacterStatus(this.characterId).then( (result) => {
-        this.characterStatus = result;
+        this.characterStatus = result.ok;
+        if(this.characterStatus == 'Exhausted') {
+          this.scene.start('exhausted');
+        }
         successCallback();
       });
     }, this);
@@ -91,7 +94,6 @@ export default class Scene1 extends BaseScene {
     //UI -- One time load
     this.load.image("BtnExit", BtnExit);
     this.load.image("UI_Utility", UI_Utility);
-    console.log("before");
   }
   
   //defined function
@@ -118,9 +120,6 @@ export default class Scene1 extends BaseScene {
   }
   
   async create() {
-    console.log("after");
-    console.log(this.eventOptions);
-    console.log(this.characterTakeOptions);
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
@@ -251,9 +250,7 @@ export default class Scene1 extends BaseScene {
         // update character after choose option
         updateCharacterStats(this.characterTakeOptions[idx]);
       });
-    }
-
-    console.log(this.characterStatus);
+    };
   }
 
   update() {

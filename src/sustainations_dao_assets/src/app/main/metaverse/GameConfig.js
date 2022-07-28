@@ -11,8 +11,7 @@ import selectItemScene from './scenes/selectItemScene';
 import menuScene from './scenes/menuScene';
 import selectMap from './scenes/selectMap';
 import thanks from './scenes/thanks';
-
-
+import exhausted from './scenes/exhausted';
 
 const gameConfig = {
   type: Phaser.CANVAS,
@@ -41,7 +40,7 @@ const gameConfig = {
       debug: false
     }
   },
-  scene: [menuScene, selectMap, selectItemScene, Scene1, Scene2, Scene3, Scene4, Scene5, Scene6, Scene7, thanks]
+  scene: [menuScene, selectMap, selectItemScene, Scene1, Scene2, Scene3, Scene4, Scene5, Scene6, Scene7, thanks, exhausted]
 };
 
 export default gameConfig;

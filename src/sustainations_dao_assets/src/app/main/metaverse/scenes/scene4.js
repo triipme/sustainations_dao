@@ -50,7 +50,7 @@ export default class Scene4 extends BaseScene {
 
     this.load.rexAwait(function(successCallback, failureCallback) {
       getCharacterStatus(this.characterId).then( (result) => {
-        this.characterStatus = result;
+        this.characterStatus = result.ok;
         successCallback();
       });
     }, this);
@@ -83,7 +83,6 @@ export default class Scene4 extends BaseScene {
     this.load.image("selectAction", selectAction);
     this.load.spritesheet('btnBlank', btnBlank, { frameWidth: 1102, frameHeight: 88});
     this.load.image("obstacle", obstacle);
-    console.log("before");
   }
 
   //defined function
@@ -110,18 +109,21 @@ export default class Scene4 extends BaseScene {
   }
 
   async create() {
-    console.log("after");
-    console.log(this.eventOptions);
-    console.log(this.characterTakeOptions);
+    if(this.characterStatus == 'Exhausted') {
+      this.scene.start('exhausted');
+    }
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
     this.ingameSound = this.sound.add('ingameSound', {loop: true});
     this.ingameSound.isRunning = false;
     this.ambientSound = this.sound.add('ambientSound', {loop: true});
-    this.ambientSound.play();
     this.sfx_char_footstep = this.sound.add('sfx_char_footstep', {loop: true, volume: 0.2});
-    this.sfx_char_footstep.play();
+
+    if(this.characterStatus != 'Exhausted') {
+      this.ambientSound.play();
+      this.sfx_char_footstep.play();
+    }
     //background
     this.bg_1 = this.add.tileSprite(0, 0, gameConfig.scale.width, gameConfig.scale.height, "background1");
     this.bg_1.setOrigin(0, 0);
@@ -241,8 +243,7 @@ export default class Scene4 extends BaseScene {
         // update character after choose option
         updateCharacterStats(this.characterTakeOptions[idx]);
       });
-    }
-    console.log(this.characterStatus);
+    };
   }
 
   update() {

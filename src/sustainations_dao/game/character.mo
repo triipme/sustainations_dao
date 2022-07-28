@@ -77,7 +77,7 @@ module Character {
   public func isExhaust(status : Text ,hp : Float, stamina : Float, morale : Float) : Text {
     var result = status;
     if(hp == 0 or stamina == 0 or morale == 0){
-      result := "Exhaust";
+      result := "Exhausted";
     };
     return result; 
   };
