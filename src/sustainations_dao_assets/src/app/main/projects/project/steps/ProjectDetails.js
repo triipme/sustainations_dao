@@ -4,6 +4,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 import InputAdornment from '@mui/material/InputAdornment';
 import { Controller, useFormContext } from 'react-hook-form';
 import ProjectMedia from './ProjectMedia';
+import _ from 'lodash';
 
 const storyPlaceholder = `
 ## Inspiration
@@ -22,21 +23,21 @@ const storyPlaceholder = `
 function ProjectDetails(props) {
   const methods = useFormContext();
   const { control } = methods;
-  const { locations, fundingTypes } = props;
+  const { locations, fundingTypes, proposalTypeName } = props;
 
   return (
     <div>
       <Typography className="mt-32 text-4xl font-extrabold tracking-tight leading-tight">
-        Project details
+        {proposalTypeName} details
       </Typography>
-      <div className="text-lg mt-16 mb-16">Information entered below will appear on your public project page.</div>
+      <div className="text-lg mt-16 mb-16">Information entered below will appear on your public {_.lowerCase(proposalTypeName)} page.</div>
       <div className="flex-auto mt-px border-t" />
       <Typography className="mt-32 text-3xl font-bold tracking-tight leading-tight">
-        Project Story
+        {proposalTypeName} Story
       </Typography>
       <div className="text-lg mt-16 mb-16">
         <span className="text-red-500">*</span>
-        &nbsp;Be sure to write what inspired you, what you learned, how you built your project, and the challenges you faced. Format your story in&nbsp;
+        &nbsp;Be sure to write what inspired you, what you learned, how you built your {_.lowerCase(proposalTypeName)}, and the challenges you faced. Format your story in&nbsp;
         <a href="https://www.markdownguide.org/basic-syntax/">
           Markdown
         </a>.
@@ -175,7 +176,7 @@ function ProjectDetails(props) {
         )}
       />
 
-      <ProjectMedia />
+      <ProjectMedia proposalTypeName={proposalTypeName} />
 
       <Controller
         name="video"

@@ -19,7 +19,7 @@ import useThemeMediaQuery from '@fuse/hooks/useThemeMediaQuery';
 import { selectUser } from 'app/store/userSlice';
 import ProjectCard from './ProjectCard';
 
-function Projects() {
+function Projects({ proposalType }) {
   const user = useSelector(selectUser);
   const [categories, setCategories] = useState([]);
   const isMobile = useThemeMediaQuery((theme) => theme.breakpoints.down('lg'));
@@ -28,18 +28,22 @@ function Projects() {
   const [searchText, setSearchText] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [loading, setLoading] = useState(true)
+  const isProduct = _.has(proposalType, 'product');
+  const proposalTypeName = isProduct ? 'Product' : 'Project';
 
-  const proposals = useAsyncMemo(async () => {
+  const proposals = useAsyncMemo(async (proposalType) => {
     setLoading(true);
-    const result = await user.actor.listProposals();
+    const result = await user.actor.listProposals(proposalType);
     setLoading(false);
     return result.ok;
   }, [user]);
 
   useEffect(() => {
     async function loadData() {
-      const result = await user.actor.proposalStaticAttributes()
+      setLoading(true);
+      const result = await user.actor.proposalStaticAttributes(proposalType)
       setCategories(result.categories);
+      setLoading(false);
     }
     loadData();
   }, [user]);
@@ -84,7 +88,7 @@ function Projects() {
           <div className="flex flex-col items-center justify-center  mx-auto w-full">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 0 } }}>
               <Typography color="inherit" className="text-18 font-semibold">
-                Projects
+                {isProduct ? 'One Refill Network' : 'Projects'}
               </Typography>
             </motion.div>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 0 } }}>
@@ -92,7 +96,7 @@ function Projects() {
                 color="inherit"
                 className="text-center text-32 sm:text-48 font-extrabold tracking-tight mt-4"
               >
-                What change do you want to make today?
+                {isProduct ? 'What product do you want to share today?' : 'What change do you want to make today?'}
               </Typography>
             </motion.div>
             <motion.div
@@ -103,7 +107,7 @@ function Projects() {
                 color="inherit"
                 className="text-16 sm:text-20 mt-16 sm:mt-24 opacity-75 tracking-tight text-center"
               >
-                Make an impact simply by voting for your favorite sustainable projects.
+                Make an impact simply by voting for your favorite sustainable {_.lowerCase(proposalTypeName)}s.
               </Typography>
             </motion.div>
           </div>
@@ -152,7 +156,7 @@ function Projects() {
                 </Select>
               </FormControl>
               <TextField
-                label="Search for a project"
+                label={`Search for a ${_.lowerCase(proposalTypeName)}`}
                 placeholder="Enter a keyword..."
                 className="flex w-full sm:w-256 mx-8"
                 value={searchText}
@@ -168,7 +172,7 @@ function Projects() {
             </div>
 
             <Button
-              to="/projects/new"
+              to={`/${isProduct ? 'proposal-products' : 'projects'}/new`}
               component={Link}
               className="px-16 min-w-128"
               color="secondary"
@@ -179,7 +183,7 @@ function Projects() {
                 </FuseSvgIcon>
               }
             >
-              Create Project
+              Create {proposalTypeName}
             </Button>
           </div>
           {useMemo(() => {
@@ -224,7 +228,7 @@ function Projects() {
               ) : (
                 <div className="flex flex-1 items-center justify-center">
                   <Typography color="text.secondary" className="text-24 my-24">
-                    No project found!
+                    No {_.lowerCase(proposalTypeName)} found!
                   </Typography>
                 </div>
               ))

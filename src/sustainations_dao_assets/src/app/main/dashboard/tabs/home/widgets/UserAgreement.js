@@ -2,7 +2,6 @@ import IconButton from '@mui/material/IconButton';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { memo } from 'react';
-import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 
 function UserAgreement({ userAgreement }) {
   return (

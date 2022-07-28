@@ -1,4 +1,4 @@
-import {fs} from "fs";
+import _ from 'lodash';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
@@ -7,7 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Controller, useFormContext } from 'react-hook-form';
 
 function ProjectAdditionalInfo(props) {
-  const { categories } = props;
+  const { categories, proposalTypeName } = props;
   const methods = useFormContext();
   const { control } = methods;
 
@@ -53,7 +53,7 @@ function ProjectAdditionalInfo(props) {
         render={({ field: { onChange, value } }) => (
           <div className="flex-1 mb-24">
             <div className="flex items-center mt-16 mb-12">
-              <Typography className="font-semibold text-16 mx-8">Which categories are you submitting your project?</Typography>
+              <Typography className="font-semibold text-16 mx-8">Which categories are you submitting your {_.lowerCase(proposalTypeName)}?</Typography>
             </div>
             <Autocomplete
               className="mt-8 mb-16"
