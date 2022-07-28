@@ -233,7 +233,7 @@ export default class Scene3 extends BaseScene {
       this.options[idx].on('pointerout', () => {
         this.options[idx].setFrame(0);
       });
-      this.options[idx].on('pointerdown', async () => {
+      this.options[idx].on('pointerdown', () => {
         this.triggerContinue();
         this.sfx_char_footstep.play();
         this.clickSound.play();
@@ -243,11 +243,9 @@ export default class Scene3 extends BaseScene {
         this.setValue(this.mana, this.characterTakeOptions[idx].currentMana/this.characterTakeOptions[idx].maxMana*100);
         this.setValue(this.morale, this.characterTakeOptions[idx].currentMorale/this.characterTakeOptions[idx].maxMorale*100);
         // update character after choose option
-        await updateCharacterStats(this.characterTakeOptions[idx]);
-        this.updatedCharacter = await loadCharacter(this.characterData.id);
+        updateCharacterStats(this.characterTakeOptions[idx]);
       });
     }
-    // this.characterStatus = await getCharacterStatus(this.characterData.id);
     console.log(this.characterStatus);
   }
 

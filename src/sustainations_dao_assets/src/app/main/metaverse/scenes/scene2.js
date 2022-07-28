@@ -243,10 +243,8 @@ export default class Scene2 extends BaseScene {
         this.setValue(this.morale, this.characterTakeOptions[idx].currentMorale/this.characterTakeOptions[idx].maxMorale*100);
         // update character after choose option
         updateCharacterStats(this.characterTakeOptions[idx]);
-        // this.updatedCharacter = await loadCharacter(this.characterData.id);
       });
     }
-    // this.characterStatus = await getCharacterStatus(this.characterData.id);
     console.log(this.characterStatus);
   }
 
