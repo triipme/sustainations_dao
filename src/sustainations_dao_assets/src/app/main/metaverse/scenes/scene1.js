@@ -35,7 +35,6 @@ export default class Scene1 extends BaseScene {
 
   preload() {
     this.eventId = 1;
-    this.characterId = 1;
     this.load.rexAwait(function(successCallback, failureCallback) {
       loadEventOptions(this.eventId).then( (result) => {
         this.eventOptions = result;
@@ -44,18 +43,15 @@ export default class Scene1 extends BaseScene {
     }, this);
 
     this.load.rexAwait(function(successCallback, failureCallback) {
-      characterTakeOption(this.eventId, this.characterId).then( (result) => {
+      characterTakeOption(this.eventId).then( (result) => {
         this.characterTakeOptions = result;
         successCallback();
       });
     }, this);
 
     this.load.rexAwait(function(successCallback, failureCallback) {
-      getCharacterStatus(this.characterId).then( (result) => {
+      getCharacterStatus().then( (result) => {
         this.characterStatus = result.ok;
-        if(this.characterStatus == 'Exhausted') {
-          this.scene.start('exhausted');
-        }
         successCallback();
       });
     }, this);
@@ -214,7 +210,7 @@ export default class Scene1 extends BaseScene {
     this.selectAction.setVisible(false);
 
     // load character
-    this.characterData = await loadCharacter(this.characterId);
+    this.characterData = await loadCharacter();
     // stats before choose option
     this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
     this.setValue(this.stamina, this.characterData.currentStamina/this.characterData.maxStamina*100);

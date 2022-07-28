@@ -5,11 +5,11 @@ import Types "../types";
 import State "../state";
 
 module Character {
-  public func init(caller : Principal, id : Int, characterClass : Types.CharacterClass, characterName : Text) : Types.Character{
+  public func init(caller : Principal, id : Text, characterClass : Types.CharacterClass) : Types.Character{
     let newCharacter : Types.Character = {
       userId = caller;
       id = id;
-      name = characterName;
+      name = "Default Character";
       level = 1;
       currentExp = 0;
       levelUpExp = 100;
@@ -32,12 +32,12 @@ module Character {
     };
     return newCharacter;
   };
-  public func create(caller : Principal, id : Int, characterClass : Types.CharacterClass, characterName : Text, state : State.State) {
-    state.characters.put(id, init(caller, id, characterClass, characterName));
+  public func create(caller : Principal, id : Text, characterClass : Types.CharacterClass, state : State.State) {
+    state.characters.put(id, init(caller, id, characterClass));
   };
 
-  public func resetStat(caller : Principal, id : Int, characterClass : Types.CharacterClass, characterName : Text, state : State.State) {
-    let updated = state.characters.replace(id, init(caller, id, characterClass, characterName));
+  public func resetStat(caller : Principal, id : Text, characterClass : Types.CharacterClass, state : State.State) {
+    let updated = state.characters.replace(id, init(caller, id, characterClass));
   };
 
   public func updateCurrentStat(currentStat : Float, lossStat : Float, gainStat : Float) : Float {

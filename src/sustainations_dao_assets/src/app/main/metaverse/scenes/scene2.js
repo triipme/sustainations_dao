@@ -32,7 +32,6 @@ export default class Scene2 extends BaseScene {
 
   preload() {
     this.eventId = 2;
-    this.characterId = 1;
     this.load.rexAwait(function(successCallback, failureCallback) {
       loadEventOptions(this.eventId).then( (result) => {
         this.eventOptions = result;

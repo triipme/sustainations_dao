@@ -14,7 +14,7 @@ module {
     transactions : Map<Text, Types.TxRecord>;
     userAgreements : Map<Principal, Types.UserAgreement>;
     characterClasses : Map<Int, Types.CharacterClass>;
-    characters : Map<Int, Types.Character>;
+    characters : Map<Text, Types.Character>;
     characterTakeOptions : Map<Int, Types.CharacterTakeOption>;
     quests : Map<Int, Types.Quest>;
     items : Map<Int, Types.Item>;
@@ -36,7 +36,7 @@ module {
       transactions = TrieMap.TrieMap<Text, Types.TxRecord>(Text.equal, Text.hash);
       userAgreements = TrieMap.TrieMap<Principal, Types.UserAgreement>(Principal.equal, Principal.hash);
       characterClasses = TrieMap.TrieMap<Int, Types.CharacterClass>(Int.equal, Int.hash);
-      characters = TrieMap.TrieMap<Int, Types.Character>(Int.equal, Int.hash);
+      characters = TrieMap.TrieMap<Text, Types.Character>(Text.equal, Text.hash);
       characterTakeOptions = TrieMap.TrieMap<Int, Types.CharacterTakeOption>(Int.equal, Int.hash);
       quests = TrieMap.TrieMap<Int, Types.Quest>(Int.equal, Int.hash);
       items = TrieMap.TrieMap<Int, Types.Item>(Int.equal, Int.hash);

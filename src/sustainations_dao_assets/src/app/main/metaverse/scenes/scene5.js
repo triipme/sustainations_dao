@@ -33,7 +33,6 @@ export default class Scene5 extends BaseScene {
 
   preload() {
     this.eventId = 5;
-    this.characterId = 1;
     this.load.rexAwait(function(successCallback, failureCallback) {
       loadEventOptions(this.eventId).then( (result) => {
         this.eventOptions = result;
@@ -42,14 +41,14 @@ export default class Scene5 extends BaseScene {
     }, this);
 
     this.load.rexAwait(function(successCallback, failureCallback) {
-      characterTakeOption(this.eventId, this.characterId).then( (result) => {
+      characterTakeOption(this.eventId).then( (result) => {
         this.characterTakeOptions = result;
         successCallback();
       });
     }, this);
 
     this.load.rexAwait(function(successCallback, failureCallback) {
-      getCharacterStatus(this.characterId).then( (result) => {
+      getCharacterStatus().then( (result) => {
         this.characterStatus = result.ok;
         successCallback();
       });
