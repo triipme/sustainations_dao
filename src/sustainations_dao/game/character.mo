@@ -36,10 +36,6 @@ module Character {
     state.characters.put(id, init(caller, id, characterClass, characterName));
   };
 
-  public func update(character : Types.Character, state : State.State) {
-    let updated = state.characters.replace(character.id, character);
-  };
-
   public func resetStat(caller : Principal, id : Int, characterClass : Types.CharacterClass, characterName : Text, state : State.State) {
     let updated = state.characters.replace(id, init(caller, id, characterClass, characterName));
   };
@@ -78,7 +74,15 @@ module Character {
     return newCharacter;
   };
 
-  public func updateStatus(character : Types.Character, status : Text, state : State.State) {
+  public func isExhaust(status : Text ,hp : Float, stamina : Float, morale : Float) : Text {
+    var result = status;
+    if(hp == 0 or stamina == 0 or morale == 0){
+      result := "Exhaust";
+    };
+    return result; 
+  };
+
+  public func update(character : Types.Character, state : State.State) {
     var newCharacter : Types.Character = {
       userId = character.userId;
       id = character.id;
@@ -86,7 +90,7 @@ module Character {
       level = character.level;
       currentExp = character.currentExp;
       levelUpExp = character.levelUpExp;
-      status = status;
+      status = isExhaust(character.status, character.currentHP, character.currentStamina, character.currentMorale);
       strength = character.strength;
       intelligence = character.intelligence;
       vitality = character.vitality;

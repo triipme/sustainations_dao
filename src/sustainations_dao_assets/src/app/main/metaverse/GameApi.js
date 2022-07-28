@@ -29,19 +29,39 @@ async function characterTakeOption(eventId, characterId){
   return result;
 };
 
-async function updateCharacterStats(character){
-  const { user } = store.getState();
-  const updateCharacter = async () => await user.actor.updateCharacter(character);
-  const updated = await updateCharacter();
+// async function updateCharacterStats(character){
+//   const { user } = store.getState();
+//   const updateCharacter = async () => await user.actor.updateCharacter(character);
+//   const updated = await updateCharacter();
+//   console.log("GG");
+// };
+
+function updateCharacterStats(character){
+  const gg = new Promise((resolve, reject) => {
+    const { user } = store.getState();
+    const rs = user.actor.updateCharacter(character);
+    resolve(rs);
+  })
+  gg.then((data)=>{
+    console.log(data);
+    return data;
+  })
 };
 
 
-async function getCharacterStatus(characterId){
-  const { user } = store.getState();
-  const getStatus = async () => await user.actor.getStatus(characterId);
-  const status = await getStatus();
-  return status;
-}
+// async function getCharacterStatus(characterId){
+//   const { user } = store.getState();
+//   const getStatus = async () => await user.actor.getStatus(characterId);
+//   const status = await getStatus();
+// };
+
+function getCharacterStatus(characterId){
+  return new Promise((resolve, reject) => {
+    const { user } = store.getState();
+    const rs = user.actor.getCharacterStatus(characterId);
+    resolve(rs);
+  });
+};
 
 export {
   loadQuestItems,
