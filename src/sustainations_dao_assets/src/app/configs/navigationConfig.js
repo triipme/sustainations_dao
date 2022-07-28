@@ -26,8 +26,7 @@ const navigationConfig = [
   },
   {
     id: 'proposal-products',
-    title: 'One Refill Network',
-    translate: 'One Refill Network',
+    title: "One Refill Network",
     type: 'item',
     icon: 'category_outlined',
     url: 'proposal-products',

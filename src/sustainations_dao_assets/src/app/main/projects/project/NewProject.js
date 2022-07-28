@@ -76,7 +76,7 @@ function NewProduct({ proposalType }) {
     (async () => {
       try {
         setLocations(await getLocations());
-        setStaticAttrs(await user.actor.proposalStaticAttributes());
+        setStaticAttrs(await user.actor.proposalStaticAttributes(proposalType));
       } catch (error) {
         console.log(error);
       }
