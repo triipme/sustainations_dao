@@ -18,6 +18,20 @@ import Types "types";
 import State "state";
 import Ledger "./plugins/Ledger";
 
+import CharacterClass "./game/characterClass";
+import Character "./game/character";
+import CharacterTakeOption "./game/characterTakeOption";
+import Quest "./game/quest";
+import Item "./game/item";
+import QuestItem "./game/questItem";
+import Event "./game/event";
+import EventOption "./game/eventOption";
+import Gear "./game/gear";
+import GearClass "./game/gearClass";
+import GearRarity "./game/gearRarity";
+import GearSubstat "./game/gearSubstat";
+import Material "./game/material";
+
 shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   let transferFee : Nat64 = 10_000;
   let createProposalFee : Nat64 = 20_000;
@@ -29,6 +43,20 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   private stable var proposals : [(Text, Types.Proposal)] = [];
   private stable var transactions : [(Text, Types.TxRecord)] = [];
   private stable var userAgreements : [(Principal, Types.UserAgreement)] = [];
+  private stable var characterClasses : [(Int, Types.CharacterClass)] = [];
+  private stable var characters : [(Int, Types.Character)] = [];
+  private stable var characterTakeOptions : [(Int, Types.CharacterTakeOption)] = [];
+  private stable var quests : [(Int, Types.Quest)] = [];
+  private stable var items : [(Int, Types.Item)] = [];
+  private stable var questItems: [(Int, Types.QuestItem)] = [];
+  private stable var events : [(Int, Types.Event)] = [];
+  private stable var eventOptions : [(Int, Types.EventOption)] = [];
+  private stable var gears : [(Int, Types.Gear)] = [];
+  private stable var gearClasses : [(Int, Types.GearClass)] = [];
+  private stable var gearRarities : [(Int, Types.GearRarity)] = [];
+  private stable var gearSubstats : [(Int, Types.GearSubstat)] = [];
+  private stable var materials : [(Int, Types.Material)] = [];
+  private stable var inventories : [(Int, Types.Inventory)] = [];
 
   system func preupgrade() {
     Debug.print("Begin preupgrade");
@@ -36,6 +64,20 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     proposals := Iter.toArray(state.proposals.entries());
     transactions := Iter.toArray(state.transactions.entries());
     userAgreements := Iter.toArray(state.userAgreements.entries());
+    characterClasses := Iter.toArray(state.characterClasses.entries());
+    characters := Iter.toArray(state.characters.entries());
+    characterTakeOptions := Iter.toArray(state.characterTakeOptions.entries());
+    quests := Iter.toArray(state.quests.entries());
+    items := Iter.toArray(state.items.entries());
+    questItems := Iter.toArray(state.questItems.entries());
+    events := Iter.toArray(state.events.entries());
+    eventOptions := Iter.toArray(state.eventOptions.entries());
+    gears := Iter.toArray(state.gears.entries());
+    gearClasses := Iter.toArray(state.gearClasses.entries());
+    gearRarities := Iter.toArray(state.gearRarities.entries());
+    gearSubstats := Iter.toArray(state.gearSubstats.entries());
+    materials := Iter.toArray(state.materials.entries());
+    inventories := Iter.toArray(state.inventories.entries());
     Debug.print("End preupgrade");
   };
 
@@ -52,6 +94,48 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
     for ((k, v) in Iter.fromArray(userAgreements)) {
       state.userAgreements.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(characterClasses)) {
+      state.characterClasses.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(characters)) {
+      state.characters.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(characterTakeOptions)) {
+      state.characterTakeOptions.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(quests)) {
+      state.quests.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(items)) {
+      state.items.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(questItems)) {
+      state.questItems.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(events)) {
+      state.events.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(eventOptions)) {
+      state.eventOptions.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(gears)) {
+      state.gears.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(gearClasses)) {
+      state.gearClasses.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(gearRarities)) {
+      state.gearRarities.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(gearSubstats)) {
+      state.gearSubstats.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(materials)) {
+      state.materials.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(inventories)) {
+      state.inventories.put(k, v);
     };
     Debug.print("End postupgrade");
   };
@@ -538,4 +622,893 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
       };
     };
   };
+
+  // Game
+  // Character Class
+  public shared({caller}) func createCharacterClass(characterClass : Types.CharacterClass) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsCharacterClass = state.characterClasses.get(characterClass.id); 
+    switch (rsCharacterClass) {
+      case (?V) { #err(#AlreadyExisting); };
+      case null {
+        CharacterClass.create(characterClass, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared query({caller}) func readCharacterClass(id : Int) : async Response<(Types.CharacterClass)>{
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsCharacterClass = state.characterClasses.get(id);
+    return Result.fromOption(rsCharacterClass, #NotFound);
+  };
+
+  public shared query({caller}) func listCharacterClasses() : async Response<[(Int, Types.CharacterClass)]> {
+    var list : [(Int, Types.CharacterClass)] = [];
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    for((K,V) in state.characterClasses.entries()) {
+      list := Array.append<(Int, Types.CharacterClass)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+
+  public shared({caller}) func updateCharacterClass(characterClass : Types.CharacterClass) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsCharacterClass = state.characterClasses.get(characterClass.id); 
+    switch (rsCharacterClass) {
+      case null { #err(#NotFound); };
+      case (?V) {
+        CharacterClass.update(characterClass, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared({caller}) func deleteCharacterClass(id : Int) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsCharacterClass = state.characterClasses.get(id);
+    switch (rsCharacterClass) {
+      case null { #err(#NotFound); };
+      case (?V) {
+        let deletedCharacterClass = state.characterClasses.delete(id);
+        #ok("Success");
+      };
+    };
+  };
+
+  // Character
+  public shared({caller}) func createCharacter(id : Int, characterClassId : Int, characterName : Text) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    // let uuid : Text = await createUUID();
+    let rsCharacter = state.characters.get(id);
+    switch (rsCharacter) {
+      case (?V) { #err(#AlreadyExisting); };
+      case null {
+        for((_, characterClass) in state.characterClasses.entries()) {
+          if(characterClass.id == characterClassId){
+            Character.create(caller, id, characterClass, characterName, state);
+          };
+        };
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared({caller}) func resetCharacterStat(id : Int) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    // let uuid : Text = await createUUID();
+    let rsCharacter = state.characters.get(id);
+    switch (rsCharacter) {
+      case null { #err(#NotFound); };
+      case (?character) {
+        switch(state.characterClasses.get(character.classId)){
+          case null { #err(#NotFound); };
+          case (?characterClass){
+            Character.resetStat(caller, id, characterClass, character.name, state);
+            #ok("Success");
+          };
+        };
+      };
+    };
+  };
+
+  public shared query({caller}) func getCharacterStatus(id : Int) : async Response<Text>{
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    switch(state.characters.get(id)){
+      case null { #err(#NotFound); }; 
+      case (?character){
+        let status = character.status;
+        #ok(status);
+      };
+    };
+  };
+
+  public shared query({caller}) func readCharacter(id : Int) : async Response<(Types.Character)>{
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsCharacter = state.characters.get(id);
+    return Result.fromOption(rsCharacter, #NotFound);
+  };
+
+  public shared query({caller}) func listCharacters() : async Response<[(Int, Types.Character)]> {
+    var list : [(Int, Types.Character)] = [];
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    for((key ,character) in state.characters.entries()) {
+      if(character.userId == caller){
+        list := Array.append<(Int, Types.Character)>(list, [(key, character)]);
+      }
+    };
+    #ok((list));
+  };
+
+  public shared query({caller}) func listAllCharacters() : async Response<[(Int, Types.Character)]> {
+    var list : [(Int, Types.Character)] = [];
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    for((key ,character) in state.characters.entries()) {
+      list := Array.append<(Int, Types.Character)>(list, [(key, character)]);
+    };
+    #ok((list));
+  };
+  
+  public shared({caller}) func takeOption(eventId : Int, characterId : Int) : async Response<[Types.Character]> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsCharacter = state.characters.get(characterId);
+    var result : [Types.Character] = [];
+    switch (rsCharacter) {
+      case null { #err(#NotFound); };
+      case (?character) {
+        for((K, eventOption) in state.eventOptions.entries()){
+          if(eventOption.eventId == eventId){
+            var strengthRequire : Float = 0;
+            for(item in state.items.vals()){
+              if(item.id == eventOption.requireItemId){
+                strengthRequire := item.strengthRequire;
+              };
+            };
+            result := Array.append<Types.Character>(result, [Character.takeOption(character, strengthRequire, eventOption, state)]);
+          };
+        };
+        #ok(result);
+      };
+    };
+  };
+
+  public shared({caller}) func updateCharacter(character : Types.Character) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsCharacter = state.characters.get(character.id);
+    switch (rsCharacter) {
+      case (null) { #err(#NotFound); };
+      case (?V) {
+        Character.update(character, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  // public shared({caller}) func updateStatus(id : Int, status : Text) : async Response<Text> {
+  //   if(Principal.toText(caller) == "2vxsx-fae") {
+  //     return #err(#NotAuthorized);//isNotAuthorized
+  //   };
+  //   let rsCharacter = state.characters.get(id);
+  //   switch (rsCharacter) {
+  //     case (null) { #err(#NotFound); };
+  //     case (?character) {
+  //       if(character.currentHP == 0 or character.currentMorale == 0 or character.currentStamina == 0){
+  //         Character.updateStatus(character, "Exhaust", state);
+  //       };
+  //       #ok("Success");
+  //     };
+  //   };
+  // };
+
+  public shared({caller}) func deleteCharacter(id : Int) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsCharacter = state.characters.get(id);
+    switch (rsCharacter) {
+      case (null) { #err(#NotFound); };
+      case (?V) {
+        let deletedCharacter = state.characters.delete(id);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared({caller}) func createCharacterTakeOption(id : Int, characterId : Int, eventOptionId : Int) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    // let uuid : Text = await createUUID();
+    let rsCharacter = state.characters.get(characterId);
+    switch (rsCharacter) {
+      case null { #err(#NotFound); };
+      case (?character) {
+        CharacterTakeOption.create(id, character, eventOptionId, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  // Quest
+  public shared({caller}) func createQuest(quest: Types.Quest) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    // let uuid : Text = await createUUID();
+    let rsQuest = state.quests.get(quest.id);
+    switch (rsQuest) {
+      case (?V) { #err(#AlreadyExisting); };
+      case null {
+        Quest.create(quest, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared query({caller}) func readQuest(id : Int) : async Response<(Types.Quest)>{
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsQuest = state.quests.get(id);
+    return Result.fromOption(rsQuest, #NotFound);
+  };
+
+  public shared query({caller}) func listQuests() : async Response<[(Int, Types.Quest)]> {
+    var list : [(Int, Types.Quest)] = [];
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    for((K,V) in state.quests.entries()) {
+      list := Array.append<(Int, Types.Quest)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+
+  public shared({caller}) func updateQuest(quest: Types.Quest) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsQuest = state.quests.get(quest.id);
+    switch (rsQuest) {
+      case null { #err(#NotFound); };
+      case (?V) {
+        Quest.update(quest, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared({caller}) func deleteQuest(id : Int) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsQuest = state.quests.get(id);
+    switch (rsQuest) {
+      case (null) { #err(#NotFound); };
+      case (?V) {
+        let deletedQuest = state.quests.delete(id);
+        #ok("Success");
+      };
+    };
+  };
+
+  // Item
+  public shared({caller}) func createItem(item: Types.Item) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    // let uuid : Text = await createUUID();
+    let rsItem = state.items.get(item.id);
+    switch (rsItem) {
+      case (?V) { #err(#AlreadyExisting); };
+      case null {
+        Item.create(item, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared query({caller}) func readItem(id : Int) : async Response<(Types.Item)>{
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsItem = state.items.get(id);
+    return Result.fromOption(rsItem, #NotFound);
+  };
+
+  public shared query({caller}) func listItems() : async Response<[(Int, Types.Item)]> {
+    var list : [(Int, Types.Item)] = [];
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    for((K,V) in state.items.entries()) {
+      list := Array.append<(Int, Types.Item)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+
+  public shared({caller}) func updateItem(item: Types.Item) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsItem = state.items.get(item.id);
+    switch (rsItem) {
+      case null { #err(#NotFound); };
+      case (?V) {
+        Item.update(item, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared({caller}) func deleteItem(id : Int) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsItem = state.items.get(id);
+    switch (rsItem) {
+      case (null) { #err(#NotFound); };
+      case (?V) {
+        let deletedItem = state.items.delete(id);
+        #ok("Success");
+      };
+    };
+  };
+
+  // Quest Item 
+  public shared({caller}) func createQuestItem(questItem: Types.QuestItem) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    // let uuid : Text = await createUUID();
+    let rsquestItem = state.questItems.get(questItem.id);
+    switch (rsquestItem) {
+      case (?V) { #err(#AlreadyExisting); };
+      case null {
+        QuestItem.create(questItem, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared query({caller}) func listQuestItems(questId : Int) : async Response<[Types.Item]> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    var list : [Types.Item] = [];
+    for((_,questItem) in state.questItems.entries()) {
+      if(questItem.questId == questId){
+        let rsItem = state.items.get(questItem.itemId);
+        switch (rsItem) {
+          case null { () };
+          case (?item){
+            list := Array.append<Types.Item>(list, [item]);
+          };
+        };
+      };
+    };
+    #ok((list));
+  };
+
+  public shared({caller}) func updateQuestItem(questItem: Types.QuestItem) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsquestItem = state.questItems.get(questItem.id);
+    switch (rsquestItem) {
+      case null { #err(#NotFound); };
+      case (?V) {
+        QuestItem.update(questItem, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared({caller}) func deleteQuestItem(id : Int) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsquestItem = state.questItems.get(id);
+    switch (rsquestItem) {
+      case (null) { #err(#NotFound); };
+      case (?V) {
+        let deletedquestItem = state.questItems.delete(id);
+        #ok("Success");
+      };
+    };
+  };
+
+  // Event
+  public shared({caller}) func createEvent(questId : Int, event: Types.Event) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    // let uuid : Text = await createUUID();
+    let rsEvent = state.events.get(event.id);
+    switch (rsEvent) {
+      case (?V) { #err(#AlreadyExisting); };
+      case null {
+        for((id, quest) in state.quests.entries()) {
+          if(id == questId){
+            Event.create(event, state);
+          };
+        };
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared query({caller}) func readEvent(id : Int) : async Response<(Types.Event)>{
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsEvent = state.events.get(id);
+    return Result.fromOption(rsEvent, #NotFound);
+  };
+
+  public shared query({caller}) func listEvents() : async Response<[(Int, Types.Event)]> {
+    var list : [(Int, Types.Event)] = [];
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    for((K,V) in state.events.entries()) {
+      list := Array.append<(Int, Types.Event)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+  
+  public shared({caller}) func updateEvent(event: Types.Event) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsEvent = state.events.get(event.id);
+    switch (rsEvent) {
+      case null { #err(#NotFound); };
+      case (?V) {
+        Event.update(event, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared({caller}) func deleteEvent(id : Int) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsEvent = state.events.get(id);
+    switch (rsEvent) {
+      case (null) { #err(#NotFound); };
+      case (?V) {
+        let deletedEvent = state.events.delete(id);
+        #ok("Success");
+      };
+    };
+  };
+
+  // Event Option
+  public shared({caller}) func createEventOption(eventOption: Types.EventOption) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    // let uuid : Text = await createUUID();
+    let rsEventOption = state.eventOptions.get(eventOption.id);
+    switch (rsEventOption) {
+      case (?V) { #err(#AlreadyExisting); };
+      case null {
+        EventOption.create(eventOption, state);
+        #ok("Success");
+      };
+    };
+    
+  };
+
+  public shared query({caller}) func readEventOption(id : Int) : async Response<(Types.EventOption)>{
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsEventOption = state.eventOptions.get(id);
+    return Result.fromOption(rsEventOption, #NotFound);
+  };
+
+  public shared query({caller}) func listAllEventOptions() : async Response<[(Int, Types.EventOption)]> {
+    var list : [(Int, Types.EventOption)] = [];
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    for((K,V) in state.eventOptions.entries()) {
+      list := Array.append<(Int, Types.EventOption)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+
+  public shared query({caller}) func listEventOptions(eventId : Int) : async Response<[Types.EventOption]> {
+    var list : [Types.EventOption] = [];
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    for((K,eventOption) in state.eventOptions.entries()) {
+      if(eventOption.eventId == eventId){
+        list := Array.append<Types.EventOption>(list, [eventOption]);
+      };
+    };
+    #ok((list));
+  };
+  
+  public shared({caller}) func updateEventOption(eventOption: Types.EventOption) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsEventOption = state.eventOptions.get(eventOption.id);
+    switch (rsEventOption) {
+      case null { #err(#NotFound); };
+      case (?V) {
+        EventOption.update(eventOption, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared({caller}) func deleteEventOption(id : Int) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsEventOption = state.eventOptions.get(id);
+    switch (rsEventOption) {
+      case (null) { #err(#NotFound); };
+      case (?V) {
+        let deletedEventOption = state.eventOptions.delete(id);
+        #ok("Success");
+      };
+    };
+  };
+
+  // Gear
+  public shared({caller}) func createGear(gearClassId : Int, gear: Types.Gear) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    // let uuid : Text = await createUUID();
+    let rsGearClass = state.gearClasses.get(gearClassId);
+    switch (rsGearClass) {
+      case null { #err(#NotFound); };
+      case (?V){
+        let rsGear = state.gears.get(gear.id);
+        switch (rsGear) {
+          case (?V) { #err(#AlreadyExisting); };
+          case null {
+            Gear.create(gear, state);
+            #ok("Success");
+          };
+        };
+      };
+    };
+
+  };
+
+  public shared query({caller}) func readGear(id : Int) : async Response<(Types.Gear)>{
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsGear = state.gears.get(id);
+    return Result.fromOption(rsGear, #NotFound);
+  };
+
+  public shared query({caller}) func listGears() : async Response<[(Int, Types.Gear)]> {
+    var list : [(Int, Types.Gear)] = [];
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    for((K,V) in state.gears.entries()) {
+      list := Array.append<(Int, Types.Gear)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+  
+  public shared({caller}) func updateGear(gear: Types.Gear) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsGear = state.gears.get(gear.id);
+    switch (rsGear) {
+      case null { #err(#NotFound); };
+      case (?V) {
+        Gear.update(gear, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared({caller}) func deleteGear(id : Int) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsGear = state.gears.get(id);
+    switch (rsGear) {
+      case (null) { #err(#NotFound); };
+      case (?V) {
+        let deletedGear = state.gears.delete(id);
+        #ok("Success");
+      };
+    };
+  };
+
+  // Gear Class
+  public shared({caller}) func createGearClass(gearClass: Types.GearClass) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    // let uuid : Text = await createUUID();
+    let rsGearClass = state.gearClasses.get(gearClass.id);
+    switch (rsGearClass) {
+      case (?V) { #err(#AlreadyExisting); };
+      case null {
+        GearClass.create(gearClass, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared query({caller}) func readGearClass(id : Int) : async Response<(Types.GearClass)>{
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsGearClass = state.gearClasses.get(id);
+    return Result.fromOption(rsGearClass, #NotFound);
+  };
+
+  public shared query({caller}) func listGearClasses() : async Response<[(Int, Types.GearClass)]> {
+    var list : [(Int, Types.GearClass)] = [];
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    for((K,V) in state.gearClasses.entries()) {
+      list := Array.append<(Int, Types.GearClass)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+  
+  public shared({caller}) func updateGearClass(gearClass: Types.GearClass) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsGearClass = state.gearClasses.get(gearClass.id);
+    switch (rsGearClass) {
+      case null { #err(#NotFound); };
+      case (?V) {
+        GearClass.update(gearClass, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared({caller}) func deleteGearClass(id : Int) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsGearClass = state.gearClasses.get(id);
+    switch (rsGearClass) {
+      case (null) { #err(#NotFound); };
+      case (?V) {
+        let deletedGearClass = state.gearClasses.delete(id);
+        #ok("Success");
+      };
+    };
+  };
+
+  // Gear Rarity
+  public shared({caller}) func createGearRarity(gearRarity: Types.GearRarity) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    // let uuid : Text = await createUUID();
+    let rsGearRarity = state.gearRarities.get(gearRarity.id);
+    switch (rsGearRarity) {
+      case (?V) { #err(#AlreadyExisting); };
+      case null {
+        GearRarity.create(gearRarity, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared query({caller}) func readGearRarity(id : Int) : async Response<(Types.GearRarity)>{
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsGearRarity = state.gearRarities.get(id);
+    return Result.fromOption(rsGearRarity, #NotFound);
+  };
+
+  public shared query({caller}) func listGearRarities() : async Response<[(Int, Types.GearRarity)]> {
+    var list : [(Int, Types.GearRarity)] = [];
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    for((K,V) in state.gearRarities.entries()) {
+      list := Array.append<(Int, Types.GearRarity)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+  
+  public shared({caller}) func updateGearRarity(gearRarity: Types.GearRarity) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsGearRarity = state.gearRarities.get(gearRarity.id);
+    switch (rsGearRarity) {
+      case null { #err(#NotFound); };
+      case (?V) {
+        GearRarity.update(gearRarity, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared({caller}) func deleteGearRarity(id : Int) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsGearRarity = state.gearRarities.get(id);
+    switch (rsGearRarity) {
+      case (null) { #err(#NotFound); };
+      case (?V) {
+        let deletedGearRarity = state.gearRarities.delete(id);
+        #ok("Success");
+      };
+    };
+  };
+
+  // Gear Substat
+  public shared({caller}) func createGearSubstat(gearSubstat: Types.GearSubstat) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    // let uuid : Text = await createUUID();
+    let rsGearSubstat = state.gearSubstats.get(gearSubstat.id);
+    switch (rsGearSubstat) {
+      case (?V) { #err(#AlreadyExisting); };
+      case null {
+        GearSubstat.create(gearSubstat, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared query({caller}) func readGearSubstat(id : Int) : async Response<(Types.GearSubstat)>{
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsGearSubstat = state.gearSubstats.get(id);
+    return Result.fromOption(rsGearSubstat, #NotFound);
+  };
+
+  public shared query({caller}) func listgearSubstats() : async Response<[(Int, Types.GearSubstat)]> {
+    var list : [(Int, Types.GearSubstat)] = [];
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    for((K,V) in state.gearSubstats.entries()) {
+      list := Array.append<(Int, Types.GearSubstat)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+  
+  public shared({caller}) func updateGearSubstat(gearSubstat: Types.GearSubstat) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsGearSubstat = state.gearSubstats.get(gearSubstat.id);
+    switch (rsGearSubstat) {
+      case null { #err(#NotFound); };
+      case (?V) {
+        GearSubstat.update(gearSubstat, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared({caller}) func deleteGearSubstat(id : Int) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsGearSubstat = state.gearSubstats.get(id);
+    switch (rsGearSubstat) {
+      case (null) { #err(#NotFound); };
+      case (?V) {
+        let deletedGearSubstat = state.gearSubstats.delete(id);
+        #ok("Success");
+      };
+    };
+  };
+
+  // Material
+  public shared({caller}) func createMaterial(material: Types.Material) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    // let uuid : Text = await createUUID();
+    let rsMaterial = state.materials.get(material.id);
+    switch (rsMaterial) {
+      case (?V) { #err(#AlreadyExisting); };
+      case null {
+        Material.create(material, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared query({caller}) func readMaterial(id : Int) : async Response<(Types.Material)>{
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsMaterial = state.materials.get(id);
+    return Result.fromOption(rsMaterial, #NotFound);
+  };
+
+  public shared query({caller}) func listMaterials() : async Response<[(Int, Types.Material)]> {
+    var list : [(Int, Types.Material)] = [];
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    for((K,V) in state.materials.entries()) {
+      list := Array.append<(Int, Types.Material)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+  
+  public shared({caller}) func updateMaterial(material: Types.Material) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsMaterial = state.materials.get(material.id);
+    switch (rsMaterial) {
+      case null { #err(#NotFound); };
+      case (?V) {
+        Material.update(material, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared({caller}) func deleteMaterial(id : Int) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsMaterial = state.materials.get(id);
+    switch (rsMaterial) {
+      case (null) { #err(#NotFound); };
+      case (?V) {
+        let deletedMaterial = state.materials.delete(id);
+        #ok("Success");
+      };
+    };
+  };
+
+  // Inventory
 };

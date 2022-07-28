@@ -1,6 +1,14 @@
+import store from 'app/store';
 import Phaser from 'phaser';
 import BaseScene from './BaseScene'
 import gameConfig from '../GameConfig';
+import { 
+  loadEventOptions, 
+  loadCharacter,
+  updateCharacterStats,
+  getCharacterStatus,
+  characterTakeOption
+} from '../GameApi';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
 const bg1 = 'metaverse/scenes/Scene3/PNG/back-01.png';
@@ -23,6 +31,29 @@ export default class Scene3 extends BaseScene {
   }
 
   preload() {
+    this.eventId = 3;
+    this.characterId = 1;
+    this.load.rexAwait(function(successCallback, failureCallback) {
+      loadEventOptions(this.eventId).then( (result) => {
+        this.eventOptions = result;
+        successCallback();
+      });
+    }, this);
+
+    this.load.rexAwait(function(successCallback, failureCallback) {
+      characterTakeOption(this.eventId, this.characterId).then( (result) => {
+        this.characterTakeOptions = result;
+        successCallback();
+      });
+    }, this);
+
+    this.load.rexAwait(function(successCallback, failureCallback) {
+      getCharacterStatus(this.characterId).then( (result) => {
+        this.characterStatus = result.ok;
+        successCallback();
+      });
+    }, this);
+
     //loading screen
     this.add.image(
       gameConfig.scale.width/2, gameConfig.scale.height/2 - 50, 'logo'
@@ -76,17 +107,24 @@ export default class Scene3 extends BaseScene {
     this.isInteracted = true;
     this.player.play('running-anims');
   }
-  create() {
+
+  async create() {
+    if(this.characterStatus == 'Exhausted') {
+      this.scene.start('exhausted');
+    }
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
     this.ingameSound = this.sound.add('ingameSound', {loop: true});
     this.ingameSound.isRunning = false;
     this.ambientSound = this.sound.add('ambientSound', {loop: true});
-    this.ambientSound.play();
     this.sfx_char_footstep = this.sound.add('sfx_char_footstep', {loop: true, volume: 0.2});
-    this.sfx_char_footstep.play();
     this.sfx_monkey = this.sound.add('sfx_monkey', {loop: true});
+
+    if(this.characterStatus != 'Exhausted') {
+      this.ambientSound.play();
+      this.sfx_char_footstep.play();
+    }
 
     //background
     this.bg_1 = this.add.tileSprite(0, 0, gameConfig.scale.width, gameConfig.scale.height, "background1");
@@ -174,12 +212,20 @@ export default class Scene3 extends BaseScene {
     this.selectAction.setScrollFactor(0);
     this.selectAction.setVisible(false);
 
-    const testData = ['Give the monkeys some food', 'Ignore and find the way to pass through them'];
+    /// load character
+    this.characterData = await loadCharacter(this.characterId);
+    // stats before choose option
+    this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
+    this.setValue(this.stamina, this.characterData.currentStamina/this.characterData.maxStamina*100);
+    this.setValue(this.mana, this.characterData.currentMana/this.characterData.maxMana*100);
+    this.setValue(this.morale, this.characterData.currentMorale/this.characterData.maxMorale*100);
+
+    // load event options
     this.options = [];
-    for (const idx in testData){
+    for (const idx in this.eventOptions){
       this.options[idx] = this.add.sprite(gameConfig.scale.width/2, gameConfig.scale.height/2 -100 + idx*100, 'btnBlank');
       this.options[idx].text = this.add.text(
-        gameConfig.scale.width/2, gameConfig.scale.height/2 - 100 + idx*100, testData[idx], { fill: '#fff', align: 'center', fontSize: '30px' })
+        gameConfig.scale.width/2, gameConfig.scale.height/2 - 100 + idx*100, this.eventOptions[idx].description, { fill: '#fff', align: 'center', fontSize: '30px' })
       .setScrollFactor(0).setVisible(false).setOrigin(0.5);
       this.options[idx].setInteractive().setScrollFactor(0).setVisible(false);
       this.options[idx].on('pointerover', () => {
@@ -193,8 +239,15 @@ export default class Scene3 extends BaseScene {
         this.triggerContinue();
         this.sfx_char_footstep.play();
         this.clickSound.play();
+        // stats after choose option
+        this.setValue(this.hp, this.characterTakeOptions[idx].currentHP/this.characterTakeOptions[idx].maxHP*100);
+        this.setValue(this.stamina, this.characterTakeOptions[idx].currentStamina/this.characterTakeOptions[idx].maxStamina*100);
+        this.setValue(this.mana, this.characterTakeOptions[idx].currentMana/this.characterTakeOptions[idx].maxMana*100);
+        this.setValue(this.morale, this.characterTakeOptions[idx].currentMorale/this.characterTakeOptions[idx].maxMorale*100);
+        // update character after choose option
+        updateCharacterStats(this.characterTakeOptions[idx]);
       });
-    }
+    };
   }
 
   update() {
