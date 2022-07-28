@@ -212,11 +212,12 @@ const Admin = () => {
         variant={!data ? "contained" : "outlined"}
         onClick={handleButton}
         startIcon={<FuseSvgIcon>heroicons-outline:plus</FuseSvgIcon>}>
-        Add
+        Upload file here
       </Button>
       {data && (
         <LoadingButton sx={{ ml: 2 }} 
           variant="contained" 
+          color="primary"
           onClick={handleSubmit}
           loading={loading}
         >
