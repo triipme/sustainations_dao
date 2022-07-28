@@ -29,7 +29,7 @@ dfx canister call ledger account_balance '(record { account = '$(python3 -c 'pri
 
 ## === INSTALL FRONTEND / BACKEND ==== 
 
-dfx deploy sustainations_dao --argument "(\"$LEDGER_ID\")"
+dfx deploy sustainations_dao --argument "(opt(\"$LEDGER_ID\"))"
 dfx deploy frontend
 
 ## === Transfer ICP to DAO's default subaccount ===
