@@ -31,7 +31,7 @@ function Projects({ proposalType }) {
   const isProduct = _.has(proposalType, 'product');
   const proposalTypeName = isProduct ? 'Product' : 'Project';
 
-  const proposals = useAsyncMemo(async (proposalType) => {
+  const proposals = useAsyncMemo(async () => {
     setLoading(true);
     const result = await user.actor.listProposals(proposalType);
     setLoading(false);
