@@ -21,7 +21,6 @@ module {
       tags : Map<Text, Types.RBTag>;
       productUnits : Map<Text, Types.RBProductUnit>;
       products : Map<Text, Types.RBProduct>;
-      orderStatus : Map<Text, Types.RBOrderStatus>;
       orders : Map<Text, Types.RBOrder>;
     };
   };
@@ -41,7 +40,6 @@ module {
         tags = TrieMap.TrieMap<Text, Types.RBTag>(Text.equal, Text.hash);
         productUnits = TrieMap.TrieMap<Text, Types.RBProductUnit>(Text.equal, Text.hash);
         products = TrieMap.TrieMap<Text, Types.RBProduct>(Text.equal, Text.hash);
-        orderStatus = TrieMap.TrieMap<Text, Types.RBOrderStatus>(Text.equal, Text.hash);
         orders = TrieMap.TrieMap<Text, Types.RBOrder>(Text.equal, Text.hash);
       };
     };

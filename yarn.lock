@@ -7713,6 +7713,14 @@ js-yaml@^4.1.0:
   dependencies:
     argparse "^2.0.1"
 
+js-yaml@~3.13:
+  version "3.13.1"
+  resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-3.13.1.tgz#aff151b30bfdfa8e49e05da22e7415e9dfa37847"
+  integrity sha512-YfbcO7jXDdyj0DGxYVSlSeQNHbD7XPWvrVWeVUujrQEoZzWJIRrCPoyk6kL6IAjAG2IolMK4T0hNUe0HOUs5Jw==
+  dependencies:
+    argparse "^1.0.7"
+    esprima "^4.0.0"
+
 jsdom@^16.6.0:
   version "16.7.0"
   resolved "https://registry.npmjs.org/jsdom/-/jsdom-16.7.0.tgz"
@@ -11175,6 +11183,13 @@ string_decoder@~1.1.1:
   integrity sha512-n/ShnvDi6FHbbVfviro+WojiFzv+s8MPMHBczVePfUpDJLwoLT0ht1l4YwBCbi8pJAveEEdnkHyPyTP/mzRfwg==
   dependencies:
     safe-buffer "~5.1.0"
+
+stringex@^0.2.5:
+  version "0.2.5"
+  resolved "https://registry.yarnpkg.com/stringex/-/stringex-0.2.5.tgz#0bad574cf3ddede86f5da17d081c42c79a5a77ae"
+  integrity sha512-C2PsomR8Aw9Skacaq2VhokI4u+G5ARlx+4a2BMQLmlfQXYj54Hfc4tjufq4LZm2cpN8BnZoZpWzvga44HdgbYA==
+  dependencies:
+    js-yaml "~3.13"
 
 stringify-object@^3.3.0:
   version "3.3.0"

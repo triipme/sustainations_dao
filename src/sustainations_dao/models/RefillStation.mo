@@ -54,7 +54,7 @@ module {
     images : ?[Text];
     price : Float;
     salePrice : ?Float;
-    currency : Currency;
+    currency : Text; // currency code
     unit : Text;
   };
 
@@ -71,7 +71,7 @@ module {
 
   public type Order = {
     brandId : Text;
-    station : Station;
+    stationId : Text;
     products : List.List<OrderProduct>;
     history : [OrderStatusHistory];
   };
@@ -79,17 +79,21 @@ module {
   public type OrderProduct = {
     productId : Text;
     price : Float;
-    currency : Currency;
+    currency : Text; // currency code
     quantity : Nat;
   };
 
   public type OrderStatus = {
-    brandId : Text;
-    name : Text;
+    #canceled : Text;
+    #new;
+    #pending;
+    #delivering;
+    #delivered;
+    #rejected : Text;
   };
 
   public type OrderStatusHistory = {
-    status : Text;
+    status : OrderStatus;
     timestamp : Time.Time;
   };
 };

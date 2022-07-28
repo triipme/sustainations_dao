@@ -128,6 +128,5 @@ module {
   public type RBTag = RS.Tag;
   public type RBProductUnit = RS.ProductUnit;
   public type RBProduct = RS.Product;
-  public type RBOrderStatus = RS.OrderStatus;
   public type RBOrder = RS.Order;
 };

@@ -42,7 +42,6 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     tags : [(Text, Types.RBTag)] = [];
     productUnits : [(Text, Types.RBProductUnit)] = [];
     products : [(Text, Types.RBProduct)] = [];
-    orderStatus : [(Text, Types.RBOrderStatus)] = [];
     orders : [(Text, Types.RBOrder)] = [];
   };
 
@@ -61,7 +60,6 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
       tags = Iter.toArray(state.refillBrand.tags.entries());
       productUnits = Iter.toArray(state.refillBrand.productUnits.entries());
       products = Iter.toArray(state.refillBrand.products.entries());
-      orderStatus = Iter.toArray(state.refillBrand.orderStatus.entries());
       orders = Iter.toArray(state.refillBrand.orders.entries());
     };
     Debug.print("End preupgrade");
@@ -104,9 +102,6 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
     for ((k, v) in Iter.fromArray(refillBrand.products)) {
       state.refillBrand.products.put(k, v);
-    };
-    for ((k, v) in Iter.fromArray(refillBrand.orderStatus)) {
-      state.refillBrand.orderStatus.put(k, v);
     };
     for ((k, v) in Iter.fromArray(refillBrand.orders)) {
       state.refillBrand.orders.put(k, v);
@@ -1077,6 +1072,101 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     for ((uuid, pu) in state.refillBrand.productUnits.entries()) {
       if (pu.brandId == brandId) {
         results := Array.append<(Text, Types.RBProductUnit)>(results, [(uuid, pu)]);
+      };
+    };
+    #ok(results);
+  };
+
+  func setRBProduct(brandId : Text, productPayload : Types.RBProduct, uuid : ?Text) : async Text {
+    let payload = {
+      brandId;
+      name = productPayload.name;
+      description = productPayload.description;
+      categories = productPayload.categories;
+      tags = productPayload.tags;
+      sku = productPayload.sku;
+      images = productPayload.images;
+      price = productPayload.price;
+      salePrice = productPayload.salePrice;
+      currency = productPayload.currency;
+      unit = productPayload.unit;
+    };
+    if (uuid == null) {
+      uuid := await createUUID();
+      state.refillBrand.products.put(uuid, payload);
+    } else {
+      state.refillBrand.products.replace(uuid, payload);
+    };
+    return uuid;
+  };
+
+  public shared({ caller }) func createRBProduct(payload : Types.RBProduct) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    switch (state.refillBrand.managers.get(caller)) {
+      case (null) { #err(#AdminRoleRequired) };
+      case (?manager) {
+        let uuid = await setRBProduct(manager.brandId, payload, null);
+        #ok(uuid);
+      };
+    };
+  };
+
+  public shared({ caller }) func updateRBProduct(
+    uuid : Text, payload : Types.RBProduct
+  ) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    switch (state.refillBrand.products.get(uuid)) {
+      case (null) { #err(#NotFound) };
+      case (?product) {
+        switch (state.refillBrand.managers.get(caller)) {
+          case (null) { #err(#AdminRoleRequired) };
+          case (?manager) {
+            if (manager.brandId == product.brandId) {
+              await setRBProduct(manager.brandId, payload, uuid);
+              #ok(uuid);
+            } else {
+              #err(#AdminRoleRequired);
+            };
+          };
+        };
+      };
+    };
+  };
+
+  public shared({ caller }) func deleteRBProduct() : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    switch (state.refillBrand.products.get(uuid)) {
+      case (null) { #err(#NotFound) };
+      case (?product) {
+        switch (state.refillBrand.managers.get(caller)) {
+          case (null) { #err(#AdminRoleRequired) };
+          case (?manager) {
+            if (manager.brandId == product.brandId) {
+              state.refillBrand.products.delete(uuid);
+              #ok(uuid);
+            } else {
+              #err(#AdminRoleRequired);
+            };
+          };
+        };
+      };
+    };
+  };
+
+  public query func listRBProducts(brandId : Text) : async Response<[(Text, Types.RBProduct)]> {
+    let results : [(Text, Types.RBProduct)] = [];
+    for ((uuid, product) in state.refillBrand.products.entries()) {
+      if (product.brandId == brandId) {
+        results := Array.append<(Text, Types.RBProduct)>(results, [(uuid, product)]);
       };
     };
     #ok(results);
