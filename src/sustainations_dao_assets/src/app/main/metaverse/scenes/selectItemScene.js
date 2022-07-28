@@ -104,7 +104,7 @@ class selectItemScene extends BaseScene {
       this.itemName.push(this.questItems[index].name);
     };
     // load character
-    this.characterData = await loadCharacter(1);
+    this.characterData = await loadCharacter();
     this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
     this.setValue(this.stamina, this.characterData.currentStamina/this.characterData.maxStamina*100);
     this.setValue(this.mana, this.characterData.currentMana/this.characterData.maxMana*100);

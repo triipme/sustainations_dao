@@ -157,27 +157,27 @@ const Admin = () => {
     })
   };
 
-  const createCharacter = () => {
-    return new Promise((resolve) => {
-      const characters = data[5];
-      characters.forEach(async(character)=>{
-        try {
-          if (!!actor?.createCharacter) {
-            const rs = await actor.createCharacter(character.id, character.characterClassId, character.characterName);
-            console.log("Create Character");
-            console.log(rs);
-          }
-        } catch (error) {
-          console.log(error);
-        }
-      });
-      resolve();
-    })
-  };
+  // const createCharacter = () => {
+  //   return new Promise((resolve) => {
+  //     const characterClassIds = data[5];
+  //     characterClassIds.forEach(async(characterClassId)=>{
+  //       try {
+  //         if (!!actor?.createCharacter) {
+  //           const rs = await actor.createCharacter(characterClassId);
+  //           console.log("Create Character");
+  //           console.log(rs);
+  //         }
+  //       } catch (error) {
+  //         console.log(error);
+  //       }
+  //     });
+  //     resolve();
+  //   })
+  // };
 
   const createQuestItem = () => {
     return new Promise((resolve) => {
-      const questItems = data[6];
+      const questItems = data[5];
       questItems.forEach(async(questItem)=>{
         try {
           if (!!actor?.createQuestItem) {
@@ -199,7 +199,7 @@ const Admin = () => {
     await createQuest();
     await createQuestItem();
     await createCharacterClass();
-    await createCharacter();
+    // await createCharacter();
     await createEvent();
     await createEventOption();
     setLoading(false);

@@ -28,9 +28,8 @@ export default class Scene7 extends BaseScene {
   }
 
   preload() {
-    this.characterId = 1;
     this.load.rexAwait(function(successCallback, failureCallback) {
-      getCharacterStatus(this.characterId).then( (result) => {
+      getCharacterStatus().then( (result) => {
         this.characterStatus = result.ok;
         successCallback();
       });

@@ -44,7 +44,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   private stable var transactions : [(Text, Types.TxRecord)] = [];
   private stable var userAgreements : [(Principal, Types.UserAgreement)] = [];
   private stable var characterClasses : [(Int, Types.CharacterClass)] = [];
-  private stable var characters : [(Int, Types.Character)] = [];
+  private stable var characters : [(Text, Types.Character)] = [];
   private stable var characterTakeOptions : [(Int, Types.CharacterTakeOption)] = [];
   private stable var quests : [(Int, Types.Quest)] = [];
   private stable var items : [(Int, Types.Item)] = [];
@@ -686,100 +686,112 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
+  // Get userId
+  public shared query({caller}) func getUserId() : async Response<Principal>{
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    #ok(caller);
+  };
+
   // Character
-  public shared({caller}) func createCharacter(id : Int, characterClassId : Int, characterName : Text) : async Response<Text> {
+  public shared({caller}) func createCharacter(characterClassId : Int) : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
-    // let uuid : Text = await createUUID();
-    let rsCharacter = state.characters.get(id);
-    switch (rsCharacter) {
-      case (?V) { #err(#AlreadyExisting); };
-      case null {
-        for((_, characterClass) in state.characterClasses.entries()) {
-          if(characterClass.id == characterClassId){
-            Character.create(caller, id, characterClass, characterName, state);
+    let uuid : Text = await createUUID();
+    var canCreate = true;
+    let rsCharacterClass = state.characterClasses.get(characterClassId);
+    switch (rsCharacterClass) {
+      case (?characterClass) {
+        for((K, character) in state.characters.entries()){
+          if(character.userId == caller){
+            canCreate := false;
           };
+        };
+        if(canCreate == true){
+          Character.create(caller, uuid, characterClass, state);
         };
         #ok("Success");
+      };  
+      case null {
+        #err(#NotFound); 
       };
     };
   };
 
-  public shared({caller}) func resetCharacterStat(id : Int) : async Response<Text> {
+  public shared({caller}) func resetCharacterStat() : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
     // let uuid : Text = await createUUID();
-    let rsCharacter = state.characters.get(id);
-    switch (rsCharacter) {
-      case null { #err(#NotFound); };
-      case (?character) {
-        switch(state.characterClasses.get(character.classId)){
-          case null { #err(#NotFound); };
-          case (?characterClass){
-            Character.resetStat(caller, id, characterClass, character.name, state);
-            #ok("Success");
-          };
+    for((K,character) in state.characters.entries()){
+      for((K,characterClass) in state.characterClasses.entries()){
+        if(character.classId == characterClass.id){
+          Character.resetStat(caller, character.id, characterClass, state);
         };
       };
     };
+    #ok("Success");
   };
 
-  public shared query({caller}) func getCharacterStatus(id : Int) : async Response<Text>{
+  public shared query({caller}) func getCharacterStatus() : async Response<Text>{
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
-    switch(state.characters.get(id)){
-      case null { #err(#NotFound); }; 
-      case (?character){
-        let status = character.status;
-        #ok(status);
+    var rs : Text = "";
+    for((K,character) in state.characters.entries()){
+      if(character.userId == caller){
+        rs := character.status;
       };
     };
+    #ok(rs);
   };
 
-  public shared query({caller}) func readCharacter(id : Int) : async Response<(Types.Character)>{
+  public shared query({caller}) func readCharacter() : async Response<(Text, Types.Character)>{
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
-    let rsCharacter = state.characters.get(id);
-    return Result.fromOption(rsCharacter, #NotFound);
+    var result : [(Text, Types.Character)] = [];
+    for((key ,character) in state.characters.entries()) {
+      if(character.userId == caller){
+        result := Array.append<(Text, Types.Character)>(result, [(key, character)]);
+      };
+    };
+    #ok(result[0]);
   };
 
-  public shared query({caller}) func listCharacters() : async Response<[(Int, Types.Character)]> {
-    var list : [(Int, Types.Character)] = [];
+  public shared query({caller}) func listCharacters() : async Response<[(Text, Types.Character)]> {
+    var list : [(Text, Types.Character)] = [];
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
     for((key ,character) in state.characters.entries()) {
       if(character.userId == caller){
-        list := Array.append<(Int, Types.Character)>(list, [(key, character)]);
+        list := Array.append<(Text, Types.Character)>(list, [(key, character)]);
       }
     };
     #ok((list));
   };
 
-  public shared query({caller}) func listAllCharacters() : async Response<[(Int, Types.Character)]> {
-    var list : [(Int, Types.Character)] = [];
+  public shared query({caller}) func listAllCharacters() : async Response<[(Text, Types.Character)]> {
+    var list : [(Text, Types.Character)] = [];
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
     for((key ,character) in state.characters.entries()) {
-      list := Array.append<(Int, Types.Character)>(list, [(key, character)]);
+      list := Array.append<(Text, Types.Character)>(list, [(key, character)]);
     };
     #ok((list));
   };
   
-  public shared({caller}) func takeOption(eventId : Int, characterId : Int) : async Response<[Types.Character]> {
+  public shared({caller}) func takeOption(eventId : Int) : async Response<[Types.Character]> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
-    let rsCharacter = state.characters.get(characterId);
     var result : [Types.Character] = [];
-    switch (rsCharacter) {
-      case null { #err(#NotFound); };
-      case (?character) {
+    for((K,character) in state.characters.entries()){
+      if(character.userId == caller){
         for((K, eventOption) in state.eventOptions.entries()){
           if(eventOption.eventId == eventId){
             var strengthRequire : Float = 0;
@@ -791,9 +803,9 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
             result := Array.append<Types.Character>(result, [Character.takeOption(character, strengthRequire, eventOption, state)]);
           };
         };
-        #ok(result);
       };
     };
+    #ok(result);
   };
 
   public shared({caller}) func updateCharacter(character : Types.Character) : async Response<Text> {
@@ -826,7 +838,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   //   };
   // };
 
-  public shared({caller}) func deleteCharacter(id : Int) : async Response<Text> {
+  public shared({caller}) func deleteCharacter(id : Text) : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
@@ -840,7 +852,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared({caller}) func createCharacterTakeOption(id : Int, characterId : Int, eventOptionId : Int) : async Response<Text> {
+  public shared({caller}) func createCharacterTakeOption(id : Int, characterId : Text, eventOptionId : Int) : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };

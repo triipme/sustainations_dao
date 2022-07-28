@@ -89,7 +89,7 @@ module {
   //--------------------- Character ---------------------//
   public type Character = {
     userId : Principal;
-    id : Int;
+    id : Text;
     name : Text;
     level : Int;
     currentExp : Int;
@@ -128,7 +128,7 @@ module {
   };
 
   public type CharacterTakeOption = {
-    characterId : Int;
+    characterId : Text;
     eventOptionId : Int;
     pickUpTime : Time.Time;
     currentHP : Float;
