@@ -42,14 +42,14 @@ const Root = styled('div')(({ theme }) => ({
   },
 }));
 
-function ProjectMedia(props) {
+function ProjectMedia({ proposalTypeName }) {
   const methods = useFormContext();
   const { control, watch } = methods;
   const images = watch('images');
 
   return (
     <Root>
-      <div className="text-lg font-bold mt-16 mb-16">Project Media</div>
+      <div className="text-lg font-bold mt-16 mb-16">{proposalTypeName} Media</div>
       <div className="text-lg italic mb-16">JPG, PNG or GIF format. For best results, use a 3:2 ratio.</div>
       <div className="flex justify-center sm:justify-start flex-wrap -mx-16">
         <Controller
