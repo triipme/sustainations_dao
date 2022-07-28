@@ -1,10 +1,8 @@
-import IconButton from '@mui/material/IconButton';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { memo } from 'react';
-import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 
-function OverdueProject({ overdueProject }) {
+function OverdueProject({ counter, objectLabel }) {
 
   return (
     <Paper className="flex flex-col flex-auto shadow rounded-2xl overflow-hidden">
@@ -18,9 +16,9 @@ function OverdueProject({ overdueProject }) {
       </div>
       <div className="text-center mt-8 mb-24">
         <Typography className="text-7xl sm:text-8xl font-bold tracking-tight leading-none text-red-500">
-          {Number(overdueProject).toString()}
+          {Number(counter).toString()}
         </Typography>
-        <Typography className="text-lg font-medium text-red-600">Projects</Typography>
+        <Typography className="text-lg font-medium text-red-600">{objectLabel}</Typography>
       </div>
     </Paper>
   );

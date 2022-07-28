@@ -50,13 +50,22 @@ function HomeTab() {
         <UserAgreement userAgreement={analysis.userAgreement} />
       </motion.div>
       <motion.div variants={item}>
-        <OverdueProject overdueProject={analysis.overdueProposal} />
+        <OverdueProject counter={analysis.projects.overdue} objectLabel="Projects" />
       </motion.div>
       <motion.div variants={item}>
-        <OpenProject openProject={analysis.openProposal} />
+        <OpenProject counter={analysis.projects.opening} objectLabel="Projects" />
       </motion.div>
       <motion.div variants={item}>
-        <InvestedProject investedProject={analysis.investedProposal} />
+        <InvestedProject counter={analysis.projects.invested} objectLabel="Projects" />
+      </motion.div>
+      <motion.div variants={item}>
+        <OverdueProject counter={analysis.products.overdue} objectLabel="Products" />
+      </motion.div>
+      <motion.div variants={item}>
+        <OpenProject counter={analysis.products.opening} objectLabel="Products" />
+      </motion.div>
+      <motion.div variants={item}>
+        <InvestedProject counter={analysis.products.invested} objectLabel="Products" />
       </motion.div>
       <motion.div variants={item} className="sm:col-span-2 md:col-span-4">
         <GithubIssuesWidget />

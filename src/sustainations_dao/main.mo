@@ -6,6 +6,7 @@ import Iter "mo:base/Iter";
 import List "mo:base/List";
 import Nat64 "mo:base/Nat64";
 import Nat "mo:base/Nat";
+import Option "mo:base/Option";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
 import Text "mo:base/Text";
@@ -17,7 +18,7 @@ import Types "types";
 import State "state";
 import Ledger "./plugins/Ledger";
 
-shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
+shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   let transferFee : Nat64 = 10_000;
   let createProposalFee : Nat64 = 20_000;
   let voteFee : Nat64 = 20_000;
@@ -60,7 +61,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
   };
 
   type Response<Ok> = Result.Result<Ok, Types.Error>;
-  private let ledger : Ledger.Interface = actor(ledgerId);
+  private let ledger : Ledger.Interface = actor(Option.get(ledgerId, "ryjl3-tyaaa-aaaaa-aaaba-cai"));
 
   private func createUUID() : async Text {
     var ae = AsyncSource.Source();
@@ -85,29 +86,62 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
   };
 
   type DashboardAnalysis = {
-    userAgreement: Int;
-    overdueProposal: Int;
-    openProposal: Int;
-    investedProposal: Int;
+    userAgreement : Nat;
+    projects : {
+      overdue : Nat;
+      opening : Nat;
+      invested : Nat;
+    };
+    products : {
+      overdue : Nat;
+      opening : Nat;
+      invested : Nat;
+    };
   };
   public query func dashboardAnalysis() : async Response<DashboardAnalysis> {
-    let userAgreement = state.userAgreements.size();
-    var overdueProposal = 0;
-    var openProposal = 0;
-    var investedProposal = 0;
+    var overdueProjects : Nat = 0;
+    var openingProjects : Nat = 0;
+    var investedProjects : Nat = 0;
+    var overdueProducts : Nat = 0;
+    var openingProducts : Nat = 0;
+    var investedProducts : Nat = 0;
     for (proposal in state.proposals.vals()) {
       if (proposal.status == #rejected) {
-        overdueProposal += 1;
+        if (proposal.proposalType == ?#product) {
+          overdueProducts += 1;
+        } else {
+          overdueProjects += 1;
+        }
       } else {
         if (proposal.votesYes > 0) {
-          investedProposal += 1;
+          if (proposal.proposalType == ?#product) {
+            investedProducts += 1;
+          } else {
+            investedProjects += 1;
+          }
         };
         if (proposal.status == #open) {
-          openProposal += 1;
+          if (proposal.proposalType == ?#product) {
+            openingProducts += 1;
+          } else {
+            openingProjects += 1;
+          }
         };
       };
     };
-    #ok({ userAgreement; overdueProposal; openProposal; investedProposal; });
+    #ok({
+      userAgreement= state.userAgreements.size();
+      projects = {
+        overdue = overdueProjects;
+        opening = openingProjects;
+        invested = investedProjects;
+      };
+      products = {
+        overdue = overdueProducts;
+        opening = openingProducts;
+        invested = investedProducts;
+      };
+    });
   };
 
   public shared({ caller }) func submitAgreement() : async Response<Text> {
@@ -287,7 +321,9 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
   };
 
   // Submit Proposal
-  public shared({ caller }) func submitProposal(payload : Types.ProposalPayload) : async Response<Text> {
+  public shared({ caller }) func submitProposal(
+    payload : Types.ProposalPayload, proposalType : Types.ProposalType
+  ) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
@@ -302,6 +338,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
           status = if (payload.dueDate <= Time.now()) {#rejected} else {#open};
           votesYes = 0;
           voters = List.nil();
+          proposalType = ?proposalType;
         };
         // record transaction
         await recordTransaction(
@@ -317,19 +354,26 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
     };
   };
 
-  public query({ caller }) func listProposals() : async Response<[Types.Proposal]> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
+  public query({ caller }) func listProposals(
+    proposalType : Types.ProposalType
+  ) : async Response<[Types.Proposal]> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
     var list : [Types.Proposal] = [];
-    for((_uuid, proposal) in state.proposals.entries()){
-      list := Array.append<Types.Proposal>(list, [proposal]);
+    for ((_uuid, proposal) in state.proposals.entries()) {
+      if (proposal.status == #open) {
+        let pType = Option.get(proposal.proposalType, #project);
+        if (pType == proposalType) {
+          list := Array.append<Types.Proposal>(list, [proposal]);
+        };
+      };
     };
     #ok(list);
   };
 
   public query({caller}) func getProposal(uuid : Text) : async Response<Types.Proposal> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
+    if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
     switch (state.proposals.get(uuid)) {
@@ -405,6 +449,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
           proposer = proposal.proposer;
           voters;
           votesYes;
+          proposalType = proposal.proposalType;
           payload = proposal.payload;
         };
         let updated = state.proposals.replace(proposal.uuid, updatedProposal);
@@ -462,7 +507,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
   };
 
   public query({ caller }) func getTransactions() : async Response<[Types.TxRecord]> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
+    if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
     #ok(Iter.toArray(state.transactions.vals()));
@@ -478,6 +523,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : Text) = this {
           proposer = proposal.proposer;
           voters = proposal.voters;
           votesYes = proposal.votesYes;
+          proposalType = proposal.proposalType;
           payload = proposal.payload;
         };
         let replaced = state.proposals.replace(uuid, updated);

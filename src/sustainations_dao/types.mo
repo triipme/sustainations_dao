@@ -28,6 +28,7 @@ module {
     voters : List.List<Voter>;
     votesYes : Nat64;
     payload : ProposalPayload;
+    proposalType : ?ProposalType;
   };
   public type ProposalPayload = {
     name : Text;
@@ -55,6 +56,10 @@ module {
   public type VoteArgs = { vote : Vote; proposalId : Text };
   public type Voter = {
     uid : Principal; vote : Vote; timestamp : Time.Time
+  };
+  public type ProposalType = {
+    #project;
+    #product;
   };
 
   // Transaction

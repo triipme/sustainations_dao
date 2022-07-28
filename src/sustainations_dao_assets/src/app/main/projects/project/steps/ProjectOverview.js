@@ -3,7 +3,7 @@ import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import { Controller, useFormContext } from 'react-hook-form';
 
-function ProjectOverview() {
+function ProjectOverview({ proposalTypeName }) {
   const methods = useFormContext();
   const { control, formState } = methods;
   const { errors } = formState;
@@ -11,7 +11,7 @@ function ProjectOverview() {
   return (
     <div>
       <Typography className="mt-32 text-4xl font-extrabold tracking-tight leading-tight">
-        Project overview
+        {proposalTypeName} overview
       </Typography>
       <div className="text-lg mt-16 mb-16">Please respect our Community Guidelines</div>
       <div className="flex-auto mt-px border-t" />
@@ -19,7 +19,7 @@ function ProjectOverview() {
         General info
       </Typography>
       <div className="text-lg mt-16 mb-8">
-        <span className="text-red-500">*</span>&nbsp;Project name
+        <span className="text-red-500">*</span>&nbsp;{proposalTypeName} name
       </div>
       <Controller
         name="name"
@@ -27,7 +27,7 @@ function ProjectOverview() {
         render={({ field }) => (
           <TextField
             {...field}
-            label="Project name"
+            label={`${proposalTypeName} name`}
             className="mt-8 mb-16"
             error={!!errors.name}
             required
