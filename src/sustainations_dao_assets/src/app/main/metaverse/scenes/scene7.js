@@ -88,6 +88,8 @@ export default class Scene7 extends BaseScene {
   }
 
   async create() {
+    console.log(this.characterStatus);
+
     if(this.characterStatus == 'Exhausted') {
       this.scene.start('exhausted');
     }
@@ -188,7 +190,7 @@ export default class Scene7 extends BaseScene {
     this.selectAction.setVisible(false);
 
     // load character
-    this.characterData = await loadCharacter(1);
+    this.characterData = await loadCharacter();
     // stats before choose option
     this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
     this.setValue(this.stamina, this.characterData.currentStamina/this.characterData.maxStamina*100);

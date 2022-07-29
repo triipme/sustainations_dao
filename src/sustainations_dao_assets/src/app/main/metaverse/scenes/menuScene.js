@@ -1,6 +1,6 @@
 import Phaser from "phaser";
+import { createDefautCharacter } from "../GameApi";
 import BaseScene from './BaseScene';
-import { createDefautCharacter } from '../GameApi';
 const logo = 'images/logo/sustainations-logo.png';
 const loading = 'metaverse/loading/loadingSprite.png';
 const bg = "metaverse/menu/background.png";
@@ -78,6 +78,7 @@ class menuScene extends BaseScene {
   }
 
   async create() {
+    await createDefautCharacter();
     //add audios
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
@@ -164,9 +165,6 @@ class menuScene extends BaseScene {
       this.clickSound.play();
       window.location.href = "/";
     });
-
-    await createDefautCharacter();
   }
-
 }
 export default menuScene;
