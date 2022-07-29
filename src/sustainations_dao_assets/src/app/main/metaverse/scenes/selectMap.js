@@ -22,9 +22,8 @@ class selectMap extends BaseScene {
   }
 
   preload() {
-    this.characterId = 1;
     this.load.rexAwait(function(successCallback, failureCallback) {
-      resetCharacter(this.characterId).then( (result) => {
+      resetCharacter().then( (result) => {
         this.resetedCharacter = result;
         successCallback();
       });
