@@ -33,7 +33,7 @@ async function loadCharacter(){
   const { user } = store.getState();
   const readCharacter = async () => await user.actor.readCharacter();
   const character = (await readCharacter()).ok;
-  console.log(character[1]);
+  // console.log(character[1]);
   return character[1];
 };
 
