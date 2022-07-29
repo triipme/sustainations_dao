@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
 import gameConfig from '../GameConfig';
-import BaseScene from './BaseScene'
+import BaseScene from './BaseScene';
+import { loadQuestItems, loadCharacter } from '../GameApi';
+
 const bg = 'metaverse/selectItems/UI_background.png';
 const btnBack = 'metaverse/selectItems/UI_back.png';
 const btnClear = 'metaverse/selectItems/UI_clear.png';
@@ -63,7 +65,8 @@ class selectItemScene extends BaseScene {
     this.load.spritesheet("btnGo", btnGo, { frameWidth: 339, frameHeight: 141 });
   }
 
-  create() {
+  //async 
+  async create() {
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
@@ -90,9 +93,21 @@ class selectItemScene extends BaseScene {
     this.mana = this.makeBar(158, 372+240, 150, 22, 0xc038f6);
     this.morale = this.makeBar(158, 372+360, 150, 22, 0x63dafb);
 
-    this.add.image(1245, 80, 'pickItemText').setOrigin(0);
+    // load quest items
+    this.questItems = await loadQuestItems(1);
+    this.itemName = [];
+    for(const index in this.questItems){
+      this.itemName.push(this.questItems[index].name);
+    };
+    // load character
+    this.characterData = await loadCharacter();
+    this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
+    this.setValue(this.stamina, this.characterData.currentStamina/this.characterData.maxStamina*100);
+    this.setValue(this.mana, this.characterData.currentMana/this.characterData.maxMana*100);
+    this.setValue(this.morale, this.characterData.currentMorale/this.characterData.maxMorale*100);
+
+    this.add.image(868, 70, 'pickItemText').setOrigin(0);
     this.gridItem = [];
-    this.itemName = ['itemA', 'itemB', 'itemC', 'itemA', 'itemB', 'itemC', 'itemA', 'itemB', 'itemC', 'itemA', 'itemB', 'itemC'];
     for (let row = 0; row <= 3; row++){
       for (let col = 0; col <= 3; col++){
         this.gridItem.push(

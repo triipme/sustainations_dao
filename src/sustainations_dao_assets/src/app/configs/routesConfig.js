@@ -10,21 +10,27 @@ import ProjectsConfig from '../main/projects/ProjectsConfig';
 import UserAgreementConfig from '../main/user-agreement/UserAgreementConfig';
 import UserAgreementsConfig from '../main/user-agreements/UserAgreementsConfig';
 import MetaverseConfig from '../main/metaverse/MetaverseConfig';
+import AdminConfig from '../main/admin/AdminConfig';
+
+import ProposalProductsConfig from '../main/proposal-products/ProposalProductsConfig';
 const routeConfigs = [
   ProjectDashboardAppConfig,
   ProjectsConfig,
+  MetaverseConfig,
   UserAgreementConfig,
   UserAgreementsConfig,
   MetaverseConfig,
   SignOutConfig,
   SignInConfig,
+  AdminConfig,
+  ProposalProductsConfig,
 ];
 
 const routes = [
   ...FuseUtils.generateRoutesFromConfigs(routeConfigs, settingsConfig.defaultAuth),
   {
     path: '/',
-    element: <Navigate to="/projects" />,
+    element: <Navigate to="/dashboard" />,
     auth: settingsConfig.defaultAuth,
   },
   {

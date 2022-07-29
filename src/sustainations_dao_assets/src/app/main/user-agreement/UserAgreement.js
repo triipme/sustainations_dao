@@ -19,7 +19,7 @@ function UserAgreement() {
     try {
       const result = await user.actor.submitAgreement();
       if ("ok" in result) {
-        dispatch(showMessage({ message: "Now you are offically our member. Please accept 0.00003 ICP as our gift for your kindness ❤️" }));
+        dispatch(showMessage({ message: "Now you are offically our member. Please accept 0.0004 ICP as our gift for your kindness ❤️" }));
         setTimeout(() => {
           window.location.href = '/';
         }, 1000);

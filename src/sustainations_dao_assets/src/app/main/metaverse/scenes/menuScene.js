@@ -1,8 +1,9 @@
 import Phaser from "phaser";
-import BaseScene from './BaseScene'
+import { createDefautCharacter } from "../GameApi";
+import BaseScene from './BaseScene';
 const logo = 'images/logo/sustainations-logo.png';
 const loading = 'metaverse/loading/loadingSprite.png';
-const bg = "metaverse/menu/background.png";
+const menu_bg = "metaverse/menu/background.png";
 const welcomeText = "metaverse/menu/welcome.png";
 const introduction_btn = "metaverse/menu/introduction.png";
 const bootcamp_btn = "metaverse/menu/bootcamp.png";
@@ -36,7 +37,6 @@ class menuScene extends BaseScene {
   }
 
   preload() {
-    this.clearCache();
     // assets global uses across scenes
     this.load.image('logo', logo);
     this.load.spritesheet("loading", loading, {
@@ -57,7 +57,7 @@ class menuScene extends BaseScene {
     this.load.audio('sfx_obstacle_remove', sfx_obstacle_remove);
 
     // preload
-    this.load.image("bg", bg);
+    this.load.image("menu_bg", menu_bg);
     this.load.image("welcomeText", welcomeText);
     this.load.image("cs_noti", cs_noti);
     this.load.spritesheet("introduction_btn", introduction_btn, {
@@ -77,12 +77,13 @@ class menuScene extends BaseScene {
     });
   }
 
-  create() {
+  async create() {
+    await createDefautCharacter();
     //add audios
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
 
-    this.background = this.add.image(0, 0, "bg").setOrigin(0);
+    this.background = this.add.image(0, 0, "menu_bg").setOrigin(0);
     this.welcomeText = this.add.image(960, 210, "welcomeText");
     this.noti = this.add.image(100, 100, "cs_noti")
       .setOrigin(0).setVisible(false).setScale(0.7);
@@ -165,6 +166,5 @@ class menuScene extends BaseScene {
       window.location.href = "/";
     });
   }
-
 }
 export default menuScene;

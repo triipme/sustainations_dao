@@ -25,6 +25,13 @@ const navigationConfig = [
     url: 'projects',
   },
   {
+    id: 'proposal-products',
+    title: "One Refill Network",
+    type: 'item',
+    icon: 'category_outlined',
+    url: 'proposal-products',
+  },
+  {
     id: 'metaverse',
     title: 'Metaverse',
     translate: 'Metaverse',

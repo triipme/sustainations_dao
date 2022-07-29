@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import Typography from '@mui/material/Typography';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
@@ -7,7 +8,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DesktopDateTimePicker } from '@mui/x-date-pickers/DesktopDateTimePicker';
 import { Controller, useFormContext } from 'react-hook-form';
 
-function ProjectSubmit() {
+function ProjectSubmit({ proposalTypeName }) {
   const methods = useFormContext();
   const { control, formState } = methods;
   const { errors } = formState;
@@ -15,7 +16,7 @@ function ProjectSubmit() {
   return (
     <div>
       <Typography className="my-32 text-4xl font-extrabold tracking-tight leading-tight">
-        Submit project
+        Submit {_.lowerCase(proposalTypeName)}
       </Typography>
       <div className="flex-auto mt-px border-t" />
       <Typography className="mt-32 mb-16 text-3xl font-bold tracking-tight leading-tight">

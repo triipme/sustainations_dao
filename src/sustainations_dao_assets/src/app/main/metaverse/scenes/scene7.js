@@ -1,6 +1,10 @@
 import Phaser from 'phaser';
 import BaseScene from './BaseScene'
 import gameConfig from '../GameConfig';
+import { 
+  loadCharacter,
+  getCharacterStatus
+} from '../GameApi';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
 const bg1 = 'metaverse/scenes/Scene7/PNG/back-01.png';
@@ -24,6 +28,12 @@ export default class Scene7 extends BaseScene {
   }
 
   preload() {
+    this.load.rexAwait(function(successCallback, failureCallback) {
+      getCharacterStatus().then( (result) => {
+        this.characterStatus = result.ok;
+        successCallback();
+      });
+    }, this);
     //loading screen
     this.add.image(
       gameConfig.scale.width/2, gameConfig.scale.height/2 - 50, 'logo'
@@ -77,16 +87,24 @@ export default class Scene7 extends BaseScene {
     this.player.play('running-anims');
   }
 
-  create() {
+  async create() {
+    console.log(this.characterStatus);
+
+    if(this.characterStatus == 'Exhausted') {
+      this.scene.start('exhausted');
+    }
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
     this.ingameSound = this.sound.add('ingameSound', {loop: true});
     this.ingameSound.isRunning = false;
     this.ambientSound = this.sound.add('ambientSound', {loop: true});
-    this.ambientSound.play();
     this.sfx_char_footstep = this.sound.add('sfx_char_footstep', {loop: true, volume: 0.2});
-    this.sfx_char_footstep.play();
+
+    if(this.characterStatus != 'Exhausted') {
+      this.ambientSound.play();
+      this.sfx_char_footstep.play();
+    }
     //background
     this.bg_1 = this.add.tileSprite(0, 0, gameConfig.scale.width, gameConfig.scale.height, "background1");
     this.bg_1.setOrigin(0, 0);
@@ -171,7 +189,15 @@ export default class Scene7 extends BaseScene {
     this.selectAction.setScrollFactor(0);
     this.selectAction.setVisible(false);
 
-    const testData = ['Interact'];
+    // load character
+    this.characterData = await loadCharacter();
+    // stats before choose option
+    this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
+    this.setValue(this.stamina, this.characterData.currentStamina/this.characterData.maxStamina*100);
+    this.setValue(this.mana, this.characterData.currentMana/this.characterData.maxMana*100);
+    this.setValue(this.morale, this.characterData.currentMorale/this.characterData.maxMorale*100);
+      
+    const testData = ['Admire'];
     this.options = [];
     for (const idx in testData){
       this.options[idx] = this.add.sprite(gameConfig.scale.width/2, gameConfig.scale.height/2 -100 + idx*100, 'btnBlank');
@@ -191,7 +217,7 @@ export default class Scene7 extends BaseScene {
         this.sfx_char_footstep.play();
         this.clickSound.play();
       });
-    }
+    };
   }
 
   update() {
