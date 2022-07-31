@@ -54,9 +54,10 @@ function ShowProject() {
     }
     setLoading(true);
     const payload = {
-      vote: {yes: null},
+      vote: { yes: null },
       proposalId: project.uuid,
     }
+    const isProduct = _.has(project.proposalType[0], 'product');
     try {
       const result = await user.actor.vote(payload);
       if ("ok" in result) {
@@ -68,11 +69,11 @@ function ShowProject() {
     } catch (error) {
       const message = {
         "NotAuthorized": "Please sign in!.",
-        "NotFound": "Project is not found.",
-        "BalanceLow": "You need minimum 0.0004 ICP to Invest in this project.",
+        "NotFound": `${isProduct ? 'Product' : 'Project' } is not found.`,
+        "BalanceLow": `You need minimum 0.0004 ICP to Invest in this ${isProduct ? 'product' : 'project' }.`,
         "TransferFailure": "Can not transfer ICP.",
-        "ProposalIsNotOpened": "Project is not opened.",
-        "AlreadyVoted": "You has been invested this project."
+        "ProposalIsNotOpened": `${isProduct ? 'Product' : 'Project' } is not opened.`,
+        "AlreadyVoted": `You has been invested this ${isProduct ? 'product' : 'project' }.`
       }[Object.keys(error)[0]] || 'Error! Please try again later!'
       dispatch(showMessage({ message }));
     }
@@ -89,7 +90,7 @@ function ShowProject() {
       <div className="flex flex-col w-full max-w-7xl">
         <div className="flex items-center justify-between mb-8">
           <Button
-            to="/projects"
+            to={`/${_.has(project.proposalType[0], 'product') ? 'proposal-products' : 'projects'}`}
             component={Link}
             className="float-left"
             color="secondary"

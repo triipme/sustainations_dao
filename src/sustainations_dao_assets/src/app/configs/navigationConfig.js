@@ -14,7 +14,7 @@ const navigationConfig = [
     translate: 'Dashboard',
     type: 'item',
     icon: 'dashboard_outlined',
-    url: 'dashboard',
+    url: '/dashboard',
   },
   {
     id: 'projects',
@@ -22,7 +22,22 @@ const navigationConfig = [
     translate: 'Projects',
     type: 'item',
     icon: 'assignment_outlined',
-    url: 'projects',
+    url: '/projects',
+  },
+  {
+    id: 'one-refill-network',
+    title: "One Refill Network",
+    type: 'collapse',
+    icon: 'cached_outlined',
+    children: [
+      {
+        id: 'proposal-products',
+        title: 'Products',
+        type: 'item',
+        icon: 'category_outlined',
+        url: '/proposal-products',
+      },
+    ]
   },
   {
     id: 'metaverse',
@@ -30,7 +45,7 @@ const navigationConfig = [
     translate: 'Metaverse',
     type: 'item',
     icon: 'public_outlined',
-    url: 'metaverse',
+    url: '/metaverse',
   },
 ];
 

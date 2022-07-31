@@ -22,6 +22,7 @@ function ProjectCard({ project }) {
   const [voted, setVoted] = useState(false);
   const [loading, setLoading] = useState(false);
   const progress = (parseInt(project.voteYes) * 100) / parseInt(project.payload.fundingAmount);
+  const isProduct = _.has(project.proposalType[0], 'product');
 
   useEffect(() => {
     if ('open' in project.status) {
@@ -37,7 +38,7 @@ function ProjectCard({ project }) {
     }
     setLoading(true);
     const payload = {
-      vote: {yes: null},
+      vote: { yes: null },
       proposalId: project.uuid,
     }
     try {
@@ -65,7 +66,7 @@ function ProjectCard({ project }) {
   return (
     <Card key={project.uuid} className="flex flex-col h-384 shadow">
       <CardContent className="flex flex-col flex-auto p-24">
-        {projectInfo(project)}
+        {projectInfo(project, isProduct)}
       </CardContent>
       <Typography className="mx-24 text-16 font-medium">{`Progress: ${fPercent(progress)}`}</Typography>
       <LinearProgress
@@ -98,7 +99,7 @@ function ProjectCard({ project }) {
   );
 }
 
-function projectInfo(project) {
+function projectInfo(project, isProduct) {
   const { payload } = project;
   return (
     <div className="w-full">
@@ -114,7 +115,7 @@ function projectInfo(project) {
       </div>
 
       <Typography className="text-16 font-medium">
-        <Link to={`/projects/${project.uuid}`}>{payload.name}</Link>
+        <Link to={`/${isProduct ? 'proposal-products' : 'projects'}/${project.uuid}`}>{payload.name}</Link>
       </Typography>
 
       <Typography className="text-13 mt-2 line-clamp-2" color="text.secondary">

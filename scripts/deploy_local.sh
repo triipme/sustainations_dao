@@ -1,5 +1,3 @@
-# dfx start --background --clean --host 127.0.0.1:8000
-
 yarn install
 vessel install
 
@@ -29,14 +27,14 @@ dfx canister call ledger account_balance '(record { account = '$(python3 -c 'pri
 
 ## === INSTALL FRONTEND / BACKEND ==== 
 
-dfx deploy sustainations_dao --argument "(\"$LEDGER_ID\")"
-dfx deploy frontend
+dfx deploy sustainations_dao --argument "(opt(\"$LEDGER_ID\"))"
 
 ## === Transfer ICP to DAO's default subaccount ===
 export SYSTEM_ADDR=$(dfx canister call sustainations_dao getSystemAddress | tr -d '\n' | sed 's/,)/)/')
+echo $SYSTEM_ADDR
 dfx canister call ledger transfer "(record { amount = record { e8s = 10_000_000_000 }; to = $SYSTEM_ADDR; fee = record { e8s = 10_000}; memo = 1;})"
 dfx canister call sustainations_dao getSystemBalance
 
 # dfx canister call sustainations_dao withdraw '(100000)'
-
+dfx deploy frontend
 yarn start

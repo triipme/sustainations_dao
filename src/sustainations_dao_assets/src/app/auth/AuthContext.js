@@ -30,18 +30,14 @@ function AuthProvider({ children }) {
           }
         });
         const principal = identity.getPrincipal().toText();
-        let balance, depositAddress, role, brandId;
         const result = await actor.getUserInfo();
-        if ("ok" in result) {
-          { balance, depositAddress, role, brandId } = result.ok;
-        }
         dispatch(setUser({
-          role: result.ok.agreement ? [role] : ['needAgreement'],
+          role: result?.ok?.agreement ? _.keys(result?.ok?.role) : ['needAgreement'],
           actor,
-          depositAddress,
-          balance,
+          depositAddress: result?.ok?.depositAddress,
+          balance: result?.ok?.balance,
           principal,
-          brandId,
+          brandId: result?.ok?.brandId,
         }));
         setWaitAuthCheck(false);
       } else {

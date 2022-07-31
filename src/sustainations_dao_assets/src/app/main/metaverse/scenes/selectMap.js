@@ -1,11 +1,14 @@
 import Phaser from 'phaser';
+import BaseScene from './BaseScene'
+import gameConfig from '../GameConfig';
+import { resetCharacter } from '../GameApi';
 const bg = 'metaverse/selectMap/background.png';
 const text = 'metaverse/selectMap/call_to_action.png';
 const selectArea = 'metaverse/selectMap/select-area.png';
 const locationDetail = 'metaverse/selectMap/location_detail.png';
 const btnBack = 'metaverse/selectItems/UI_back.png';
 
-class selectMap extends Phaser.Scene {
+class selectMap extends BaseScene {
   constructor() {
     super('selectMap');
   }
@@ -15,9 +18,31 @@ class selectMap extends Phaser.Scene {
     for (const index in textures_list){
       this.textures.remove(textures_list[index]);
     }
+    console.clear();
   }
 
   preload() {
+    this.load.rexAwait(function(successCallback, failureCallback) {
+      resetCharacter().then( (result) => {
+        this.resetedCharacter = result;
+        successCallback();
+      });
+    }, this);
+
+    //loading screen
+    this.add.image(
+      gameConfig.scale.width/2, gameConfig.scale.height/2 - 50, 'logo'
+    ).setOrigin(0.5, 0.5).setScale(0.26);
+    this.anims.create({
+      key: 'loading-anims',
+      frames: this.anims.generateFrameNumbers("loading", {start: 0, end: 11}),
+      frameRate: 12,
+      repeat: -1
+    });
+    this.add.sprite(
+      gameConfig.scale.width/2, gameConfig.scale.height/2 + 150, "loading"
+    ).setScale(0.07).play('loading-anims');
+    //preload
     this.clearCache();
     this.load.image('bg', bg);
     this.load.image('text', text);

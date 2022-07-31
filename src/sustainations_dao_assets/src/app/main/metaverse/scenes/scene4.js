@@ -1,5 +1,14 @@
+import store from 'app/store';
 import Phaser from 'phaser';
+import BaseScene from './BaseScene'
 import gameConfig from '../GameConfig';
+import { 
+  loadEventOptions, 
+  loadCharacter,
+  updateCharacterStats,
+  getCharacterStatus,
+  characterTakeOption
+} from '../GameApi';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
 const bg1 = 'metaverse/scenes/Scene4/PNG/back-01.png';
@@ -9,7 +18,7 @@ const obstacle = 'metaverse/scenes/Scene4/PNG/obstacle-01.png';
 const selectAction = 'metaverse/scenes/background_menu.png';
 const btnBlank = 'metaverse/scenes/selection.png';
 
-export default class Scene4 extends Phaser.Scene {
+export default class Scene4 extends BaseScene {
   constructor() {
     super('Scene4');
   }
@@ -23,6 +32,28 @@ export default class Scene4 extends Phaser.Scene {
   }
 
   preload() {
+    this.eventId = 4;
+    this.load.rexAwait(function(successCallback, failureCallback) {
+      loadEventOptions(this.eventId).then( (result) => {
+        this.eventOptions = result;
+        successCallback();
+      });
+    }, this);
+
+    this.load.rexAwait(function(successCallback, failureCallback) {
+      characterTakeOption(this.eventId).then( (result) => {
+        this.characterTakeOptions = result;
+        successCallback();
+      });
+    }, this);
+
+    this.load.rexAwait(function(successCallback, failureCallback) {
+      getCharacterStatus().then( (result) => {
+        this.characterStatus = result.ok;
+        successCallback();
+      });
+    }, this);
+
     //loading screen
     this.add.image(
       gameConfig.scale.width/2, gameConfig.scale.height/2 - 50, 'logo'
@@ -76,12 +107,24 @@ export default class Scene4 extends Phaser.Scene {
     this.player.play('running-anims');
   }
 
-  create() {
+  async create() {
+    console.log(this.characterStatus);
+
+    if(this.characterStatus == 'Exhausted') {
+      this.scene.start('exhausted');
+    }
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
+    this.ingameSound = this.sound.add('ingameSound', {loop: true});
+    this.ingameSound.isRunning = false;
     this.ambientSound = this.sound.add('ambientSound', {loop: true});
-    this.ambientSound.play();
+    this.sfx_char_footstep = this.sound.add('sfx_char_footstep', {loop: true, volume: 0.2});
+
+    if(this.characterStatus != 'Exhausted') {
+      this.ambientSound.play();
+      this.sfx_char_footstep.play();
+    }
     //background
     this.bg_1 = this.add.tileSprite(0, 0, gameConfig.scale.width, gameConfig.scale.height, "background1");
     this.bg_1.setOrigin(0, 0);
@@ -127,18 +170,27 @@ export default class Scene4 extends Phaser.Scene {
     this.bg_3.setScrollFactor(0);
 
     //UI
-    this.add.image(20, 40, "UI_NameCard").setOrigin(0).setScrollFactor(0).setScale(0.95);
-    this.add.image(370, 40, "UI_HP").setOrigin(0).setScrollFactor(0).setScale(0.95);
-    this.add.image(720, 40, "UI_Mana").setOrigin(0).setScrollFactor(0).setScale(0.95);
-    this.add.image(1070, 40, "UI_Stamina").setOrigin(0).setScrollFactor(0).setScale(0.95);
-    this.add.image(1420, 40, "UI_Morale").setOrigin(0).setScrollFactor(0).setScale(0.95);
+    this.add.image(20, 40, "UI_NameCard").setOrigin(0).setScrollFactor(0);
+    this.add.image(370, 40, "UI_HP").setOrigin(0).setScrollFactor(0);
+    this.add.image(720, 40, "UI_Mana").setOrigin(0).setScrollFactor(0);
+    this.add.image(1070, 40, "UI_Stamina").setOrigin(0).setScrollFactor(0);
+    this.add.image(1420, 40, "UI_Morale").setOrigin(0).setScrollFactor(0);
+    //set value
+    this.hp = this.makeBar(476, 92, 150, 22, 0x74e044).setScrollFactor(0);
+    this.mana = this.makeBar(476+350, 92, 150, 22, 0xc038f6).setScrollFactor(0);
+    this.stamina = this.makeBar(476+350*2, 92, 150, 22, 0xcf311f).setScrollFactor(0);
+    this.morale = this.makeBar(476+350*3, 92, 150, 22, 0x63dafb).setScrollFactor(0);
+    // this.setValue(this.hp, 50)
+
+    //UI2
     this.add.image(80, 830, "UI_Utility").setOrigin(0).setScrollFactor(0);
     this.add.image(1780, 74, "BtnExit").setOrigin(0).setScrollFactor(0).setScale(0.7)
       .setInteractive()
       .on('pointerdown', () => {
         this.clickSound.play();
         this.scene.start('menuScene');
-        this.ambientSound.stop();
+        this.pregameSound.stop();
+        this.sfx_char_footstep.stop();
       });
 
     //mycam
@@ -156,12 +208,20 @@ export default class Scene4 extends Phaser.Scene {
     this.selectAction.setScrollFactor(0);
     this.selectAction.setVisible(false);
 
-    const testData = ['Cook', 'Rest', 'Continue'];
+    // load character
+    this.characterData = await loadCharacter();
+    // stats before choose option
+    this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
+    this.setValue(this.stamina, this.characterData.currentStamina/this.characterData.maxStamina*100);
+    this.setValue(this.mana, this.characterData.currentMana/this.characterData.maxMana*100);
+    this.setValue(this.morale, this.characterData.currentMorale/this.characterData.maxMorale*100);
+
+    // load event options
     this.options = [];
-    for (const idx in testData){
+    for (const idx in this.eventOptions){
       this.options[idx] = this.add.sprite(gameConfig.scale.width/2, gameConfig.scale.height/2 -100 + idx*100, 'btnBlank');
       this.options[idx].text = this.add.text(
-        gameConfig.scale.width/2, gameConfig.scale.height/2 - 100 + idx*100, testData[idx], { fill: '#fff', align: 'center', fontSize: '30px' })
+        gameConfig.scale.width/2, gameConfig.scale.height/2 - 100 + idx*100, this.eventOptions[idx].description, { fill: '#fff', align: 'center', fontSize: '30px' })
       .setScrollFactor(0).setVisible(false).setOrigin(0.5);
       this.options[idx].setInteractive().setScrollFactor(0).setVisible(false);
       this.options[idx].on('pointerover', () => {
@@ -173,9 +233,18 @@ export default class Scene4 extends Phaser.Scene {
       });
       this.options[idx].on('pointerdown', () => {
         this.triggerContinue();
+        this.sfx_char_footstep.play();
         this.clickSound.play();
+        this.choseOption = this.eventOptions[idx].id;
+        // stats after choose option
+        this.setValue(this.hp, this.characterTakeOptions[idx].currentHP/this.characterTakeOptions[idx].maxHP*100);
+        this.setValue(this.stamina, this.characterTakeOptions[idx].currentStamina/this.characterTakeOptions[idx].maxStamina*100);
+        this.setValue(this.mana, this.characterTakeOptions[idx].currentMana/this.characterTakeOptions[idx].maxMana*100);
+        this.setValue(this.morale, this.characterTakeOptions[idx].currentMorale/this.characterTakeOptions[idx].maxMorale*100);
+        // update character after choose option
+        updateCharacterStats(this.characterTakeOptions[idx]);
       });
-    }
+    };
   }
 
   update() {
@@ -185,12 +254,19 @@ export default class Scene4 extends Phaser.Scene {
     }
 
     if (this.player.x > 1920*2) {
-      this.ambientSound.stop();
+      this.sfx_char_footstep.stop();
+      this.ingameSound.stop();
       this.scene.start("Scene5");
     }
 
     if (this.player.x > 1920*2 - 1000 && this.isInteracted == false) {
       this.triggerPause();
+      this.ambientSound.stop();
+      this.sfx_char_footstep.stop();
+      if (this.ingameSound.isRunning == false) {
+        this.ingameSound.play();
+        this.ingameSound.isRunning = true;
+      }
       this.player.setVelocityX(0);
       this.player.play('idle-anims');
       this.player.stop()
