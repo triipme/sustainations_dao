@@ -668,23 +668,31 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared({caller})func setAdmin(principal : Text, role : Types.Role, nameSet : ?Text, avatar : ?Text) : async Response<Text>{
+  /* === Admin functions === */
+  // admin set user's role
+  public shared({ caller })func setRole(principalText : Text, role : Types.Role) : async Response<Text>{
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);// isNotAuthorized
     };
     if(isAdmin(caller)) {
-      switch (state.profiles.get(Principal.fromText(principal))) {
+      let principal = Principal.fromText(principalText);
+      switch (state.profiles.get(principal)) {
         case (null) {
           let profile : Types.Profile = {
-            username = nameSet;
-            avatar;
+            username = null;
+            avatar = null;
+            phone = null;
             role;
           };
-          state.profiles.put(Principal.fromText(principal), profile);
-          Debug.print("created");
+          state.profiles.put(principal, profile);
         };
-        case (? admin) {
-          Debug.print("exist");
+        case (?profile) {
+          let newProfile = state.profiles.replace(principal, {
+            username = profile.username;
+            avatar = profile.avatar;
+            phone = profile.phone;
+            role;
+          });
         };
       };
       #ok("Success");
