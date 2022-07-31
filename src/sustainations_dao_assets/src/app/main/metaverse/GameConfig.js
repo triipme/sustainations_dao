@@ -16,13 +16,13 @@ import exhausted from './scenes/exhausted';
 const gameConfig = {
   type: Phaser.CANVAS,
   antialias: true,
-  parent: 'sustainations-game',
+  parent: "sustainations-slug",
   scale: {
     width: 1920,
     height: 1080,
     pixelArt: true,
     mode: Phaser.Scale.FIT,
-    autoCenter: Phaser.Scale.CENTER_BOTH,
+    autoCenter: Phaser.Scale.CENTER_BOTH
   },
   plugins: {
     global: [{
@@ -34,7 +34,7 @@ const gameConfig = {
     ]
   },
   physics: {
-    default: 'arcade',
+    default: "arcade",
     arcade: {
       gravity: { y: 2000 },
       debug: false
