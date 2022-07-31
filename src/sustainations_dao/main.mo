@@ -681,7 +681,6 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
           let profile : Types.Profile = {
             username = null;
             avatar = null;
-            phone = null;
             role;
           };
           state.profiles.put(principal, profile);
@@ -690,7 +689,6 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
           let newProfile = state.profiles.replace(principal, {
             username = profile.username;
             avatar = profile.avatar;
-            phone = profile.phone;
             role;
           });
         };
