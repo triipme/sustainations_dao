@@ -30,6 +30,7 @@ module {
     voters : List.List<Voter>;
     votesYes : Nat64;
     payload : ProposalPayload;
+    proposalType : ?ProposalType;
   };
   public type ProposalPayload = {
     name : Text;
@@ -58,6 +59,10 @@ module {
   public type Voter = {
     uid : Principal; vote : Vote; timestamp : Time.Time
   };
+  public type ProposalType = {
+    #project;
+    #product;
+  };
 
   // Transaction
   public type Operation = {
@@ -82,6 +87,163 @@ module {
     fee : Nat64;
     timestamp : Time.Time;
   };
+
+  // Game
+  //--------------------- Character ---------------------//
+  public type Character = {
+    userId : Principal;
+    id : Text;
+    name : Text;
+    level : Int;
+    currentExp : Int;
+    levelUpExp : Int;
+    status : Text;
+    strength : Float;
+    intelligence : Int;
+    vitality : Int;
+    luck : Int;
+    currentHP : Float;
+    maxHP : Float;
+    currentMana : Float;
+    maxMana : Float;
+    currentStamina : Float;
+    maxStamina : Float;
+    currentMorale : Float;
+    maxMorale : Float;
+    classId : Int;
+    gearIds : ?[Text];
+    materialIds : ?[Text];
+  };
+
+  public type CharacterClass = {
+    id : Int;
+    name : Text;
+    specialAbility : Text;
+    description : Text;
+    baseStrength : Float;
+    baseIntelligence : Int;
+    baseVitality : Int;
+    baseLuck : Int;
+    baseHP : Float;
+    baseMana : Float;
+    baseStamina : Float;
+    baseMorale : Float;
+  };
+
+  public type CharacterTakeOption = {
+    characterId : Text;
+    eventOptionId : Int;
+    pickUpTime : Time.Time;
+    currentHP : Float;
+    maxHP : Float;
+    currentMana : Float;
+    maxMana : Float;
+    currentStamina : Float;
+    maxStamina : Float;
+    currentMorale : Float;
+    maxMorale : Float;
+  };
+
+  //--------------------- Quest ---------------------//
+  public type Quest = {
+    id : Int;
+    name : Text;
+    price : Int;
+    description : Text;
+    images : Text;
+  };
+
+  //--------------------- Item ---------------------//
+  public type Item = {
+    id : Int;
+    name : Text;
+    strengthRequire : Float;
+    images : Text;
+  };
+
+  public type QuestItem = {
+    id : Int;
+    itemId : Int;
+    questId : Int;
+  };
+
+  //--------------------- Event ---------------------//
+  public type Event = {
+    id : Int;
+    questId : Int;
+    description : Text;
+    locationName : Text;
+    destinationName : Text;
+  };
+
+  //--------------------- Event Option ---------------------//
+  public type EventOption = {
+    id : Int;
+    eventId : Int;
+    description : Text;
+    requireItemId : Int;
+    lossHP : Float;
+    lossMana : Float;
+    lossStamina : Float;
+    lossMorale : Float;
+    riskChance : Float;
+    riskLost : Text;
+    lossOther : Text;
+    gainExp : Int;
+    gainHP : Float;
+    gainStamina : Float;
+    gainMorale : Float;
+    gainMana : Float;
+    luckyChance : Float;
+    gainByLuck : Text;
+    gainOther : Float;
+  };
+
+  //--------------------- Gear ---------------------//
+  public type Gear = {
+    id : Int;
+    name : Text;
+    description : Text;
+    images : Text;
+    gearClassId : Text;
+    gearRarity : Text;
+    substatIds : [Text];
+  };
+
+  public type GearClass = {
+    id : Int;
+    name : Text;
+    description : Text;
+    mainStat : Int;
+  };
+
+  public type GearRarity = {
+    id : Int;
+    name : Text;
+    description : Text;
+    boxColor : Text;
+  };
+
+  public type GearSubstat = {
+    id : Int;
+    substat : Int;
+    description : Text;
+  };
+
+  //--------------------- Material ---------------------//
+  public type Material = {
+    id : Int;
+    name : Text;
+    description : Text;
+  };
+
+  //--------------------- Inventory ---------------------//
+  public type Inventory = {
+    id : Int;
+    name : Text;
+    size : Int;
+  };
+
   // Error codes
   public type Error = {
     #BalanceLow;
@@ -113,6 +275,10 @@ module {
     "GOAL 15: Life on Land",
     "GOAL 16: Peace and Justice Strong Institutions",
     "GOAL 17: Partnerships to achieve the Goal"
+  ];
+
+  public let refillProductCategories = [
+    "Food", "Spices", "Body Care", "Household Goods"
   ];
 
   public let proposalFundingTypes = [

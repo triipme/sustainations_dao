@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import BaseScene from './BaseScene'
 import gameConfig from '../GameConfig';
+import { resetCharacter } from '../GameApi';
 const bg = 'metaverse/selectMap/background.png';
 const text = 'metaverse/selectMap/call_to_action.png';
 const selectArea = 'metaverse/selectMap/select-area.png';
@@ -21,6 +22,13 @@ class selectMap extends BaseScene {
   }
 
   preload() {
+    this.load.rexAwait(function(successCallback, failureCallback) {
+      resetCharacter().then( (result) => {
+        this.resetedCharacter = result;
+        successCallback();
+      });
+    }, this);
+
     //loading screen
     this.add.image(
       gameConfig.scale.width/2, gameConfig.scale.height/2 - 50, 'logo'

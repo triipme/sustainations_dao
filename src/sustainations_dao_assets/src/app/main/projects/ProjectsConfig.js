@@ -11,11 +11,11 @@ const ProjectsConfig = {
   routes: [
     {
       path: "projects",
-      element: <Projects />
+      element: <Projects proposalType={{ project: null }} />
     },
     {
       path: "projects/new",
-      element: <NewProject />
+      element: <NewProject proposalType={{ project: null }} />
     },
     {
       path: "projects/:projectId/",

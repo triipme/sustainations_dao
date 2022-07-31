@@ -5,6 +5,7 @@ import { Navigate } from "react-router-dom";
 const Admin = lazy(() => import("./Admin"));
 const BootCampLayout = lazy(() => import("./bootcamp/BootCampLayout"));
 const MemoryCardEngine = lazy(() => import("./bootcamp/MemoryCardEngine"));
+const Metaverse = lazy(() => import("./metaverse/Metaverse"));
 
 const AdminConfig = {
   settings: {
@@ -21,6 +22,11 @@ const AdminConfig = {
         {
           index: true,
           element: <Navigate to="bootcamp" />
+        },
+
+        {
+          path: "metaverse",
+          element: <Metaverse />
         },
         {
           path: "bootcamp",

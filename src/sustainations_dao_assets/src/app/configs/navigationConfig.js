@@ -26,6 +26,13 @@ const navigationConfig = [
     url: "projects"
   },
   {
+    id: "proposal-products",
+    title: "One Refill Network",
+    type: "item",
+    icon: "category_outlined",
+    url: "proposal-products"
+  },
+  {
     id: "metaverse",
     title: "Metaverse",
     translate: "Metaverse",
@@ -41,11 +48,18 @@ const navigationConfig = [
     auth: authRoles.admin,
     children: [
       {
+        id: "admin.metaverse",
+        title: "Metaverse",
+        type: "item",
+        icon: "public_outlined",
+        url: "admin/metaverse"
+      },
+      {
         id: "admin.bootcamp",
         title: "Bootcamp",
         type: "item",
         icon: "heroicons-outline:academic-cap",
-        url: "admin"
+        url: "admin/bootcamp"
       }
     ]
   }

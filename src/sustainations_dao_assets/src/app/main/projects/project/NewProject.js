@@ -27,8 +27,6 @@ import { setS3Object } from "../../../hooks";
 import moment from 'moment';
 import MobileDetect from 'mobile-detect';
 
-const steps = ['Project overview', 'Project details', 'Additional info', 'Submit'];
-
 /**
  * Form Validation Schema
  */
@@ -38,7 +36,10 @@ const schema = yup.object().shape({
     .required('You must enter a product name'),
 });
 
-function NewProduct() {
+function NewProduct({ proposalType }) {
+  const isProduct = _.has(proposalType, 'product');
+  const steps = isProduct ? ['Product overview', 'Product details', 'Additional info', 'Submit'] : ['Project overview', 'Project details', 'Additional info', 'Submit'];
+  const proposalTypeName = isProduct ? 'Product' : 'Project';
   const md = new MobileDetect(window.navigator.userAgent);
   const isMobile = md.mobile();
   const [activeStep, setActiveStep] = useState(0);
@@ -75,7 +76,7 @@ function NewProduct() {
     (async () => {
       try {
         setLocations(await getLocations());
-        setStaticAttrs(await user.actor.proposalStaticAttributes());
+        setStaticAttrs(await user.actor.proposalStaticAttributes(proposalType));
       } catch (error) {
         console.log(error);
       }
@@ -121,7 +122,7 @@ function NewProduct() {
     }
 
     try {
-      const result = await user.actor.submitProposal(payload);
+      const result = await user.actor.submitProposal(payload, proposalType);
       if ("ok" in result) {
         const uploadFiles = images.map(image => {
           return {
@@ -138,7 +139,7 @@ function NewProduct() {
         const data = await setS3Object(uploadFiles);
         Promise.all(data).then(() => {
           dispatch(showMessage({ message: 'Success!' }));
-          navigate(`/projects/${result.ok}`);
+          navigate(`/${isProduct ? 'proposal-products' : 'projects'}/${result.ok}`);
         });
       } else {
         throw result?.err;
@@ -147,7 +148,7 @@ function NewProduct() {
       console.log(error);
       const message = {
         "NotAuthorized": "Please sign in!.",
-        "BalanceLow": "You need minimum 0.0004 ICP to submit project.",
+        "BalanceLow": `You need minimum 0.0004 ICP to submit ${_.lowerCase(proposalTypeName)}.`,
         "TransferFailure": "Can not transfer ICP."
       }[Object.keys(error)[0]] || 'Error! Please try again later!'
       dispatch(showMessage({ message }));
@@ -164,7 +165,7 @@ function NewProduct() {
       <div className="flex flex-col w-full max-w-7xl">
         <div className="flex items-center">
           <Button
-            to="/projects"
+            to={`/${isProduct ? 'proposal-products' : 'projects'}`}
             component={Link}
             className="mb-8"
             color="secondary"
@@ -201,16 +202,16 @@ function NewProduct() {
                 <div className="flex-auto mt-px border-t"></div>
               </div>
               <div className={activeStep !== 0 ? 'hidden' : ''}>
-                <ProjectOverview />
+                <ProjectOverview proposalTypeName={proposalTypeName} />
               </div>
               <div className={activeStep !== 1 ? 'hidden' : ''}>
-                <ProjectDetails locations={locations} fundingTypes={staticAttrs.fundingTypes} />
+                <ProjectDetails locations={locations} fundingTypes={staticAttrs.fundingTypes} proposalTypeName={proposalTypeName} />
               </div>
               <div className={activeStep !== 2 ? 'hidden' : ''}>
-                <ProjectAdditionalInfo categories={staticAttrs.categories} />
+                <ProjectAdditionalInfo categories={staticAttrs.categories} proposalTypeName={proposalTypeName} />
               </div>
               <div className={activeStep !== 3 ? 'hidden' : ''}>
-                <ProjectSubmit />
+                <ProjectSubmit proposalTypeName={proposalTypeName} />
               </div>
               <React.Fragment>
                 <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
@@ -225,7 +226,7 @@ function NewProduct() {
                   </Button>
                   <Box sx={{ flex: '1 1 auto' }} />
                   {activeStep === steps.length - 1 ?
-                    (<LoadingButton variant="contained" color="primary" loading={loading} onClick={handleSubmit}>Submit project</LoadingButton>)
+                    (<LoadingButton variant="contained" color="primary" loading={loading} onClick={handleSubmit}>Submit {_.lowerCase(proposalTypeName)}</LoadingButton>)
                     : (<Button variant="contained" color="primary" onClick={handleNext}>Next</Button>)
                   }
                 </Box>
