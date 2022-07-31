@@ -31,8 +31,15 @@ function AuthProvider({ children }) {
         });
         const principal = identity.getPrincipal().toText();
         const result = await actor.getUserInfo();
+        let brandRole = [];
+        if (_.findKey(result?.ok?.brandRole, 'owner')) {
+          brandRole = ['brandOwner'];
+        }
+        if (_.findKey(result?.ok?.brandRole, 'staff')) {
+          brandRole = ['brandStaff'];
+        }
         dispatch(setUser({
-          role: result?.ok?.agreement ? _.keys(result?.ok?.role) : ['needAgreement'],
+          role: result?.ok?.agreement ? _.union(_.keys(result?.ok?.role), brandRole) : ['needAgreement'],
           actor,
           depositAddress: result?.ok?.depositAddress,
           balance: result?.ok?.balance,

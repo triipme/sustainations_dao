@@ -2,6 +2,7 @@ import i18next from 'i18next';
 import ar from './navigation-i18n/ar';
 import en from './navigation-i18n/en';
 import tr from './navigation-i18n/tr';
+import authRoles from '../auth/authRoles';
 
 i18next.addResourceBundle('en', 'navigation', en);
 i18next.addResourceBundle('tr', 'navigation', tr);
@@ -11,7 +12,6 @@ const navigationConfig = [
   {
     id: 'dashboard',
     title: 'Dashboard',
-    translate: 'Dashboard',
     type: 'item',
     icon: 'dashboard_outlined',
     url: '/dashboard',
@@ -19,7 +19,6 @@ const navigationConfig = [
   {
     id: 'projects',
     title: 'Projects',
-    translate: 'Projects',
     type: 'item',
     icon: 'assignment_outlined',
     url: '/projects',
@@ -27,25 +26,81 @@ const navigationConfig = [
   {
     id: 'one-refill-network',
     title: "One Refill Network",
-    type: 'collapse',
+    type: 'item',
     icon: 'cached_outlined',
-    children: [
-      {
-        id: 'proposal-products',
-        title: 'Products',
-        type: 'item',
-        icon: 'category_outlined',
-        url: '/proposal-products',
-      },
-    ]
+    url: '/proposal-products',
   },
   {
     id: 'metaverse',
     title: 'Metaverse',
-    translate: 'Metaverse',
     type: 'item',
     icon: 'public_outlined',
     url: '/metaverse',
+  },
+  {
+    id: 'refill-network-management',
+    title: 'Refill Network Management',
+    type: 'collapse',
+    icon: 'room_preferences_outlined',
+    auth: authRoles.refillBrandStaff,
+    children: [
+      {
+        id: 'refill-brand',
+        title: 'Brand',
+        type: 'item',
+        auth: authRoles.refillBrandOwner,
+        url: '/refill-network/brand',
+      },
+      {
+        id: 'refill-staffs',
+        title: 'Staffs',
+        type: 'item',
+        auth: authRoles.refillBrandOwner,
+        url: '/refill-network/staffs',
+      },
+      {
+        id: 'refill-stations',
+        title: 'Stations',
+        type: 'item',
+        auth: authRoles.refillBrandStaff,
+        url: '/refill-network/stations',
+      },
+      {
+        id: 'refill-categories',
+        title: 'Categories',
+        type: 'item',
+        auth: authRoles.refillBrandStaff,
+        url: '/refill-network/categories',
+      },
+      {
+        id: 'refill-tags',
+        title: 'Tags',
+        type: 'item',
+        auth: authRoles.refillBrandStaff,
+        url: '/refill-network/tags',
+      },
+      {
+        id: 'refill-product-units',
+        title: 'Product Units',
+        type: 'item',
+        auth: authRoles.refillBrandStaff,
+        url: '/refill-network/product-units',
+      },
+      {
+        id: 'refill-products',
+        title: 'Products',
+        type: 'item',
+        auth: authRoles.refillBrandStaff,
+        url: '/refill-network/products',
+      },
+      {
+        id: 'refill-orders',
+        title: 'Orders',
+        type: 'item',
+        auth: authRoles.refillBrandStaff,
+        url: '/refill-network/orders',
+      },
+    ],
   },
 ];
 

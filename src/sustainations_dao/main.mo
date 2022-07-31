@@ -375,6 +375,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     agreement : Bool;
     role : Types.Role;
     brandId : ?Text;
+    brandRole : ?RS.ManagerRole;
   };
   public shared({ caller }) func getUserInfo() : async Response<UserInfo> {
     if (Principal.toText(caller) == "2vxsx-fae") {
@@ -390,9 +391,11 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
       case (null) { #user };
       case (? profile) { profile.role };
     };
-    let brandId = switch (state.refillBrand.managers.get(caller)) {
-      case (null) { null };
-      case (? manager) { ?manager.brandId };
+    var brandId : ?Text = null;
+    var brandRole : ?RS.ManagerRole = null;
+    switch (state.refillBrand.managers.get(caller)) {
+      case (null) {};
+      case (?manager) { brandId := ?manager.brandId; brandRole := ?manager.role };
     };
     let userInfo = {
       depositAddress = Account.toText(
@@ -402,6 +405,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
       agreement;
       role;
       brandId;
+      brandRole;
     };
     #ok(userInfo);
   };
