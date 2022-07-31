@@ -2,18 +2,20 @@ import gameConfig from "./GameConfig";
 import GetData from "./GetData";
 class Metaverse extends React.Component {
   componentDidMount() {
-    this.game = new Phaser.Game(gameConfig);
-    document.body.classList.add('black-bg');
+    this.slug = new Phaser.Game(gameConfig);
+    document.body.classList.add("black-bg");
   }
 
   shouldComponentUpdate() {
     return false;
   }
 
+  componentWillUnmount() {
+    document.body.classList.remove("black-bg");
+  }
+
   render() {
-    return (
-      <div id="sustainations-game"></div>
-    )
+    return <div id="sustainations-slug"></div>;
   }
 }
 

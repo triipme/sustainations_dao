@@ -24,6 +24,13 @@ module {
       products : Map<Text, Types.RBProduct>;
       orders : Map<Text, Types.RBOrder>;
     };
+    memoryCardEngine : {
+      games : Map<Text, Types.MemoryCardEngineGame>;
+      stages : Map<Text, Types.MemoryCardEngineStage>;
+      cards : Map<Text, Types.MemoryCardEngineCard>;
+      players : Map<Text, Types.MemoryCardEnginePlayer>;
+      rewards : Map<Text, Types.MemoryCardEngineReward>;
+    };
     characterClasses : Map<Int, Types.CharacterClass>;
     characters : Map<Text, Types.Character>;
     characterTakeOptions : Map<Int, Types.CharacterTakeOption>;
@@ -56,6 +63,13 @@ module {
         productUnits = TrieMap.TrieMap<Text, Types.RBProductUnit>(Text.equal, Text.hash);
         products = TrieMap.TrieMap<Text, Types.RBProduct>(Text.equal, Text.hash);
         orders = TrieMap.TrieMap<Text, Types.RBOrder>(Text.equal, Text.hash);
+      };
+      memoryCardEngine  = {
+        games = TrieMap.TrieMap<Text, Types.MemoryCardEngineGame>(Text.equal, Text.hash);
+        stages = TrieMap.TrieMap<Text, Types.MemoryCardEngineStage>(Text.equal, Text.hash);
+        cards = TrieMap.TrieMap<Text, Types.MemoryCardEngineCard>(Text.equal, Text.hash);
+        players = TrieMap.TrieMap<Text, Types.MemoryCardEnginePlayer>(Text.equal, Text.hash);
+        rewards = TrieMap.TrieMap<Text, Types.MemoryCardEngineReward>(Text.equal, Text.hash);
       };
       characterClasses = TrieMap.TrieMap<Int, Types.CharacterClass>(Int.equal, Int.hash);
       characters = TrieMap.TrieMap<Text, Types.Character>(Text.equal, Text.hash);

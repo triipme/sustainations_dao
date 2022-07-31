@@ -4,9 +4,9 @@ import en from './navigation-i18n/en';
 import tr from './navigation-i18n/tr';
 import authRoles from '../auth/authRoles';
 
-i18next.addResourceBundle('en', 'navigation', en);
-i18next.addResourceBundle('tr', 'navigation', tr);
-i18next.addResourceBundle('ar', 'navigation', ar);
+i18next.addResourceBundle("en", "navigation", en);
+i18next.addResourceBundle("tr", "navigation", tr);
+i18next.addResourceBundle("ar", "navigation", ar);
 
 const navigationConfig = [
   {
@@ -102,6 +102,29 @@ const navigationConfig = [
       },
     ],
   },
+  {
+    id: "admin",
+    title: "Admin",
+    type: "group",
+    icon: "heroicons-outline:home",
+    auth: authRoles.admin,
+    children: [
+      {
+        id: "admin.metaverse",
+        title: "Metaverse",
+        type: "item",
+        icon: "public_outlined",
+        url: "admin/metaverse"
+      },
+      {
+        id: "admin.bootcamp",
+        title: "Bootcamp",
+        type: "item",
+        icon: "heroicons-outline:academic-cap",
+        url: "admin/bootcamp"
+      }
+    ]
+  }
 ];
 
 export default navigationConfig;

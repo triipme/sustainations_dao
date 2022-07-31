@@ -5,6 +5,8 @@ import Nat64 "mo:base/Nat64";
 import List "mo:base/List";
 import RS "models/RefillStation";
 
+import MemoryCardEngineModel "models/MemoryCardEngine";
+
 module {
   // User Profile
   public type Role = {
@@ -73,6 +75,7 @@ module {
     #returnVoteFee;
     #executeApprovedProposal;
     #awardUserAgreement;
+    #rewardTop;
   };
   public type TxRecord = {
     uuid : Text;
@@ -295,4 +298,31 @@ module {
   public type RBProductUnit = RS.ProductUnit;
   public type RBProduct = RS.Product;
   public type RBOrder = RS.Order;
+
+  // Memory Card Engine
+  public type MemoryCardEngineGame = MemoryCardEngineModel.Game;
+  public type MemoryCardEngineStage = MemoryCardEngineModel.Stage;
+  public type MemoryCardEngineCard = MemoryCardEngineModel.Card;
+  public type MemoryCardEnginePlayer = MemoryCardEngineModel.Player;
+  public type MemoryCardEngineReward = MemoryCardEngineModel.Reward;
+  public type MemoryCardEnginePatternItemGames = {
+    gameId : Text;
+    gameSlug : Text;
+    gameImage : Text;
+    gameName : Text;
+    gameDescription : Text;
+    gameStatus : Bool;
+  };
+  public type MemoryCardEnginePatternItemStages = {
+    gameId : Text;
+    stageId : Text;
+    stageName : Text;
+    stageOrder : Nat;
+  };
+  public type MemoryCardEnginePatternItemCards = {
+    stageId : Text;
+    cardId : Text;
+    cardType : Text;
+    cardData : Text;
+  };
 };

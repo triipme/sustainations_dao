@@ -8,7 +8,7 @@ import { logoutUser, setUser } from 'app/store/userSlice';
 import DfinityAgentService from './services/dfinityAgentService';
 
 import { AuthClient } from '@dfinity/auth-client';
-import { canisterId, createActor } from "../../../../declarations/sustainations_dao";
+import { canisterId, createActor } from '../../../../declarations/sustainations_dao';
 
 const AuthContext = React.createContext();
 
@@ -50,7 +50,7 @@ function AuthProvider({ children }) {
       } else {
         pass();
       }
-    }
+    };
 
     const resetAuthClient = async () => {
       const client = await AuthClient.create();
@@ -59,20 +59,18 @@ function AuthProvider({ children }) {
 
     initAuthClient();
 
-    DfinityAgentService.on('onLogin', (message) => {
+    DfinityAgentService.on('onLogin', message => {
       success(message);
     });
 
-    DfinityAgentService.on('onLogout', (message) => {
+    DfinityAgentService.on('onLogout', message => {
       pass(message);
       dispatch(logoutUser());
     });
 
     function success(message) {
       setWaitAuthCheck(true);
-      Promise.all([
-        initAuthClient(),
-      ]).then(() => {
+      Promise.all([initAuthClient()]).then(() => {
         setWaitAuthCheck(false);
         setIsAuthenticated(true);
         if (message) {
@@ -85,9 +83,7 @@ function AuthProvider({ children }) {
       if (message) {
         dispatch(showMessage({ message }));
       }
-      Promise.all([
-        resetAuthClient(),
-      ]).then(() => {
+      Promise.all([resetAuthClient()]).then(() => {
         setWaitAuthCheck(false);
         setIsAuthenticated(false);
       });
