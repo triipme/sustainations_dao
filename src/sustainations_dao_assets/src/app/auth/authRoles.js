@@ -8,6 +8,7 @@ const authRoles = {
   refillBrandOwner: ['brandOwner'],
   refillBrandStaff: ['brandOwner', 'brandStaff'],
   needAgreement: ['needAgreement'],
+  alllRoles: ['admin', 'staff', 'user', 'brandOwner', 'brandStaff'],
   onlyGuest: [],
 };
 
