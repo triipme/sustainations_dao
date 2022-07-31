@@ -40,7 +40,7 @@ const navigationConfig = [
   {
     id: 'refill-network-management',
     title: 'Refill Network Management',
-    type: 'collapse',
+    type: 'group',
     icon: 'room_preferences_outlined',
     auth: authRoles.refillBrandStaff,
     children: [

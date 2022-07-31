@@ -41,7 +41,6 @@ class FuseAuthorization extends Component {
     const matchedRoutes = matchRoutes(state.routes, pathname);
 
     const matched = matchedRoutes ? matchedRoutes[0] : false;
-    console.log('matched', matched, userRole);
     return {
       accessGranted: matched ? FuseUtils.hasPermission(matched.route.auth, userRole) : true
     };
@@ -57,11 +56,9 @@ class FuseAuthorization extends Component {
         Redirect to Login Page
         */
     if (!userRole || userRole.length === 0) {
-      console.log('duma1');
       setTimeout(() => history.push("/sign-in"), 0);
       loginRedirectUrl = pathname;
     } else if (userRole.includes("needAgreement")) {
-      console.log('duma2');
       setTimeout(() => history.push("/user-agreement"), 0);
       loginRedirectUrl = pathname;
     } else {
@@ -70,7 +67,6 @@ class FuseAuthorization extends Component {
         User must be on unAuthorized page or just logged in
         Redirect to dashboard or loginRedirectUrl
         */
-      console.log('duma3', this.state.accessGranted);
       setTimeout(() => history.push(redirectUrl), 0);
       loginRedirectUrl = this.defaultLoginRedirectUrl;
     }

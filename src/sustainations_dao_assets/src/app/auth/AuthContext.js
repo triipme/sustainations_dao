@@ -30,7 +30,6 @@ function AuthProvider({ children }) {
           }
         });
         const principal = identity.getPrincipal().toText();
-        console.log('principal', principal);
         const result = await actor.getUserInfo();
         let brandRole = [];
         if (_.findKey(result?.ok?.brandRole, 'owner')) {
