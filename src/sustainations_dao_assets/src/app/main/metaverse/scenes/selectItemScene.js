@@ -157,6 +157,13 @@ class selectItemScene extends BaseScene {
     this.btnGo.on('pointerdown', () => {
       this.clickSound.play();
       this.scene.transition({target: 'Scene1', duration: 0 });
+      const returnValue = [];
+      for (let idx = 0; idx < this.itemName.length; idx++){
+        if (this.gridItem[idx].isSelected == true) {
+          returnValue.push(this.questItems[idx].id);
+        }
+      };
+      console.log(returnValue);
     });
   }
 }
