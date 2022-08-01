@@ -106,7 +106,7 @@ class selectItemScene extends BaseScene {
     this.setValue(this.mana, this.characterData.currentMana/this.characterData.maxMana*100);
     this.setValue(this.morale, this.characterData.currentMorale/this.characterData.maxMorale*100);
 
-    this.add.image(868, 70, 'pickItemText').setOrigin(0);
+    this.add.image(1234, 70, 'pickItemText').setOrigin(0);
     this.gridItem = [];
     for (let row = 0; row <= 3; row++){
       for (let col = 0; col <= 3; col++){

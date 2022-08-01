@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import AwaitLoaderPlugin from 'phaser3-rex-plugins/plugins/awaitloader-plugin.js';
+import preloadScene from './scenes/preloadScene'
 import Scene1 from './scenes/scene1';
 import Scene2 from './scenes/scene2';
 import Scene3 from './scenes/scene3';
@@ -40,7 +41,7 @@ const gameConfig = {
       debug: false
     }
   },
-  scene: [menuScene, selectMap, selectItemScene, Scene1, Scene2, Scene3, Scene4, Scene5, Scene6, Scene7, thanks, exhausted]
+  scene: [preloadScene, menuScene, selectMap, selectItemScene, Scene1, Scene2, Scene3, Scene4, Scene5, Scene6, Scene7, thanks, exhausted]
 };
 
 export default gameConfig;

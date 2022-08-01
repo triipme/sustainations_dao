@@ -31,21 +31,19 @@ class exhausted extends Phaser.Scene {
   
   create() {// add audios
     this.clickSound = this.sound.add('clickSound');
-    // this.pregameSound = this.sound.add('pregameSound');
-    // this.pregameSound.play();
+    this.hoverSound = this.sound.add('hoverSound');
     this.exhausted_text = this.add.image(gameConfig.scale.width/2, gameConfig.scale.height/4, 'exhausted_text');
     this.add.image(1780, 74, "BtnExit").setOrigin(0).setScrollFactor(0).setScale(0.7)
       .setInteractive()
       .on('pointerdown', () => {
-        // this.clickSound.play();
-        // this.pregameSound.stop();
+        this.clickSound.play();
         this.scene.start('menuScene');
       });
     this.playagain = this.add.sprite(gameConfig.scale.width/2, gameConfig.scale.height/2, 'btnBlank');
     this.playagain.setInteractive().setScrollFactor(0);
     this.playagain.on('pointerover', () => {
       this.playagain.setFrame(1);
-      // this.hoverSound.play();
+      this.hoverSound.play();
     });
     this.playagain.on('pointerout', () => {
       this.playagain.setFrame(0);
