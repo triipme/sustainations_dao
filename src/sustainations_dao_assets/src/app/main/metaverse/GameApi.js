@@ -24,7 +24,7 @@ async function characterTakeOption(eventId){
 
 async function createDefautCharacter(){
   const { user } = store.getState();
-  const create = async () => await user.actor.createCharacter(1);
+  const create = async () => await user.actor.createCharacter("cc1");
   const character = (await create()).ok;
   return character;
 };

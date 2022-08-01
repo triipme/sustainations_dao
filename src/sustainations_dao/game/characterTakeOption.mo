@@ -5,7 +5,7 @@ import Types "../types";
 import State "../state";
 
 module Character {
-  public func getData(character : Types.Character, eventOptionId : Int) : Types.CharacterTakeOption {
+  public func getData(character : Types.Character, eventOptionId : Text) : Types.CharacterTakeOption {
     let newCharacterTakeOption : Types.CharacterTakeOption = {
       characterId = character.id;
       eventOptionId = eventOptionId;
@@ -22,11 +22,11 @@ module Character {
     return newCharacterTakeOption;
   };
 
-  public func create(id : Int, character : Types.Character, eventOptionId : Int, state : State.State) {
+  public func create(id : Text, character : Types.Character, eventOptionId : Text, state : State.State) {
     state.characterTakeOptions.put(id, getData(character, eventOptionId));
   };
 
-  public func update(id : Int, character : Types.Character, eventOptionId : Int, state : State.State) {
+  public func update(id : Text, character : Types.Character, eventOptionId : Text, state : State.State) {
     let updatedCharacterTakeOption = state.characterTakeOptions.replace(id, getData(character, eventOptionId));
   };
 }

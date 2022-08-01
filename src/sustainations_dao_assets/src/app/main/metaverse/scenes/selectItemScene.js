@@ -98,7 +98,7 @@ class selectItemScene extends BaseScene {
     this.morale = this.makeBar(158, 372+360, 150, 22, 0x63dafb);
 
     // load quest items
-    this.questItems = await loadQuestItems(1);
+    this.questItems = await loadQuestItems("q1");
     this.itemName = [];
     for(const index in this.questItems){
       this.itemName.push(this.questItems[index].name);
