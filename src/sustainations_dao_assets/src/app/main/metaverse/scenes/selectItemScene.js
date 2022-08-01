@@ -19,8 +19,6 @@ const UI_NameCard = 'metaverse/selectItems/UI_id_name.png';
 const player = 'metaverse/selectItems/UI_player.png';
 const pickItemText = 'metaverse/selectItems/UI_pick_item.png';
 
-const testItem = 'metaverse/selectItems/item_aid.png'
-
 class selectItemScene extends BaseScene {
   constructor() {
     super('selectItemScene');
@@ -65,8 +63,6 @@ class selectItemScene extends BaseScene {
     this.load.spritesheet("itembox", itembox, { frameWidth: 237, frameHeight: 185 });
     this.load.spritesheet("btnClear", btnClear, { frameWidth: 339, frameHeight: 141 });
     this.load.spritesheet("btnGo", btnGo, { frameWidth: 339, frameHeight: 141 });
-
-    this.load.image('testItem', testItem);
   }
 
   //async 
@@ -110,7 +106,7 @@ class selectItemScene extends BaseScene {
     this.setValue(this.mana, this.characterData.currentMana/this.characterData.maxMana*100);
     this.setValue(this.morale, this.characterData.currentMorale/this.characterData.maxMorale*100);
 
-    this.add.image(868, 70, 'pickItemText').setOrigin(0);
+    this.add.image(1234, 70, 'pickItemText').setOrigin(0);
     this.gridItem = [];
     for (let row = 0; row <= 3; row++){
       for (let col = 0; col <= 3; col++){

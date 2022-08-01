@@ -1,9 +1,11 @@
 import Phaser from "phaser";
+import BaseScene from './BaseScene'
+import history from "@history";
+
 import { createDefautCharacter } from "../GameApi";
-import BaseScene from './BaseScene';
 const logo = 'images/logo/sustainations-logo.png';
 const loading = 'metaverse/loading/loadingSprite.png';
-const bg = "metaverse/menu/background.png";
+const menu_bg = "metaverse/menu/background.png";
 const welcomeText = "metaverse/menu/welcome.png";
 const introduction_btn = "metaverse/menu/introduction.png";
 const bootcamp_btn = "metaverse/menu/bootcamp.png";
@@ -24,7 +26,7 @@ const sfx_small_waterfall = 'metaverse/audio/SFX_bg_small_waterfall.mp3';
 const sfx_char_footstep = 'metaverse/audio/SFX_char_footstep.mp3';
 const sfx_obstacle_remove = 'metaverse/audio/SFX_obstacle_remove.mp3';
 
-class menuScene extends BaseScene {
+class menuScene extends Phaser.Scene {
   constructor() {
     super("menuScene");
   }
@@ -57,7 +59,7 @@ class menuScene extends BaseScene {
     this.load.audio('sfx_obstacle_remove', sfx_obstacle_remove);
 
     // preload
-    this.load.image("bg", bg);
+    this.load.image("menu_bg", menu_bg);
     this.load.image("welcomeText", welcomeText);
     this.load.image("cs_noti", cs_noti);
     this.load.spritesheet("introduction_btn", introduction_btn, {
@@ -83,7 +85,7 @@ class menuScene extends BaseScene {
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
 
-    this.background = this.add.image(0, 0, "bg").setOrigin(0);
+    this.background = this.add.image(0, 0, "menu_bg").setOrigin(0);
     this.welcomeText = this.add.image(960, 210, "welcomeText");
     this.noti = this.add.image(100, 100, "cs_noti")
       .setOrigin(0).setVisible(false).setScale(0.7);
@@ -129,13 +131,7 @@ class menuScene extends BaseScene {
     this.bootcamp_btn.on("pointerdown", () => {
       this.clickSound.play();
       this.noti.setVisible(true);
-      this.time.addEvent({
-        delay: 3000,
-        callback: () => {
-          this.noti.setVisible(false);
-        },
-        callbackScope: this
-      });
+      history.push("/metaverse/bootcamp");
     });
 
     this.land_btn = this.add.sprite(960, 710, "land_btn")
@@ -148,8 +144,7 @@ class menuScene extends BaseScene {
       this.land_btn.setFrame(0);
     });
     this.land_btn.on("pointerdown", () => {
-      this.clickSound.play();
-      window.location.href = "/metaverse/land";
+      history.push("/metaverse/land");
     });
 
     this.departure_btn = this.add.sprite(960, 830, "departure_btn")

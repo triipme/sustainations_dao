@@ -8,7 +8,7 @@ import { logoutUser, setUser } from 'app/store/userSlice';
 import DfinityAgentService from './services/dfinityAgentService';
 
 import { AuthClient } from '@dfinity/auth-client';
-import { canisterId, createActor } from "../../../../declarations/sustainations_dao";
+import { canisterId, createActor } from '../../../../declarations/sustainations_dao';
 import settingsConfig from 'app/configs/settingsConfig';
 
 const AuthContext = React.createContext();
@@ -31,25 +31,30 @@ function AuthProvider({ children }) {
           }
         });
         const principal = identity.getPrincipal().toText();
-        let balance, depositAddress;
+        let balance, depositAddress, isAdmin;
         const result = await actor.getUserInfo();
-        if ("ok" in result) {
-          balance = result.ok.balance;
+        if ('ok' in result) {
+          balance = parseInt(result.ok.balance);
           depositAddress = result.ok.depositAddress;
+          isAdmin = result.ok.isAdmin;
         }
-        dispatch(setUser({
-          role: result.ok.agreement ? settingsConfig.defaultAuth : ['needAgreement'],
-          actor,
-          depositAddress,
-          balance,
-          principal,
-        }));
-        // dispatch(showMessage({ message: "Signed in" }));
+        dispatch(
+          setUser({
+            role: result.ok.agreement
+              ? [...settingsConfig.defaultAuth, isAdmin ? 'admin' : null]
+              : ['needAgreement'],
+            actor,
+            depositAddress,
+            balance,
+            principal
+          })
+        );
+        // dispatch(showMessage({ message: 'Signed in' }));
         setWaitAuthCheck(false);
       } else {
         pass();
       }
-    }
+    };
 
     const resetAuthClient = async () => {
       const client = await AuthClient.create();
@@ -58,20 +63,18 @@ function AuthProvider({ children }) {
 
     initAuthClient();
 
-    DfinityAgentService.on('onLogin', (message) => {
+    DfinityAgentService.on('onLogin', message => {
       success(message);
     });
 
-    DfinityAgentService.on('onLogout', (message) => {
+    DfinityAgentService.on('onLogout', message => {
       pass(message);
       dispatch(logoutUser());
     });
 
     function success(message) {
       setWaitAuthCheck(true);
-      Promise.all([
-        initAuthClient(),
-      ]).then(() => {
+      Promise.all([initAuthClient()]).then(() => {
         setWaitAuthCheck(false);
         setIsAuthenticated(true);
         if (message) {
@@ -84,9 +87,7 @@ function AuthProvider({ children }) {
       if (message) {
         dispatch(showMessage({ message }));
       }
-      Promise.all([
-        resetAuthClient(),
-      ]).then(() => {
+      Promise.all([resetAuthClient()]).then(() => {
         setWaitAuthCheck(false);
         setIsAuthenticated(false);
       });

@@ -57,10 +57,11 @@ function getCharacterStatus(){
 };
 
 async function resetCharacter(){
-  const { user } = store.getState();
-  const reset = async () => await user.actor.resetCharacterStat();
-  const result = (await reset()).ok;
-  return result;
+  return new Promise((resolve, reject) => {
+    const { user } = store.getState();
+    const rs = user.actor.resetCharacterStat();
+    resolve(rs);
+  });
 };
 
 export {
