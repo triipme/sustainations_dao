@@ -34,6 +34,16 @@ class selectItemScene extends BaseScene {
   }
 
   preload() {
+    this.questId = "q1";
+    this.itemNames = [];
+    this.load.rexAwait(function(successCallback, failureCallback) {
+      loadQuestItems(this.questId).then( (result) => {
+        for(const index in result){
+          this.itemNames.push(result[index].name);
+        };
+        successCallback();
+      });
+    }, this);
     //loading screen
     this.add.image(
       gameConfig.scale.width/2, gameConfig.scale.height/2 - 50, 'logo'
@@ -72,7 +82,7 @@ class selectItemScene extends BaseScene {
     this.clickSound = this.sound.add('clickSound');
 
     this.add.image(0, 0, 'bg').setOrigin(0);
-    this.btnBack = this.add.image(1700, 50, 'btnBack')
+    this.btnBack = this.add.image(80, 50, 'btnBack')
       .setOrigin(0).setInteractive();
     this.btnBack.on('pointerdown', () => {
       this.clickSound.play();
@@ -94,11 +104,11 @@ class selectItemScene extends BaseScene {
     this.morale = this.makeBar(158, 372+360, 150, 22, 0x63dafb);
 
     // load quest items
-    this.questItems = await loadQuestItems("q1");
-    this.itemName = [];
-    for(const index in this.questItems){
-      this.itemName.push(this.questItems[index].name);
-    };
+    // this.questItems = await loadQuestItems("q1");
+    // this.itemNames = [];
+    // for(const index in this.questItems){
+    //   this.itemNames.push(this.questItems[index].name);
+    // };
     // load character
     this.characterData = await loadCharacter();
     this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
@@ -111,7 +121,7 @@ class selectItemScene extends BaseScene {
     for (let row = 0; row <= 3; row++){
       for (let col = 0; col <= 3; col++){
         this.gridItem.push(
-          this.add.sprite(650 + 218*(col+1), 166*(row+1), "itembox").setOrigin(0).setInteractive()
+          this.add.sprite(750 + 218*(col+1), 166*(row+1), "itembox").setOrigin(0).setInteractive()
         );
         this.gridItem[col+row*4].isSelected = false;
         this.gridItem[col+row*4].on('pointerdown', () => {
@@ -124,11 +134,11 @@ class selectItemScene extends BaseScene {
           this.gridItem[col+row*4].isSelected = !this.gridItem[col+row*4].isSelected;
         });
 
-        this.add.text(650 + 100 + 218*(col+1), 120 + 166*(row+1), this.itemName[col+row*4], 
+        this.add.text(750 + 100 + 218*(col+1), 120 + 166*(row+1), this.itemNames[col+row*4], 
           {fontFamily: 'Helvetica', color: 0x0f0f0f});
       }
     }
-    this.btnClear = this.add.sprite(1000, 870, "btnClear")
+    this.btnClear = this.add.sprite(1100, 870, "btnClear")
       .setOrigin(0).setInteractive();
     this.btnClear.on('pointerover', () => {
       this.btnClear.setFrame(1);
@@ -145,7 +155,7 @@ class selectItemScene extends BaseScene {
       }
     });
 
-    this.btnGo = this.add.sprite(1300, 870, "btnGo")
+    this.btnGo = this.add.sprite(1400, 870, "btnGo")
       .setOrigin(0).setInteractive();
     this.btnGo.on('pointerover', () => {
       this.btnGo.setFrame(1);

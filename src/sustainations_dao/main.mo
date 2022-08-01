@@ -24,7 +24,7 @@ import Ledger "./plugins/Ledger";
 
 import CharacterClass "./game/characterClass";
 import Character "./game/character";
-import CharacterTakeOption "./game/characterTakeOption";
+import CharacterTakesOption "./game/characterTakesOption";
 import Quest "./game/quest";
 import Item "./game/item";
 import QuestItem "./game/questItem";
@@ -56,7 +56,8 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   };
   private stable var characterClasses : [(Text, Types.CharacterClass)] = [];
   private stable var characters : [(Text, Types.Character)] = [];
-  private stable var characterTakeOptions : [(Text, Types.CharacterTakeOption)] = [];
+  private stable var characterTakesOptions : [(Text, Types.CharacterTakesOption)] = [];
+  private stable var characterTakesItems : [(Text, Types.CharacterTakesItems)] = [];
   private stable var quests : [(Text, Types.Quest)] = [];
   private stable var items : [(Text, Types.Item)] = [];
   private stable var questItems: [(Text, Types.QuestItem)] = [];
@@ -84,7 +85,8 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
     characterClasses := Iter.toArray(state.characterClasses.entries());
     characters := Iter.toArray(state.characters.entries());
-    characterTakeOptions := Iter.toArray(state.characterTakeOptions.entries());
+    characterTakesOptions := Iter.toArray(state.characterTakesOptions.entries());
+    characterTakesItems := Iter.toArray(state.characterTakesItems.entries());
     quests := Iter.toArray(state.quests.entries());
     items := Iter.toArray(state.items.entries());
     questItems := Iter.toArray(state.questItems.entries());
@@ -134,8 +136,11 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     for ((k, v) in Iter.fromArray(characters)) {
       state.characters.put(k, v);
     };
-    for ((k, v) in Iter.fromArray(characterTakeOptions)) {
-      state.characterTakeOptions.put(k, v);
+    for ((k, v) in Iter.fromArray(characterTakesOptions)) {
+      state.characterTakesOptions.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(characterTakesItems)) {
+      state.characterTakesItems.put(k, v);
     };
     for ((k, v) in Iter.fromArray(quests)) {
       state.quests.put(k, v);
@@ -1278,7 +1283,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared({caller}) func createCharacterTakeOption(id : Text, characterId : Text, eventOptionId : Text) : async Response<Text> {
+  public shared({caller}) func createCharacterTakesOption(id : Text, characterId : Text, eventOptionId : Text) : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
@@ -1287,7 +1292,26 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     switch (rsCharacter) {
       case null { #err(#NotFound); };
       case (?character) {
-        CharacterTakeOption.create(id, character, eventOptionId, state);
+        CharacterTakesOption.create(id, character, eventOptionId, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared({caller}) func createCharacterTakesItems(characterId : Text, itemIds : ?[Text]) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let uuid : Text = await createUUID();
+    let rsCharacter = state.characters.get(characterId);
+    switch (rsCharacter) {
+      case null { #err(#NotFound); };
+      case (?character) {
+        let rs : Types.CharacterTakesItems = {
+          characterId = characterId;
+          itemIds = itemIds;
+        };
+        state.characterTakesItems.put(uuid, rs);
         #ok("Success");
       };
     };

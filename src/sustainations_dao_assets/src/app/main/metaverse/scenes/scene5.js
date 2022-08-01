@@ -235,6 +235,7 @@ export default class Scene5 extends BaseScene {
       });
       this.options[idx].on('pointerdown', async () => {
         this.triggerContinue();
+        this.obstacle.setVisible(false);
         this.sfx_char_footstep.play();
         this.clickSound.play();
         // stats after choose option

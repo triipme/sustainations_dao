@@ -130,7 +130,7 @@ module {
     baseMorale : Float;
   };
 
-  public type CharacterTakeOption = {
+  public type CharacterTakesOption = {
     characterId : Text;
     eventOptionId : Text;
     pickUpTime : Time.Time;
@@ -142,6 +142,11 @@ module {
     maxStamina : Float;
     currentMorale : Float;
     maxMorale : Float;
+  };
+
+  public type CharacterTakesItems = {
+    characterId : Text;
+    itemIds : ?[Text];
   };
 
   //--------------------- Quest ---------------------//

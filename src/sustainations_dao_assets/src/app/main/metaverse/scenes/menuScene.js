@@ -1,10 +1,9 @@
 import Phaser from "phaser";
 import BaseScene from './BaseScene'
+import gameConfig from '../GameConfig';
 import history from "@history";
 
 import { createDefautCharacter } from "../GameApi";
-const logo = 'images/logo/sustainations-logo.png';
-const loading = 'metaverse/loading/loadingSprite.png';
 const menu_bg = "metaverse/menu/background.png";
 const welcomeText = "metaverse/menu/welcome.png";
 const introduction_btn = "metaverse/menu/introduction.png";
@@ -39,12 +38,20 @@ class menuScene extends Phaser.Scene {
   }
 
   preload() {
-    // assets global uses across scenes
-    this.load.image('logo', logo);
-    this.load.spritesheet("loading", loading, {
-      frameWidth: 630,
-      frameHeight: 637
+    //loading screen
+    this.add.image(
+      gameConfig.scale.width/2, gameConfig.scale.height/2 - 50, 'logo'
+    ).setOrigin(0.5, 0.5).setScale(0.26);
+    this.anims.create({
+      key: 'loading-anims',
+      frames: this.anims.generateFrameNumbers("loading", {start: 0, end: 11}),
+      frameRate: 12,
+      repeat: -1
     });
+    this.add.sprite(
+      gameConfig.scale.width/2, gameConfig.scale.height/2 + 150, "loading"
+    ).setScale(0.07).play('loading-anims');
+
     //load audio 1 time
     this.load.audio('hoverSound', hoverSound);
     this.load.audio('clickSound', clickSound);
