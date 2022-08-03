@@ -133,6 +133,7 @@ module {
   public type CharacterTakesOption = {
     characterId : Text;
     eventOptionId : Text;
+    takeable : Bool;
     pickUpTime : Time.Time;
     currentHP : Float;
     maxHP : Float;
@@ -146,7 +147,7 @@ module {
 
   public type CharacterTakesItems = {
     characterId : Text;
-    itemIds : ?[Text];
+    itemIds : [Text];
   };
 
   //--------------------- Quest ---------------------//

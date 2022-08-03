@@ -1,7 +1,11 @@
 import Phaser from 'phaser';
 import gameConfig from '../GameConfig';
 import BaseScene from './BaseScene';
-import { loadQuestItems, loadCharacter } from '../GameApi';
+import { 
+  loadQuestItems, 
+  loadCharacter,
+  characterTakesItems
+} from '../GameApi';
 
 const bg = 'metaverse/selectItems/UI_background.png';
 const btnBack = 'metaverse/selectItems/UI_back.png';
@@ -38,6 +42,7 @@ class selectItemScene extends BaseScene {
     this.itemNames = [];
     this.load.rexAwait(function(successCallback, failureCallback) {
       loadQuestItems(this.questId).then( (result) => {
+        this.questItems = result;
         for(const index in result){
           this.itemNames.push(result[index].name);
         };
@@ -168,11 +173,12 @@ class selectItemScene extends BaseScene {
       this.clickSound.play();
       this.scene.transition({target: 'Scene1', duration: 0 });
       const returnValue = [];
-      for (let idx = 0; idx < this.itemName.length; idx++){
+      for (let idx = 0; idx < this.itemNames.length; idx++){
         if (this.gridItem[idx].isSelected == true) {
           returnValue.push(this.questItems[idx].id);
         }
       };
+      characterTakesItems(this.characterData.id, returnValue);
       console.log(returnValue);
     });
   }

@@ -9,6 +9,7 @@ module Character {
     let newCharacterTakeOption : Types.CharacterTakesOption = {
       characterId = character.id;
       eventOptionId = eventOptionId;
+      takeable = true;
       pickUpTime = Time.now();
       currentHP = character.currentHP;
       maxHP = character.maxHP;

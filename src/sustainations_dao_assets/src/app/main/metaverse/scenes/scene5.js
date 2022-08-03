@@ -7,7 +7,9 @@ import {
   loadCharacter,
   updateCharacterStats,
   getCharacterStatus,
-  characterTakeOption
+  characterTakeOption,
+  listCharacterTakesItems,
+  takeOptionAbility
 } from '../GameApi';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
@@ -212,6 +214,9 @@ export default class Scene5 extends BaseScene {
 
     // load character
     this.characterData = await loadCharacter();
+    // list taken items by character
+    this.takenItems = await listCharacterTakesItems(this.characterData.id);
+    console.log(this.takenItems);
     // stats before choose option
     this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
     this.setValue(this.stamina, this.characterData.currentStamina/this.characterData.maxStamina*100);
@@ -233,6 +238,11 @@ export default class Scene5 extends BaseScene {
       this.options[idx].on('pointerout', () => {
         this.options[idx].setFrame(0);
       });
+
+      // can take option or not
+      const takeable = await takeOptionAbility(this.eventOptions[idx].id, this.takenItems);
+      console.log(takeable);
+
       this.options[idx].on('pointerdown', async () => {
         this.triggerContinue();
         this.obstacle.setVisible(false);

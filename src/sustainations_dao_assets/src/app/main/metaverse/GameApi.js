@@ -64,6 +64,55 @@ async function resetCharacter(){
   });
 };
 
+function characterTakesItems(characterId, itemIds){
+  const promise = new Promise((resolve, reject) => {
+    const { user } = store.getState();
+    const rs = user.actor.createCharacterTakesItems(characterId, itemIds);
+    resolve(rs);
+  })
+  promise.then((data)=>{
+    return data;
+  })
+};
+
+// function listCharacterTakesItems(characterId){
+//   const promise = new Promise((resolve, reject) => {
+//     const { user } = store.getState();
+//     const rs = user.actor.listCharacterTakesItems(characterId);
+//     resolve(rs);
+//   })
+//   promise.then((data)=>{
+//     return data;
+//   })
+// };
+
+async function listCharacterTakesItems(characterId){
+  const { user } = store.getState();
+  const listItems = async () => await user.actor.listCharacterTakesItems(characterId);
+  const rs = (await listItems()).ok;
+  // console.log(rs[1]);
+  return rs;
+};
+
+// function takeOptionAbility(eventOptionId, itemIds){
+//   const promise = new Promise((resolve, reject) => {
+//     const { user } = store.getState();
+//     const rs = user.actor.takeOptionAbility(eventOptionId, itemIds);
+//     resolve(rs);
+//   })
+//   promise.then((data)=>{
+//     return data;
+//   })
+// };
+
+async function takeOptionAbility(eventOptionId, itemIds){
+  const { user } = store.getState();
+  const takeable = async () => await user.actor.takeOptionAbility(eventOptionId, itemIds);
+  const rs = (await takeable()).ok;
+  // console.log(rs[1]);
+  return rs;
+};
+
 export {
   loadQuestItems,
   loadCharacter,
@@ -72,5 +121,8 @@ export {
   getCharacterStatus,
   characterTakeOption,
   resetCharacter,
-  createDefautCharacter
+  createDefautCharacter,
+  characterTakesItems,
+  listCharacterTakesItems,
+  takeOptionAbility
 }

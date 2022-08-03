@@ -1255,6 +1255,24 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     #ok(result);
   };
 
+  public shared({caller}) func takeOptionAbility(eventOptionId : Text, itemIds : [Text]) : async Response<Bool> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    var result : Bool = false;
+    switch (state.eventOptions.get(eventOptionId)) {
+      case null { #err(#NotFound); };
+      case (?eventOption){
+        for(itemId in itemIds.vals()){
+          if(eventOption.requireItemId == itemId or eventOption.requireItemId == "null"){
+            result := true;
+          };
+        };
+        #ok(result);
+      };
+    };
+  };
+
   public shared({caller}) func updateCharacter(character : Types.Character) : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
@@ -1298,7 +1316,8 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared({caller}) func createCharacterTakesItems(characterId : Text, itemIds : ?[Text]) : async Response<Text> {
+  // Character Takes Items
+  public shared({caller}) func createCharacterTakesItems(characterId : Text, itemIds : [Text]) : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
@@ -1315,6 +1334,19 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
         #ok("Success");
       };
     };
+  };
+
+  public shared query({caller}) func listCharacterTakesItems(characterId : Text) : async Response<[Text]> {
+    var list : [Text] = [];
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    for((_, characterTakesItems) in state.characterTakesItems.entries()) {
+      if(characterTakesItems.characterId == characterId){
+        list := characterTakesItems.itemIds;
+      }
+    };
+    #ok((list));
   };
 
   // Quest
