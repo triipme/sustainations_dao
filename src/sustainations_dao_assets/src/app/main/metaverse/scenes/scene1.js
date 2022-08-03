@@ -38,6 +38,13 @@ export default class Scene1 extends BaseScene {
   preload() {
     this.eventId = "e1";
     this.load.rexAwait(function(successCallback, failureCallback) {
+      getCharacterStatus().then( (result) => {
+        this.characterStatus = result.ok;
+        successCallback();
+      });
+    }, this);
+
+    this.load.rexAwait(function(successCallback, failureCallback) {
       loadEventOptions(this.eventId).then( (result) => {
         this.eventOptions = result;
         successCallback();
@@ -47,13 +54,6 @@ export default class Scene1 extends BaseScene {
     this.load.rexAwait(function(successCallback, failureCallback) {
       characterTakeOption(this.eventId).then( (result) => {
         this.characterTakeOptions = result;
-        successCallback();
-      });
-    }, this);
-
-    this.load.rexAwait(function(successCallback, failureCallback) {
-      getCharacterStatus().then( (result) => {
-        this.characterStatus = result.ok;
         successCallback();
       });
     }, this);

@@ -4,7 +4,8 @@ import BaseScene from './BaseScene';
 import { 
   loadQuestItems, 
   loadCharacter,
-  characterTakesItems
+  characterTakesItems,
+  loadItemUrl
 } from '../GameApi';
 
 const bg = 'metaverse/selectItems/UI_background.png';
@@ -45,6 +46,7 @@ class selectItemScene extends BaseScene {
         this.questItems = result;
         for(const index in result){
           this.itemNames.push(result[index].name);
+          this.load.image(result[index].name, loadItemUrl(result[index].images));
         };
         successCallback();
       });
@@ -108,12 +110,6 @@ class selectItemScene extends BaseScene {
     this.mana = this.makeBar(158, 372+240, 150, 22, 0xc038f6);
     this.morale = this.makeBar(158, 372+360, 150, 22, 0x63dafb);
 
-    // load quest items
-    // this.questItems = await loadQuestItems("q1");
-    // this.itemNames = [];
-    // for(const index in this.questItems){
-    //   this.itemNames.push(this.questItems[index].name);
-    // };
     // load character
     this.characterData = await loadCharacter();
     this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
@@ -139,8 +135,7 @@ class selectItemScene extends BaseScene {
           this.gridItem[col+row*4].isSelected = !this.gridItem[col+row*4].isSelected;
         });
 
-        this.add.text(750 + 100 + 218*(col+1), 120 + 166*(row+1), this.itemNames[col+row*4], 
-          {fontFamily: 'Helvetica', color: 0x0f0f0f});
+        this.add.image(750 + 120 + 218 * (col + 1), 90 + 166*(row + 1), this.itemNames[col+row*4]);
       }
     }
     this.btnClear = this.add.sprite(1100, 870, "btnClear")

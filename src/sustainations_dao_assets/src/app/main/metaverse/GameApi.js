@@ -75,16 +75,6 @@ function characterTakesItems(characterId, itemIds){
   })
 };
 
-// function listCharacterTakesItems(characterId){
-//   const promise = new Promise((resolve, reject) => {
-//     const { user } = store.getState();
-//     const rs = user.actor.listCharacterTakesItems(characterId);
-//     resolve(rs);
-//   })
-//   promise.then((data)=>{
-//     return data;
-//   })
-// };
 
 async function listCharacterTakesItems(characterId){
   const { user } = store.getState();
@@ -94,23 +84,24 @@ async function listCharacterTakesItems(characterId){
   return rs;
 };
 
-// function takeOptionAbility(eventOptionId, itemIds){
-//   const promise = new Promise((resolve, reject) => {
-//     const { user } = store.getState();
-//     const rs = user.actor.takeOptionAbility(eventOptionId, itemIds);
-//     resolve(rs);
-//   })
-//   promise.then((data)=>{
-//     return data;
-//   })
-// };
-
 async function takeOptionAbility(eventOptionId, itemIds){
   const { user } = store.getState();
   const takeable = async () => await user.actor.takeOptionAbility(eventOptionId, itemIds);
   const rs = (await takeable()).ok;
   // console.log(rs[1]);
   return rs;
+};
+
+function loadItemUrl(key) {
+  let AWS = require('aws-sdk');
+  AWS.config.update({
+    accessKeyId: process.env.S3_ACCESS_KEY,
+    secretAccessKey: process.env.S3_SECRET_KEY,
+    region: process.env.S3_REGION,
+  });
+  let s3 = new AWS.S3();
+  const signedUrl = s3.getSignedUrl('getObject', { Bucket: process.env.S3_BUCKET, Key: key });
+  return signedUrl;
 };
 
 export {
@@ -124,5 +115,6 @@ export {
   createDefautCharacter,
   characterTakesItems,
   listCharacterTakesItems,
-  takeOptionAbility
+  takeOptionAbility,
+  loadItemUrl
 }

@@ -1173,9 +1173,11 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
     // let uuid : Text = await createUUID();
     for((K,character) in state.characters.entries()){
-      for((K,characterClass) in state.characterClasses.entries()){
-        if(character.classId == characterClass.id){
-          Character.resetStat(caller, character.id, characterClass, state);
+      if(character.userId == caller){
+        for((K,characterClass) in state.characterClasses.entries()){
+          if(character.classId == characterClass.id){
+            Character.resetStat(caller, character.id, characterClass, state);
+          };
         };
       };
     };
@@ -1263,9 +1265,13 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     switch (state.eventOptions.get(eventOptionId)) {
       case null { #err(#NotFound); };
       case (?eventOption){
-        for(itemId in itemIds.vals()){
-          if(eventOption.requireItemId == itemId or eventOption.requireItemId == "null"){
-            result := true;
+        if(itemIds.size() == 0){
+          result := true;
+        } else {
+          for(itemId in itemIds.vals()){
+            if(eventOption.requireItemId == itemId or eventOption.requireItemId == "null"){
+              result := true;
+            };
           };
         };
         #ok(result);
