@@ -1,5 +1,6 @@
 import Option "mo:base/Option";
 import Time "mo:base/Time";
+import RandomMethod "../utils/random";
 
 import Types "../types";
 import State "../state";
@@ -45,7 +46,11 @@ module Character {
     return if((result) <= 0) {0} else {result}; 
   };
 
-  public func takeOption(character : Types.Character, strengthRequire : Float, eventOption : Types.EventOption, state : State.State) : Types.Character {
+  public func takeOption(character : Types.Character, strengthRequire : Float, eventOption : Types.EventOption, state : State.State) : async Types.Character {
+    let lossHP : Float = if(eventOption.lossHP != 0) {await RandomMethod.random(eventOption.lossHP - 1, eventOption.lossHP + 1)} else {0};
+    let lossMana : Float = if(eventOption.lossMana != 0) {await RandomMethod.random(eventOption.lossMana - 1, eventOption.lossMana + 1)} else {0};
+    let lossMorale : Float = if(eventOption.lossMorale != 0) {await RandomMethod.random(eventOption.lossMorale - 1, eventOption.lossMorale + 1)} else {0};
+    let lossStamina : Float = if(eventOption.lossStamina != 0) {await RandomMethod.random(eventOption.lossStamina - 1, eventOption.lossStamina + 1)} else {0};
     let newCharacter : Types.Character = {
       userId = character.userId;
       id = character.id;
@@ -58,13 +63,13 @@ module Character {
       intelligence = character.intelligence;
       vitality = character.vitality;
       luck = character.luck;
-      currentHP = updateCurrentStat(character.currentHP, eventOption.lossHP, eventOption.gainHP);
+      currentHP = updateCurrentStat(character.currentHP, lossHP, eventOption.gainHP);
       maxHP = character.maxHP;
-      currentMana = updateCurrentStat(character.currentMana, eventOption.lossMana, eventOption.gainMana);
+      currentMana = updateCurrentStat(character.currentMana, lossMana, eventOption.gainMana);
       maxMana = character.maxMana;
-      currentStamina = updateCurrentStat(character.currentStamina, eventOption.lossStamina, eventOption.gainStamina);
+      currentStamina = updateCurrentStat(character.currentStamina, lossStamina, eventOption.gainStamina);
       maxStamina = character.maxStamina;
-      currentMorale = updateCurrentStat(character.currentMorale, eventOption.lossMorale, eventOption.gainMorale);
+      currentMorale = updateCurrentStat(character.currentMorale, lossMorale, eventOption.gainMorale);
       maxMorale = character.maxMorale;
       classId = character.classId;
       gearIds = character.gearIds;

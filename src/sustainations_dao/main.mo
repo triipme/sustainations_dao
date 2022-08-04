@@ -1249,7 +1249,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
                 strengthRequire := item.strengthRequire;
               };
             };
-            result := Array.append<Types.Character>(result, [Character.takeOption(character, strengthRequire, eventOption, state)]);
+            result := Array.append<Types.Character>(result, [await Character.takeOption(character, strengthRequire, eventOption, state)]);
           };
         };
       };
