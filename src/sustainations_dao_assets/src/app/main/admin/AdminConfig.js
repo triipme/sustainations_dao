@@ -6,6 +6,9 @@ const Admin = lazy(() => import("./Admin"));
 const BootCampLayout = lazy(() => import("./bootcamp/BootCampLayout"));
 const MemoryCardEngine = lazy(() => import("./bootcamp/MemoryCardEngine"));
 const Metaverse = lazy(() => import("./metaverse/Metaverse"));
+const RefillBrands = lazy(() => import("./refill-brands/RefillBrands"));
+const NewRefillBrand = lazy(() => import("./refill-brands/brand/NewRefillBrand"));
+const EditRefillBrand = lazy(() => import("./refill-brands/brand/EditRefillBrand"));
 
 const AdminConfig = {
   settings: {
@@ -23,7 +26,6 @@ const AdminConfig = {
           index: true,
           element: <Navigate to="bootcamp" />
         },
-
         {
           path: "metaverse",
           element: <Metaverse />
@@ -38,6 +40,23 @@ const AdminConfig = {
             {
               path: ":slug",
               element: <MemoryCardEngine />
+            }
+          ]
+        },
+        {
+          path: 'refill-brands',
+          children: [
+            {
+              index: true,
+              element: <RefillBrands />
+            },
+            {
+              path: 'new',
+              element: <NewRefillBrand />
+            },
+            {
+              path: ':brandId/edit',
+              element: <EditRefillBrand />
             }
           ]
         }

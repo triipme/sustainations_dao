@@ -406,7 +406,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     depositAddress : Text;
     balance : Nat64;
     agreement : Bool;
-    role : Types.Role;
+    profile : ?Types.Profile;
     brandId : ?Text;
     brandRole : ?RS.ManagerRole;
   };
@@ -420,10 +420,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
       case (null) { false };
       case _ { true };
     };
-    let role = switch (state.profiles.get(caller)) {
-      case (null) { #user };
-      case (? profile) { profile.role };
-    };
+    let profile = state.profiles.get(caller);
     var brandId : ?Text = null;
     var brandRole : ?RS.ManagerRole = null;
     switch (state.refillBrand.managers.get(caller)) {
@@ -436,11 +433,43 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
       );
       balance = balance.e8s;
       agreement;
-      role;
+      profile;
       brandId;
       brandRole;
     };
     #ok(userInfo);
+  };
+
+  public shared({ caller }) func updateUserProfile(
+    username : ?Text,
+    phone : ?Text,
+    avatar : ?Text
+  ) : async Response<Types.Profile> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    switch (state.profiles.get(caller)) {
+      case null {
+        let payload : Types.Profile = {
+          username;
+          phone;
+          avatar;
+          role = #user;
+        };
+        let profile = state.profiles.put(caller, payload);
+        #ok(payload);
+      };
+      case (?profile) {
+        let payload : Types.Profile = {
+          username;
+          phone;
+          avatar;
+          role = profile.role;
+        };
+        let updated = state.profiles.replace(caller, payload);
+        #ok(payload);
+      };
+    };
   };
 
   // Transfer ICP from user's subaccount to system subaccount
@@ -807,6 +836,21 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
       { brandId = uuid; role = #owner }
     );
     #ok(uuid);
+  };
+
+  public query func getRefillBrand(uuid : Text) : async Response<(Text, Types.RefillBrand)> {
+    switch (state.refillBrand.brands.get(uuid)) {
+      case null { #err(#NotFound) };
+      case (?brand) {
+        var brandOwner : Text = "";
+        for ((principal, manager) in state.refillBrand.managers.entries()) {
+          if (manager.brandId == uuid and manager.role == #owner) {
+            brandOwner := Principal.toText(principal);
+          };
+        };
+        #ok((brandOwner, brand));
+      };
+    };
   };
 
   public shared({ caller }) func updateRefillBrand(
@@ -1325,6 +1369,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
     #ok(results);
   };
+  /* === End Refill Brand === */
 
   /* MemoryCard */
   public shared({caller}) func memoryCardEngineImportExcel(

@@ -5,6 +5,7 @@ import _ from '@lodash';
 import FuseSplashScreen from '@fuse/core/FuseSplashScreen';
 import { showMessage } from 'app/store/fuse/messageSlice';
 import { logoutUser, setUser } from 'app/store/userSlice';
+import { getS3Object } from '../hooks';
 import DfinityAgentService from './services/dfinityAgentService';
 
 import { AuthClient } from '@dfinity/auth-client';
@@ -32,21 +33,35 @@ function AuthProvider({ children }) {
         const principal = identity.getPrincipal().toText();
         const result = await actor.getUserInfo();
         let brandRole = [];
-        if (_.findKey(result?.ok?.brandRole, 'owner')) {
+        const brandRoles = _.keys(result?.ok?.brandRole[0]);
+        if (_.includes(brandRoles, 'owner')) {
           brandRole = ['brandOwner'];
         }
-        if (_.findKey(result?.ok?.brandRole, 'staff')) {
+        if (_.includes(brandRoles, 'staff')) {
           brandRole = ['brandStaff'];
         }
+        const profile = result?.ok?.profile[0];
+        let avatar = '';
+        if (profile?.avatar[0]) {
+          async function getFile(path) {
+            if (path) {
+              const file = await getS3Object(path);
+              return file;
+            }
+          };
+          avatar = await getFile(profile?.avatar[0]);
+        }
         const userState = {
-          role: result?.ok?.agreement ? _.union(_.keys(result?.ok?.role), brandRole) : ['needAgreement'],
+          role: result?.ok?.agreement ? _.union(_.keys(profile?.role), brandRole) : ['needAgreement'],
           actor,
           depositAddress: result?.ok?.depositAddress,
           balance: result?.ok?.balance,
           principal,
           brandId: result?.ok?.brandId,
+          profile,
+          avatar
         };
-        console.log('userState', userState);
+
         dispatch(setUser(userState));
         setWaitAuthCheck(false);
       } else {

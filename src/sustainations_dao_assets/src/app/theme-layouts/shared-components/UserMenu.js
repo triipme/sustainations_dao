@@ -13,10 +13,11 @@ import { selectUser } from 'app/store/userSlice';
 import QRCode from "react-qr-code";
 import { fICP } from '../../utils/NumberFormat';
 import _ from 'lodash';
+import { useAsyncMemo } from "use-async-memo";
 
 function UserMenu(_props) {
   const user = useSelector(selectUser);
-
+  const { profile } = user;
   const [userMenu, setUserMenu] = useState(null);
 
   const userMenuClick = (event) => {
@@ -36,14 +37,14 @@ function UserMenu(_props) {
       >
         <div className="hidden md:flex flex-col mx-4 items-end">
           <Typography component="span" className="max-w-2xl truncate font-semibold flex">
-            {user.depositAddress}
+            {profile?.username || user.depositAddress}
           </Typography>
           <Typography className="text-11 font-medium capitalize" color="text.secondary">
             {fICP(user.balance)}
           </Typography>
         </div>
 
-        <Avatar className="md:mx-4" alt={user.depositAddress}>
+        <Avatar className="md:mx-4" src={user.avatar} alt={user.depositAddress}>
           <QRCode
             size={256}
             style={{ height: "auto", maxWidth: "100%", width: "100%" }}
@@ -70,22 +71,12 @@ function UserMenu(_props) {
         }}
       >
         <>
-          {user.role.includes('admin') && (
-            <MenuItem component={Link} to="/admin" onClick={userMenuClose} role="button">
-              <ListItemIcon className="min-w-40">
-                <FuseSvgIcon>admin_panel_settings_outlined</FuseSvgIcon>
-              </ListItemIcon>
-              <ListItemText primary="Admin Dashboard" />
-            </MenuItem>
-          )}
-          {!_.isEmpty(user.brandId) && (
-            <MenuItem component={Link} to="/refill-brand" onClick={userMenuClose} role="button">
-              <ListItemIcon className="min-w-40">
-                <FuseSvgIcon>admin_panel_settings_outlined</FuseSvgIcon>
-              </ListItemIcon>
-              <ListItemText primary="Admin Dashboard" />
-            </MenuItem>
-          )}
+          <MenuItem component={Link} to="/profile" onClick={userMenuClose} role="button">
+            <ListItemIcon className="min-w-40">
+              <FuseSvgIcon>account_circle_outlined</FuseSvgIcon>
+            </ListItemIcon>
+            <ListItemText primary="My Profile" />
+          </MenuItem>
           <MenuItem component={Link} to={`/user-agreements/${user.principal}`} onClick={userMenuClose} role="button">
             <ListItemIcon className="min-w-40">
               <FuseSvgIcon>assignment_turned_in_outlined</FuseSvgIcon>

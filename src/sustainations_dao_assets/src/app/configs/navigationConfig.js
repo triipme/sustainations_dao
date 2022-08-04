@@ -122,6 +122,13 @@ const navigationConfig = [
         type: "item",
         icon: "heroicons-outline:academic-cap",
         url: "admin/bootcamp"
+      },
+      {
+        id: "admin-refill-brands",
+        title: "Refill Brands",
+        type: "item",
+        icon: "room_preferences_outlined",
+        url: "admin/refill-brands"
       }
     ]
   }
