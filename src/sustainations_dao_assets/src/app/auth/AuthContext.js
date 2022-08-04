@@ -38,18 +38,17 @@ function AuthProvider({ children }) {
           depositAddress = result.ok.depositAddress;
           isAdmin = result.ok.isAdmin;
         }
-        dispatch(
-          setUser({
-            role: result.ok.agreement
-              ? [...settingsConfig.defaultAuth, isAdmin ? 'admin' : null]
-              : ['needAgreement'],
-            actor,
-            depositAddress,
-            balance,
-            principal
-          })
-        );
-        // dispatch(showMessage({ message: 'Signed in' }));
+        const userState = {
+          role: result.ok.agreement
+            ? [...settingsConfig.defaultAuth, isAdmin ? 'admin' : null]
+            : ['needAgreement'],
+          actor,
+          depositAddress,
+          balance,
+          principal
+        };
+        console.log('userState', userState, result);
+        dispatch(setUser(userState));
         setWaitAuthCheck(false);
       } else {
         pass();
