@@ -1,24 +1,29 @@
+import store from 'app/store';
 import Phaser from 'phaser';
-import BaseScene from './BaseScene'
-import gameConfig from '../GameConfig';
+import BaseScene from '../BaseScene'
+import gameConfig from '../../GameConfig';
 import { 
+  loadEventOptions, 
   loadCharacter,
-  getCharacterStatus
-} from '../GameApi';
+  updateCharacterStats,
+  getCharacterStatus,
+  characterTakeOption,
+  listCharacterSelectsItems,
+  takeOptionAbility
+} from '../../GameApi';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
-const bg1 = 'metaverse/scenes/Scene7/PNG/back-01.png';
-const bg2 = 'metaverse/scenes/Scene7/PNG/mid-01.png';
-const bg3 = 'metaverse/scenes/Scene7/PNG/front-01.png';
-const obstacle = 'metaverse/scenes/Scene7/PNG/obstacle-01.png';
+const bg1 = 'metaverse/scenes/jungle/Scene3/PNG/back-01.png';
+const bg2 = 'metaverse/scenes/jungle/Scene3/PNG/mid-01.png';
+const bg3 = 'metaverse/scenes/jungle/Scene3/PNG/front-01.png';
+const obstacle = 'metaverse/scenes/jungle/Scene3/PNG/obstacle-01-shortened.png';
 const selectAction = 'metaverse/scenes/background_menu.png';
 const btnBlank = 'metaverse/scenes/selection.png';
 
-export default class Scene7 extends BaseScene {
+export default class jungle_scene3 extends BaseScene {
   constructor() {
-    super('Scene7');
+    super('jungle_scene3');
   }
-
   clearSceneCache() {
     const textures_list = ['ground', 'background1', 'background2', 
       'background3', 'selectAction', 'btnBlank', 'obstacle'];
@@ -28,12 +33,28 @@ export default class Scene7 extends BaseScene {
   }
 
   preload() {
+    this.eventId = "e3";
     this.load.rexAwait(function(successCallback, failureCallback) {
       getCharacterStatus().then( (result) => {
         this.characterStatus = result.ok;
         successCallback();
       });
     }, this);
+    
+    this.load.rexAwait(function(successCallback, failureCallback) {
+      loadEventOptions(this.eventId).then( (result) => {
+        this.eventOptions = result;
+        successCallback();
+      });
+    }, this);
+
+    this.load.rexAwait(function(successCallback, failureCallback) {
+      characterTakeOption(this.eventId).then( (result) => {
+        this.characterTakeOptions = result;
+        successCallback();
+      });
+    }, this);
+
     //loading screen
     this.add.image(
       gameConfig.scale.width/2, gameConfig.scale.height/2 - 50, 'logo'
@@ -51,6 +72,7 @@ export default class Scene7 extends BaseScene {
     this.clearSceneCache();
     this.isInteracting = false;
     this.isInteracted = false;
+    this.isCloseToObstacle = false;
     this.load.spritesheet("hero-running", heroRunningSprite, {
       frameWidth: 197,
       frameHeight: 337
@@ -100,11 +122,13 @@ export default class Scene7 extends BaseScene {
     this.ingameSound.isRunning = false;
     this.ambientSound = this.sound.add('ambientSound', {loop: true});
     this.sfx_char_footstep = this.sound.add('sfx_char_footstep', {loop: true, volume: 0.2});
+    this.sfx_monkey = this.sound.add('sfx_monkey', {loop: true});
 
     if(this.characterStatus != 'Exhausted') {
       this.ambientSound.play();
       this.sfx_char_footstep.play();
     }
+
     //background
     this.bg_1 = this.add.tileSprite(0, 0, gameConfig.scale.width, gameConfig.scale.height, "background1");
     this.bg_1.setOrigin(0, 0);
@@ -118,7 +142,7 @@ export default class Scene7 extends BaseScene {
       .setOrigin(0,0)
       .setScrollFactor(0);
 
-    // platforms
+      // platforms
     const platforms = this.physics.add.staticGroup();
     for (let x = -100; x < 1920*4; x += 1) {
       platforms.create(x, 950, "ground").refreshBody();
@@ -172,11 +196,12 @@ export default class Scene7 extends BaseScene {
         this.scene.start('menuScene');
         this.pregameSound.stop();
         this.sfx_char_footstep.stop();
+        this.sfx_monkey.stop();
       });
 
     //mycam
     this.myCam = this.cameras.main;
-    this.myCam.setBounds(0, 0, gameConfig.scale.width, gameConfig.scale.height); //furthest distance the cam is allowed to move
+    this.myCam.setBounds(0, 0, gameConfig.scale.width*4, gameConfig.scale.height); //furthest distance the cam is allowed to move
     this.myCam.startFollow(this.player);
 
     //pause screen
@@ -184,6 +209,7 @@ export default class Scene7 extends BaseScene {
     this.veil.fillStyle('0x000000', 0.2);
     this.veil.fillRect(0,0, gameConfig.scale.width, gameConfig.scale.height);
     this.selectAction = this.add.image(0, 0, 'selectAction').setOrigin(0,0);
+
     this.veil.setScrollFactor(0);
     this.veil.setVisible(false);
     this.selectAction.setScrollFactor(0);
@@ -191,18 +217,21 @@ export default class Scene7 extends BaseScene {
 
     // load character
     this.characterData = await loadCharacter();
+    // list taken items by character
+    this.takenItems = await listCharacterSelectsItems(this.characterData.id);
+    console.log(this.takenItems);
     // stats before choose option
     this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
     this.setValue(this.stamina, this.characterData.currentStamina/this.characterData.maxStamina*100);
     this.setValue(this.mana, this.characterData.currentMana/this.characterData.maxMana*100);
     this.setValue(this.morale, this.characterData.currentMorale/this.characterData.maxMorale*100);
-      
-    const testData = ['Admire'];
+
+    // load event options
     this.options = [];
-    for (const idx in testData){
+    for (const idx in this.eventOptions){
       this.options[idx] = this.add.sprite(gameConfig.scale.width/2, gameConfig.scale.height/2 -100 + idx*100, 'btnBlank');
       this.options[idx].text = this.add.text(
-        gameConfig.scale.width/2, gameConfig.scale.height/2 - 100 + idx*100, testData[idx], { fill: '#fff', align: 'center', fontSize: '30px' })
+        gameConfig.scale.width/2, gameConfig.scale.height/2 - 100 + idx*100, this.eventOptions[idx].description, { fill: '#fff', align: 'center', fontSize: '30px' })
       .setScrollFactor(0).setVisible(false).setOrigin(0.5);
       this.options[idx].setInteractive().setScrollFactor(0).setVisible(false);
       this.options[idx].on('pointerover', () => {
@@ -212,10 +241,22 @@ export default class Scene7 extends BaseScene {
       this.options[idx].on('pointerout', () => {
         this.options[idx].setFrame(0);
       });
+
+      // can take option or not
+      const takeable = await takeOptionAbility(this.eventOptions[idx].id, this.takenItems);
+      console.log(takeable);
+      
       this.options[idx].on('pointerdown', () => {
         this.triggerContinue();
         this.sfx_char_footstep.play();
         this.clickSound.play();
+        // stats after choose option
+        this.setValue(this.hp, this.characterTakeOptions[idx].currentHP/this.characterTakeOptions[idx].maxHP*100);
+        this.setValue(this.stamina, this.characterTakeOptions[idx].currentStamina/this.characterTakeOptions[idx].maxStamina*100);
+        this.setValue(this.mana, this.characterTakeOptions[idx].currentMana/this.characterTakeOptions[idx].maxMana*100);
+        this.setValue(this.morale, this.characterTakeOptions[idx].currentMorale/this.characterTakeOptions[idx].maxMorale*100);
+        // update character after choose option
+        updateCharacterStats(this.characterTakeOptions[idx]);
       });
     };
   }
@@ -226,13 +267,14 @@ export default class Scene7 extends BaseScene {
       this.player.setVelocityX(350);
     }
 
-    if (this.player.x > 1920) {
+    if (this.player.x > 1920*4) {
       this.ingameSound.stop();
+      this.sfx_monkey.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start("thanks");
+      this.scene.start("jungle_scene4");
     }
 
-    if (this.player.x > 500 && this.isInteracted == false) {
+    if (this.player.x > 1920*4 -1000 && this.isInteracted == false) {
       this.triggerPause();
       this.ambientSound.stop();
       this.sfx_char_footstep.stop();
@@ -243,6 +285,11 @@ export default class Scene7 extends BaseScene {
       this.player.setVelocityX(0);
       this.player.play('idle-anims');
       this.player.stop()
+    }
+
+    if (this.player.x > 1920*2 && this.isCloseToObstacle == false) {
+      this.sfx_monkey.play();
+      this.isCloseToObstacle = true;
     }
 
     //bg

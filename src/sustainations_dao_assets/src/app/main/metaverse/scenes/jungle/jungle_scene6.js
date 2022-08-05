@@ -1,28 +1,27 @@
-import store from 'app/store';
 import Phaser from 'phaser';
-import BaseScene from './BaseScene'
-import gameConfig from '../GameConfig';
+import BaseScene from '../BaseScene'
+import gameConfig from '../../GameConfig';
 import { 
-  loadEventOptions, 
+  loadEventOptions,
   loadCharacter,
   updateCharacterStats,
   getCharacterStatus,
   characterTakeOption,
   listCharacterSelectsItems,
   takeOptionAbility
-} from '../GameApi';
+} from '../../GameApi';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
-const bg1 = 'metaverse/scenes/Scene4/PNG/back-01.png';
-const bg2 = 'metaverse/scenes/Scene4/PNG/mid-01.png';
-const bg3 = 'metaverse/scenes/Scene4/PNG/front-01.png';
-const obstacle = 'metaverse/scenes/Scene4/PNG/obstacle-01.png';
+const bg1 = 'metaverse/scenes/jungle/Scene6/PNG/back-01.png';
+const bg2 = 'metaverse/scenes/jungle/Scene6/PNG/mid-01-shortened.png';
+const bg3 = 'metaverse/scenes/jungle/Scene6/PNG/front-01.png';
+const obstacle = 'metaverse/scenes/jungle/Scene6/PNG/obstacle-01-shortened.png';
 const selectAction = 'metaverse/scenes/background_menu.png';
 const btnBlank = 'metaverse/scenes/selection.png';
 
-export default class Scene4 extends BaseScene {
+export default class jungle_scene6 extends BaseScene {
   constructor() {
-    super('Scene4');
+    super('jungle_scene6');
   }
 
   clearSceneCache() {
@@ -34,7 +33,7 @@ export default class Scene4 extends BaseScene {
   }
 
   preload() {
-    this.eventId = "e4";
+    this.eventId = "e6";
     this.load.rexAwait(function(successCallback, failureCallback) {
       getCharacterStatus().then( (result) => {
         this.characterStatus = result.ok;
@@ -73,6 +72,7 @@ export default class Scene4 extends BaseScene {
     this.clearSceneCache();
     this.isInteracting = false;
     this.isInteracted = false;
+    this.isCloseToObstacle = false;
     this.load.spritesheet("hero-running", heroRunningSprite, {
       frameWidth: 197,
       frameHeight: 337
@@ -122,6 +122,7 @@ export default class Scene4 extends BaseScene {
     this.ingameSound.isRunning = false;
     this.ambientSound = this.sound.add('ambientSound', {loop: true});
     this.sfx_char_footstep = this.sound.add('sfx_char_footstep', {loop: true, volume: 0.2});
+    this.sfx_small_waterfall = this.sound.add('sfx_small_waterfall', {loop: true});
 
     if(this.characterStatus != 'Exhausted') {
       this.ambientSound.play();
@@ -139,9 +140,10 @@ export default class Scene4 extends BaseScene {
     this.obstacle = this.add.tileSprite(0, 0, gameConfig.scale.width, gameConfig.scale.height, "obstacle")
       .setOrigin(0,0)
       .setScrollFactor(0);
+
     // platforms
     const platforms = this.physics.add.staticGroup();
-    for (let x = -100; x < 1920*2; x += 1) {
+    for (let x = -100; x < 1920*4; x += 1) {
       platforms.create(x, 950, "ground").refreshBody();
     }
 
@@ -193,11 +195,12 @@ export default class Scene4 extends BaseScene {
         this.scene.start('menuScene');
         this.pregameSound.stop();
         this.sfx_char_footstep.stop();
+        this.sfx_small_waterfall.stop();
       });
 
     //mycam
     this.myCam = this.cameras.main;
-    this.myCam.setBounds(0, 0, gameConfig.scale.width*2, gameConfig.scale.height); //furthest distance the cam is allowed to move
+    this.myCam.setBounds(0, 0, gameConfig.scale.width*4, gameConfig.scale.height); //furthest distance the cam is allowed to move
     this.myCam.startFollow(this.player);
 
     //pause screen
@@ -205,6 +208,7 @@ export default class Scene4 extends BaseScene {
     this.veil.fillStyle('0x000000', 0.2);
     this.veil.fillRect(0,0, gameConfig.scale.width, gameConfig.scale.height);
     this.selectAction = this.add.image(0, 0, 'selectAction').setOrigin(0,0);
+
     this.veil.setScrollFactor(0);
     this.veil.setVisible(false);
     this.selectAction.setScrollFactor(0);
@@ -240,12 +244,12 @@ export default class Scene4 extends BaseScene {
       // can take option or not
       const takeable = await takeOptionAbility(this.eventOptions[idx].id, this.takenItems);
       console.log(takeable);
-      
+
       this.options[idx].on('pointerdown', () => {
         this.triggerContinue();
-        this.sfx_char_footstep.play();
         this.clickSound.play();
-        this.choseOption = this.eventOptions[idx].id;
+        this.sfx_char_footstep.play();
+        this.cameras.main.fadeOut(500, 0, 0, 0);
         // stats after choose option
         this.setValue(this.hp, this.characterTakeOptions[idx].currentHP/this.characterTakeOptions[idx].maxHP*100);
         this.setValue(this.stamina, this.characterTakeOptions[idx].currentStamina/this.characterTakeOptions[idx].maxStamina*100);
@@ -263,13 +267,14 @@ export default class Scene4 extends BaseScene {
       this.player.setVelocityX(350);
     }
 
-    if (this.player.x > 1920*2) {
-      this.sfx_char_footstep.stop();
+    if (this.player.x > 1920*4) {
       this.ingameSound.stop();
-      this.scene.start("Scene5");
+      this.sfx_char_footstep.stop();
+      this.sfx_small_waterfall.stop();
+      this.scene.start("jungle_scene7");
     }
 
-    if (this.player.x > 1920*2 - 1000 && this.isInteracted == false) {
+    if (this.player.x > 1920*3 && this.isInteracted == false) {
       this.triggerPause();
       this.ambientSound.stop();
       this.sfx_char_footstep.stop();
@@ -282,6 +287,11 @@ export default class Scene4 extends BaseScene {
       this.player.stop()
     }
 
+    if (this.player.x > 1920*2 && this.isCloseToObstacle == false) {
+      this.sfx_small_waterfall.play();
+      this.isCloseToObstacle = true;
+    }
+    
     //bg
     // scroll the texture of the tilesprites proportionally to the camera scroll
     this.bg_1.tilePositionX = this.myCam.scrollX * .3;

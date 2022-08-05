@@ -1,28 +1,22 @@
-import store from 'app/store';
 import Phaser from 'phaser';
-import BaseScene from './BaseScene'
-import gameConfig from '../GameConfig';
+import BaseScene from '../BaseScene'
+import gameConfig from '../../GameConfig';
 import { 
-  loadEventOptions, 
   loadCharacter,
-  updateCharacterStats,
-  getCharacterStatus,
-  characterTakeOption,
-  listCharacterSelectsItems,
-  takeOptionAbility
-} from '../GameApi';
+  getCharacterStatus
+} from '../../GameApi';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
-const bg1 = 'metaverse/scenes/Scene5/PNG/back-01.png';
-const bg2 = 'metaverse/scenes/Scene5/PNG/mid-01.png';
-const bg3 = 'metaverse/scenes/Scene5/PNG/front-01.png';
-const obstacle = 'metaverse/scenes/Scene5/PNG/obstacle-01-shortened.png';
+const bg1 = 'metaverse/scenes/jungle/Scene7/PNG/back-01.png';
+const bg2 = 'metaverse/scenes/jungle/Scene7/PNG/mid-01.png';
+const bg3 = 'metaverse/scenes/jungle/Scene7/PNG/front-01.png';
+const obstacle = 'metaverse/scenes/jungle/Scene7/PNG/obstacle-01.png';
 const selectAction = 'metaverse/scenes/background_menu.png';
 const btnBlank = 'metaverse/scenes/selection.png';
 
-export default class Scene5 extends BaseScene {
+export default class jungle_scene7 extends BaseScene {
   constructor() {
-    super('Scene5');
+    super('jungle_scene7');
   }
 
   clearSceneCache() {
@@ -34,28 +28,12 @@ export default class Scene5 extends BaseScene {
   }
 
   preload() {
-    this.eventId = "e5";
     this.load.rexAwait(function(successCallback, failureCallback) {
       getCharacterStatus().then( (result) => {
         this.characterStatus = result.ok;
         successCallback();
       });
     }, this);
-    
-    this.load.rexAwait(function(successCallback, failureCallback) {
-      loadEventOptions(this.eventId).then( (result) => {
-        this.eventOptions = result;
-        successCallback();
-      });
-    }, this);
-
-    this.load.rexAwait(function(successCallback, failureCallback) {
-      characterTakeOption(this.eventId).then( (result) => {
-        this.characterTakeOptions = result;
-        successCallback();
-      });
-    }, this);
-
     //loading screen
     this.add.image(
       gameConfig.scale.width/2, gameConfig.scale.height/2 - 50, 'logo'
@@ -198,7 +176,7 @@ export default class Scene5 extends BaseScene {
 
     //mycam
     this.myCam = this.cameras.main;
-    this.myCam.setBounds(0, 0, gameConfig.scale.width*4, gameConfig.scale.height); //furthest distance the cam is allowed to move
+    this.myCam.setBounds(0, 0, gameConfig.scale.width, gameConfig.scale.height); //furthest distance the cam is allowed to move
     this.myCam.startFollow(this.player);
 
     //pause screen
@@ -206,7 +184,6 @@ export default class Scene5 extends BaseScene {
     this.veil.fillStyle('0x000000', 0.2);
     this.veil.fillRect(0,0, gameConfig.scale.width, gameConfig.scale.height);
     this.selectAction = this.add.image(0, 0, 'selectAction').setOrigin(0,0);
-
     this.veil.setScrollFactor(0);
     this.veil.setVisible(false);
     this.selectAction.setScrollFactor(0);
@@ -214,21 +191,18 @@ export default class Scene5 extends BaseScene {
 
     // load character
     this.characterData = await loadCharacter();
-    // list taken items by character
-    this.takenItems = await listCharacterSelectsItems(this.characterData.id);
-    console.log(this.takenItems);
     // stats before choose option
     this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
     this.setValue(this.stamina, this.characterData.currentStamina/this.characterData.maxStamina*100);
     this.setValue(this.mana, this.characterData.currentMana/this.characterData.maxMana*100);
     this.setValue(this.morale, this.characterData.currentMorale/this.characterData.maxMorale*100);
-
-    // load event options
+      
+    const testData = ['Admire'];
     this.options = [];
-    for (const idx in this.eventOptions){
+    for (const idx in testData){
       this.options[idx] = this.add.sprite(gameConfig.scale.width/2, gameConfig.scale.height/2 -100 + idx*100, 'btnBlank');
       this.options[idx].text = this.add.text(
-        gameConfig.scale.width/2, gameConfig.scale.height/2 - 100 + idx*100, this.eventOptions[idx].description, { fill: '#fff', align: 'center', fontSize: '30px' })
+        gameConfig.scale.width/2, gameConfig.scale.height/2 - 100 + idx*100, testData[idx], { fill: '#fff', align: 'center', fontSize: '30px' })
       .setScrollFactor(0).setVisible(false).setOrigin(0.5);
       this.options[idx].setInteractive().setScrollFactor(0).setVisible(false);
       this.options[idx].on('pointerover', () => {
@@ -238,23 +212,10 @@ export default class Scene5 extends BaseScene {
       this.options[idx].on('pointerout', () => {
         this.options[idx].setFrame(0);
       });
-
-      // can take option or not
-      const takeable = await takeOptionAbility(this.eventOptions[idx].id, this.takenItems);
-      console.log(takeable);
-
-      this.options[idx].on('pointerdown', async () => {
+      this.options[idx].on('pointerdown', () => {
         this.triggerContinue();
-        this.obstacle.setVisible(false);
         this.sfx_char_footstep.play();
         this.clickSound.play();
-        // stats after choose option
-        this.setValue(this.hp, this.characterTakeOptions[idx].currentHP/this.characterTakeOptions[idx].maxHP*100);
-        this.setValue(this.stamina, this.characterTakeOptions[idx].currentStamina/this.characterTakeOptions[idx].maxStamina*100);
-        this.setValue(this.mana, this.characterTakeOptions[idx].currentMana/this.characterTakeOptions[idx].maxMana*100);
-        this.setValue(this.morale, this.characterTakeOptions[idx].currentMorale/this.characterTakeOptions[idx].maxMorale*100);
-        // update character after choose option
-        updateCharacterStats(this.characterTakeOptions[idx]);
       });
     };
   }
@@ -265,13 +226,13 @@ export default class Scene5 extends BaseScene {
       this.player.setVelocityX(350);
     }
 
-    if (this.player.x > 1920*4) {
+    if (this.player.x > 1920) {
       this.ingameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start("Scene6");
+      this.scene.start("thanks");
     }
 
-    if (this.player.x > 1920*3 - 300 && this.isInteracted == false) {
+    if (this.player.x > 500 && this.isInteracted == false) {
       this.triggerPause();
       this.ambientSound.stop();
       this.sfx_char_footstep.stop();

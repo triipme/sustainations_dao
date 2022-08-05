@@ -1,29 +1,27 @@
 import Phaser from 'phaser';
-import BaseScene from './BaseScene'
-import gameConfig from '../GameConfig';
+import BaseScene from '../BaseScene'
+import gameConfig from '../../GameConfig';
 import { 
-  loadEventOptions,
+  loadEventOptions, 
   loadCharacter,
   updateCharacterStats,
   getCharacterStatus,
-  characterTakeOption,
-  listCharacterSelectsItems,
-  takeOptionAbility
-} from '../GameApi';
+  characterTakeOption
+} from '../../GameApi';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
-const bg1 = 'metaverse/scenes/Scene6/PNG/back-01.png';
-const bg2 = 'metaverse/scenes/Scene6/PNG/mid-01-shortened.png';
-const bg3 = 'metaverse/scenes/Scene6/PNG/front-01.png';
-const obstacle = 'metaverse/scenes/Scene6/PNG/obstacle-01-shortened.png';
+const bg1 = 'metaverse/scenes/catalonia/Scene2/PNG/back.png';
+const bg2 = 'metaverse/scenes/catalonia/Scene2/PNG/mid.png';
+const bg3 = 'metaverse/scenes/catalonia/Scene2/PNG/front.png';
+const obstacle = 'metaverse/scenes/catalonia/Scene2/PNG/obstacle.png';
 const selectAction = 'metaverse/scenes/background_menu.png';
 const btnBlank = 'metaverse/scenes/selection.png';
 
-export default class Scene6 extends BaseScene {
+export default class catalonia_scene2 extends BaseScene {
   constructor() {
-    super('Scene6');
+    super('catalonia_scene2');
   }
-
+  
   clearSceneCache() {
     const textures_list = ['ground', 'background1', 'background2', 
       'background3', 'selectAction', 'btnBlank', 'obstacle'];
@@ -33,14 +31,7 @@ export default class Scene6 extends BaseScene {
   }
 
   preload() {
-    this.eventId = "e6";
-    this.load.rexAwait(function(successCallback, failureCallback) {
-      getCharacterStatus().then( (result) => {
-        this.characterStatus = result.ok;
-        successCallback();
-      });
-    }, this);
-    
+    this.eventId = "e8";
     this.load.rexAwait(function(successCallback, failureCallback) {
       loadEventOptions(this.eventId).then( (result) => {
         this.eventOptions = result;
@@ -51,6 +42,13 @@ export default class Scene6 extends BaseScene {
     this.load.rexAwait(function(successCallback, failureCallback) {
       characterTakeOption(this.eventId).then( (result) => {
         this.characterTakeOptions = result;
+        successCallback();
+      });
+    }, this);
+
+    this.load.rexAwait(function(successCallback, failureCallback) {
+      getCharacterStatus().then( (result) => {
+        this.characterStatus = result.ok;
         successCallback();
       });
     }, this);
@@ -96,7 +94,6 @@ export default class Scene6 extends BaseScene {
       this.options[idx].text.setVisible(true);
     }
   }
-
   triggerContinue(){
     this.veil.setVisible(false);
     this.selectAction.setVisible(false);
@@ -111,7 +108,6 @@ export default class Scene6 extends BaseScene {
 
   async create() {
     console.log(this.characterStatus);
-
     if(this.characterStatus == 'Exhausted') {
       this.scene.start('exhausted');
     }
@@ -122,8 +118,6 @@ export default class Scene6 extends BaseScene {
     this.ingameSound.isRunning = false;
     this.ambientSound = this.sound.add('ambientSound', {loop: true});
     this.sfx_char_footstep = this.sound.add('sfx_char_footstep', {loop: true, volume: 0.2});
-    this.sfx_small_waterfall = this.sound.add('sfx_small_waterfall', {loop: true});
-
     if(this.characterStatus != 'Exhausted') {
       this.ambientSound.play();
       this.sfx_char_footstep.play();
@@ -141,9 +135,9 @@ export default class Scene6 extends BaseScene {
       .setOrigin(0,0)
       .setScrollFactor(0);
 
-    // platforms
+      // platforms
     const platforms = this.physics.add.staticGroup();
-    for (let x = -100; x < 1920*4; x += 1) {
+    for (let x = -100; x < 17000; x += 1) {
       platforms.create(x, 950, "ground").refreshBody();
     }
 
@@ -195,12 +189,11 @@ export default class Scene6 extends BaseScene {
         this.scene.start('menuScene');
         this.pregameSound.stop();
         this.sfx_char_footstep.stop();
-        this.sfx_small_waterfall.stop();
       });
 
     //mycam
     this.myCam = this.cameras.main;
-    this.myCam.setBounds(0, 0, gameConfig.scale.width*4, gameConfig.scale.height); //furthest distance the cam is allowed to move
+    this.myCam.setBounds(0, 0, 16000, gameConfig.scale.height); //furthest distance the cam is allowed to move
     this.myCam.startFollow(this.player);
 
     //pause screen
@@ -216,9 +209,6 @@ export default class Scene6 extends BaseScene {
 
     // load character
     this.characterData = await loadCharacter();
-    // list taken items by character
-    this.takenItems = await listCharacterSelectsItems(this.characterData.id);
-    console.log(this.takenItems);
     // stats before choose option
     this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
     this.setValue(this.stamina, this.characterData.currentStamina/this.characterData.maxStamina*100);
@@ -240,16 +230,10 @@ export default class Scene6 extends BaseScene {
       this.options[idx].on('pointerout', () => {
         this.options[idx].setFrame(0);
       });
-
-      // can take option or not
-      const takeable = await takeOptionAbility(this.eventOptions[idx].id, this.takenItems);
-      console.log(takeable);
-
       this.options[idx].on('pointerdown', () => {
         this.triggerContinue();
         this.clickSound.play();
         this.sfx_char_footstep.play();
-        this.cameras.main.fadeOut(500, 0, 0, 0);
         // stats after choose option
         this.setValue(this.hp, this.characterTakeOptions[idx].currentHP/this.characterTakeOptions[idx].maxHP*100);
         this.setValue(this.stamina, this.characterTakeOptions[idx].currentStamina/this.characterTakeOptions[idx].maxStamina*100);
@@ -267,14 +251,13 @@ export default class Scene6 extends BaseScene {
       this.player.setVelocityX(350);
     }
 
-    if (this.player.x > 1920*4) {
+    if (this.player.x > 16100) {
       this.ingameSound.stop();
       this.sfx_char_footstep.stop();
-      this.sfx_small_waterfall.stop();
-      this.scene.start("Scene7");
+      this.scene.start('catalonia_scene3');
     }
 
-    if (this.player.x > 1920*3 && this.isInteracted == false) {
+    if (this.player.x > 1920*4 -1000 && this.isInteracted == false) {
       this.triggerPause();
       this.ambientSound.stop();
       this.sfx_char_footstep.stop();
@@ -288,15 +271,13 @@ export default class Scene6 extends BaseScene {
     }
 
     if (this.player.x > 1920*2 && this.isCloseToObstacle == false) {
-      this.sfx_small_waterfall.play();
       this.isCloseToObstacle = true;
     }
-    
     //bg
     // scroll the texture of the tilesprites proportionally to the camera scroll
-    this.bg_1.tilePositionX = this.myCam.scrollX * .3;
-    this.bg_2.tilePositionX = this.myCam.scrollX * .6;
-    this.obstacle.tilePositionX = this.myCam.scrollX * .6;
+    this.bg_1.tilePositionX = this.myCam.scrollX * 1;
+    this.bg_2.tilePositionX = this.myCam.scrollX * 1;
+    this.obstacle.tilePositionX = this.myCam.scrollX * 1;
     this.bg_3.tilePositionX = this.myCam.scrollX * 1;
   }
 }

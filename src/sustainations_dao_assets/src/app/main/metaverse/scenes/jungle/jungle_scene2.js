@@ -1,7 +1,6 @@
-import store from 'app/store';
 import Phaser from 'phaser';
-import BaseScene from './BaseScene'
-import gameConfig from '../GameConfig';
+import gameConfig from '../../GameConfig';
+import BaseScene from '../BaseScene';
 import { 
   loadEventOptions, 
   loadCharacter,
@@ -10,20 +9,21 @@ import {
   characterTakeOption,
   listCharacterSelectsItems,
   takeOptionAbility
-} from '../GameApi';
+} from '../../GameApi';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
-const bg1 = 'metaverse/scenes/Scene3/PNG/back-01.png';
-const bg2 = 'metaverse/scenes/Scene3/PNG/mid-01.png';
-const bg3 = 'metaverse/scenes/Scene3/PNG/front-01.png';
-const obstacle = 'metaverse/scenes/Scene3/PNG/obstacle-01-shortened.png';
+const bg1 = 'metaverse/scenes/jungle/Scene2/PNG/back-01.png';
+const bg2 = 'metaverse/scenes/jungle/Scene2/PNG/mid-01-shortened.png';
+const bg3 = 'metaverse/scenes/jungle/Scene2/PNG/front-01.png';
+const obstacle = 'metaverse/scenes/jungle/Scene2/PNG/obstacle-01-shortened.png';
 const selectAction = 'metaverse/scenes/background_menu.png';
 const btnBlank = 'metaverse/scenes/selection.png';
 
-export default class Scene3 extends BaseScene {
+export default class jungle_scene2 extends BaseScene {
   constructor() {
-    super('Scene3');
+    super('jungle_scene2');
   }
+  
   clearSceneCache() {
     const textures_list = ['ground', 'background1', 'background2', 
       'background3', 'selectAction', 'btnBlank', 'obstacle'];
@@ -33,14 +33,14 @@ export default class Scene3 extends BaseScene {
   }
 
   preload() {
-    this.eventId = "e3";
+    this.eventId = "e2";
     this.load.rexAwait(function(successCallback, failureCallback) {
       getCharacterStatus().then( (result) => {
         this.characterStatus = result.ok;
         successCallback();
       });
     }, this);
-    
+
     this.load.rexAwait(function(successCallback, failureCallback) {
       loadEventOptions(this.eventId).then( (result) => {
         this.eventOptions = result;
@@ -96,7 +96,6 @@ export default class Scene3 extends BaseScene {
       this.options[idx].text.setVisible(true);
     }
   }
-
   triggerContinue(){
     this.veil.setVisible(false);
     this.selectAction.setVisible(false);
@@ -111,7 +110,6 @@ export default class Scene3 extends BaseScene {
 
   async create() {
     console.log(this.characterStatus);
-
     if(this.characterStatus == 'Exhausted') {
       this.scene.start('exhausted');
     }
@@ -122,13 +120,11 @@ export default class Scene3 extends BaseScene {
     this.ingameSound.isRunning = false;
     this.ambientSound = this.sound.add('ambientSound', {loop: true});
     this.sfx_char_footstep = this.sound.add('sfx_char_footstep', {loop: true, volume: 0.2});
-    this.sfx_monkey = this.sound.add('sfx_monkey', {loop: true});
-
+    this.sfx_big_waterfall = this.sound.add('sfx_big_waterfall', {loop: true});
     if(this.characterStatus != 'Exhausted') {
       this.ambientSound.play();
       this.sfx_char_footstep.play();
     }
-
     //background
     this.bg_1 = this.add.tileSprite(0, 0, gameConfig.scale.width, gameConfig.scale.height, "background1");
     this.bg_1.setOrigin(0, 0);
@@ -196,7 +192,7 @@ export default class Scene3 extends BaseScene {
         this.scene.start('menuScene');
         this.pregameSound.stop();
         this.sfx_char_footstep.stop();
-        this.sfx_monkey.stop();
+        this.sfx_big_waterfall.stop();
       });
 
     //mycam
@@ -248,8 +244,9 @@ export default class Scene3 extends BaseScene {
       
       this.options[idx].on('pointerdown', () => {
         this.triggerContinue();
-        this.sfx_char_footstep.play();
         this.clickSound.play();
+        this.sfx_char_footstep.play();
+        this.cameras.main.fadeOut(500, 0, 0, 0);
         // stats after choose option
         this.setValue(this.hp, this.characterTakeOptions[idx].currentHP/this.characterTakeOptions[idx].maxHP*100);
         this.setValue(this.stamina, this.characterTakeOptions[idx].currentStamina/this.characterTakeOptions[idx].maxStamina*100);
@@ -269,9 +266,9 @@ export default class Scene3 extends BaseScene {
 
     if (this.player.x > 1920*4) {
       this.ingameSound.stop();
-      this.sfx_monkey.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start("Scene4");
+      this.sfx_big_waterfall.stop();
+      this.scene.start('jungle_scene3');
     }
 
     if (this.player.x > 1920*4 -1000 && this.isInteracted == false) {
@@ -288,10 +285,9 @@ export default class Scene3 extends BaseScene {
     }
 
     if (this.player.x > 1920*2 && this.isCloseToObstacle == false) {
-      this.sfx_monkey.play();
+      this.sfx_big_waterfall.play();
       this.isCloseToObstacle = true;
     }
-
     //bg
     // scroll the texture of the tilesprites proportionally to the camera scroll
     this.bg_1.tilePositionX = this.myCam.scrollX * .3;

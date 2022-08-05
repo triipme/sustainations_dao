@@ -5,7 +5,8 @@ import { resetCharacter } from '../GameApi';
 const bg = 'metaverse/selectMap/background.png';
 const text = 'metaverse/selectMap/call_to_action.png';
 const selectArea = 'metaverse/selectMap/select-area.png';
-const locationDetail = 'metaverse/selectMap/location_detail.png';
+const jungleLocationDetail = 'metaverse/selectMap/jungle_location_detail.png';
+const cataloniaLocationDetail = 'metaverse/selectMap/catalonia_location_detail.png';
 const btnBack = 'metaverse/selectItems/UI_back.png';
 
 class selectMap extends BaseScene {
@@ -46,7 +47,8 @@ class selectMap extends BaseScene {
     this.clearCache();
     this.load.image('bg', bg);
     this.load.image('text', text);
-    this.load.image('locationDetail', locationDetail);
+    this.load.image('jungleLocationDetail', jungleLocationDetail);
+    this.load.image('cataloniaLocationDetail', cataloniaLocationDetail);
     this.load.spritesheet('selectArea', selectArea, { frameWidth: 498, frameHeight: 800});
     this.load.image("btnBack", btnBack);
   }
@@ -57,7 +59,10 @@ class selectMap extends BaseScene {
     this.clickSound = this.sound.add('clickSound');
 
     this.background = this.add.image(0, 0, 'bg').setOrigin(0);
-    this.locationDetail = this.add.image(370, 250, 'locationDetail')
+    this.jungleLocationDetail = this.add.image(370, 250, 'jungleLocationDetail')
+      .setVisible(false)
+      .setInteractive();
+    this.cataloniaLocationDetail = this.add.image(370, 250, 'cataloniaLocationDetail')
       .setVisible(false)
       .setInteractive();
     this.btnBack = this.add.image(80, 50, 'btnBack')
@@ -66,21 +71,39 @@ class selectMap extends BaseScene {
       this.clickSound.play();
       this.scene.transition({target: 'menuScene', duration: 0 });
     });
-    this.selectArea = this.add.sprite(930, 740, 'selectArea')
+
+    this.selectAreaJungle = this.add.sprite(930, 740, 'selectArea')
       .setScale(0.3)
       .setInteractive();
-    this.selectArea.on('pointerover', () => {
-      this.selectArea.setFrame(1);
-      this.locationDetail.setVisible(true);
+    this.selectAreaJungle.on('pointerover', () => {
+      this.selectAreaJungle.setFrame(1);
+      this.jungleLocationDetail.setVisible(true);
       this.hoverSound.play();
     });
-    this.selectArea.on('pointerout', () => {
-      this.selectArea.setFrame(0);
-      this.locationDetail.setVisible(false);
+    this.selectAreaJungle.on('pointerout', () => {
+      this.selectAreaJungle.setFrame(0);
+      this.jungleLocationDetail.setVisible(false);
     });
-    this.selectArea.on('pointerdown', () => {
+    this.selectAreaJungle.on('pointerdown', () => {
       this.clickSound.play();
-      this.scene.transition({target: 'selectItemScene', duration: 0 });
+      this.scene.start('selectItemScene', {map: 'jungle'});
+    });
+
+    this.selectAreaCatalonia = this.add.sprite(920, 530, 'selectArea')
+      .setScale(0.3)
+      .setInteractive();
+    this.selectAreaCatalonia.on('pointerover', () => {
+      this.selectAreaCatalonia.setFrame(1);
+      this.cataloniaLocationDetail.setVisible(true);
+      this.hoverSound.play();
+    });
+    this.selectAreaCatalonia.on('pointerout', () => {
+      this.selectAreaCatalonia.setFrame(0);
+      this.cataloniaLocationDetail.setVisible(false);
+    });
+    this.selectAreaCatalonia.on('pointerdown', () => {
+      this.clickSound.play();
+      this.scene.start('selectItemScene', {map: 'catalonia'});
     });
 
     this.text = this.add.image(130, 850, 'text').setOrigin(0);
