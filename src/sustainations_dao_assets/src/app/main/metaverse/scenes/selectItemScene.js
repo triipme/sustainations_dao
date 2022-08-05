@@ -66,7 +66,8 @@ class selectItemScene extends BaseScene {
   }
 
   //async 
-  async create() {
+  async create(data) {
+    console.log(data.map);
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
@@ -95,9 +96,9 @@ class selectItemScene extends BaseScene {
 
     // load quest items
     this.questItems = await loadQuestItems(1);
-    this.itemName = [];
+    this.itemNames = [];
     for(const index in this.questItems){
-      this.itemName.push(this.questItems[index].name);
+      this.itemNames.push(this.questItems[index].name);
     };
     // load character
     this.characterData = await loadCharacter();
@@ -124,8 +125,8 @@ class selectItemScene extends BaseScene {
           this.gridItem[col+row*4].isSelected = !this.gridItem[col+row*4].isSelected;
         });
 
-        this.add.text(750 + 100 + 218*(col+1), 120 + 166*(row+1), this.itemName[col+row*4], 
-          {fontFamily: 'Helvetica', color: 0x0f0f0f});
+        this.add.text(775 + 100 + 218*(col+1), 120 + 166*(row+1), this.itemNames[col+row*4], 
+          {fontFamily: 'Helvetica', color: 0x0f0f0f}).setOrigin(0.5);
       }
     }
     this.btnClear = this.add.sprite(1100, 870, "btnClear")
@@ -156,9 +157,20 @@ class selectItemScene extends BaseScene {
     });
     this.btnGo.on('pointerdown', () => {
       this.clickSound.play();
-      this.scene.transition({target: 'Scene1', duration: 0 });
+      switch(data.map){
+        case 'catalonia':
+          console.log('cata');
+          this.scene.start('catalonia_scene1');
+          break;
+        case 'jungle':
+          console.log('jung');
+          this.scene.start('jungle_scene1');
+          break;
+        default:
+          console.log('invalid map name');
+      }
       const returnValue = [];
-      for (let idx = 0; idx < this.itemName.length; idx++){
+      for (let idx = 0; idx < this.itemNames.length; idx++){
         if (this.gridItem[idx].isSelected == true) {
           returnValue.push(this.questItems[idx].id);
         }

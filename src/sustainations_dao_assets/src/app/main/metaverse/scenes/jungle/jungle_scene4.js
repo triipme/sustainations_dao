@@ -1,26 +1,26 @@
 import store from 'app/store';
 import Phaser from 'phaser';
-import BaseScene from './BaseScene'
-import gameConfig from '../GameConfig';
+import BaseScene from '../BaseScene'
+import gameConfig from '../../GameConfig';
 import { 
   loadEventOptions, 
   loadCharacter,
   updateCharacterStats,
   getCharacterStatus,
   characterTakeOption
-} from '../GameApi';
+} from '../../GameApi';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
-const bg1 = 'metaverse/scenes/Scene4/PNG/back-01.png';
-const bg2 = 'metaverse/scenes/Scene4/PNG/mid-01.png';
-const bg3 = 'metaverse/scenes/Scene4/PNG/front-01.png';
-const obstacle = 'metaverse/scenes/Scene4/PNG/obstacle-01.png';
+const bg1 = 'metaverse/scenes/jungle/Scene4/PNG/back-01.png';
+const bg2 = 'metaverse/scenes/jungle/Scene4/PNG/mid-01.png';
+const bg3 = 'metaverse/scenes/jungle/Scene4/PNG/front-01.png';
+const obstacle = 'metaverse/scenes/jungle/Scene4/PNG/obstacle-01.png';
 const selectAction = 'metaverse/scenes/background_menu.png';
 const btnBlank = 'metaverse/scenes/selection.png';
 
-export default class Scene4 extends BaseScene {
+export default class jungle_scene4 extends BaseScene {
   constructor() {
-    super('Scene4');
+    super('jungle_scene4');
   }
 
   clearSceneCache() {
@@ -256,7 +256,7 @@ export default class Scene4 extends BaseScene {
     if (this.player.x > 1920*2) {
       this.sfx_char_footstep.stop();
       this.ingameSound.stop();
-      this.scene.start("Scene5");
+      this.scene.start("jungle_scene5");
     }
 
     if (this.player.x > 1920*2 - 1000 && this.isInteracted == false) {

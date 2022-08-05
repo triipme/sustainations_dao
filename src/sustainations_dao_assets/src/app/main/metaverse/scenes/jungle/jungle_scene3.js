@@ -1,26 +1,26 @@
 import store from 'app/store';
 import Phaser from 'phaser';
-import BaseScene from './BaseScene'
-import gameConfig from '../GameConfig';
+import BaseScene from '../BaseScene'
+import gameConfig from '../../GameConfig';
 import { 
   loadEventOptions, 
   loadCharacter,
   updateCharacterStats,
   getCharacterStatus,
   characterTakeOption
-} from '../GameApi';
+} from '../../GameApi';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
-const bg1 = 'metaverse/scenes/Scene3/PNG/back-01.png';
-const bg2 = 'metaverse/scenes/Scene3/PNG/mid-01.png';
-const bg3 = 'metaverse/scenes/Scene3/PNG/front-01.png';
-const obstacle = 'metaverse/scenes/Scene3/PNG/obstacle-01-shortened.png';
+const bg1 = 'metaverse/scenes/jungle/Scene3/PNG/back-01.png';
+const bg2 = 'metaverse/scenes/jungle/Scene3/PNG/mid-01.png';
+const bg3 = 'metaverse/scenes/jungle/Scene3/PNG/front-01.png';
+const obstacle = 'metaverse/scenes/jungle/Scene3/PNG/obstacle-01-shortened.png';
 const selectAction = 'metaverse/scenes/background_menu.png';
 const btnBlank = 'metaverse/scenes/selection.png';
 
-export default class Scene3 extends BaseScene {
+export default class jungle_scene3 extends BaseScene {
   constructor() {
-    super('Scene3');
+    super('jungle_scene3');
   }
   clearSceneCache() {
     const textures_list = ['ground', 'background1', 'background2', 
@@ -261,7 +261,7 @@ export default class Scene3 extends BaseScene {
       this.ingameSound.stop();
       this.sfx_monkey.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start("Scene4");
+      this.scene.start("jungle_scene4");
     }
 
     if (this.player.x > 1920*4 -1000 && this.isInteracted == false) {
