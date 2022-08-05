@@ -57,7 +57,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   private stable var characterClasses : [(Text, Types.CharacterClass)] = [];
   private stable var characters : [(Text, Types.Character)] = [];
   private stable var characterTakesOptions : [(Text, Types.CharacterTakesOption)] = [];
-  private stable var characterTakesItems : [(Text, Types.CharacterTakesItems)] = [];
+  private stable var characterSelectsItems : [(Text, Types.CharacterSelectsItems)] = [];
   private stable var quests : [(Text, Types.Quest)] = [];
   private stable var items : [(Text, Types.Item)] = [];
   private stable var questItems: [(Text, Types.QuestItem)] = [];
@@ -86,7 +86,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     characterClasses := Iter.toArray(state.characterClasses.entries());
     characters := Iter.toArray(state.characters.entries());
     characterTakesOptions := Iter.toArray(state.characterTakesOptions.entries());
-    characterTakesItems := Iter.toArray(state.characterTakesItems.entries());
+    characterSelectsItems := Iter.toArray(state.characterSelectsItems.entries());
     quests := Iter.toArray(state.quests.entries());
     items := Iter.toArray(state.items.entries());
     questItems := Iter.toArray(state.questItems.entries());
@@ -139,8 +139,8 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     for ((k, v) in Iter.fromArray(characterTakesOptions)) {
       state.characterTakesOptions.put(k, v);
     };
-    for ((k, v) in Iter.fromArray(characterTakesItems)) {
-      state.characterTakesItems.put(k, v);
+    for ((k, v) in Iter.fromArray(characterSelectsItems)) {
+      state.characterSelectsItems.put(k, v);
     };
     for ((k, v) in Iter.fromArray(quests)) {
       state.quests.put(k, v);
@@ -1323,7 +1323,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   };
 
   // Character Takes Items
-  public shared({caller}) func createCharacterTakesItems(characterId : Text, itemIds : [Text]) : async Response<Text> {
+  public shared({caller}) func createCharacterSelectsItems(characterId : Text, itemIds : [Text]) : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
@@ -1332,24 +1332,24 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     switch (rsCharacter) {
       case null { #err(#NotFound); };
       case (?character) {
-        let rs : Types.CharacterTakesItems = {
+        let rs : Types.CharacterSelectsItems = {
           characterId = characterId;
           itemIds = itemIds;
         };
-        state.characterTakesItems.put(uuid, rs);
+        state.characterSelectsItems.put(uuid, rs);
         #ok("Success");
       };
     };
   };
 
-  public shared query({caller}) func listCharacterTakesItems(characterId : Text) : async Response<[Text]> {
+  public shared query({caller}) func listCharacterSelectsItems(characterId : Text) : async Response<[Text]> {
     var list : [Text] = [];
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
-    for((_, characterTakesItems) in state.characterTakesItems.entries()) {
-      if(characterTakesItems.characterId == characterId){
-        list := characterTakesItems.itemIds;
+    for((_, characterSelectsItems) in state.characterSelectsItems.entries()) {
+      if(characterSelectsItems.characterId == characterId){
+        list := characterSelectsItems.itemIds;
       }
     };
     #ok((list));
@@ -1625,7 +1625,6 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
         #ok("Success");
       };
     };
-    
   };
 
   public shared query({caller}) func readEventOption(id : Text) : async Response<(Types.EventOption)>{

@@ -64,10 +64,10 @@ async function resetCharacter(){
   });
 };
 
-function characterTakesItems(characterId, itemIds){
+function characterSelectsItems(characterId, itemIds){
   const promise = new Promise((resolve, reject) => {
     const { user } = store.getState();
-    const rs = user.actor.createCharacterTakesItems(characterId, itemIds);
+    const rs = user.actor.createCharacterSelectsItems(characterId, itemIds);
     resolve(rs);
   })
   promise.then((data)=>{
@@ -76,9 +76,9 @@ function characterTakesItems(characterId, itemIds){
 };
 
 
-async function listCharacterTakesItems(characterId){
+async function listCharacterSelectsItems(characterId){
   const { user } = store.getState();
-  const listItems = async () => await user.actor.listCharacterTakesItems(characterId);
+  const listItems = async () => await user.actor.listCharacterSelectsItems(characterId);
   const rs = (await listItems()).ok;
   // console.log(rs[1]);
   return rs;
@@ -113,8 +113,8 @@ export {
   characterTakeOption,
   resetCharacter,
   createDefautCharacter,
-  characterTakesItems,
-  listCharacterTakesItems,
+  characterSelectsItems,
+  listCharacterSelectsItems,
   takeOptionAbility,
   loadItemUrl
 }

@@ -7,7 +7,7 @@ import {
   updateCharacterStats,
   getCharacterStatus,
   characterTakeOption,
-  listCharacterTakesItems,
+  listCharacterSelectsItems,
   takeOptionAbility
 } from '../GameApi';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
@@ -213,7 +213,7 @@ export default class Scene1 extends BaseScene {
     // load character
     this.characterData = await loadCharacter();
     // list taken items by character
-    this.takenItems = await listCharacterTakesItems(this.characterData.id);
+    this.takenItems = await listCharacterSelectsItems(this.characterData.id);
     console.log(this.takenItems);
     // stats before choose option
     this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);

@@ -145,7 +145,7 @@ module {
     maxMorale : Float;
   };
 
-  public type CharacterTakesItems = {
+  public type CharacterSelectsItems = {
     characterId : Text;
     itemIds : [Text];
   };
@@ -186,28 +186,6 @@ module {
   public type EventOption = {
     id : Text;
     eventId : Text;
-    description : Text;
-    requireItemId : Text;
-    lossHP : Float;
-    lossMana : Float;
-    lossStamina : Float;
-    lossMorale : Float;
-    riskChance : Float;
-    riskLost : Text;
-    lossOther : Text;
-    gainExp : Int;
-    gainHP : Float;
-    gainStamina : Float;
-    gainMorale : Float;
-    gainMana : Float;
-    luckyChance : Float;
-    gainByLuck : Text;
-    gainOther : Float;
-  };
-
-  public type SubEventOption = {
-    id : Text;
-    eventOptionId : Text;
     description : Text;
     requireItemId : Text;
     lossHP : Float;

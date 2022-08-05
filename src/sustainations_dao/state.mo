@@ -22,7 +22,7 @@ module {
     characterClasses : Map<Text, Types.CharacterClass>;
     characters : Map<Text, Types.Character>;
     characterTakesOptions : Map<Text, Types.CharacterTakesOption>;
-    characterTakesItems : Map<Text, Types.CharacterTakesItems>;
+    characterSelectsItems : Map<Text, Types.CharacterSelectsItems>;
     quests : Map<Text, Types.Quest>;
     items : Map<Text, Types.Item>;
     questItems : Map<Text, Types.QuestItem>;
@@ -52,7 +52,7 @@ module {
       characterClasses = TrieMap.TrieMap<Text, Types.CharacterClass>(Text.equal, Text.hash);
       characters = TrieMap.TrieMap<Text, Types.Character>(Text.equal, Text.hash);
       characterTakesOptions = TrieMap.TrieMap<Text, Types.CharacterTakesOption>(Text.equal, Text.hash);
-      characterTakesItems = TrieMap.TrieMap<Text, Types.CharacterTakesItems>(Text.equal, Text.hash);
+      characterSelectsItems = TrieMap.TrieMap<Text, Types.CharacterSelectsItems>(Text.equal, Text.hash);
       quests = TrieMap.TrieMap<Text, Types.Quest>(Text.equal, Text.hash);
       items = TrieMap.TrieMap<Text, Types.Item>(Text.equal, Text.hash);
       questItems = TrieMap.TrieMap<Text, Types.QuestItem>(Text.equal, Text.hash);

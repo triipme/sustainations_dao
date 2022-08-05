@@ -4,7 +4,7 @@ import BaseScene from './BaseScene';
 import { 
   loadQuestItems, 
   loadCharacter,
-  characterTakesItems,
+  characterSelectsItems,
   loadItemUrl
 } from '../GameApi';
 
@@ -173,7 +173,7 @@ class selectItemScene extends BaseScene {
           returnValue.push(this.questItems[idx].id);
         }
       };
-      characterTakesItems(this.characterData.id, returnValue);
+      characterSelectsItems(this.characterData.id, returnValue);
       console.log(returnValue);
     });
   }
