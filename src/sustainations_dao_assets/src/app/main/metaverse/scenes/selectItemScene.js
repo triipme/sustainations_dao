@@ -38,11 +38,14 @@ class selectItemScene extends BaseScene {
     console.clear();
   }
 
+  init(data) {
+    this.map = data.map;
+  }
+
   preload() {
-    this.questId = "q1";
     this.itemNames = [];
     this.load.rexAwait(function(successCallback, failureCallback) {
-      loadQuestItems(this.questId).then( (result) => {
+      loadQuestItems(this.map).then( (result) => {
         this.questItems = result;
         for(const index in result){
           this.itemNames.push(result[index].name);
@@ -84,7 +87,6 @@ class selectItemScene extends BaseScene {
 
   //async 
   async create(data) {
-    console.log(data.map);
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
@@ -168,12 +170,10 @@ class selectItemScene extends BaseScene {
     this.btnGo.on('pointerdown', () => {
       this.clickSound.play();
       switch(data.map){
-        case 'catalonia':
-          console.log('cata');
+        case 'catalonia1':
           this.scene.start('catalonia_scene1');
           break;
         case 'jungle':
-          console.log('jung');
           this.scene.start('jungle_scene1');
           break;
         default:
