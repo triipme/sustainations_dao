@@ -3,7 +3,7 @@ import store from 'app/store';
 // call api
 async function loadQuestItems(questId){
   const { user } = store.getState();
-  const listQuestItems = async () => await  user.actor.listQuestItems(questId);
+  const listQuestItems = async () => await user.actor.listQuestItems(questId);
   const questItems = (await listQuestItems()).ok;
   return questItems;
 };

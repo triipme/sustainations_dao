@@ -84,7 +84,6 @@ class selectItemScene extends BaseScene {
 
   //async 
   async create(data) {
-    console.log(data.map);
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
@@ -125,17 +124,20 @@ class selectItemScene extends BaseScene {
         this.gridItem.push(
           this.add.sprite(750 + 218*(col+1), 166*(row+1), "itembox").setOrigin(0).setInteractive()
         );
+        if(this.itemNames[col+row*4] == undefined) {
+          this.gridItem[col+row*4].setFrame(2);
+        }
         this.gridItem[col+row*4].isSelected = false;
         this.gridItem[col+row*4].on('pointerdown', () => {
           this.clickSound.play();
-          if (this.gridItem[col+row*4].isSelected == false) {
+          if (this.gridItem[col+row*4].isSelected == false && this.itemNames[col+row*4] != undefined) {
             this.gridItem[col+row*4].setFrame(1);
-          } else {
+            this.gridItem[col+row*4].isSelected = !this.gridItem[col+row*4].isSelected;
+          } else if (this.itemNames[col+row*4] != undefined){
             this.gridItem[col+row*4].setFrame(0);
+            this.gridItem[col+row*4].isSelected = !this.gridItem[col+row*4].isSelected;
           }
-          this.gridItem[col+row*4].isSelected = !this.gridItem[col+row*4].isSelected;
         });
-
         this.add.image(750 + 120 + 218 * (col + 1), 90 + 166*(row + 1), this.itemNames[col+row*4]);
       }
     }
@@ -168,12 +170,10 @@ class selectItemScene extends BaseScene {
     this.btnGo.on('pointerdown', () => {
       this.clickSound.play();
       switch(data.map){
-        case 'catalonia':
-          console.log('cata');
-          this.scene.start('catalonia_scene1');
+        case 'catalonia1':
+          this.scene.start('catalonia_scene6');
           break;
         case 'jungle':
-          console.log('jung');
           this.scene.start('jungle_scene1');
           break;
         default:

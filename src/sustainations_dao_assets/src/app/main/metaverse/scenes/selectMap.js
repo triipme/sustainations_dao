@@ -103,7 +103,7 @@ class selectMap extends BaseScene {
     });
     this.selectAreaCatalonia.on('pointerdown', () => {
       this.clickSound.play();
-      this.scene.start('selectItemScene', {map: 'catalonia'});
+      this.scene.start('selectItemScene', {map: 'catalonia1'});
     });
 
     this.text = this.add.image(130, 850, 'text').setOrigin(0);
