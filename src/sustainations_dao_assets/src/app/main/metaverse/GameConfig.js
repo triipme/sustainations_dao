@@ -20,6 +20,7 @@ import catalonia_scene2 from './scenes/catalonia/catalonia_scene2';
 import catalonia_scene3 from './scenes/catalonia/catalonia_scene3';
 import catalonia_scene5 from './scenes/catalonia/catalonia_scene5';
 import catalonia_scene6 from './scenes/catalonia/catalonia_scene6';
+import catalonia_scene7 from './scenes/catalonia/catalonia_scene7';
 
 const gameConfig = {
   type: Phaser.CANVAS,
@@ -56,7 +57,7 @@ const gameConfig = {
   },
   scene: [preloadScene, menuScene, selectMap, selectItemScene, jungle_scene1, jungle_scene2, 
     jungle_scene3, jungle_scene4, jungle_scene5, jungle_scene6, jungle_scene7, thanks, exhausted, 
-    catalonia_scene1, catalonia_scene2, catalonia_scene3, catalonia_scene5, catalonia_scene6]
+    catalonia_scene1, catalonia_scene2, catalonia_scene3, catalonia_scene5, catalonia_scene6, catalonia_scene7]
 };
 
 export default gameConfig;

@@ -10,18 +10,17 @@ import {
 } from '../../GameApi';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
-const bg1 = 'metaverse/scenes/catalonia/Scene3/PNG/back.png';
-const bg2 = 'metaverse/scenes/catalonia/Scene3/PNG/mid.png';
-const bg3 = 'metaverse/scenes/catalonia/Scene3/PNG/front.png';
-const obstacle1 = 'metaverse/scenes/catalonia/Scene3/PNG/obstacle1.png';
-const obstacle2_back = 'metaverse/scenes/catalonia/Scene3/PNG/obstacle2_back.png';
-const obstacle2_front = 'metaverse/scenes/catalonia/Scene3/PNG/obstacle2_front.png';
+const bg1 = 'metaverse/scenes/catalonia/Scene7/PNG/back.png';
+const bg2 = 'metaverse/scenes/catalonia/Scene7/PNG/mid.png';
+const bg3 = 'metaverse/scenes/catalonia/Scene7/PNG/front.png';
+const obstacle_back = 'metaverse/scenes/catalonia/Scene7/PNG/obstacle_back.png';
+const obstacle_front = 'metaverse/scenes/catalonia/Scene7/PNG/obstacle_front.png';
 const selectAction = 'metaverse/scenes/background_menu.png';
 const btnBlank = 'metaverse/scenes/selection.png';
 
-export default class catalonia_scene3 extends BaseScene {
+export default class catalonia_scene7 extends BaseScene {
   constructor() {
-    super('catalonia_scene3');
+    super('catalonia_scene7');
   }
   
   clearSceneCache() {
@@ -83,9 +82,8 @@ export default class catalonia_scene3 extends BaseScene {
     this.load.image("background3", bg3);
     this.load.image("selectAction", selectAction);
     this.load.spritesheet('btnBlank', btnBlank, { frameWidth: 1102, frameHeight: 88});
-    this.load.image("obstacle", obstacle1);
-    this.load.image("obstacle2_front", obstacle2_front);
-    this.load.image("obstacle2_back", obstacle2_back);
+    this.load.image("obstacle_front", obstacle_front);
+    this.load.image("obstacle_back", obstacle_back);
   }
 
   //defined function
@@ -135,17 +133,22 @@ export default class catalonia_scene3 extends BaseScene {
     this.bg_2.setOrigin(0, 0);
     this.bg_2.setScrollFactor(0);
 
-    this.obstacle = this.add.tileSprite(0, 0, gameConfig.scale.width, gameConfig.scale.height, "obstacle")
-      .setOrigin(0,0)
-      .setScrollFactor(0);
-
     // platforms
     const platforms = this.physics.add.staticGroup();
-    for (let x = -100; x < 17000; x += 1) {
+    for (let x = -100; x < 3982; x += 1) {
       platforms.create(x, 950, "ground").refreshBody();
     }
-    // obstacle2 back
-    this.obstacle_back = this.add.tileSprite(0, 0, gameConfig.scale.width, gameConfig.scale.height, "obstacle2_back")
+    for (let x = 3982; x < 5120; x+=4) {
+      platforms.create(x, 950-((x - 3982)/4), "ground").refreshBody();
+    }
+    for (let x = 5118; x < 5973; x+=4) {
+      platforms.create(x, 666+((x - 5118)/4), "ground").refreshBody();
+    }
+    for (let x = 5973; x < 8000; x+=4) {
+      platforms.create(x, 950, "ground").refreshBody();
+    }
+    // obstacle back
+    this.obstacle_back = this.add.tileSprite(0, 0, gameConfig.scale.width, gameConfig.scale.height, "obstacle_back")
       .setOrigin(0,0)
       .setScrollFactor(0);
     //player
@@ -153,8 +156,8 @@ export default class catalonia_scene3 extends BaseScene {
     this.player.setBounce(0.25);
     this.player.setCollideWorldBounds(false);
     this.physics.add.collider(this.player, platforms);
-    // obstacle2 front
-    this.obstacle_front = this.add.tileSprite(0, 0, gameConfig.scale.width, gameConfig.scale.height, "obstacle2_front")
+    // obstacle front
+    this.obstacle_front = this.add.tileSprite(0, 0, gameConfig.scale.width, gameConfig.scale.height, "obstacle_front")
       .setOrigin(0,0)
       .setScrollFactor(0);
 
@@ -204,7 +207,7 @@ export default class catalonia_scene3 extends BaseScene {
 
     //mycam
     this.myCam = this.cameras.main;
-    this.myCam.setBounds(0, 0, 13000, gameConfig.scale.height); //furthest distance the cam is allowed to move
+    this.myCam.setBounds(0, 0, gameConfig.scale.width*4, gameConfig.scale.height); //furthest distance the cam is allowed to move
     this.myCam.startFollow(this.player);
 
     //pause screen
@@ -262,13 +265,13 @@ export default class catalonia_scene3 extends BaseScene {
       this.player.setVelocityX(350);
     }
 
-    if (this.player.x > 13100) {
+    if (this.player.x > 7680) {
       this.ingameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start('catalonia_scene5');
+      this.scene.start('thanks');
     }
 
-    if (this.player.x > 3000 && this.isInteracted == false) {
+    if (this.player.x > 3900 && this.isInteracted == false) {
       this.triggerPause();
       this.ambientSound.stop();
       this.sfx_char_footstep.stop();
@@ -288,7 +291,6 @@ export default class catalonia_scene3 extends BaseScene {
     // scroll the texture of the tilesprites proportionally to the camera scroll
     this.bg_1.tilePositionX = this.myCam.scrollX * .3;
     this.bg_2.tilePositionX = this.myCam.scrollX * 1;
-    this.obstacle.tilePositionX = this.myCam.scrollX * 1;
     this.obstacle_back.tilePositionX = this.myCam.scrollX * 1;
     this.obstacle_front.tilePositionX = this.myCam.scrollX * 1;
     this.bg_3.tilePositionX = this.myCam.scrollX * 1;

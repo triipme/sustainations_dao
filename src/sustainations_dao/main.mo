@@ -1265,13 +1265,12 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     switch (state.eventOptions.get(eventOptionId)) {
       case null { #err(#NotFound); };
       case (?eventOption){
-        if(itemIds.size() == 0){
+        if(eventOption.requireItemId == "null"){
           result := true;
-        } else {
-          for(itemId in itemIds.vals()){
-            if(eventOption.requireItemId == itemId or eventOption.requireItemId == "null"){
-              result := true;
-            };
+        };
+        for(itemId in itemIds.vals()){
+          if(eventOption.requireItemId == itemId){
+            result := true;
           };
         };
         #ok(result);

@@ -257,7 +257,7 @@ export default class catalonia_scene2 extends BaseScene {
       this.scene.start('catalonia_scene3');
     }
 
-    if (this.player.x > 1920*4 -1000 && this.isInteracted == false) {
+    if (this.player.x > 14000 && this.isInteracted == false) {
       this.triggerPause();
       this.ambientSound.stop();
       this.sfx_char_footstep.stop();

@@ -244,10 +244,10 @@ export default class catalonia_scene6 extends BaseScene {
       this.player.setVelocityX(350);
     }
 
-    if (this.player.x > 16100) {
+    if (this.player.x > 1920*4) {
       this.ingameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start('catalonia_scene6');
+      this.scene.start('catalonia_scene7');
     }
 
     if (this.player.x > 1920*4 - 1500 && this.isInteracted == false) {

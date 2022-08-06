@@ -237,7 +237,6 @@ export default class catalonia_scene1 extends BaseScene {
         this.clickSound.play();
         this.sfx_char_footstep.play();
         this.sfx_obstacle_remove.play();
-        this.obstacle.setVisible(false);
         // stats after choose option
         this.setValue(this.hp, this.characterTakeOptions[idx].currentHP/this.characterTakeOptions[idx].maxHP*100);
         this.setValue(this.stamina, this.characterTakeOptions[idx].currentStamina/this.characterTakeOptions[idx].maxStamina*100);
