@@ -1,5 +1,5 @@
-yarn install
-vessel install
+# yarn install
+# vessel install
 
 ### === DEPLOY LOCAL LEDGER =====
 dfx identity new minter

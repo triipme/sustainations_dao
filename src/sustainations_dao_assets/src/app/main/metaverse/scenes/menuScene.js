@@ -1,11 +1,10 @@
 import Phaser from "phaser";
 import BaseScene from './BaseScene'
+import gameConfig from '../GameConfig';
 import history from "@history";
 
 import { createDefautCharacter } from "../GameApi";
-const logo = 'images/logo/sustainations-logo.png';
-const loading = 'metaverse/loading/loadingSprite.png';
-const bg = "metaverse/menu/background.png";
+const menu_bg = "metaverse/menu/background.png";
 const welcomeText = "metaverse/menu/welcome.png";
 const introduction_btn = "metaverse/menu/introduction.png";
 const bootcamp_btn = "metaverse/menu/bootcamp.png";
@@ -39,12 +38,20 @@ class menuScene extends Phaser.Scene {
   }
 
   preload() {
-    // assets global uses across scenes
-    this.load.image('logo', logo);
-    this.load.spritesheet("loading", loading, {
-      frameWidth: 630,
-      frameHeight: 637
+    //loading screen
+    this.add.image(
+      gameConfig.scale.width/2, gameConfig.scale.height/2 - 50, 'logo'
+    ).setOrigin(0.5, 0.5).setScale(0.26);
+    this.anims.create({
+      key: 'loading-anims',
+      frames: this.anims.generateFrameNumbers("loading", {start: 0, end: 11}),
+      frameRate: 12,
+      repeat: -1
     });
+    this.add.sprite(
+      gameConfig.scale.width/2, gameConfig.scale.height/2 + 150, "loading"
+    ).setScale(0.07).play('loading-anims');
+
     //load audio 1 time
     this.load.audio('hoverSound', hoverSound);
     this.load.audio('clickSound', clickSound);
@@ -59,7 +66,7 @@ class menuScene extends Phaser.Scene {
     this.load.audio('sfx_obstacle_remove', sfx_obstacle_remove);
 
     // preload
-    this.load.image("bg", bg);
+    this.load.image("menu_bg", menu_bg);
     this.load.image("welcomeText", welcomeText);
     this.load.image("cs_noti", cs_noti);
     this.load.spritesheet("introduction_btn", introduction_btn, {
@@ -85,7 +92,7 @@ class menuScene extends Phaser.Scene {
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
 
-    this.background = this.add.image(0, 0, "bg").setOrigin(0);
+    this.background = this.add.image(0, 0, "menu_bg").setOrigin(0);
     this.welcomeText = this.add.image(960, 210, "welcomeText");
     this.noti = this.add.image(100, 100, "cs_noti")
       .setOrigin(0).setVisible(false).setScale(0.7);

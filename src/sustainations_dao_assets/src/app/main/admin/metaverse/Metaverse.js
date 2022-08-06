@@ -156,24 +156,6 @@ const Metaverse = () => {
     });
   };
 
-  // const createCharacter = () => {
-  //   return new Promise((resolve) => {
-  //     const characterClassIds = data[5];
-  //     characterClassIds.forEach(async(characterClassId)=>{
-  //       try {
-  //         if (!!actor?.createCharacter) {
-  //           const rs = await actor.createCharacter(characterClassId);
-  //           console.log("Create Character");
-  //           console.log(rs);
-  //         }
-  //       } catch (error) {
-  //         console.log(error);
-  //       }
-  //     });
-  //     resolve();
-  //   })
-  // };
-
   const createQuestItem = () => {
     return new Promise(resolve => {
       const questItems = data[5];
@@ -197,10 +179,9 @@ const Metaverse = () => {
     await createItem();
     await createQuest();
     await createQuestItem();
-    await createCharacterClass();
-    // await createCharacter();
     await createEvent();
     await createEventOption();
+    await createCharacterClass();
     setLoading(false);
   };
 

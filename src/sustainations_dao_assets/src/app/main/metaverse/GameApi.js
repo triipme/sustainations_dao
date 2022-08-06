@@ -3,7 +3,7 @@ import store from 'app/store';
 // call api
 async function loadQuestItems(questId){
   const { user } = store.getState();
-  const listQuestItems = async () => await  user.actor.listQuestItems(questId);
+  const listQuestItems = async () => await user.actor.listQuestItems(questId);
   const questItems = (await listQuestItems()).ok;
   return questItems;
 };
@@ -24,7 +24,7 @@ async function characterTakeOption(eventId){
 
 async function createDefautCharacter(){
   const { user } = store.getState();
-  const create = async () => await user.actor.createCharacter(1);
+  const create = async () => await user.actor.createCharacter("cc1");
   const character = (await create()).ok;
   return character;
 };
@@ -57,10 +57,51 @@ function getCharacterStatus(){
 };
 
 async function resetCharacter(){
+  return new Promise((resolve, reject) => {
+    const { user } = store.getState();
+    const rs = user.actor.resetCharacterStat();
+    resolve(rs);
+  });
+};
+
+function characterSelectsItems(characterId, itemIds){
+  const promise = new Promise((resolve, reject) => {
+    const { user } = store.getState();
+    const rs = user.actor.createCharacterSelectsItems(characterId, itemIds);
+    resolve(rs);
+  })
+  promise.then((data)=>{
+    return data;
+  })
+};
+
+
+async function listCharacterSelectsItems(characterId){
   const { user } = store.getState();
-  const reset = async () => await user.actor.resetCharacterStat();
-  const result = (await reset()).ok;
-  return result;
+  const listItems = async () => await user.actor.listCharacterSelectsItems(characterId);
+  const rs = (await listItems()).ok;
+  // console.log(rs[1]);
+  return rs;
+};
+
+async function takeOptionAbility(eventOptionId, itemIds){
+  const { user } = store.getState();
+  const takeable = async () => await user.actor.takeOptionAbility(eventOptionId, itemIds);
+  const rs = (await takeable()).ok;
+  // console.log(rs[1]);
+  return rs;
+};
+
+function loadItemUrl(key) {
+  let AWS = require('aws-sdk');
+  AWS.config.update({
+    accessKeyId: process.env.S3_ACCESS_KEY,
+    secretAccessKey: process.env.S3_SECRET_KEY,
+    region: process.env.S3_REGION,
+  });
+  let s3 = new AWS.S3();
+  const signedUrl = s3.getSignedUrl('getObject', { Bucket: process.env.S3_BUCKET, Key: key });
+  return signedUrl;
 };
 
 export {
@@ -71,5 +112,9 @@ export {
   getCharacterStatus,
   characterTakeOption,
   resetCharacter,
-  createDefautCharacter
+  createDefautCharacter,
+  characterSelectsItems,
+  listCharacterSelectsItems,
+  takeOptionAbility,
+  loadItemUrl
 }
