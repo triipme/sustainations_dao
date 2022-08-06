@@ -5,13 +5,13 @@ import * as yup from 'yup';
 import { selectUser } from 'app/store/userSlice';
 import { showMessage } from 'app/store/fuse/messageSlice';
 import { useForm } from 'react-hook-form';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
+import FuseUtils from '@fuse/utils';
 import useThemeMediaQuery from '@fuse/hooks/useThemeMediaQuery';
 import FusePageCarded from '@fuse/core/FusePageCarded';
 import FuseLoading from '@fuse/core/FuseLoading';
-import BrandFormHeader from './BrandFormHeader';
-import RefillBrandForm from './RefillBrandForm';
-import _ from 'lodash';
+import RefillBrandForm from '../../admin/refill-brands/brand/RefillBrandForm';
+import { authRoles } from "../../../auth";
 /**
  * Form Validation Schema
  */
@@ -19,20 +19,21 @@ const schema = yup.object().shape({
   name: yup
     .string()
     .required('You must enter a brand name'),
-  brandOwner: yup
-    .string()
-    .required('You must enter a brand owner'),
 });
 
-const EditRefillBrand = () => {
+const EditBrand = () => {
   const [loading, setLoading] = useState(true);
   const [submitLoading, setSubmitLoading] = useState(false);
   const dispatch = useDispatch();
   const isMobile = useThemeMediaQuery((theme) => theme.breakpoints.down('lg'));
   const user = useSelector(selectUser);
   const navigate = useNavigate();
-  const routeParams = useParams();
-  const { brandId } = routeParams;
+  const { brandId } = user;
+
+  if (!FuseUtils.hasPermission(authRoles.refillBrandOwner, user.role)) {
+    dispatch(showMessage({ message: 'Required owner role.' }));
+    return (<Navigate to="/refill-network/brand" />);
+  }
 
   const methods = useForm({
     mode: 'onChange',
@@ -42,8 +43,6 @@ const EditRefillBrand = () => {
       email: '',
       address: '',
       story: '',
-      brandOwner: '',
-      ownerName: '',
     },
     resolver: yupResolver(schema),
   });
@@ -61,9 +60,7 @@ const EditRefillBrand = () => {
             phone: brand.phone[0],
             email: brand.email[0],
             address: brand.address[0],
-            story: brand.story[0],
-            brandOwner: result.ok[0],
-            ownerName: result.ok[1],
+            story: brand.story[0]
           });
         } else {
           navigate('/404');
@@ -86,10 +83,10 @@ const EditRefillBrand = () => {
     }
 
     try {
-      const result = await user.actor.updateRefillBrand(brandId, payload, [data.brandOwner], [data.ownerName]);
+      const result = await user.actor.updateRefillBrand(brandId, payload, [], []);
       if ("ok" in result) {
         dispatch(showMessage({ message: 'Success!' }));
-        navigate('/admin/refill-brands');
+        navigate('/refill-network/brand');
       } else {
         throw result?.err;
       }
@@ -97,7 +94,7 @@ const EditRefillBrand = () => {
       console.log(error);
       const message = {
         "NotAuthorized": "Please sign in!.",
-        "AdminRoleRequired": 'Required admin role.',
+        "AdminRoleRequired": 'Required owner role.',
         "Notfound": "Brand is not found."
       }[Object.keys(error)[0]] || 'Error! Please try again later!'
       dispatch(showMessage({ message }));
@@ -111,15 +108,15 @@ const EditRefillBrand = () => {
 
   return (
     <FusePageCarded
-      header={<BrandFormHeader actionText="Edit" />}
       content={<RefillBrandForm
         methods={methods} submitLoading={submitLoading}
         onSubmit={onSubmit}
-        showOwner={true}
+        showOwner={false}
+        cancelLink="/refill-network/brand"
       />}
       scroll={isMobile ? 'normal' : 'content'}
     />
   );
 }
 
-export default EditRefillBrand;
+export default EditBrand;

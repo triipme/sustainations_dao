@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 
-function RefillBrandsHeader({ handleSearchText }) {
+function StationsHeader({ handleSearchText }) {
 
   return (
     <div className="flex flex-col sm:flex-row space-y-16 sm:space-y-0 flex-1 w-full items-center justify-between py-32 px-24 md:px-32">
@@ -17,7 +17,7 @@ function RefillBrandsHeader({ handleSearchText }) {
         delay={300}
         className="text-24 md:text-32 font-extrabold tracking-tight"
       >
-        Refill Brands
+        Stations
       </Typography>
 
       <div className="flex flex-col w-full sm:w-auto sm:flex-row space-y-16 sm:space-y-0 flex-1 items-center justify-end space-x-8">
@@ -30,7 +30,7 @@ function RefillBrandsHeader({ handleSearchText }) {
           <FuseSvgIcon color="disabled">search_outlined</FuseSvgIcon>
 
           <Input
-            placeholder="Search brands"
+            placeholder="Search stations"
             className="flex flex-1"
             disableUnderline
             fullWidth
@@ -45,7 +45,7 @@ function RefillBrandsHeader({ handleSearchText }) {
           animate={{ opacity: 1, x: 0, transition: { delay: 0.2 } }}
         >
           <Button
-            to="/admin/refill-brands/new"
+            to="/refill-network/stations/new"
             component={Link}
             className="px-16 min-w-128"
             color="secondary"
@@ -56,7 +56,7 @@ function RefillBrandsHeader({ handleSearchText }) {
               </FuseSvgIcon>
             }
           >
-            Create Brand
+            Create Staff
           </Button>
         </motion.div>
       </div>
@@ -64,4 +64,4 @@ function RefillBrandsHeader({ handleSearchText }) {
   );
 }
 
-export default RefillBrandsHeader;
+export default StationsHeader;

@@ -48,7 +48,7 @@ const navigationConfig = [
         id: 'refill-brand',
         title: 'Brand',
         type: 'item',
-        auth: authRoles.refillBrandOwner,
+        auth: authRoles.refillBrandStaff,
         url: '/refill-network/brand',
       },
       {

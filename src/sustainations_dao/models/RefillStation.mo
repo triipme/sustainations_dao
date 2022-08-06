@@ -27,6 +27,7 @@ module {
   public type Manager = {
     brandId : Text;
     role : ManagerRole;
+    username : Text;
   };
 
   public type Category = {
@@ -64,8 +65,8 @@ module {
     name : Text;
     phone : Text;
     address : Text;
-    latitude : Float;
-    longitude : Float;
+    latitude : ?Float;
+    longitude : ?Float;
     activate : Bool;
   };
 

@@ -12,39 +12,67 @@ import { FormProvider } from 'react-hook-form';
 import { Controller } from 'react-hook-form';
 
 const RefillBrandForm = (props) => {
-  const { methods, submitLoading, handleSubmit } = props;
-  const { control, formState } = methods;
-  const { errors } = formState;
+  const { methods, submitLoading, onSubmit, cancelLink, showOwner } = props;
+  const { control, formState, handleSubmit } = methods;
+  const { isValid, errors } = formState;
 
   return (
     <Card className="w-full py-32 mx-auto rounded-2xl shadow">
       <CardContent>
         <FormProvider {...methods}>
-          <Controller
-            name="brandOwner"
-            control={control}
-            render={({ field }) => (
-              <div className="flex-1 mb-24">
-                <div className="flex items-center mt-16 mb-12">
-                  <Typography className="font-semibold text-16 mx-8">
-                    <span className="text-red-500">*</span>&nbsp;Brand Owner
-                  </Typography>
-                </div>
-                <TextField
-                  {...field}
-                  label="Brand Owner"
-                  className="mt-8 mb-16"
-                  error={!!errors.brandOwner}
-                  required
-                  helperText={errors?.brandOwner?.message}
-                  autoFocus
-                  id="brandOwner"
-                  variant="outlined"
-                  fullWidth
-                />
-              </div>
-            )}
-          />
+          {showOwner && (
+            <>
+              <Controller
+                name="brandOwner"
+                control={control}
+                render={({ field }) => (
+                  <div className="flex-1 mb-24">
+                    <div className="flex items-center mt-16 mb-12">
+                      <Typography className="font-semibold text-16 mx-8">
+                        <span className="text-red-500">*</span>&nbsp;Brand Owner
+                      </Typography>
+                    </div>
+                    <TextField
+                      {...field}
+                      label="Brand Owner"
+                      className="mt-8 mb-16"
+                      error={!!errors.brandOwner}
+                      required
+                      helperText={errors?.brandOwner?.message}
+                      autoFocus
+                      id="brandOwner"
+                      variant="outlined"
+                      fullWidth
+                    />
+                  </div>
+                )}
+              />
+              <Controller
+                name="ownerName"
+                control={control}
+                render={({ field }) => (
+                  <div className="flex-1 mb-24">
+                    <div className="flex items-center mt-16 mb-12">
+                      <Typography className="font-semibold text-16 mx-8">
+                        <span className="text-red-500">*</span>&nbsp;Owner name
+                      </Typography>
+                    </div>
+                    <TextField
+                      {...field}
+                      label="Owner name"
+                      className="mt-8 mb-16"
+                      error={!!errors.ownerName}
+                      required
+                      helperText={errors?.ownerName?.message}
+                      id="ownerName"
+                      variant="outlined"
+                      fullWidth
+                    />
+                  </div>
+                )}
+              />
+            </>
+          )}
           <Controller
             name="name"
             control={control}
@@ -156,14 +184,18 @@ const RefillBrandForm = (props) => {
               <Button
                 color="inherit"
                 variant="contained"
-                to={'/admin/refill-brands'}
+                to={cancelLink || '/admin/refill-brands'}
                 component={Link}
                 sx={{ mr: 1 }}
               >
                 Cancel
               </Button>
               <Box sx={{ flex: '1 1 auto' }} />
-              <LoadingButton variant="contained" color="primary" loading={submitLoading} onClick={handleSubmit}>Submit</LoadingButton>
+              <LoadingButton
+                variant="contained" color="primary"
+                disabled={!isValid}
+                loading={submitLoading} onClick={handleSubmit(onSubmit)}
+              >Submit</LoadingButton>
             </Box>
           </React.Fragment>
         </FormProvider>

@@ -3,23 +3,25 @@ import _ from '@lodash';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
-import TablePagination from '@mui/material/TablePagination';
-import TableRow from '@mui/material/TableRow';
-import Typography from '@mui/material/Typography';
-import clsx from 'clsx';
+import {
+  Chip,
+  TablePagination,
+  TableRow,
+  Typography
+} from '@mui/material';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 
 import withRouter from '@fuse/core/withRouter';
-import RefillBrandsTableHead from './RefillBrandsTableHead';
+import StationsTableHead from './StationsTableHead';
 
-function RefillBrandsTable(props) {
-  const { brands } = props;
+function StationsTable(props) {
+  const { stations } = props;
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  function handleClick(brandId) {
-    props.navigate(`/admin/refill-brands/${brandId}/edit`);
+  function handleClick(stationId) {
+    props.navigate(`/refill-network/stations/${stationId}/edit`);
   }
 
   function handleChangePage(_event, value) {
@@ -30,7 +32,7 @@ function RefillBrandsTable(props) {
     setRowsPerPage(event.target.value);
   }
 
-  if (brands.length === 0) {
+  if (stations.length === 0) {
     return (
       <motion.div
         initial={{ opacity: 0 }}
@@ -38,7 +40,7 @@ function RefillBrandsTable(props) {
         className="flex flex-1 items-center justify-center h-full"
       >
         <Typography color="text.secondary" variant="h5">
-          There are no refill brands!
+          There are no stations!
         </Typography>
       </motion.div>
     );
@@ -48,17 +50,17 @@ function RefillBrandsTable(props) {
     <div className="w-full flex flex-col min-h-full">
       <FuseScrollbars className="grow overflow-x-auto">
         <Table stickyHeader className="min-w-xl" aria-labelledby="tableTitle">
-          <RefillBrandsTableHead />
+          <StationsTableHead />
 
           <TableBody>
-            {brands.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((brand, index) => {
+            {stations.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+              .map((station, index) => {
                 return (
                   <TableRow
                     className="h-72 cursor-pointer"
                     hover
-                    key={brand[0]}
-                    onClick={() => handleClick(brand[0])}
+                    key={station[0]}
+                    onClick={() => handleClick(station[0])}
                   >
                     <TableCell
                       className="w-40 md:w-64 text-center"
@@ -70,19 +72,21 @@ function RefillBrandsTable(props) {
                     </TableCell>
 
                     <TableCell className="p-4 md:p-16" component="th" scope="row">
-                      {brand[1].name}
+                      {station[1].name}
                     </TableCell>
 
                     <TableCell className="p-4 md:p-16" component="th" scope="row">
-                      {brand[1].phone}
+                      {station[1].phone}
                     </TableCell>
 
                     <TableCell className="p-4 md:p-16" component="th" scope="row">
-                      {brand[1].email}
+                      {station[1].address}
                     </TableCell>
 
-                    <TableCell className="p-4 md:p-16" component="th" scope="row">
-                      {brand[1].address}
+                    <TableCell className="p-4 md:p-16" component="th" scope="row" align="right">
+                      {station[1].activate ? (
+                        <Chip label="Active" color="primary" />
+                      ) : (<Chip label="Inactive" color="warning" />)}
                     </TableCell>
                   </TableRow>
                 );
@@ -94,7 +98,7 @@ function RefillBrandsTable(props) {
       <TablePagination
         className="shrink-0 border-t-1"
         component="div"
-        count={brands.length}
+        count={stations.length}
         rowsPerPage={rowsPerPage}
         page={page}
         backIconButtonProps={{
@@ -110,4 +114,4 @@ function RefillBrandsTable(props) {
   );
 }
 
-export default withRouter(RefillBrandsTable);
+export default withRouter(StationsTable);

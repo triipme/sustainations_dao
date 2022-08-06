@@ -33,7 +33,7 @@ const EditProfile = () => {
   const currentAvatarPath = profile?.avatar[0];
   const avatarUUID = currentAvatarPath ? currentAvatarPath.split("/")[2].split(".")[0] : uuidv4();
 
-  const { control, watch, formState, getValues } = useForm({
+  const { control, watch, handleSubmit, formState, getValues } = useForm({
     mode: 'onChange',
     defaultValues: {
       username: profile?.username[0],
@@ -48,9 +48,8 @@ const EditProfile = () => {
   const avatar = watch('avatar');
   const { errors } = formState;
 
-  const handleSubmit = async () => {
+  const onSubmit = async (data) => {
     setLoading(true);
-    const data = getValues();
     try {
       const result = await user.actor.updateUserProfile(
         [data.username], [data.phone], [data.avatar.path || '']
@@ -239,7 +238,7 @@ const EditProfile = () => {
                 variant="contained"
                 color="secondary"
                 loading={loading}
-                onClick={handleSubmit}
+                onClick={handleSubmit(onSubmit)}
               >
                 Save
               </LoadingButton>

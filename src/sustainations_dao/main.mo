@@ -819,7 +819,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   };
 
   public shared({ caller }) func createRefillBrand(
-    payload : Types.RefillBrand, owner : Text
+    payload : Types.RefillBrand, ownerPrincipal : Text, ownerName : Text
   ) : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
@@ -832,30 +832,40 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     let uuid = await createUUID();
     state.refillBrand.brands.put(uuid, payload);
     state.refillBrand.managers.put(
-      Principal.fromText(owner),
-      { brandId = uuid; role = #owner }
+      Principal.fromText(ownerPrincipal),
+      { brandId = uuid; role = #owner; username = ownerName }
     );
     #ok(uuid);
   };
 
-  public query func getRefillBrand(uuid : Text) : async Response<(Text, Types.RefillBrand)> {
+  public query func getRefillBrand(uuid : Text) : async Response<(Text, Text, Types.RefillBrand)> {
     switch (state.refillBrand.brands.get(uuid)) {
       case null { #err(#NotFound) };
       case (?brand) {
-        var brandOwner : Text = "";
-        for ((principal, manager) in state.refillBrand.managers.entries()) {
-          if (manager.brandId == uuid and manager.role == #owner) {
-            brandOwner := Principal.toText(principal);
-          };
+        var ownerPrincipal : Text = "";
+        var ownerName : Text = "";
+        let managers = state.refillBrand.managers.entries();
+        label managerLabel loop {
+          switch (managers.next()) {
+            case (? (principal, staff)) {
+              if (staff.brandId == uuid and staff.role == #owner) {
+                ownerPrincipal := Principal.toText(principal);
+                ownerName := staff.username;
+                break managerLabel;
+              }
+            };
+            case (null) break managerLabel;
+          }
         };
-        #ok((brandOwner, brand));
+        #ok((ownerPrincipal, ownerName, brand));
       };
     };
   };
 
   public shared({ caller }) func updateRefillBrand(
     uuid : Text,
-    payload : Types.RefillBrand
+    payload : Types.RefillBrand,
+    ownerPrincipal : ?Text, ownerName : ?Text
   ) : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
@@ -868,8 +878,36 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
           brandId = ""; role = "";
         });
         // required system admin role or brand's owner
-        if (isAdmin(caller) == true or (manager.brandId == uuid and manager.role == #owner)) {
+        let isOwner = manager.brandId == uuid and manager.role == #owner;
+        if (isAdmin(caller) == true or (isOwner)) {
           let updated = state.refillBrand.brands.replace(uuid, payload);
+          switch (ownerPrincipal) {
+            case null {};
+            case (?ownerText) {
+              var brandOwner : Principal = caller;
+              if (isOwner == false) {
+                let managers = state.refillBrand.managers.entries();
+                label managerLabel loop {
+                  switch (managers.next()) {
+                    case (? (principal, staff)) {
+                      if (staff.brandId == uuid and staff.role == #owner) {
+                        brandOwner := principal;
+                        break managerLabel;
+                      }
+                    };
+                    case (null) break managerLabel;
+                  }
+                };
+              };
+              // remove old owner role
+              let oldOwner = state.refillBrand.managers.delete(brandOwner);
+              // set new owner role
+              let newOwner = state.refillBrand.managers.put(
+                Principal.fromText(ownerText),
+                { brandId = uuid; role = #owner; username = Option.get(ownerName, "") }
+              );
+            };
+          };
           #ok(uuid);
         } else {
           #err(#AdminRoleRequired);
@@ -884,7 +922,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   };
 
   /* === For Refill Brand's Owner/Staff === */
-  public shared({ caller }) func setRBManager(principal : Text) : async Response<Text> {
+  public shared({ caller }) func setRBManager(principal : Text, username : Text) : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
@@ -899,6 +937,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
                 manager, {
                   brandId = owner.brandId;
                   role = #staff;
+                  username;
                 }
               );
               #ok("Success");
@@ -909,6 +948,51 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
         };
       };
       case _ { #err(#AlreadyExisting) };
+    };
+  };
+
+  public query({ caller }) func getRBManager(principal : Text) : async Response<Types.RBManager> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    let staff = Principal.fromText(principal);
+    switch (state.refillBrand.managers.get(staff)) {
+      case (null) { #err(#NotFound); };
+      case (?manager) {
+        #ok(manager);
+      };
+    };
+  };
+
+  public shared({ caller }) func updateRBManager(principal : Text, username : Text) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let manager = Principal.fromText(principal);
+    switch (state.refillBrand.managers.get(manager)) {
+      case null { #err(#NotFound) };
+      case (?staff) {
+        switch (state.refillBrand.managers.get(caller)) {
+          case (null) { #err(#OwnerRoleRequired); };
+          case (?owner) {
+            if (staff.brandId != owner.brandId) {
+              #err(#NotFound);
+            } else if (owner.role == #owner) {
+              let replaced = state.refillBrand.managers.replace(
+                manager, {
+                  brandId = staff.brandId;
+                  role = #staff;
+                  username;
+                }
+              );
+              #ok("Success");
+            } else {
+              #err(#OwnerRoleRequired);
+            };
+          };
+        };
+      };
     };
   };
 
@@ -940,7 +1024,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public query({ caller }) func listRBManagers() : async Response<[(Text, RS.ManagerRole)]> {
+  public query({ caller }) func listRBManagers() : async Response<[(Text, Text, RS.ManagerRole)]> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
@@ -949,9 +1033,13 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
       case (null) { #err(#OwnerRoleRequired) };
       case (?owner) {
         if (owner.role == #owner) {
-          var results : [(Text, RS.ManagerRole)] = [];
+          var results : [(Text, Text, RS.ManagerRole)] = [];
           for ((principal, manager) in state.refillBrand.managers.entries()) {
-            results := Array.append<(Text, RS.ManagerRole)>(results, [(Principal.toText(principal), manager.role)]);
+            if (manager.brandId == owner.brandId and manager.role == #staff) {
+              results := Array.append<(Text, Text, RS.ManagerRole)>(
+                results, [(Principal.toText(principal), manager.username, manager.role)]
+              );
+            };
           };
           #ok(results);
         } else {

@@ -5,7 +5,7 @@ import { lighten } from '@mui/material/styles';
 
 const rows = [
   {
-    id: 'uuid',
+    id: 'index',
     align: 'left',
     disablePadding: false,
     label: '#',
@@ -23,20 +23,20 @@ const rows = [
     label: 'Phone',
   },
   {
-    id: 'email',
-    align: 'left',
-    disablePadding: false,
-    label: 'Email',
-  },
-  {
     id: 'address',
     align: 'left',
     disablePadding: false,
     label: 'Address',
   },
+  {
+    id: 'status',
+    align: 'right',
+    disablePadding: false,
+    label: 'Status',
+  }
 ];
 
-function RefillBrandsTableHead() {
+function StationsTableHead() {
   return (
     <TableHead>
       <TableRow className="h-48 sm:h-64">
@@ -63,4 +63,4 @@ function RefillBrandsTableHead() {
   );
 }
 
-export default RefillBrandsTableHead;
+export default StationsTableHead;

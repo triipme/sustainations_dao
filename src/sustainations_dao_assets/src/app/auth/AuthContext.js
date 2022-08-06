@@ -57,7 +57,7 @@ function AuthProvider({ children }) {
           depositAddress: result?.ok?.depositAddress,
           balance: result?.ok?.balance,
           principal,
-          brandId: result?.ok?.brandId,
+          brandId: result?.ok?.brandId[0],
           profile,
           avatar
         };

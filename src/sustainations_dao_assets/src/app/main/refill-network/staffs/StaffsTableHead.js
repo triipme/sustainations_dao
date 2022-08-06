@@ -5,10 +5,16 @@ import { lighten } from '@mui/material/styles';
 
 const rows = [
   {
-    id: 'uuid',
+    id: 'index',
     align: 'left',
     disablePadding: false,
     label: '#',
+  },
+  {
+    id: 'principal',
+    align: 'left',
+    disablePadding: false,
+    label: 'Principal',
   },
   {
     id: 'name',
@@ -17,26 +23,14 @@ const rows = [
     label: 'Name',
   },
   {
-    id: 'phone',
-    align: 'left',
+    id: 'actions',
+    align: 'right',
     disablePadding: false,
-    label: 'Phone',
-  },
-  {
-    id: 'email',
-    align: 'left',
-    disablePadding: false,
-    label: 'Email',
-  },
-  {
-    id: 'address',
-    align: 'left',
-    disablePadding: false,
-    label: 'Address',
-  },
+    label: 'Actions',
+  }
 ];
 
-function RefillBrandsTableHead() {
+function StaffsTableHead() {
   return (
     <TableHead>
       <TableRow className="h-48 sm:h-64">
@@ -63,4 +57,4 @@ function RefillBrandsTableHead() {
   );
 }
 
-export default RefillBrandsTableHead;
+export default StaffsTableHead;
