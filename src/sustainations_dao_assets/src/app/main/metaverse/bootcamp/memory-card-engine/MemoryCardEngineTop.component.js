@@ -7,7 +7,7 @@ const MemoryCardEngineTop = ({ slug, gameId }) => {
   const { actor } = useSelector(state => state.user);
   async function initialEffect() {
     try {
-      const rs = await actor.memoryCardEngineListOfDay(slug, gameId);
+      const rs = await actor.memoryCardEngineListOfDay(gameId, slug);
       setList(rs.ok);
     } catch (error) {
       console.log(error);
@@ -16,6 +16,7 @@ const MemoryCardEngineTop = ({ slug, gameId }) => {
   useEffect(() => {
     initialEffect();
   }, []);
+  console.log(list);
   // const handlePlay = () => {
   //   navigate("/slug/magic-memory-photo/play", { state: { player_id: player?.[0]?.[0] } });
   // };
@@ -62,9 +63,9 @@ const MemoryCardEngineTop = ({ slug, gameId }) => {
   );
 
   return (
-    <Box sx={{ textAlign: "center" }}>
+    <Box sx={{ textAlign: "center", boxShadow: 5, borderRadius: 5, p: 3, mb: 2 }}>
       <Typography variant="h3" mb={3}>
-        Leader Board
+        Leaderboard
       </Typography>
       <DataGrid
         rows={rows ?? []}
@@ -73,6 +74,7 @@ const MemoryCardEngineTop = ({ slug, gameId }) => {
         sx={{ width: { md: 400, xs: 330 }, my: 3 }}
         rowsPerPageOptions={[10]}
         autoHeight
+        hideFooter
         pagination
         disableColumnMenu
         components={{
