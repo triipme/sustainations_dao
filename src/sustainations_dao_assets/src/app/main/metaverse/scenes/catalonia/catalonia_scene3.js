@@ -204,7 +204,7 @@ export default class catalonia_scene3 extends BaseScene {
 
     //mycam
     this.myCam = this.cameras.main;
-    this.myCam.setBounds(0, 0, 13000, gameConfig.scale.height); //furthest distance the cam is allowed to move
+    this.myCam.setBounds(0, 0, 7680, gameConfig.scale.height); //furthest distance the cam is allowed to move
     this.myCam.startFollow(this.player);
 
     //pause screen
@@ -262,10 +262,10 @@ export default class catalonia_scene3 extends BaseScene {
       this.player.setVelocityX(350);
     }
 
-    if (this.player.x > 13100) {
+    if (this.player.x > 7680) {
       this.ingameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start('catalonia_scene5');
+      this.scene.start('catalonia_scene5_1');
     }
 
     if (this.player.x > 3000 && this.isInteracted == false) {
