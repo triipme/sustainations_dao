@@ -7,14 +7,7 @@ class thanks extends Phaser.Scene {
   }
 
   clearSceneCache(){
-    this.textures.remove('ground');
-    this.textures.remove('background1');
-    this.textures.remove('background2');
-    this.textures.remove('background3');
-    this.textures.remove('selectAction');
-    this.textures.remove('utility');
-    this.textures.remove('btnBlank');
-    this.textures.remove('obstacle');
+    this.textures.remove('bg');
   }
 
   preload() {

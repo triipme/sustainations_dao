@@ -110,13 +110,13 @@ module {
     maxStamina : Float;
     currentMorale : Float;
     maxMorale : Float;
-    classId : Int;
+    classId : Text;
     gearIds : ?[Text];
     materialIds : ?[Text];
   };
 
   public type CharacterClass = {
-    id : Int;
+    id : Text;
     name : Text;
     specialAbility : Text;
     description : Text;
@@ -130,9 +130,10 @@ module {
     baseMorale : Float;
   };
 
-  public type CharacterTakeOption = {
+  public type CharacterTakesOption = {
     characterId : Text;
-    eventOptionId : Int;
+    eventOptionId : Text;
+    takeable : Bool;
     pickUpTime : Time.Time;
     currentHP : Float;
     maxHP : Float;
@@ -144,9 +145,14 @@ module {
     maxMorale : Float;
   };
 
+  public type CharacterSelectsItems = {
+    characterId : Text;
+    itemIds : [Text];
+  };
+
   //--------------------- Quest ---------------------//
   public type Quest = {
-    id : Int;
+    id : Text;
     name : Text;
     price : Int;
     description : Text;
@@ -155,22 +161,22 @@ module {
 
   //--------------------- Item ---------------------//
   public type Item = {
-    id : Int;
+    id : Text;
     name : Text;
     strengthRequire : Float;
     images : Text;
   };
 
   public type QuestItem = {
-    id : Int;
-    itemId : Int;
-    questId : Int;
+    id : Text;
+    itemId : Text;
+    questId : Text;
   };
 
   //--------------------- Event ---------------------//
   public type Event = {
-    id : Int;
-    questId : Int;
+    id : Text;
+    questId : Text;
     description : Text;
     locationName : Text;
     destinationName : Text;
@@ -178,10 +184,10 @@ module {
 
   //--------------------- Event Option ---------------------//
   public type EventOption = {
-    id : Int;
-    eventId : Int;
+    id : Text;
+    eventId : Text;
     description : Text;
-    requireItemId : Int;
+    requireItemId : Text;
     lossHP : Float;
     lossMana : Float;
     lossStamina : Float;
@@ -201,7 +207,7 @@ module {
 
   //--------------------- Gear ---------------------//
   public type Gear = {
-    id : Int;
+    id : Text;
     name : Text;
     description : Text;
     images : Text;
@@ -211,35 +217,35 @@ module {
   };
 
   public type GearClass = {
-    id : Int;
+    id : Text;
     name : Text;
     description : Text;
     mainStat : Int;
   };
 
   public type GearRarity = {
-    id : Int;
+    id : Text;
     name : Text;
     description : Text;
     boxColor : Text;
   };
 
   public type GearSubstat = {
-    id : Int;
+    id : Text;
     substat : Int;
     description : Text;
   };
 
   //--------------------- Material ---------------------//
   public type Material = {
-    id : Int;
+    id : Text;
     name : Text;
     description : Text;
   };
 
   //--------------------- Inventory ---------------------//
   public type Inventory = {
-    id : Int;
+    id : Text;
     name : Text;
     size : Int;
   };

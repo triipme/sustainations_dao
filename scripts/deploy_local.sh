@@ -1,5 +1,5 @@
-yarn install
-vessel install
+# yarn install
+# vessel install
 
 ### === DEPLOY LOCAL LEDGER =====
 dfx identity new minter
@@ -36,4 +36,4 @@ dfx canister call sustainations_dao getSystemBalance
 
 # dfx canister call sustainations_dao withdraw '(100000)'
 dfx deploy frontend
-yarn start
+# yarn start

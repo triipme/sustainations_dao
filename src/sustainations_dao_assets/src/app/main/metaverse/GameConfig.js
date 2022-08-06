@@ -1,21 +1,29 @@
 import Phaser from 'phaser';
 import AwaitLoaderPlugin from 'phaser3-rex-plugins/plugins/awaitloader-plugin.js';
-import Scene1 from './scenes/scene1';
-import Scene2 from './scenes/scene2';
-import Scene3 from './scenes/scene3';
-import Scene4 from './scenes/scene4';
-import Scene5 from './scenes/scene5';
-import Scene6 from './scenes/scene6';
-import Scene7 from './scenes/scene7';
+import preloadScene from './scenes/preloadScene'
 import selectItemScene from './scenes/selectItemScene';
 import menuScene from './scenes/menuScene';
 import selectMap from './scenes/selectMap';
 import thanks from './scenes/thanks';
 import exhausted from './scenes/exhausted';
 
+import jungle_scene1 from './scenes/jungle/jungle_scene1';
+import jungle_scene2 from './scenes/jungle/jungle_scene2';
+import jungle_scene3 from './scenes/jungle/jungle_scene3';
+import jungle_scene4 from './scenes/jungle/jungle_scene4';
+import jungle_scene5 from './scenes/jungle/jungle_scene5';
+import jungle_scene6 from './scenes/jungle/jungle_scene6';
+import jungle_scene7 from './scenes/jungle/jungle_scene7';
+
+import catalonia_scene1 from './scenes/catalonia/catalonia_scene1';
+import catalonia_scene2 from './scenes/catalonia/catalonia_scene2';
+import catalonia_scene3 from './scenes/catalonia/catalonia_scene3';
+import catalonia_scene5 from './scenes/catalonia/catalonia_scene5';
+import catalonia_scene6 from './scenes/catalonia/catalonia_scene6';
+import catalonia_scene7 from './scenes/catalonia/catalonia_scene7';
+
 const gameConfig = {
   type: Phaser.CANVAS,
-  antialias: true,
   parent: "sustainations-slug",
   scale: {
     width: 1920,
@@ -24,6 +32,9 @@ const gameConfig = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH
   },
+  resolution: window.devicePixelRatio || 1,
+  antialiasGL: false,
+  multiTexture: false,
   plugins: {
     global: [{
         key: 'rexAwaitLoader',
@@ -33,6 +44,10 @@ const gameConfig = {
     // ...
     ]
   },
+  fps: {
+    target: 30,
+    forceSetTimeOut: true
+  },
   physics: {
     default: "arcade",
     arcade: {
@@ -40,7 +55,9 @@ const gameConfig = {
       debug: false
     }
   },
-  scene: [menuScene, selectMap, selectItemScene, Scene1, Scene2, Scene3, Scene4, Scene5, Scene6, Scene7, thanks, exhausted]
+  scene: [preloadScene, menuScene, selectMap, selectItemScene, jungle_scene1, jungle_scene2, 
+    jungle_scene3, jungle_scene4, jungle_scene5, jungle_scene6, jungle_scene7, thanks, exhausted, 
+    catalonia_scene1, catalonia_scene2, catalonia_scene3, catalonia_scene5, catalonia_scene6, catalonia_scene7]
 };
 
 export default gameConfig;
