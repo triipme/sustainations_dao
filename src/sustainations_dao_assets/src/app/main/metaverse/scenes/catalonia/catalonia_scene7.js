@@ -32,7 +32,7 @@ export default class catalonia_scene7 extends BaseScene {
   }
 
   preload() {
-    this.eventId = "e12";
+    this.eventId = "e16";
     this.load.rexAwait(function(successCallback, failureCallback) {
       loadEventOptions(this.eventId).then( (result) => {
         this.eventOptions = result;
@@ -271,7 +271,7 @@ export default class catalonia_scene7 extends BaseScene {
       this.scene.start('thanks');
     }
 
-    if (this.player.x > 3900 && this.isInteracted == false) {
+    if (this.player.x > 5950 && this.isInteracted == false) {
       this.triggerPause();
       this.ambientSound.stop();
       this.sfx_char_footstep.stop();
