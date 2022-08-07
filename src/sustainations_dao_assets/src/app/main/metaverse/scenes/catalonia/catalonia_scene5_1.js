@@ -30,7 +30,7 @@ export default class catalonia_scene5_1 extends BaseScene {
   }
 
   preload() {
-    this.eventId = "e8";
+    this.eventId = "e13";
     this.load.rexAwait(function(successCallback, failureCallback) {
       loadEventOptions(this.eventId).then( (result) => {
         this.eventOptions = result;

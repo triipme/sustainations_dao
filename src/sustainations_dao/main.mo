@@ -1544,21 +1544,23 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   };
 
   // Event
-  public shared({caller}) func createEvent(questId : Text, event: Types.Event) : async Response<Text> {
+  public shared({caller}) func createEvent(event: Types.Event) : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
     // let uuid : Text = await createUUID();
+    let rsQuest = state.quests.get(event.questId);
     let rsEvent = state.events.get(event.id);
-    switch (rsEvent) {
-      case (?V) { #err(#AlreadyExisting); };
-      case null {
-        for((id, quest) in state.quests.entries()) {
-          if(id == questId){
+    switch (rsQuest) {
+      case null { #err(#NotFound); };
+      case (?quest) {
+        switch (rsEvent) {
+          case (?event) { #err(#AlreadyExisting); };
+          case null {
             Event.create(event, state);
+            #ok("Success");
           };
         };
-        #ok("Success");
       };
     };
   };
@@ -1616,12 +1618,18 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
       return #err(#NotAuthorized);//isNotAuthorized
     };
     // let uuid : Text = await createUUID();
+    let rsEvent = state.events.get(eventOption.eventId);
     let rsEventOption = state.eventOptions.get(eventOption.id);
-    switch (rsEventOption) {
-      case (?V) { #err(#AlreadyExisting); };
-      case null {
-        EventOption.create(eventOption, state);
-        #ok("Success");
+    switch (rsEvent) {
+      case null { #err(#NotFound); };
+      case (?event) {
+        switch(rsEventOption){
+          case (?eventOption) { #err(#AlreadyExisting); };
+          case null {
+            EventOption.create(eventOption, state);
+            #ok("Success");
+          };
+        };
       };
     };
   };
