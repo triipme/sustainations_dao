@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 import { useTheme } from '@mui/material/styles';
 
-function StaffFormHeader({ actionText }) {
+function StationFormHeader({ actionText }) {
   const theme = useTheme();
   return (
     <div className="flex flex-col sm:flex-row space-y-16 sm:space-y-0 flex-1 w-full items-center justify-between py-32 px-24 md:px-32">
@@ -16,7 +16,7 @@ function StaffFormHeader({ actionText }) {
         delay={300}
         className="text-24 md:text-32 font-extrabold tracking-tight"
       >
-        {actionText} Staff
+        {actionText} Station
       </Typography>
 
       <div className="flex flex-col w-full sm:w-auto sm:flex-row space-y-16 sm:space-y-0 flex-1 items-center justify-end space-x-8">
@@ -25,7 +25,7 @@ function StaffFormHeader({ actionText }) {
           animate={{ opacity: 1, x: 0, transition: { delay: 0.2 } }}
         >
           <Button
-            to={'/refill-network/staffs'}
+            to={'/refill-network/stations'}
             component={Link}
             className="mb-8"
             color="secondary"
@@ -46,4 +46,4 @@ function StaffFormHeader({ actionText }) {
   );
 }
 
-export default StaffFormHeader;
+export default StationFormHeader;

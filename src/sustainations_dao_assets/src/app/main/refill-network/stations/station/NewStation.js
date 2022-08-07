@@ -5,9 +5,7 @@ import * as yup from 'yup';
 import { selectUser } from 'app/store/userSlice';
 import { showMessage } from 'app/store/fuse/messageSlice';
 import { useForm } from 'react-hook-form';
-import { useNavigate, Navigate } from 'react-router-dom';
-import FuseUtils from '@fuse/utils';
-import { authRoles } from "../../../../auth";
+import { useNavigate } from 'react-router-dom';
 import useThemeMediaQuery from '@fuse/hooks/useThemeMediaQuery';
 import FusePageCarded from '@fuse/core/FusePageCarded';
 import StationFormHeader from './StationFormHeader';
@@ -24,7 +22,10 @@ const schema = yup.object().shape({
     .required('You must enter a station phone number'),
   address: yup
     .string()
-    .required('You must enter a station phone number'),
+    .required('You must enter a station address'),
+  activate: yup
+    .boolean()
+    .required('You must select a station status'),
 });
 
 const NewStation = () => {
@@ -34,15 +35,11 @@ const NewStation = () => {
   const navigate = useNavigate();
   const isMobile = useThemeMediaQuery((theme) => theme.breakpoints.down('lg'));
 
-  if (!FuseUtils.hasPermission(authRoles.refillBrandOwner, user.role)) {
-    dispatch(showMessage({ message: 'Required owner role.' }));
-    return (<Navigate to="/refill-network/brand" />);
-  }
-
   const methods = useForm({
     mode: 'onChange',
     defaultValues: {
-      username: '',
+      uid: '',
+      name: '',
       phone: '',
       address: '',
       latitude: '',
@@ -54,11 +51,21 @@ const NewStation = () => {
 
   const onSubmit = async (data) => {
     setLoading(true);
+    const payload = {
+      brandId: user.brandId,
+      uid: [data.uid],
+      name: data.name,
+      phone: data.phone,
+      address: data.address,
+      latitude: [parseFloat(data.latitude)],
+      longitude: [parseFloat(data.longitude)],
+      activate: data.activate == true,
+    };
     try {
-      const result = await user.actor.setRBManager(data.principal, data.username);
+      const result = await user.actor.createRBStation(payload);
       if ("ok" in result) {
         dispatch(showMessage({ message: 'Success!' }));
-        navigate('/refill-network/staffs');
+        navigate('/refill-network/stations');
       } else {
         throw result?.err;
       }
@@ -66,8 +73,7 @@ const NewStation = () => {
       console.log(error);
       const message = {
         "NotAuthorized": "Please sign in!.",
-        "OwnerRoleRequired": 'Required admin role.',
-        "AlreadyExisting": 'This staff has been added to a brand.'
+        "AdminRoleRequired": 'Required admin role.'
       }[Object.keys(error)[0]] || 'Error! Please try again later!'
       dispatch(showMessage({ message }));
     }
@@ -76,10 +82,10 @@ const NewStation = () => {
 
   return (
     <FusePageCarded
-      header={<StaffFormHeader actionText="Add" />}
-      content={<StaffForm
+      header={<StationFormHeader actionText="Create" />}
+      content={<StationForm
         methods={methods} submitLoading={loading}
-        onSubmit={onSubmit} showPrincipal={true}
+        onSubmit={onSubmit}
       />}
       scroll={isMobile ? 'normal' : 'content'}
     />

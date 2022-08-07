@@ -56,7 +56,7 @@ function StationsHeader({ handleSearchText }) {
               </FuseSvgIcon>
             }
           >
-            Create Staff
+            Create Station
           </Button>
         </motion.div>
       </div>

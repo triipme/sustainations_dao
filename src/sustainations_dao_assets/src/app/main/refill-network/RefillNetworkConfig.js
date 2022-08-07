@@ -8,6 +8,9 @@ const EditBrand = lazy(() => import("./brand/EditBrand"));
 const Staffs = lazy(() => import("./staffs/Staffs"));
 const NewStaff = lazy(() => import("./staffs/staff/NewStaff"));
 const EditStaff = lazy(() => import("./staffs/staff/EditStaff"));
+const Stations = lazy(() => import("./stations/Stations"));
+const NewStation = lazy(() => import("./stations/station/NewStation"));
+const EditStation = lazy(() => import("./stations/station/EditStation"));
 
 const RefillNetworkConfig = {
   settings: {
@@ -52,6 +55,23 @@ const RefillNetworkConfig = {
             {
               path: ":staffPrincipal/edit",
               element: <EditStaff />
+            }
+          ]
+        },
+        {
+          path: "stations",
+          children: [
+            {
+              index: true,
+              element: <Stations />
+            },
+            {
+              path: "new",
+              element: <NewStation />
+            },
+            {
+              path: ":stationId/edit",
+              element: <EditStation />
             }
           ]
         }

@@ -1086,6 +1086,19 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
+  public query({ caller }) func getRBStation(stationId : Text) : async Response<Types.RBStation> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    switch (state.refillBrand.stations.get(stationId)) {
+      case (null) { #err(#NotFound); };
+      case (?station) {
+        #ok(station);
+      };
+    };
+  };
+
   public shared({ caller }) func importRBStations(
     payloads : [Types.RBStation]
   ) : async Response<[Text]> {
