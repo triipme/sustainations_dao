@@ -10,15 +10,16 @@ import {
 } from '../../GameApi';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
-const bg1 = 'metaverse/scenes/catalonia/Scene5/PNG/back.png';
-const bg2 = 'metaverse/scenes/catalonia/Scene5/PNG/mid.png';
-const bg3 = 'metaverse/scenes/catalonia/Scene5/PNG/front.png';
+const bg1 = 'metaverse/scenes/catalonia/Scene2/part2/back.png';
+const bg2 = 'metaverse/scenes/catalonia/Scene2/PNG/mid.png';
+const bg3 = 'metaverse/scenes/catalonia/Scene2/part2/front.png';
+const obstacle = 'metaverse/scenes/catalonia/Scene2/part2/obstacle.png';
 const selectAction = 'metaverse/scenes/background_menu.png';
 const btnBlank = 'metaverse/scenes/selection.png';
 
-export default class catalonia_scene5 extends BaseScene {
+export default class catalonia_scene2_2 extends BaseScene {
   constructor() {
-    super('catalonia_scene5');
+    super('catalonia_scene2_2');
   }
   
   clearSceneCache() {
@@ -30,7 +31,7 @@ export default class catalonia_scene5 extends BaseScene {
   }
 
   preload() {
-    this.eventId = "e13";
+    this.eventId = "e8";
     this.load.rexAwait(function(successCallback, failureCallback) {
       loadEventOptions(this.eventId).then( (result) => {
         this.eventOptions = result;
@@ -69,6 +70,7 @@ export default class catalonia_scene5 extends BaseScene {
     this.clearSceneCache();
     this.isInteracting = false;
     this.isInteracted = false;
+    this.isCloseToObstacle = false;
     this.load.spritesheet("hero-running", heroRunningSprite, {
       frameWidth: 197,
       frameHeight: 337
@@ -79,6 +81,7 @@ export default class catalonia_scene5 extends BaseScene {
     this.load.image("background3", bg3);
     this.load.image("selectAction", selectAction);
     this.load.spritesheet('btnBlank', btnBlank, { frameWidth: 1102, frameHeight: 88});
+    this.load.image("obstacle", obstacle);
   }
 
   //defined function
@@ -128,7 +131,11 @@ export default class catalonia_scene5 extends BaseScene {
     this.bg_2.setOrigin(0, 0);
     this.bg_2.setScrollFactor(0);
 
-    // platforms
+    this.obstacle = this.add.tileSprite(0, 0, gameConfig.scale.width, gameConfig.scale.height, "obstacle")
+      .setOrigin(0,0)
+      .setScrollFactor(0);
+
+      // platforms
     const platforms = this.physics.add.staticGroup();
     for (let x = -100; x < 17000; x += 1) {
       platforms.create(x, 950, "ground").refreshBody();
@@ -186,7 +193,7 @@ export default class catalonia_scene5 extends BaseScene {
 
     //mycam
     this.myCam = this.cameras.main;
-    this.myCam.setBounds(0, 0, gameConfig.scale.width*4, gameConfig.scale.height); //furthest distance the cam is allowed to move
+    this.myCam.setBounds(0, 0, 3508, gameConfig.scale.height); //furthest distance the cam is allowed to move
     this.myCam.startFollow(this.player);
 
     //pause screen
@@ -225,7 +232,6 @@ export default class catalonia_scene5 extends BaseScene {
       });
       this.options[idx].on('pointerdown', () => {
         this.triggerContinue();
-        this.cameras.main.fadeOut(500, 0, 0, 0);
         this.clickSound.play();
         this.sfx_char_footstep.play();
         // stats after choose option
@@ -245,13 +251,13 @@ export default class catalonia_scene5 extends BaseScene {
       this.player.setVelocityX(350);
     }
 
-    if (this.player.x > 16100) {
+    if (this.player.x > 3508) {
       this.ingameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start('catalonia_scene6');
+      this.scene.start('catalonia_scene2_3');
     }
 
-    if (this.player.x > 1920*4 - 1200 && this.isInteracted == false) {
+    if (this.player.x > 1500 && this.isInteracted == false) {
       this.triggerPause();
       this.ambientSound.stop();
       this.sfx_char_footstep.stop();
@@ -266,8 +272,9 @@ export default class catalonia_scene5 extends BaseScene {
 
     //bg
     // scroll the texture of the tilesprites proportionally to the camera scroll
-    this.bg_1.tilePositionX = this.myCam.scrollX * .3;
+    this.bg_1.tilePositionX = this.myCam.scrollX * 1;
     this.bg_2.tilePositionX = this.myCam.scrollX * 1;
+    this.obstacle.tilePositionX = this.myCam.scrollX * 1;
     this.bg_3.tilePositionX = this.myCam.scrollX * 1;
   }
 }

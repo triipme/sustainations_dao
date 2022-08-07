@@ -16,9 +16,13 @@ import jungle_scene6 from './scenes/jungle/jungle_scene6';
 import jungle_scene7 from './scenes/jungle/jungle_scene7';
 
 import catalonia_scene1 from './scenes/catalonia/catalonia_scene1';
-import catalonia_scene2 from './scenes/catalonia/catalonia_scene2';
+import catalonia_scene2_1 from './scenes/catalonia/catalonia_scene2_1';
+import catalonia_scene2_2 from './scenes/catalonia/catalonia_scene2_2';
+import catalonia_scene2_3 from './scenes/catalonia/catalonia_scene2_3';
+import catalonia_scene2_4 from './scenes/catalonia/catalonia_scene2_4';
 import catalonia_scene3 from './scenes/catalonia/catalonia_scene3';
-import catalonia_scene5 from './scenes/catalonia/catalonia_scene5';
+import catalonia_scene5_1 from './scenes/catalonia/catalonia_scene5_1';
+import catalonia_scene5_2 from './scenes/catalonia/catalonia_scene5_2';
 import catalonia_scene6 from './scenes/catalonia/catalonia_scene6';
 import catalonia_scene7 from './scenes/catalonia/catalonia_scene7';
 
@@ -57,7 +61,8 @@ const gameConfig = {
   },
   scene: [preloadScene, menuScene, selectMap, selectItemScene, jungle_scene1, jungle_scene2, 
     jungle_scene3, jungle_scene4, jungle_scene5, jungle_scene6, jungle_scene7, thanks, exhausted, 
-    catalonia_scene1, catalonia_scene2, catalonia_scene3, catalonia_scene5, catalonia_scene6, catalonia_scene7]
+    catalonia_scene1, catalonia_scene2_1, catalonia_scene2_2, catalonia_scene2_3, catalonia_scene2_4, 
+    catalonia_scene3, catalonia_scene5_1, catalonia_scene5_2, catalonia_scene6, catalonia_scene7]
 };
 
 export default gameConfig;

@@ -101,6 +101,9 @@ class selectItemScene extends BaseScene {
     this.add.image(180, 0, 'effect').setOrigin(0);
     this.add.image(420, 215, 'player').setOrigin(0);
     this.add.image(585, 390, 'UI_strength').setOrigin(0).setScale(0.55);
+    // strength text
+    this.add.text(630, 455, '06', { fill: '#fff', align: 'center', fontSize: '40px', fontStyle: 'italic' })
+      .setScrollFactor(0);
 
     this.add.image(50, 200, 'UI_NameCard').setOrigin(0);
     this.add.image(50, 320, 'UI_HP').setOrigin(0);
