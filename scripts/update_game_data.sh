@@ -25,9 +25,6 @@ dfx canister call sustainations_dao deleteEventOption '("eo41")'
 dfx canister call sustainations_dao deleteEventOption '("eo42")'
 dfx canister call sustainations_dao deleteEventOption '("eo45")'
 
-dfx canister call sustainations_dao createEventOption '(record{id="eo28";eventId="e7";description="Take a picture with camera 2";requireItemId="i7";lossHP=0.0;lossMana=0.0;lossStamina=2.0;lossMorale=0.0;riskChance=0.0;riskLost="null";lossOther="waiting";gainExp=0;gainHP=0.0;gainStamina=2.0;gainMorale=1.0;gainMana=0.0;luckyChance=0.0;gainByLuck="null";gainOther=0.0})'
-
-
 dfx canister call sustainations_dao updateEventOption '(record{id="eo14";eventId="e7";description="Take a picture with camera";requireItemId="i7";lossHP=0.0;lossMana=0.0;lossStamina=2.0;lossMorale=0.0;riskChance=0.0;riskLost="null";lossOther="waiting";gainExp=0;gainHP=0.0;gainStamina=0.0;gainMorale=1.0;gainMana=0.0;luckyChance=0.0;gainByLuck="null";gainOther=0.0})'
 dfx canister call sustainations_dao updateEventOption '(record{id="eo15";eventId="e7";description="Just take a walk and observe the cathedral";requireItemId="null";lossHP=2.0;lossMana=0.0;lossStamina=3.0;lossMorale=0.0;riskChance=0.0;riskLost="null";lossOther="waiting";gainExp=0;gainHP=0.0;gainStamina=0.0;gainMorale=0.0;gainMana=0.0;luckyChance=0.0;gainByLuck="null";gainOther=0.0})'
 
