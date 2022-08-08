@@ -55,10 +55,8 @@ class exhausted extends Phaser.Scene {
     });
     this.player.play('exhausted-anims');
 
-
-
-    // this.clickSound = this.sound.add('clickSound');
-    // this.hoverSound = this.sound.add('hoverSound');
+    this.clickSound = this.sound.add('clickSound');
+    this.hoverSound = this.sound.add('hoverSound');
     this.exhausted_text = this.add.image(gameConfig.scale.width/2, gameConfig.scale.height/4, 'exhausted_text');
     this.add.image(1780, 74, "BtnExit").setOrigin(0).setScrollFactor(0).setScale(0.7)
       .setInteractive()
@@ -70,13 +68,13 @@ class exhausted extends Phaser.Scene {
     this.playagain.setInteractive().setScrollFactor(0);
     this.playagain.on('pointerover', () => {
       this.playagain.setFrame(1);
-      // this.hoverSound.play();
+      this.hoverSound.play();
     });
     this.playagain.on('pointerout', () => {
       this.playagain.setFrame(0);
     });
     this.playagain.on('pointerdown', () => {
-      // this.clickSound.play();
+      this.clickSound.play();
       this.scene.start('selectMap');
     });
     this.playagain_text = this.add.image(gameConfig.scale.width/2, gameConfig.scale.height/2, 'playagain_text').setScale(0.3);
