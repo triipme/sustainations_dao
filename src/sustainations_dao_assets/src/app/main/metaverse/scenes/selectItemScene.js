@@ -165,12 +165,12 @@ class selectItemScene extends BaseScene {
     });
     this.btnClear.on('pointerdown', () => {
       this.clickSound.play();
-      for (const i in this.gridItem) {
+      for (const i in this.itemNames) {
         this.gridItem[i].setFrame(0);
         this.gridItem[i].isSelected = false;
-        this.characterStrength = this.characterData.strength;
-        this.strengthText.setText(String(this.characterStrength));
       }
+      this.characterStrength = this.characterData.strength;
+      this.strengthText.setText(String(this.characterStrength));
     });
 
     this.btnGo = this.add.sprite(1400, 870, "btnGo")
