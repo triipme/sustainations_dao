@@ -7,6 +7,7 @@ import {
   characterSelectsItems,
   loadItemUrl
 } from '../GameApi';
+import { throws } from 'assert';
 
 const bg = 'metaverse/selectItems/UI_background.png';
 const btnBack = 'metaverse/selectItems/UI_back.png';
@@ -44,11 +45,13 @@ class selectItemScene extends BaseScene {
 
   preload() {
     this.itemNames = [];
+    this.itemStrength = [];
     this.load.rexAwait(function(successCallback, failureCallback) {
       loadQuestItems(this.map).then( (result) => {
         this.questItems = result;
         for(const index in result){
           this.itemNames.push(result[index].name);
+          this.itemStrength.push(result[index].strengthRequire);
           this.load.image(result[index].name, loadItemUrl(result[index].images));
         };
         successCallback();
@@ -87,6 +90,9 @@ class selectItemScene extends BaseScene {
 
   //async 
   async create(data) {
+    // load character
+    this.characterData = await loadCharacter();
+    this.characterStrength = this.characterData.strength;
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
@@ -102,7 +108,8 @@ class selectItemScene extends BaseScene {
     this.add.image(420, 215, 'player').setOrigin(0);
     this.add.image(585, 390, 'UI_strength').setOrigin(0).setScale(0.55);
     // strength text
-    this.add.text(630, 455, '06', { fill: '#fff', align: 'center', fontSize: '40px', fontStyle: 'italic' })
+    console.log(this.characterStrength) 
+    this.strengthText = this.add.text(630, 455, String(this.characterStrength), { fill: '#fff', align: 'center', fontSize: '40px', fontStyle: 'italic' })
       .setScrollFactor(0);
 
     this.add.image(50, 200, 'UI_NameCard').setOrigin(0);
@@ -116,8 +123,6 @@ class selectItemScene extends BaseScene {
     this.mana = this.makeBar(158, 372+240, 150, 22, 0xc038f6);
     this.morale = this.makeBar(158, 372+360, 150, 22, 0x63dafb);
 
-    // load character
-    this.characterData = await loadCharacter();
     this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
     this.setValue(this.stamina, this.characterData.currentStamina/this.characterData.maxStamina*100);
     this.setValue(this.mana, this.characterData.currentMana/this.characterData.maxMana*100);
@@ -136,13 +141,16 @@ class selectItemScene extends BaseScene {
         this.gridItem[col+row*4].isSelected = false;
         this.gridItem[col+row*4].on('pointerdown', () => {
           this.clickSound.play();
-          if (this.gridItem[col+row*4].isSelected == false && this.itemNames[col+row*4] != undefined) {
+          if (this.gridItem[col+row*4].isSelected == false && this.itemNames[col+row*4] != undefined && this.characterStrength - this.itemStrength[col+row*4] > 0) {
             this.gridItem[col+row*4].setFrame(1);
             this.gridItem[col+row*4].isSelected = !this.gridItem[col+row*4].isSelected;
-          } else if (this.itemNames[col+row*4] != undefined){
+            this.characterStrength -= this.itemStrength[col+row*4];
+          } else if (this.gridItem[col+row*4].isSelected == true && this.itemNames[col+row*4] != undefined){
             this.gridItem[col+row*4].setFrame(0);
             this.gridItem[col+row*4].isSelected = !this.gridItem[col+row*4].isSelected;
+            this.characterStrength += this.itemStrength[col+row*4];
           }
+          this.strengthText.setText(String(this.characterStrength));
         });
         this.add.image(750 + 120 + 218 * (col + 1), 90 + 166*(row + 1), this.itemNames[col+row*4]);
       }

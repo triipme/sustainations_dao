@@ -197,7 +197,7 @@ export default class jungle_scene7 extends BaseScene {
     this.setValue(this.mana, this.characterData.currentMana/this.characterData.maxMana*100);
     this.setValue(this.morale, this.characterData.currentMorale/this.characterData.maxMorale*100);
       
-    const testData = ['Admire'];
+    const testData = ['Collect a gift'];
     this.options = [];
     for (const idx in testData){
       this.options[idx] = this.add.sprite(gameConfig.scale.width/2, gameConfig.scale.height/2 -100 + idx*100, 'btnBlank');
