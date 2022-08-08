@@ -126,7 +126,7 @@ const Metaverse = () => {
       events.forEach(async event => {
         try {
           if (!!actor?.createEvent) {
-            const rs = await actor.createEvent(event.questId, event);
+            const rs = await actor.createEvent(event);
             console.log("Create Events");
             console.log(rs);
           }

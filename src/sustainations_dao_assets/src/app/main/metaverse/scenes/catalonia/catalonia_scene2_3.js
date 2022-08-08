@@ -10,16 +10,16 @@ import {
 } from '../../GameApi';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
-const bg1 = 'metaverse/scenes/catalonia/Scene2/PNG/back.png';
+const bg1 = 'metaverse/scenes/catalonia/Scene2/part3/back.png';
 const bg2 = 'metaverse/scenes/catalonia/Scene2/PNG/mid.png';
-const bg3 = 'metaverse/scenes/catalonia/Scene2/PNG/front.png';
-const obstacle = 'metaverse/scenes/catalonia/Scene2/PNG/obstacle.png';
+const bg3 = 'metaverse/scenes/catalonia/Scene2/part3/front.png';
+const obstacle = 'metaverse/scenes/catalonia/Scene2/part3/obstacle.png';
 const selectAction = 'metaverse/scenes/background_menu.png';
 const btnBlank = 'metaverse/scenes/selection.png';
 
-export default class catalonia_scene2 extends BaseScene {
+export default class catalonia_scene2_3 extends BaseScene {
   constructor() {
-    super('catalonia_scene2');
+    super('catalonia_scene2_3');
   }
   
   clearSceneCache() {
@@ -31,7 +31,7 @@ export default class catalonia_scene2 extends BaseScene {
   }
 
   preload() {
-    this.eventId = "e8";
+    this.eventId = "e10";
     this.load.rexAwait(function(successCallback, failureCallback) {
       loadEventOptions(this.eventId).then( (result) => {
         this.eventOptions = result;
@@ -193,7 +193,7 @@ export default class catalonia_scene2 extends BaseScene {
 
     //mycam
     this.myCam = this.cameras.main;
-    this.myCam.setBounds(0, 0, 16000, gameConfig.scale.height); //furthest distance the cam is allowed to move
+    this.myCam.setBounds(0, 0, 3256, gameConfig.scale.height); //furthest distance the cam is allowed to move
     this.myCam.startFollow(this.player);
 
     //pause screen
@@ -251,13 +251,13 @@ export default class catalonia_scene2 extends BaseScene {
       this.player.setVelocityX(350);
     }
 
-    if (this.player.x > 16100) {
+    if (this.player.x > 3256) {
       this.ingameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start('catalonia_scene3');
+      this.scene.start('catalonia_scene2_4');
     }
 
-    if (this.player.x > 14000 && this.isInteracted == false) {
+    if (this.player.x > 1700 && this.isInteracted == false) {
       this.triggerPause();
       this.ambientSound.stop();
       this.sfx_char_footstep.stop();
@@ -270,9 +270,6 @@ export default class catalonia_scene2 extends BaseScene {
       this.player.stop()
     }
 
-    if (this.player.x > 1920*2 && this.isCloseToObstacle == false) {
-      this.isCloseToObstacle = true;
-    }
     //bg
     // scroll the texture of the tilesprites proportionally to the camera scroll
     this.bg_1.tilePositionX = this.myCam.scrollX * 1;

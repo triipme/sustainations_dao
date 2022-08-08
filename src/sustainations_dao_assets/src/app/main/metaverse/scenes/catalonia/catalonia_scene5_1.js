@@ -10,15 +10,15 @@ import {
 } from '../../GameApi';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
-const bg1 = 'metaverse/scenes/catalonia/Scene5/PNG/back.png';
-const bg2 = 'metaverse/scenes/catalonia/Scene5/PNG/mid.png';
-const bg3 = 'metaverse/scenes/catalonia/Scene5/PNG/front.png';
+const bg1 = 'metaverse/scenes/catalonia/Scene5/part1/back.png';
+const bg2 = 'metaverse/scenes/catalonia/Scene5/part1/mid.png';
+const bg3 = 'metaverse/scenes/catalonia/Scene5/part1/front.png';
 const selectAction = 'metaverse/scenes/background_menu.png';
 const btnBlank = 'metaverse/scenes/selection.png';
 
-export default class catalonia_scene5 extends BaseScene {
+export default class catalonia_scene5_1 extends BaseScene {
   constructor() {
-    super('catalonia_scene5');
+    super('catalonia_scene5_1');
   }
   
   clearSceneCache() {
@@ -186,7 +186,7 @@ export default class catalonia_scene5 extends BaseScene {
 
     //mycam
     this.myCam = this.cameras.main;
-    this.myCam.setBounds(0, 0, gameConfig.scale.width*4, gameConfig.scale.height); //furthest distance the cam is allowed to move
+    this.myCam.setBounds(0, 0, 5446, gameConfig.scale.height); //furthest distance the cam is allowed to move
     this.myCam.startFollow(this.player);
 
     //pause screen
@@ -225,7 +225,6 @@ export default class catalonia_scene5 extends BaseScene {
       });
       this.options[idx].on('pointerdown', () => {
         this.triggerContinue();
-        this.cameras.main.fadeOut(500, 0, 0, 0);
         this.clickSound.play();
         this.sfx_char_footstep.play();
         // stats after choose option
@@ -245,13 +244,13 @@ export default class catalonia_scene5 extends BaseScene {
       this.player.setVelocityX(350);
     }
 
-    if (this.player.x > 16100) {
+    if (this.player.x > 5446) {
       this.ingameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start('catalonia_scene6');
+      this.scene.start('catalonia_scene5_2');
     }
 
-    if (this.player.x > 1920*4 - 1200 && this.isInteracted == false) {
+    if (this.player.x > 4400 && this.isInteracted == false) {
       this.triggerPause();
       this.ambientSound.stop();
       this.sfx_char_footstep.stop();
