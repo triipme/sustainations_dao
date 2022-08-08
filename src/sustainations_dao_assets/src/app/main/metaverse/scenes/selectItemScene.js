@@ -108,7 +108,6 @@ class selectItemScene extends BaseScene {
     this.add.image(420, 215, 'player').setOrigin(0);
     this.add.image(585, 390, 'UI_strength').setOrigin(0).setScale(0.55);
     // strength text
-    console.log(this.characterStrength) 
     this.strengthText = this.add.text(630, 455, String(this.characterStrength), { fill: '#fff', align: 'center', fontSize: '40px', fontStyle: 'italic' })
       .setScrollFactor(0);
 
@@ -169,6 +168,8 @@ class selectItemScene extends BaseScene {
       for (const i in this.gridItem) {
         this.gridItem[i].setFrame(0);
         this.gridItem[i].isSelected = false;
+        this.characterStrength = this.characterData.strength;
+        this.strengthText.setText(String(this.characterStrength));
       }
     });
 
