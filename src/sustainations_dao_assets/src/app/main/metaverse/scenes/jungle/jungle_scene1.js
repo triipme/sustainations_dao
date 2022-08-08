@@ -215,7 +215,6 @@ export default class jungle_scene1 extends BaseScene {
     this.characterData = await loadCharacter();
     // list taken items by character
     this.takenItems = await listCharacterSelectsItems(this.characterData.id);
-    console.log("GGGGGGGG",this.takenItems);
     // stats before choose option
     this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
     this.setValue(this.stamina, this.characterData.currentStamina/this.characterData.maxStamina*100);
@@ -227,7 +226,7 @@ export default class jungle_scene1 extends BaseScene {
     for (const idx in this.eventOptions){
       // can take option or not
       const takeable = await takeOptionAbility(this.eventOptions[idx].id, this.takenItems);
-
+      
       this.options[idx] = this.add.sprite(gameConfig.scale.width/2, gameConfig.scale.height/2 -100 + idx*100, 'btnBlank');
       this.options[idx].text = this.add.text(
         gameConfig.scale.width/2, gameConfig.scale.height/2 - 100 + idx*100, this.eventOptions[idx].description, { fill: '#fff', align: 'center', fontSize: '30px' })

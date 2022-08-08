@@ -222,14 +222,14 @@ export default class catalonia_scene2_2 extends BaseScene {
 
     // load event options
     this.options = [];
-    // can take option or not
-    const takeable = await takeOptionAbility(this.eventOptions[idx].id, this.takenItems);
-    
     for (const idx in this.eventOptions){
+      // can take option or not
+      const takeable = await takeOptionAbility(this.eventOptions[idx].id, this.takenItems);
+
       this.options[idx] = this.add.sprite(gameConfig.scale.width/2, gameConfig.scale.height/2 -100 + idx*100, 'btnBlank');
       this.options[idx].text = this.add.text(
         gameConfig.scale.width/2, gameConfig.scale.height/2 - 100 + idx*100, this.eventOptions[idx].description, { fill: '#fff', align: 'center', fontSize: '30px' })
-      .setScrollFactor(0).setVisible(false).setOrigin(0.5);
+        .setScrollFactor(0).setVisible(false).setOrigin(0.5);
       this.options[idx].setInteractive().setScrollFactor(0).setVisible(false);
       if (takeable) {
         this.options[idx].on('pointerover', () => {
