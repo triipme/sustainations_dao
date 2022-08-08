@@ -104,6 +104,31 @@ function loadItemUrl(key) {
   return signedUrl;
 };
 
+async function characterCollectsMaterials(eventId){
+  const { user } = store.getState();
+  const collectsMaterials = async () => await user.actor.collectsMaterials(eventId);
+  const result = (await collectsMaterials()).ok;
+  return result;
+};
+
+async function createCharacterCollectsMaterials(characterCollectsMaterials){
+  const promise = new Promise((resolve, reject) => {
+    const { user } = store.getState();
+    const rs = user.actor.createCharacterCollectsMaterials(characterCollectsMaterials);
+    resolve(rs);
+  })
+  promise.then((data)=>{
+    return data;
+  })
+};
+
+async function listCharacterCollectsMaterials(characterId){
+  const { user } = store.getState();
+  const characterCollectsMaterials = async () => await user.actor.listCharacterCollectsMaterials(characterId);
+  const result = (await characterCollectsMaterials()).ok;
+  return result;
+};
+
 export {
   loadQuestItems,
   loadCharacter,
@@ -116,5 +141,8 @@ export {
   characterSelectsItems,
   listCharacterSelectsItems,
   takeOptionAbility,
-  loadItemUrl
+  loadItemUrl,
+  characterCollectsMaterials,
+  createCharacterCollectsMaterials,
+  listCharacterCollectsMaterials
 }

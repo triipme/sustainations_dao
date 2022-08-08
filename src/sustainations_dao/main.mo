@@ -25,6 +25,7 @@ import Ledger "./plugins/Ledger";
 import CharacterClass "./game/characterClass";
 import Character "./game/character";
 import CharacterTakesOption "./game/characterTakesOption";
+import CharacterCollectsMaterials "./game/characterCollectsMaterials";
 import Quest "./game/quest";
 import Item "./game/item";
 import QuestItem "./game/questItem";
@@ -58,6 +59,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   private stable var characters : [(Text, Types.Character)] = [];
   private stable var characterTakesOptions : [(Text, Types.CharacterTakesOption)] = [];
   private stable var characterSelectsItems : [(Text, Types.CharacterSelectsItems)] = [];
+  private stable var characterCollectsMaterials : [(Text, Types.CharacterCollectsMaterials)] = [];
   private stable var quests : [(Text, Types.Quest)] = [];
   private stable var items : [(Text, Types.Item)] = [];
   private stable var questItems: [(Text, Types.QuestItem)] = [];
@@ -87,6 +89,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     characters := Iter.toArray(state.characters.entries());
     characterTakesOptions := Iter.toArray(state.characterTakesOptions.entries());
     characterSelectsItems := Iter.toArray(state.characterSelectsItems.entries());
+    characterCollectsMaterials := Iter.toArray(state.characterCollectsMaterials.entries());
     quests := Iter.toArray(state.quests.entries());
     items := Iter.toArray(state.items.entries());
     questItems := Iter.toArray(state.questItems.entries());
@@ -141,6 +144,9 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
     for ((k, v) in Iter.fromArray(characterSelectsItems)) {
       state.characterSelectsItems.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(characterCollectsMaterials)) {
+      state.characterCollectsMaterials.put(k, v);
     };
     for ((k, v) in Iter.fromArray(quests)) {
       state.quests.put(k, v);
@@ -1327,16 +1333,25 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
       return #err(#NotAuthorized);//isNotAuthorized
     };
     let uuid : Text = await createUUID();
+    var canCreate = true;
     let rsCharacter = state.characters.get(characterId);
     switch (rsCharacter) {
-      case null { #err(#NotFound); };
       case (?character) {
-        let rs : Types.CharacterSelectsItems = {
-          characterId = characterId;
-          itemIds = itemIds;
+        for((K, characterSelectsItem) in state.characterSelectsItems.entries()){
+          if(characterSelectsItem.characterId == characterId){
+            state.characterSelectsItems.delete(K);
+          };
         };
-        state.characterSelectsItems.put(uuid, rs);
+        if(canCreate == true){
+          let rs = state.characterSelectsItems.put(uuid, {
+            characterId = characterId;
+            itemIds = itemIds;
+          });
+        };
         #ok("Success");
+      };  
+      case null {
+        #err(#NotFound); 
       };
     };
   };
@@ -1349,6 +1364,68 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     for((_, characterSelectsItems) in state.characterSelectsItems.entries()) {
       if(characterSelectsItems.characterId == characterId){
         list := characterSelectsItems.itemIds;
+      }
+    };
+    #ok((list));
+  };
+
+  public shared query({caller}) func listAllCharacterSelectsItems() : async Response<[Types.CharacterSelectsItems]> {
+    var list : [Types.CharacterSelectsItems] = [];
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    for((_, characterSelectsItems) in state.characterSelectsItems.entries()) {
+      list := Array.append<Types.CharacterSelectsItems>(list, [characterSelectsItems]);
+    };
+    #ok((list));
+  };
+
+  // Character Collects Materials
+  public shared({caller}) func collectsMaterials(eventId : Text) : async Response<[Types.CharacterCollectsMaterials]> {
+  if(Principal.toText(caller) == "2vxsx-fae") {
+    return #err(#NotAuthorized);//isNotAuthorized
+  };
+  var result : [Types.CharacterCollectsMaterials] = [];
+  for((K,character) in state.characters.entries()){
+    if(character.userId == caller){
+      for((K, eventOption) in state.eventOptions.entries()){
+        if(eventOption.eventId == eventId){
+          let characterCollectMaterial = await CharacterCollectsMaterials.collectsMaterials(character.id, eventOption, state);
+          result := Array.append<Types.CharacterCollectsMaterials>(result, [characterCollectMaterial]);
+        };
+      };
+    };
+  };
+  #ok(result);
+  };
+
+  public shared({caller}) func createCharacterCollectsMaterials(characterCollectMaterial: Types.CharacterCollectsMaterials) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    if (characterCollectMaterial.materialId != "")
+    {
+      let rsCharacterCollectsMaterials = state.characterCollectsMaterials.get(characterCollectMaterial.id);
+      switch (rsCharacterCollectsMaterials) {
+        case (?V) { 
+          let updated = CharacterCollectsMaterials.update(characterCollectMaterial,state);
+        };
+        case null {
+          let created = CharacterCollectsMaterials.create(characterCollectMaterial,state);
+        };
+      };
+    };
+    #ok("Success");
+  };
+
+  public shared query({caller}) func listCharacterCollectsMaterials(characterId : Text) : async Response<[Types.CharacterCollectsMaterials]> {
+    var list : [Types.CharacterCollectsMaterials] = [];
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    for((_, characterCollectMaterial) in state.characterCollectsMaterials.entries()) {
+      if(characterCollectMaterial.characterId == characterId){
+        list := Array.append<Types.CharacterCollectsMaterials>(list, [characterCollectMaterial]);
       }
     };
     #ok((list));

@@ -51,10 +51,10 @@ module Character {
   };
 
   public func takeOption(character : Types.Character, strengthRequire : Float, eventOption : Types.EventOption, state : State.State) : async Types.Character {
-    let lossHP : Float = if(eventOption.lossHP != 0) {await RandomMethod.random(eventOption.lossHP - 1, eventOption.lossHP + 1)} else {0};
-    let lossMana : Float = if(eventOption.lossMana != 0) {await RandomMethod.random(eventOption.lossMana - 1, eventOption.lossMana + 1)} else {0};
-    let lossMorale : Float = if(eventOption.lossMorale != 0) {await RandomMethod.random(eventOption.lossMorale - 1, eventOption.lossMorale + 1)} else {0};
-    let lossStamina : Float = if(eventOption.lossStamina != 0) {await RandomMethod.random(eventOption.lossStamina - 1, eventOption.lossStamina + 1)} else {0};
+    let lossHP : Float = if(eventOption.lossHP != 0) {await RandomMethod.randomNumber(eventOption.lossHP - 1, eventOption.lossHP + 1)} else {0};
+    let lossMana : Float = if(eventOption.lossMana != 0) {await RandomMethod.randomNumber(eventOption.lossMana - 1, eventOption.lossMana + 1)} else {0};
+    let lossMorale : Float = if(eventOption.lossMorale != 0) {await RandomMethod.randomNumber(eventOption.lossMorale - 1, eventOption.lossMorale + 1)} else {0};
+    let lossStamina : Float = if(eventOption.lossStamina != 0) {await RandomMethod.randomNumber(eventOption.lossStamina - 1, eventOption.lossStamina + 1)} else {0};
     let newCharacter : Types.Character = {
       userId = character.userId;
       id = character.id;
