@@ -48,7 +48,7 @@ const Stations = () => {
   return (
     <FusePageCarded
       header={<StationsHeader handleSearchText={handleSearchText} />}
-      content={<StationsTable user={user} stations={filteredData} searchText={searchText} />}
+      content={<StationsTable stations={filteredData} searchText={searchText} />}
       scroll={isMobile ? 'normal' : 'content'}
     />
   );
