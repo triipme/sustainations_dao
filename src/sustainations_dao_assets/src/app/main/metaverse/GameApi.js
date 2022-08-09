@@ -29,13 +29,13 @@ async function createDefautCharacter(){
   return character;
 };
 
-async function loadCharacter(){
-  const { user } = store.getState();
-  const readCharacter = async () => await user.actor.readCharacter();
-  const character = (await readCharacter()).ok;
-  // console.log(character[1]);
-  return character[1];
-};
+// async function loadCharacter(){
+//   const { user } = store.getState();
+//   const readCharacter = async () => await user.actor.readCharacter();
+//   const character = (await readCharacter()).ok;
+//   // console.log(character[1]);
+//   return character[1];
+// };
 
 function updateCharacterStats(character){
   const promise = new Promise((resolve, reject) => {
@@ -46,6 +46,14 @@ function updateCharacterStats(character){
   promise.then((data)=>{
     return data;
   })
+};
+
+function loadCharacter(){
+  return new Promise((resolve, reject) => {
+    const { user } = store.getState();
+    const rs = user.actor.readCharacter();
+    resolve(rs);
+  });
 };
 
 function getCharacterStatus(){

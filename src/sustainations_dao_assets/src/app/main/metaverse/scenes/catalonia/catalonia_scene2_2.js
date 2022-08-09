@@ -220,12 +220,17 @@ export default class catalonia_scene2_2 extends BaseScene {
     this.setValue(this.mana, this.characterData.currentMana/this.characterData.maxMana*100);
     this.setValue(this.morale, this.characterData.currentMorale/this.characterData.maxMorale*100);
 
+    // take option abilities
+    const takeOptionAbilities = []
+    for (const idx in this.eventOptions){
+      takeOptionAbilities.push(await takeOptionAbility(this.eventOptions[idx].id, this.takenItems));
+    }
+
     // load event options
     this.options = [];
-    
     for (const idx in this.eventOptions){
       // can take option or not
-      const takeable = await takeOptionAbility(this.eventOptions[idx].id, this.takenItems);
+      const takeable = takeOptionAbilities[idx];
       
       this.options[idx] = this.add.sprite(gameConfig.scale.width/2, gameConfig.scale.height/2 -100 + idx*100, 'btnBlank');
       this.options[idx].text = this.add.text(
@@ -244,7 +249,6 @@ export default class catalonia_scene2_2 extends BaseScene {
         this.options[idx].setFrame(2);
       }
 
-      
       this.options[idx].on('pointerdown', () => {
         if (takeable){
           this.triggerContinue();
