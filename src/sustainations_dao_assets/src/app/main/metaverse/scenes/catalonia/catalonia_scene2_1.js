@@ -189,8 +189,9 @@ export default class catalonia_scene2_1 extends BaseScene {
       .on('pointerdown', () => {
         this.clickSound.play();
         this.scene.start('menuScene');
-        this.pregameSound.stop();
+        this.ambientSound.stop();
         this.sfx_char_footstep.stop();
+        this.ingameSound.stop();
       });
 
     //mycam

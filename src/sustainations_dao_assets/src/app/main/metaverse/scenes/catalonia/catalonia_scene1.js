@@ -122,10 +122,16 @@ export default class catalonia_scene1 extends BaseScene {
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
     this.pregameSound = this.sound.add('pregameSound', {loop: true});
-    this.pregameSound.play();
     this.sfx_obstacle_remove = this.sound.add('sfx_obstacle_remove');
     this.sfx_char_footstep = this.sound.add('sfx_char_footstep', {loop: true, volume: 0.2});
-    this.sfx_char_footstep.play();
+
+    if(this.characterStatus == 'Exhausted') {
+      this.scene.start('exhausted');
+    } else {
+      this.pregameSound.play();
+      this.sfx_char_footstep.play();
+    }
+
     //background
     this.bg_1 = this.add.tileSprite(0, 0, gameConfig.scale.width, gameConfig.scale.height, "background1");
     this.bg_1.setOrigin(0, 0);

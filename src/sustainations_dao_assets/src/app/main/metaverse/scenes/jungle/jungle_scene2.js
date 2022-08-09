@@ -109,7 +109,6 @@ export default class jungle_scene2 extends BaseScene {
   }
 
   async create() {
-    console.log(this.characterStatus);
     if(this.characterStatus == 'Exhausted') {
       this.scene.start('exhausted');
     }
