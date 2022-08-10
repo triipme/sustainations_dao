@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import gameConfig from '../GameConfig';
+import BaseScene from './BaseScene'
 const exhausted_text = 'metaverse/exhausted.png';
 const btnBlank = 'metaverse/scenes/selection.png';
 const BtnExit = 'metaverse/scenes/UI_exit.png';
@@ -24,8 +25,9 @@ class exhausted extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image("ground", ground);
+    this.addLoadingScreen();
     this.clearSceneCache();
+    this.load.image("ground", ground);
     this.load.image('exhausted_text', exhausted_text);
     this.load.spritesheet('btnBlank', btnBlank, { frameWidth: 1102, frameHeight: 88});
     this.load.image('BtnExit', BtnExit);

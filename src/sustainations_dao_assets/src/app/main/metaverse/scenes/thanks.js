@@ -1,7 +1,9 @@
 import Phaser from 'phaser';
+import BaseScene from './BaseScene'
+
 const bg = 'metaverse/UI_finish.png';
 
-class thanks extends Phaser.Scene {
+class thanks extends BaseScene {
   constructor() {
     super('thanks');
   }
@@ -11,6 +13,7 @@ class thanks extends Phaser.Scene {
   }
 
   preload() {
+    this.addLoadingScreen();
     this.clearSceneCache();
     this.load.image('bg', bg);
   }

@@ -1,9 +1,26 @@
 import Phaser from "phaser";
+import gameConfig from '../GameConfig';
 
 class BaseScene extends Phaser.Scene {
   constructor(key) {
     super(key);
   }
+  addLoadingScreen() {
+    //loading screen
+    this.add.image(
+      gameConfig.scale.width/2, gameConfig.scale.height/2 - 25, 'logo'
+    ).setOrigin(0.5, 0.5).setScale(0.13);
+    this.anims.create({
+      key: 'loading-anims',
+      frames: this.anims.generateFrameNumbers("loading", {start: 0, end: 11}),
+      frameRate: 12,
+      repeat: -1
+    });
+    this.add.sprite(
+      gameConfig.scale.width/2, gameConfig.scale.height/2 + 75, "loading"
+    ).setScale(0.04).play('loading-anims');
+  }
+
   makeBar(x, y, width, height, color) {
     let bar = this.add.graphics();
     bar.fillStyle(color, 1);

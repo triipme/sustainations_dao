@@ -25,7 +25,7 @@ const sfx_small_waterfall = 'metaverse/audio/SFX_bg_small_waterfall.mp3';
 const sfx_char_footstep = 'metaverse/audio/SFX_char_footstep.mp3';
 const sfx_obstacle_remove = 'metaverse/audio/SFX_obstacle_remove.mp3';
 
-class menuScene extends Phaser.Scene {
+class menuScene extends BaseScene {
   constructor() {
     super("menuScene");
   }
@@ -38,19 +38,8 @@ class menuScene extends Phaser.Scene {
   }
 
   preload() {
-    //loading screen
-    this.add.image(
-      gameConfig.scale.width/2, gameConfig.scale.height/2 - 50, 'logo'
-    ).setOrigin(0.5, 0.5).setScale(0.26);
-    this.anims.create({
-      key: 'loading-anims',
-      frames: this.anims.generateFrameNumbers("loading", {start: 0, end: 11}),
-      frameRate: 12,
-      repeat: -1
-    });
-    this.add.sprite(
-      gameConfig.scale.width/2, gameConfig.scale.height/2 + 150, "loading"
-    ).setScale(0.07).play('loading-anims');
+    this.addLoadingScreen();
+
 
     //load audio 1 time
     this.load.audio('hoverSound', hoverSound);
@@ -93,13 +82,13 @@ class menuScene extends Phaser.Scene {
     this.clickSound = this.sound.add('clickSound');
 
     this.background = this.add.image(0, 0, "menu_bg").setOrigin(0);
-    this.welcomeText = this.add.image(960, 210, "welcomeText");
+    this.welcomeText = this.add.image(480, 105, "welcomeText");
     this.noti = this.add.image(100, 100, "cs_noti")
       .setOrigin(0).setVisible(false).setScale(0.7);
 
     //btn
-    this.introduction_btn = this.add.sprite(960, 350, "introduction_btn")
-      .setInteractive();
+    this.introduction_btn = this.add.sprite(480, 170, "introduction_btn")
+      .setInteractive().setScale(0.5);
     this.introduction_btn.on("pointerover", () => {
       this.introduction_btn.setFrame(1);
       this.hoverSound.play();
@@ -112,8 +101,8 @@ class menuScene extends Phaser.Scene {
       window.open("https://www.youtube.com/watch?v=ZgwDobu5OcY", "_blank");
     });
 
-    this.quest_btn = this.add.sprite(960, 470, "quest_btn")
-      .setInteractive();
+    this.quest_btn = this.add.sprite(480, 230, "quest_btn")
+    .setInteractive().setScale(0.5);
     this.quest_btn.on("pointerover", () => {
       this.quest_btn.setFrame(1);
       this.hoverSound.play();
@@ -126,8 +115,8 @@ class menuScene extends Phaser.Scene {
       this.scene.transition({ target: "selectMap", duration: 0 });
     });
 
-    this.bootcamp_btn = this.add.sprite(960, 590, "bootcamp_btn")
-      .setInteractive();
+    this.bootcamp_btn = this.add.sprite(480, 290, "bootcamp_btn")
+      .setInteractive().setScale(0.5);
     this.bootcamp_btn.on("pointerover", () => {
       this.bootcamp_btn.setFrame(1);
       this.hoverSound.play();
@@ -141,8 +130,8 @@ class menuScene extends Phaser.Scene {
       history.push("/metaverse/bootcamp");
     });
 
-    this.land_btn = this.add.sprite(960, 710, "land_btn")
-      .setInteractive();
+    this.land_btn = this.add.sprite(480, 350, "land_btn")
+      .setInteractive().setScale(0.5);
     this.land_btn.on("pointerover", () => {
       this.land_btn.setFrame(1);
       this.hoverSound.play();
@@ -154,8 +143,8 @@ class menuScene extends Phaser.Scene {
       history.push("/metaverse/land");
     });
 
-    this.departure_btn = this.add.sprite(960, 830, "departure_btn")
-      .setInteractive();
+    this.departure_btn = this.add.sprite(480, 410, "departure_btn")
+      .setInteractive().setScale(0.5);
     this.departure_btn.on("pointerover", () => {
       this.departure_btn.setFrame(1);
       this.hoverSound.play();

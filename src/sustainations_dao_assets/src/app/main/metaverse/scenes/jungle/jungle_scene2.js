@@ -33,6 +33,7 @@ export default class jungle_scene2 extends BaseScene {
   }
 
   preload() {
+    this.addLoadingScreen();
     this.eventId = "e2";
     // load character
     this.load.rexAwait(function(successCallback, failureCallback) {
@@ -57,19 +58,6 @@ export default class jungle_scene2 extends BaseScene {
       });
     }, this);
 
-    //loading screen
-    this.add.image(
-      gameConfig.scale.width/2, gameConfig.scale.height/2 - 50, 'logo'
-    ).setOrigin(0.5, 0.5).setScale(0.26);
-    this.anims.create({
-      key: 'loading-anims',
-      frames: this.anims.generateFrameNumbers("loading", {start: 0, end: 11}),
-      frameRate: 12,
-      repeat: -1
-    });
-    this.add.sprite(
-      gameConfig.scale.width/2, gameConfig.scale.height/2 + 150, "loading"
-    ).setScale(0.07).play('loading-anims');
     //Preload
     this.clearSceneCache();
     this.isInteracting = false;
@@ -139,7 +127,7 @@ export default class jungle_scene2 extends BaseScene {
       .setOrigin(0,0)
       .setScrollFactor(0);
 
-      // platforms
+    // platforms
     const platforms = this.physics.add.staticGroup();
     for (let x = -100; x < 1920*4; x += 1) {
       platforms.create(x, 950, "ground").refreshBody();

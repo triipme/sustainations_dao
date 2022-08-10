@@ -30,15 +30,12 @@ const gameConfig = {
   type: Phaser.CANVAS,
   parent: "sustainations-slug",
   scale: {
-    width: 1920,
-    height: 1080,
+    width: 960,
+    height: 540,
     pixelArt: true,
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH
   },
-  resolution: window.devicePixelRatio || 1,
-  antialiasGL: false,
-  multiTexture: false,
   plugins: {
     global: [{
         key: 'rexAwaitLoader',
@@ -47,10 +44,6 @@ const gameConfig = {
     },
     // ...
     ]
-  },
-  fps: {
-    target: 30,
-    forceSetTimeOut: true
   },
   physics: {
     default: "arcade",
