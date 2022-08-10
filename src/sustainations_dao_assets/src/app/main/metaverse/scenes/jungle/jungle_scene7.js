@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
 import BaseScene from '../BaseScene'
 import gameConfig from '../../GameConfig';
+import history from "@history";
+
 import { 
   loadCharacter,
   getCharacterStatus
@@ -216,6 +218,7 @@ export default class jungle_scene7 extends BaseScene {
         this.triggerContinue();
         this.sfx_char_footstep.play();
         this.clickSound.play();
+        history.push("/metaverse/ar");
       });
     };
   }

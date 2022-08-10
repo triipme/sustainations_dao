@@ -11,6 +11,7 @@ const MemoryCardEnginePlay = lazy(() =>
 const MemoryCardEngineLayout = lazy(() =>
   import("./bootcamp/memory-card-engine/MemoryCardEngineLayout")
 );
+const AR = lazy(() => import("./ar/AR"));
 
 const MetaverseConfig = {
   settings: {
@@ -70,6 +71,10 @@ const MetaverseConfig = {
         {
           path: "land",
           element: <Land />
+        },
+        {
+          path: "ar",
+          element: <AR />
         }
       ]
     }
