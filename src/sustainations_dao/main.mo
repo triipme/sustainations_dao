@@ -1263,27 +1263,6 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     #ok(result);
   };
 
-  public shared({caller}) func takeOptionAbility(eventOptionId : Text, itemIds : [Text]) : async Response<Bool> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
-    };
-    var result : Bool = false;
-    switch (state.eventOptions.get(eventOptionId)) {
-      case null { #err(#NotFound); };
-      case (?eventOption){
-        if(eventOption.requireItemId == "null"){
-          result := true;
-        };
-        for(itemId in itemIds.vals()){
-          if(eventOption.requireItemId == itemId){
-            result := true;
-          };
-        };
-        #ok(result);
-      };
-    };
-  };
-
   public shared({caller}) func updateCharacter(character : Types.Character) : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
@@ -1730,14 +1709,27 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     #ok((list));
   };
 
-  public shared query({caller}) func listEventOptions(eventId : Text) : async Response<[Types.EventOption]> {
-    var list : [Types.EventOption] = [];
+  public shared query({caller}) func listEventOptions(eventId : Text, selectedItemIds : [Text]) : async Response<[(Bool, Types.EventOption)]> {
+    var list : [(Bool, Types.EventOption)] = [];
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
+    var canTakeOption : Bool = false;
     for((K,eventOption) in state.eventOptions.entries()) {
       if(eventOption.eventId == eventId){
-        list := Array.append<Types.EventOption>(list, [eventOption]);
+        if(eventOption.requireItemId == "null"){
+          canTakeOption := true;
+        } else {
+          for(itemId in selectedItemIds.vals()){
+            if(itemId == "null"){
+              canTakeOption := false;
+            };
+            if (itemId == eventOption.requireItemId) {
+              canTakeOption := true;
+            };
+          };
+        };
+        list := Array.append<(Bool, Types.EventOption)>(list, [(canTakeOption, eventOption)]);
       };
     };
     #ok((list));

@@ -8,9 +8,9 @@ async function loadQuestItems(questId){
   return questItems;
 };
 
-async function loadEventOptions(eventId){
+async function loadEventOptions(eventId, selectedItemsIds){
   const { user } = store.getState();
-  const listEventOptions = async () => await user.actor.listEventOptions(eventId);
+  const listEventOptions = async () => await user.actor.listEventOptions(eventId, selectedItemsIds);
   const eventOptions = (await listEventOptions()).ok;
   return eventOptions;
 };
@@ -29,13 +29,13 @@ async function createDefautCharacter(){
   return character;
 };
 
-// async function loadCharacter(){
-//   const { user } = store.getState();
-//   const readCharacter = async () => await user.actor.readCharacter();
-//   const character = (await readCharacter()).ok;
-//   // console.log(character[1]);
-//   return character[1];
-// };
+function loadCharacter(){
+  return new Promise((resolve, reject) => {
+    const { user } = store.getState();
+    const rs = user.actor.readCharacter();
+    resolve(rs);
+  });
+};
 
 function updateCharacterStats(character){
   const promise = new Promise((resolve, reject) => {
@@ -48,13 +48,6 @@ function updateCharacterStats(character){
   })
 };
 
-function loadCharacter(){
-  return new Promise((resolve, reject) => {
-    const { user } = store.getState();
-    const rs = user.actor.readCharacter();
-    resolve(rs);
-  });
-};
 
 function getCharacterStatus(){
   return new Promise((resolve, reject) => {
@@ -83,20 +76,10 @@ function characterSelectsItems(characterId, itemIds){
   })
 };
 
-
 async function listCharacterSelectsItems(characterId){
   const { user } = store.getState();
   const listItems = async () => await user.actor.listCharacterSelectsItems(characterId);
   const rs = (await listItems()).ok;
-  // console.log(rs[1]);
-  return rs;
-};
-
-async function takeOptionAbility(eventOptionId, itemIds){
-  const { user } = store.getState();
-  const takeable = async () => await user.actor.takeOptionAbility(eventOptionId, itemIds);
-  const rs = (await takeable()).ok;
-  // console.log(rs[1]);
   return rs;
 };
 
@@ -148,9 +131,8 @@ export {
   createDefautCharacter,
   characterSelectsItems,
   listCharacterSelectsItems,
-  takeOptionAbility,
   loadItemUrl,
   characterCollectsMaterials,
   createCharacterCollectsMaterials,
-  listCharacterCollectsMaterials
+  listCharacterCollectsMaterials,
 }

@@ -97,8 +97,7 @@ class selectItemScene extends BaseScene {
 
   //async 
   async create(data) {
-    // load character
-    // this.characterData = await loadCharacter();
+    // load character strength
     this.characterStrength = this.characterData.strength;
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
