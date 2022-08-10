@@ -9,7 +9,8 @@ import {
   characterTakeOption,
   listCharacterSelectsItems,
   canGetARItem,
-  canGetARItemPromise
+  canGetARItemPromise,
+  loadEventItem
 } from '../../GameApi';
 import { func } from 'prop-types';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
@@ -67,6 +68,13 @@ export default class catalonia_scene1 extends BaseScene {
     this.load.rexAwait(function(successCallback, failureCallback) {
       canGetARItemPromise(this.eventItemId).then( (result) => {
         this.canGetARItem = result.ok;
+        successCallback();
+      });
+    }, this);
+
+    this.load.rexAwait(function(successCallback, failureCallback) {
+      loadEventItem().then( (result) => {
+        this.eventItem = result.ok;
         successCallback();
       });
     }, this);
@@ -222,9 +230,10 @@ export default class catalonia_scene1 extends BaseScene {
     this.veil.setVisible(false);
     this.selectAction.setScrollFactor(0);
     this.selectAction.setVisible(false);
-    
+
     console.log("preload", this.canGetARItem);
     console.log("create",await canGetARItem("ui1"));
+    console.log(this.eventItem);
 
     // load selected items ids
     this.selectedItemsIds = await listCharacterSelectsItems(this.characterData.id);

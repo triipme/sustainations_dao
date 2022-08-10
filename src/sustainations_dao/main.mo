@@ -1614,6 +1614,26 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
+  public shared query({caller}) func loadEventItem() : async Response<Types.UsableItem>{
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    var list : [Types.UsableItem] = [];
+    let userId = Principal.toText(caller);
+    let rsEventItem = state.eventItems.get(userId);
+    switch (rsEventItem) {
+      case null { #err(#NotFound); };
+      case (? eventItem) {
+        for((_,V) in state.usableItems.entries()){
+          if(eventItem.itemId == V.id) {
+            list := Array.append<Types.UsableItem>(list, [V]);
+          };
+        };
+        #ok(list[0]);
+      };
+    };
+  };
+
   public shared({caller}) func deleteEventItem() : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized

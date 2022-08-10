@@ -135,6 +135,14 @@ function canGetARItemPromise(eventItemId){
   });
 };
 
+function loadEventItem(){
+  return new Promise((resolve, reject) => {
+    const { user } = store.getState();
+    const rs = user.actor.loadEventItem();
+    resolve(rs);
+  });
+};
+
 export {
   loadQuestItems,
   loadCharacter,
@@ -151,5 +159,6 @@ export {
   createCharacterCollectsMaterials,
   listCharacterCollectsMaterials,
   canGetARItem,
-  canGetARItemPromise
+  canGetARItemPromise,
+  loadEventItem
 }

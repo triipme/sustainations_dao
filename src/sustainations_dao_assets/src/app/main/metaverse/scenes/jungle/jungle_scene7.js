@@ -31,6 +31,13 @@ export default class jungle_scene7 extends BaseScene {
 
   preload() {
     this.load.rexAwait(function(successCallback, failureCallback) {
+      loadCharacter().then( (result) => {
+        this.characterData = result.ok[1];
+        console.log(this.characterData);
+        successCallback();
+      });
+    }, this);
+    this.load.rexAwait(function(successCallback, failureCallback) {
       getCharacterStatus().then( (result) => {
         this.characterStatus = result.ok;
         successCallback();
@@ -190,9 +197,7 @@ export default class jungle_scene7 extends BaseScene {
     this.veil.setVisible(false);
     this.selectAction.setScrollFactor(0);
     this.selectAction.setVisible(false);
-
-    // load character
-    this.characterData = await loadCharacter();
+    
     // stats before choose option
     this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
     this.setValue(this.stamina, this.characterData.currentStamina/this.characterData.maxStamina*100);
