@@ -150,6 +150,13 @@ module {
     itemIds : [Text];
   };
 
+  public type CharacterCollectsMaterials = {
+    id : Text;
+    characterId: Text;
+    materialId: Text;
+    amount: Int;
+  };
+
   //--------------------- Quest ---------------------//
   public type Quest = {
     id : Text;

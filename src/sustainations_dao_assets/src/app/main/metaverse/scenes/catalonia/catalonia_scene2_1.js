@@ -7,8 +7,7 @@ import {
   updateCharacterStats,
   getCharacterStatus,
   characterTakeOption,
-  listCharacterSelectsItems,
-  takeOptionAbility
+  listCharacterSelectsItems
 } from '../../GameApi';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
@@ -35,8 +34,9 @@ export default class catalonia_scene2_1 extends BaseScene {
   preload() {
     this.eventId = "e8";
     this.load.rexAwait(function(successCallback, failureCallback) {
-      loadEventOptions(this.eventId).then( (result) => {
-        this.eventOptions = result;
+      loadCharacter().then( (result) => {
+        this.characterData = result.ok[1];
+        console.log(this.characterData);
         successCallback();
       });
     }, this);
@@ -210,11 +210,12 @@ export default class catalonia_scene2_1 extends BaseScene {
     this.selectAction.setScrollFactor(0);
     this.selectAction.setVisible(false);
 
-    // load character
-    this.characterData = await loadCharacter();
-    // list taken items by character
-    this.takenItems = await listCharacterSelectsItems(this.characterData.id);
-    console.log(this.takenItems);
+    // load selected items ids
+    this.selectedItemsIds = await listCharacterSelectsItems(this.characterData.id);
+    console.log(this.selectedItemsIds);
+    // load event options
+    this.eventOptions = await loadEventOptions(this.eventId, this.selectedItemsIds);
+    console.log(this.eventOptions);
     // stats before choose option
     this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
     this.setValue(this.stamina, this.characterData.currentStamina/this.characterData.maxStamina*100);
@@ -225,11 +226,11 @@ export default class catalonia_scene2_1 extends BaseScene {
     this.options = [];
     for (const idx in this.eventOptions){
       // can take option or not
-      const takeable = await takeOptionAbility(this.eventOptions[idx].id, this.takenItems);
+      const takeable = this.eventOptions[idx][0];
 
       this.options[idx] = this.add.sprite(gameConfig.scale.width/2, gameConfig.scale.height/2 -100 + idx*100, 'btnBlank');
       this.options[idx].text = this.add.text(
-        gameConfig.scale.width/2, gameConfig.scale.height/2 - 100 + idx*100, this.eventOptions[idx].description, { fill: '#fff', align: 'center', fontSize: '30px' })
+        gameConfig.scale.width/2, gameConfig.scale.height/2 - 100 + idx*100, this.eventOptions[idx][1].description, { fill: '#fff', align: 'center', fontSize: '30px' })
       .setScrollFactor(0).setVisible(false).setOrigin(0.5);
       this.options[idx].setInteractive().setScrollFactor(0).setVisible(false);
       if (takeable) {

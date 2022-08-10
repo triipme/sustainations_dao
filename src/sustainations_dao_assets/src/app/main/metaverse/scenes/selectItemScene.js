@@ -47,6 +47,13 @@ class selectItemScene extends BaseScene {
     this.itemNames = [];
     this.itemStrength = [];
     this.load.rexAwait(function(successCallback, failureCallback) {
+      loadCharacter().then( (result) => {
+        this.characterData = result.ok[1];
+        console.log(this.characterData);
+        successCallback();
+      });
+    }, this);
+    this.load.rexAwait(function(successCallback, failureCallback) {
       loadQuestItems(this.map).then( (result) => {
         this.questItems = result;
         for(const index in result){
@@ -90,8 +97,7 @@ class selectItemScene extends BaseScene {
 
   //async 
   async create(data) {
-    // load character
-    this.characterData = await loadCharacter();
+    // load character strength
     this.characterStrength = this.characterData.strength;
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
