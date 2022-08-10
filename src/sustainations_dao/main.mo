@@ -63,6 +63,8 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   private stable var quests : [(Text, Types.Quest)] = [];
   private stable var items : [(Text, Types.Item)] = [];
   private stable var questItems: [(Text, Types.QuestItem)] = [];
+  private stable var usableItems: [(Text, Types.UsableItem)] = [];
+  private stable var eventItems: [(Text, Types.EventItem)] = [];
   private stable var events : [(Text, Types.Event)] = [];
   private stable var eventOptions : [(Text, Types.EventOption)] = [];
   private stable var gears : [(Text, Types.Gear)] = [];
@@ -93,6 +95,8 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     quests := Iter.toArray(state.quests.entries());
     items := Iter.toArray(state.items.entries());
     questItems := Iter.toArray(state.questItems.entries());
+    usableItems := Iter.toArray(state.usableItems.entries());
+    eventItems := Iter.toArray(state.eventItems.entries());
     events := Iter.toArray(state.events.entries());
     eventOptions := Iter.toArray(state.eventOptions.entries());
     gears := Iter.toArray(state.gears.entries());
@@ -156,6 +160,12 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
     for ((k, v) in Iter.fromArray(questItems)) {
       state.questItems.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(usableItems)) {
+      state.usableItems.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(eventItems)) {
+      state.eventItems.put(k, v);
     };
     for ((k, v) in Iter.fromArray(events)) {
       state.events.put(k, v);
@@ -1534,6 +1544,98 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
         #ok("Success");
       };
     };
+  };
+
+  // Usable Item
+  public shared({caller}) func createUsableItem(usableItem: Types.UsableItem) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    // let uuid : Text = await createUUID();
+    let rsUsableItem = state.usableItems.get(usableItem.id);
+    switch (rsUsableItem) {
+      case (?V) { #err(#AlreadyExisting); };
+      case null {
+        state.usableItems.put(usableItem.id, {
+          id = usableItem.id;
+          name = usableItem.name;
+          image = usableItem.image;
+        });
+        #ok("Success");
+      };
+    };
+  };
+
+  // Event Item
+  public shared({caller}) func canGetARItem(eventItemId : Text) : async Response<Bool> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let userId = Principal.toText(caller);
+    // let uuid : Text = await createUUID();
+    var canAR : Bool = false;
+    let rsEventItem = state.eventItems.get(userId);
+    switch (state.usableItems.get(eventItemId)){
+      case null { #err(#NotFound); };
+      case (?item) {
+        if(isAdmin(caller)) {
+          switch (rsEventItem) {
+            case (?V) { 
+              let updated = state.eventItems.replace(userId, {
+                userId = caller;
+                itemId = eventItemId;
+              });
+              canAR := true;
+              #ok(canAR);
+            };
+            case null {
+              state.eventItems.put(userId, {
+                userId = caller;
+                itemId = eventItemId;
+              });
+              canAR := true;
+              #ok(canAR);
+            };
+          };
+        } else {
+            switch (rsEventItem) {
+              case (?V) { #ok(canAR); };
+              case null {
+                state.eventItems.put(userId, {
+                  userId = caller;
+                  itemId = eventItemId;
+                });
+                canAR := true;
+                #ok(canAR);
+              };
+            };
+          };
+      };
+    };
+  };
+
+  public shared({caller}) func deleteEventItem() : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    switch (state.eventItems.get(Principal.toText(caller))) {
+      case null { #err(#NotFound); };
+      case (?V) { 
+        state.eventItems.delete(Principal.toText(caller));
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared query({caller}) func listAllEventItems() : async Response<[Types.EventItem]>{
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    var list : [Types.EventItem] = [];
+    for((_,V) in state.eventItems.entries()){
+      list := Array.append<Types.EventItem>(list, [V]);
+    };
+    #ok(list);
   };
 
   // Quest Item 

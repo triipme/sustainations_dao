@@ -180,6 +180,17 @@ module {
     questId : Text;
   };
 
+  public type UsableItem = {
+    id : Text;
+    name : Text;
+    image : Text;
+  };
+
+  public type EventItem = {
+    userId : Principal;
+    itemId : Text;
+  };
+
   //--------------------- Event ---------------------//
   public type Event = {
     id : Text;

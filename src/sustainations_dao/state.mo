@@ -27,6 +27,8 @@ module {
     quests : Map<Text, Types.Quest>;
     items : Map<Text, Types.Item>;
     questItems : Map<Text, Types.QuestItem>;
+    usableItems : Map<Text, Types.UsableItem>;
+    eventItems : Map<Text, Types.EventItem>;
     events : Map<Text, Types.Event>;
     eventOptions : Map<Text, Types.EventOption>;
     gears : Map<Text,Types.Gear>;
@@ -58,6 +60,8 @@ module {
       quests = TrieMap.TrieMap<Text, Types.Quest>(Text.equal, Text.hash);
       items = TrieMap.TrieMap<Text, Types.Item>(Text.equal, Text.hash);
       questItems = TrieMap.TrieMap<Text, Types.QuestItem>(Text.equal, Text.hash);
+      usableItems = TrieMap.TrieMap<Text, Types.UsableItem>(Text.equal, Text.hash);
+      eventItems = TrieMap.TrieMap<Text, Types.EventItem>(Text.equal, Text.hash);
       events = TrieMap.TrieMap<Text, Types.Event>(Text.equal, Text.hash);
       eventOptions = TrieMap.TrieMap<Text, Types.EventOption>(Text.equal, Text.hash);
       gears = TrieMap.TrieMap<Text, Types.Gear>(Text.equal, Text.hash);

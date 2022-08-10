@@ -120,6 +120,21 @@ async function listCharacterCollectsMaterials(characterId){
   return result;
 };
 
+async function canGetARItem(eventItemId){
+  const { user } = store.getState();
+  const func = async () => await user.actor.canGetARItem(eventItemId);
+  const result = (await func()).ok;
+  return result;
+};
+
+function canGetARItemPromise(eventItemId){
+  return new Promise((resolve, reject) => {
+    const { user } = store.getState();
+    const rs = user.actor.canGetARItem(eventItemId);
+    resolve(rs);
+  });
+};
+
 export {
   loadQuestItems,
   loadCharacter,
@@ -135,4 +150,6 @@ export {
   characterCollectsMaterials,
   createCharacterCollectsMaterials,
   listCharacterCollectsMaterials,
+  canGetARItem,
+  canGetARItemPromise
 }
