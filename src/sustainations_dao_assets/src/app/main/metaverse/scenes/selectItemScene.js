@@ -146,7 +146,7 @@ class selectItemScene extends BaseScene {
           }
           this.strengthText.setText(String(this.characterStrength));
         });
-        this.add.image(580 + 145 * (col + 1), 60 + 111*(row + 1), this.itemNames[col+row*4]).setScale(0.67);
+        this.add.image(580 + 145 * (col + 1), 60 + 111*(row + 1), this.itemNames[col+row*4]);
       }
     }
     this.btnClear = this.add.sprite(733, 580, "btnClear")

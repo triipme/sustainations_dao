@@ -22,6 +22,11 @@ export default class catalonia_scene6 extends BaseScene {
     super('catalonia_scene6');
   }
   
+  init(data) {
+    this.isHealedPreviously = data.isUsedPotion;
+    console.log('healed', this.isHealedPreviously);
+  }
+
   clearSceneCache() {
     const textures_list = ['ground', 'background1', 'background2', 
       'background3', 'selectAction', 'btnBlank', 'obstacle'];
@@ -164,7 +169,26 @@ export default class catalonia_scene6 extends BaseScene {
     // this.setValue(this.hp, 50)
     
     //UI2
-    this.add.image(55, 555, "UI_Utility").setOrigin(0).setScrollFactor(0);
+    this.isHadPotion = true;
+    this.isUsedPotion = false;
+    this.itemSlot = [];
+    if (this.isHadPotion){
+      this.itemSlot[0] = this.add.image(55, 550, "UI_Utility_Sprite")
+        .setOrigin(0).setScrollFactor(0).setScale(0.5).setFrame(1);
+      this.potion = this.add.image(55, 550, "item_potion")
+        .setOrigin(0).setInteractive().setScrollFactor(0);
+      this.potion.on('pointerdown', () => {
+        this.clickSound.play();
+        this.itemSlot[0].setFrame(0);
+        this.potion.setVisible(false);
+        this.isUsedPotion = true;
+      });
+    } else {
+      this.itemSlot[0] = this.add.image(55, 550, "UI_Utility_Sprite").setOrigin(0).setScrollFactor(0).setScale(0.5);
+    }
+    this.itemSlot[1] =this.add.image(125, 505, "UI_Utility_Sprite").setOrigin(0).setScrollFactor(0).setScale(0.5);
+    this.itemSlot[2] =this.add.image(195, 550, "UI_Utility_Sprite").setOrigin(0).setScrollFactor(0).setScale(0.5);
+
     this.add.image(1190, 50, "BtnExit").setOrigin(0).setScrollFactor(0).setScale(0.7)
     .setInteractive()
       .on('pointerdown', () => {
@@ -251,7 +275,7 @@ export default class catalonia_scene6 extends BaseScene {
     if (this.player.x > gameConfig.scale.width*4) {
       this.ingameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start('catalonia_scene7');
+      this.scene.start('catalonia_scene7', {isUsedPotion: this.isUsedPotion});
     }
 
     if (this.player.x > gameConfig.scale.width*4 - 1000 && this.isInteracted == false) {
