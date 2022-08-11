@@ -6,7 +6,9 @@ import {
   loadCharacter,
   updateCharacterStats,
   getCharacterStatus,
-  characterTakeOption
+  characterTakeOption,
+  listCharacterSelectsItems,
+  takeOptionAbility
 } from '../../GameApi';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
@@ -211,6 +213,9 @@ export default class catalonia_scene1 extends BaseScene {
 
     // load character
     this.characterData = await loadCharacter();
+    // list taken items by character
+    this.takenItems = await listCharacterSelectsItems(this.characterData.id);
+    console.log(this.takenItems);
     // stats before choose option
     this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
     this.setValue(this.stamina, this.characterData.currentStamina/this.characterData.maxStamina*100);
@@ -220,30 +225,41 @@ export default class catalonia_scene1 extends BaseScene {
     // load event options
     this.options = [];
     for (const idx in this.eventOptions){
+      // can take option or not
+      const takeable = await takeOptionAbility(this.eventOptions[idx].id, this.takenItems);
+      
       this.options[idx] = this.add.sprite(gameConfig.scale.width/2, gameConfig.scale.height/2 -100 + idx*100, 'btnBlank');
       this.options[idx].text = this.add.text(
         gameConfig.scale.width/2, gameConfig.scale.height/2 - 100 + idx*100, this.eventOptions[idx].description, { fill: '#fff', align: 'center', fontSize: '30px' })
       .setScrollFactor(0).setVisible(false).setOrigin(0.5);
       this.options[idx].setInteractive().setScrollFactor(0).setVisible(false);
-      this.options[idx].on('pointerover', () => {
-        this.options[idx].setFrame(1);
-        this.hoverSound.play();
-      });
-      this.options[idx].on('pointerout', () => {
-        this.options[idx].setFrame(0);
-      });
+      if (takeable) {
+        this.options[idx].on('pointerover', () => {
+          this.options[idx].setFrame(1);
+          this.hoverSound.play();
+        });
+        this.options[idx].on('pointerout', () => {
+          this.options[idx].setFrame(0);
+        });
+      } else {
+        this.options[idx].setFrame(2);
+      }
+
+      
       this.options[idx].on('pointerdown', () => {
-        this.triggerContinue();
-        this.clickSound.play();
-        this.sfx_char_footstep.play();
-        this.sfx_obstacle_remove.play();
-        // stats after choose option
-        this.setValue(this.hp, this.characterTakeOptions[idx].currentHP/this.characterTakeOptions[idx].maxHP*100);
-        this.setValue(this.stamina, this.characterTakeOptions[idx].currentStamina/this.characterTakeOptions[idx].maxStamina*100);
-        this.setValue(this.mana, this.characterTakeOptions[idx].currentMana/this.characterTakeOptions[idx].maxMana*100);
-        this.setValue(this.morale, this.characterTakeOptions[idx].currentMorale/this.characterTakeOptions[idx].maxMorale*100);
-        // update character after choose option
-        updateCharacterStats(this.characterTakeOptions[idx]);
+        if (takeable){
+          this.triggerContinue();
+          this.clickSound.play();
+          this.sfx_char_footstep.play();
+          this.sfx_obstacle_remove.play();
+          // stats after choose option
+          this.setValue(this.hp, this.characterTakeOptions[idx].currentHP/this.characterTakeOptions[idx].maxHP*100);
+          this.setValue(this.stamina, this.characterTakeOptions[idx].currentStamina/this.characterTakeOptions[idx].maxStamina*100);
+          this.setValue(this.mana, this.characterTakeOptions[idx].currentMana/this.characterTakeOptions[idx].maxMana*100);
+          this.setValue(this.morale, this.characterTakeOptions[idx].currentMorale/this.characterTakeOptions[idx].maxMorale*100);
+          // update character after choose option
+          updateCharacterStats(this.characterTakeOptions[idx]);
+        }
       });
     };
   }
