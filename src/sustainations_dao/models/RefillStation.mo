@@ -8,7 +8,7 @@ module {
     name : Text;
     code : Text;
     symbol : Text;
-    exchangeRate : Nat64; // exchange rate of ICP to this currency
+    exchangeRate : Float; // exchange rate of ICP to this currency
   };
 
   public type Brand = {
@@ -73,7 +73,8 @@ module {
   public type Order = {
     brandId : Text;
     stationId : Text;
-    products : List.List<OrderProduct>;
+    products : [OrderProduct];
+    totalAmount : Float;
     history : [OrderStatusHistory];
   };
 

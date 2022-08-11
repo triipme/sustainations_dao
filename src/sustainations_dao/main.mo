@@ -926,6 +926,33 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     #ok(Iter.toArray(state.refillBrand.brands.entries()));
   };
 
+  type SystemParams = {
+    treasuryContribution : Float;
+  };
+  public query func getSystemParams() : async Response<SystemParams> {
+    let systemParams : SystemParams = {
+      treasuryContribution;
+    };
+    #ok(systemParams)
+  };
+
+  public shared({ caller }) func updateSystemParams(treasuryContributionValue : Float) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    if (isAdmin(caller) == false) {
+      return #err(#AdminRoleRequired);
+    };
+
+    if (treasuryContributionValue < 0) {
+      return #err(#InvalidData);
+    };
+
+    treasuryContribution := treasuryContributionValue;
+    #ok("Success");
+  };
+
   /* === For Refill Brand's Owner/Staff === */
   public shared({ caller }) func setRBManager(principal : Text, username : Text) : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
@@ -1526,6 +1553,189 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
       };
     };
     #ok(results);
+  };
+
+  func setRBOrder(
+    brandId : Text, stationId : Text,
+    products : [RS.OrderProduct], totalAmount : Float,
+    history: [RS.OrderStatusHistory], uuid : ?Text
+  ) : async Text {
+    let payload = {
+      brandId;
+      stationId;
+      history;
+      products;
+      totalAmount;
+    };
+    let id = Option.get(uuid, await createUUID());
+    state.refillBrand.orders.put(id, payload);
+    return id;
+  };
+
+  public shared({ caller }) func createRBOrder(
+    stationId : Text,
+    productIds : [(Text, Nat)],
+    status : RS.OrderStatus
+  ) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    switch (state.refillBrand.managers.get(caller)) {
+      case (null) { #err(#AdminRoleRequired) };
+      case (?manager) {
+        switch (state.refillBrand.stations.get(stationId)) {
+          case null #err(#StationNotFound);
+          case (?station) {
+            if (station.brandId != manager.brandId) {
+              #err(#StationNotFound);
+            } else {
+              let history : RS.OrderStatusHistory = {
+                status;
+                timestamp = Moment.now();
+              };
+              var products : [RS.OrderProduct] = [];
+              var totalAmount : Float = 0.0;
+              for((pId, quantity) in Iter.fromArray(productIds)) {
+                switch (state.refillBrand.products.get(pId)) {
+                  case null {};
+                  case (?product) {
+                    if (product.brandId == manager.brandId) {
+                      let price = Option.get(product.salePrice, product.price);
+                      switch (state.currencies.get(product.currency)) {
+                        case null {};
+                        case (?currency) {
+                          let productAmount = price * Float.fromInt64(Int64.fromNat64(Nat64.fromNat(quantity)));
+                          totalAmount += productAmount / currency.exchangeRate;
+                        };
+                      };
+                      let item : RS.OrderProduct = {
+                        productId = pId;
+                        price;
+                        currency = product.currency;
+                        quantity = quantity;
+                      };
+                      products := Array.append<RS.OrderProduct>(products, [item]);
+                    };
+                  };
+                };
+              };
+              let uuid = await createUUID();
+              let treasuryAmount = totalAmount * treasuryContribution;
+              // collect treasury
+              if (treasuryAmount > 0.0) {
+                let amount = Int64.toNat64(Float.toInt64(treasuryAmount));
+                switch (await deposit(amount, caller)) {
+                  case (#ok(bIndex)) {
+                    // record transaction
+                    await recordTransaction(
+                      caller, amount, caller, Principal.fromActor(this),
+                      #collectTreasuryContribution, ?uuid, bIndex
+                    );
+                  };
+                  case (#err(error)) {
+                    return #err(error);
+                  };
+                };
+              };
+              let id = await setRBOrder(manager.brandId, stationId, products, totalAmount, [history], ?uuid);
+              #ok(id);
+            };
+          };
+        };
+      };
+    };
+  };
+
+  public query({ caller }) func getRBOrder(orderId : Text) : async Response<Types.RBOrder> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    switch (state.refillBrand.orders.get(orderId)) {
+      case (null) { #err(#NotFound); };
+      case (?order) {
+        #ok(order);
+      };
+    };
+  };
+
+  public shared({ caller }) func updateRBOrder(
+    uuid : Text, stationId : Text,
+    productIds : [(Text, Nat)],
+    status : RS.OrderStatus
+  ) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    switch (state.refillBrand.orders.get(uuid)) {
+      case (null) { #err(#NotFound) };
+      case (?order) {
+        switch (state.refillBrand.managers.get(caller)) {
+          case (null) { #err(#AdminRoleRequired) };
+          case (?manager) {
+            if (manager.brandId == order.brandId) {
+              switch (state.refillBrand.stations.get(stationId)) {
+                case null #err(#StationNotFound);
+                case (?station) {
+                  if (station.brandId != manager.brandId) {
+                    #err(#StationNotFound);
+                  } else {
+                    let history : RS.OrderStatusHistory = {
+                      status;
+                      timestamp = Moment.now();
+                    };
+                    var products : [RS.OrderProduct] = [];
+                    var totalAmount : Float = 0.0;
+                    for((pId, quantity) in Iter.fromArray(productIds)) {
+                      switch (state.refillBrand.products.get(pId)) {
+                        case null {};
+                        case (?product) {
+                          if (product.brandId == manager.brandId) {
+                            let price = Option.get(product.salePrice, product.price);
+                            totalAmount += price * Float.fromInt64(Int64.fromNat64(Nat64.fromNat(quantity)));
+                            let item : RS.OrderProduct = {
+                              productId = pId;
+                              price;
+                              currency = product.currency;
+                              quantity = quantity;
+                            };
+                            products := Array.append<RS.OrderProduct>(products, [item]);
+                          };
+                        };
+                      };
+                    };
+                    let id = await setRBOrder(
+                      manager.brandId, stationId, products, totalAmount,
+                      Array.append<RS.OrderStatusHistory>(order.history, [history]), ?uuid
+                    );
+                    #ok(id);
+                  }
+                }
+              }
+            } else {
+              #err(#AdminRoleRequired);
+            };
+          };
+        };
+      };
+    };
+  };
+
+  public query({ caller }) func listRBOrders() : async Response<[(Text, Types.RBOrder)]> {
+    switch (state.refillBrand.managers.get(caller)) {
+      case (null) { #err(#AdminRoleRequired) };
+      case (?manager) {
+        var results : [(Text, Types.RBOrder)] = [];
+        for ((uuid, order) in state.refillBrand.orders.entries()) {
+          if (order.brandId == manager.brandId) {
+            results := Array.append<(Text, Types.RBOrder)>(results, [(uuid, order)]);
+          };
+        };
+        #ok(results);
+      };
+    };
   };
   /* === End Refill Brand === */
 

@@ -22,6 +22,7 @@ const NewProductUnit = lazy(() => import("./product-units/product-unit/NewProduc
 const EditProductUnit = lazy(() => import("./product-units/product-unit/EditProductUnit"));
 const Products = lazy(() => import("./products/Products"));
 const Product = lazy(() => import("./products/product/Product"));
+const Orders = lazy(() => import("./orders/Orders"));
 
 const RefillNetworkConfig = {
   settings: {
@@ -147,6 +148,15 @@ const RefillNetworkConfig = {
             {
               path: ":productId/*",
               element: <Product />
+            }
+          ]
+        },
+        {
+          path: "orders",
+          children: [
+            {
+              index: true,
+              element: <Orders />
             }
           ]
         }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import FuseLoading from '@fuse/core/FuseLoading';
 import _ from '@lodash';
@@ -33,7 +33,7 @@ const EditProfile = () => {
   const currentAvatarPath = profile?.avatar[0];
   const avatarUUID = currentAvatarPath ? currentAvatarPath.split("/")[2].split(".")[0] : uuidv4();
 
-  const { control, watch, handleSubmit, formState, getValues } = useForm({
+  const { control, watch, handleSubmit, formState } = useForm({
     mode: 'onChange',
     defaultValues: {
       username: profile?.username[0],

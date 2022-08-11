@@ -1,9 +1,11 @@
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 import TableHead from '@mui/material/TableHead';
+import TableSortLabel from '@mui/material/TableSortLabel';
+import Tooltip from '@mui/material/Tooltip';
 import { lighten } from '@mui/material/styles';
 
-function ContentsTableHead({ rows }) {
+function ContentsTableHead({ rows, order }) {
   return (
     <TableHead>
       <TableRow className="h-48 sm:h-64">
@@ -21,7 +23,22 @@ function ContentsTableHead({ rows }) {
               align={row.align}
               padding={row.disablePadding ? 'none' : 'normal'}
             >
-              {row.label}
+              {row.sort ? (
+                <Tooltip
+                  title="Sort"
+                  placement={row.align === 'right' ? 'bottom-end' : 'bottom-start'}
+                  enterDelay={300}
+                >
+                  <TableSortLabel
+                    active={order.id === row.id}
+                    direction={order.direction}
+                    onClick={createSortHandler(row.id)}
+                    className="font-semibold"
+                  >
+                    {row.label}
+                  </TableSortLabel>
+                </Tooltip>
+              ) : row.label}
             </TableCell>
           );
         }, this)}

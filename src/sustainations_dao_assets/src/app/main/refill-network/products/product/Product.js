@@ -45,6 +45,8 @@ const schema = yup.object().shape({
     .required('You must select a product unit'),
   price: yup.number().typeError('You must enter a product price')
     .moreThan(0, 'You must enter a positive product price'),
+  salePrice: yup.number().nullable().typeError('You must enter a sale price')
+    .moreThan(0, 'You must enter a positive sale price'),
   currency: yup
     .string()
     .required('You must select a product currency'),

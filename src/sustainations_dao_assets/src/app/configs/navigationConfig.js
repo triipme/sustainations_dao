@@ -129,6 +129,13 @@ const navigationConfig = [
         type: "item",
         icon: "room_preferences_outlined",
         url: "admin/refill-brands"
+      },
+      {
+        id: "admin-settings",
+        title: "Settings",
+        type: "item",
+        icon: "settings_outlined",
+        url: "admin/settings"
       }
     ]
   }

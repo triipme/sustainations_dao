@@ -76,6 +76,7 @@ module {
     #executeApprovedProposal;
     #awardUserAgreement;
     #rewardTop;
+    #collectTreasuryContribution;
   };
   public type TxRecord = {
     uuid : Text;
@@ -264,6 +265,8 @@ module {
     #AlreadyVoted;
     #AdminRoleRequired;
     #OwnerRoleRequired;
+    #StationNotFound;
+    #InvalidData;
   };
 
   public let proposalCategories = [

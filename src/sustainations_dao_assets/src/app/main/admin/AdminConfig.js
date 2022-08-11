@@ -9,6 +9,7 @@ const Metaverse = lazy(() => import("./metaverse/Metaverse"));
 const RefillBrands = lazy(() => import("./refill-brands/RefillBrands"));
 const NewRefillBrand = lazy(() => import("./refill-brands/brand/NewRefillBrand"));
 const EditRefillBrand = lazy(() => import("./refill-brands/brand/EditRefillBrand"));
+const Settings = lazy(() => import("./settings/Settings"));
 
 const AdminConfig = {
   settings: {
@@ -59,6 +60,10 @@ const AdminConfig = {
               element: <EditRefillBrand />
             }
           ]
+        },
+        {
+          path: 'settings',
+          element: <Settings />
         }
       ]
     }

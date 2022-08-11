@@ -91,7 +91,7 @@ const Products = () => {
   if (loading) {
     return <FuseLoading />;
   }
-  console.log(products, filteredData);
+
   return (
     <FusePageCarded
       header={
