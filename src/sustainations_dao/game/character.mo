@@ -55,6 +55,12 @@ module Character {
     let lossMana : Float = if(eventOption.lossMana != 0) {await RandomMethod.randomNumber(eventOption.lossMana - 1, eventOption.lossMana + 1)} else {0};
     let lossMorale : Float = if(eventOption.lossMorale != 0) {await RandomMethod.randomNumber(eventOption.lossMorale - 1, eventOption.lossMorale + 1)} else {0};
     let lossStamina : Float = if(eventOption.lossStamina != 0) {await RandomMethod.randomNumber(eventOption.lossStamina - 1, eventOption.lossStamina + 1)} else {0};
+
+    let updatedHP = updateCurrentStat(character.currentHP, lossHP, eventOption.gainHP, character.maxHP);
+    let updatedMana = updateCurrentStat(character.currentMana, lossMana, eventOption.gainMana, character.maxMana);
+    let updatedStamina = updateCurrentStat(character.currentStamina, lossStamina, eventOption.gainStamina, character.maxStamina);
+    let updatedMorale = updateCurrentStat(character.currentMorale, lossMorale, eventOption.gainMorale, character.maxMorale);
+
     let newCharacter : Types.Character = {
       userId = character.userId;
       id = character.id;
@@ -63,23 +69,23 @@ module Character {
       currentExp = character.currentExp + eventOption.gainExp;
       levelUpExp = character.levelUpExp;
       status = character.status;
+      // status = isExhaust(character.status, updatedHP, updatedStamina, updatedMorale);
       strength = updateCurrentStat(character.strength, strengthRequire, 0, character.strength);
       intelligence = character.intelligence;
       vitality = character.vitality;
       luck = character.luck;
-      currentHP = updateCurrentStat(character.currentHP, lossHP, eventOption.gainHP, character.maxHP);
+      currentHP = updatedHP;
       maxHP = character.maxHP;
-      currentMana = updateCurrentStat(character.currentMana, lossMana, eventOption.gainMana, character.maxMana);
+      currentMana = updatedMana;
       maxMana = character.maxMana;
-      currentStamina = updateCurrentStat(character.currentStamina, lossStamina, eventOption.gainStamina, character.maxStamina);
+      currentStamina = updatedStamina;
       maxStamina = character.maxStamina;
-      currentMorale = updateCurrentStat(character.currentMorale, lossMorale, eventOption.gainMorale, character.maxMorale);
+      currentMorale = updatedMorale;
       maxMorale = character.maxMorale;
       classId = character.classId;
       gearIds = character.gearIds;
       materialIds = character.materialIds;
     };
-    // let updatedCharacter = state.characters.replace(character.id, newCharacter);
     return newCharacter;
   };
 

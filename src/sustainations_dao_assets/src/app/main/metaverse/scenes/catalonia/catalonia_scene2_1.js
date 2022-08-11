@@ -33,6 +33,7 @@ export default class catalonia_scene2_1 extends BaseScene {
   }
 
   preload() {
+    this.addLoadingScreen();
     this.eventId = "e8";
     this.load.rexAwait(function(successCallback, failureCallback) {
       loadCharacter().then( (result) => {
@@ -56,19 +57,6 @@ export default class catalonia_scene2_1 extends BaseScene {
       });
     }, this);
 
-    //loading screen
-    this.add.image(
-      gameConfig.scale.width/2, gameConfig.scale.height/2 - 50, 'logo'
-    ).setOrigin(0.5, 0.5).setScale(0.26);
-    this.anims.create({
-      key: 'loading-anims',
-      frames: this.anims.generateFrameNumbers("loading", {start: 0, end: 11}),
-      frameRate: 12,
-      repeat: -1
-    });
-    this.add.sprite(
-      gameConfig.scale.width/2, gameConfig.scale.height/2 + 150, "loading"
-    ).setScale(0.07).play('loading-anims');
     //Preload
     this.clearSceneCache();
     this.isInteracting = false;
@@ -138,16 +126,14 @@ export default class catalonia_scene2_1 extends BaseScene {
       .setOrigin(0,0)
       .setScrollFactor(0);
 
-      // platforms
+    // platforms
     const platforms = this.physics.add.staticGroup();
-    for (let x = -100; x < 17000; x += 1) {
-      platforms.create(x, 950, "ground").refreshBody();
+    for (let x = -50; x < gameConfig.scale.width*3; x += 4) {
+      platforms.create(x, 635, "ground").refreshBody();
     }
 
     //player
-    this.player = this.physics.add.sprite(-80, 700, "hero-running");
-    this.player.setBounce(0.25);
-    this.player.setCollideWorldBounds(false);
+    this.player = this.physics.add.sprite(-50, 500, "hero-running").setScale(0.67);
     this.physics.add.collider(this.player, platforms);
 
     this.anims.create({
@@ -171,37 +157,38 @@ export default class catalonia_scene2_1 extends BaseScene {
     this.bg_3.setScrollFactor(0);
 
     //UI
-    this.add.image(20, 40, "UI_NameCard").setOrigin(0).setScrollFactor(0);
-    this.add.image(370, 40, "UI_HP").setOrigin(0).setScrollFactor(0);
-    this.add.image(720, 40, "UI_Mana").setOrigin(0).setScrollFactor(0);
-    this.add.image(1070, 40, "UI_Stamina").setOrigin(0).setScrollFactor(0);
-    this.add.image(1420, 40, "UI_Morale").setOrigin(0).setScrollFactor(0);
+    this.add.image(20, 30, "UI_NameCard").setOrigin(0).setScrollFactor(0);
+    this.add.image(255, 30, "UI_HP").setOrigin(0).setScrollFactor(0);
+    this.add.image(490, 30, "UI_Mana").setOrigin(0).setScrollFactor(0);
+    this.add.image(725, 30, "UI_Stamina").setOrigin(0).setScrollFactor(0);
+    this.add.image(960, 30, "UI_Morale").setOrigin(0).setScrollFactor(0);
+    
     //set value
-    this.hp = this.makeBar(476, 92, 150, 22, 0x74e044).setScrollFactor(0);
-    this.mana = this.makeBar(476+350, 92, 150, 22, 0xc038f6).setScrollFactor(0);
-    this.stamina = this.makeBar(476+350*2, 92, 150, 22, 0xcf311f).setScrollFactor(0);
-    this.morale = this.makeBar(476+350*3, 92, 150, 22, 0x63dafb).setScrollFactor(0);
+    this.hp = this.makeBar(325, 65, 100, 15, 0x74e044).setScrollFactor(0);
+    this.mana = this.makeBar(325+235, 65, 100, 15, 0xc038f6).setScrollFactor(0);
+    this.stamina = this.makeBar(325+235*2, 65, 100, 15, 0xcf315f).setScrollFactor(0);
+    this.morale = this.makeBar(325+235*3, 65, 100, 15, 0x63dafb).setScrollFactor(0);
     // this.setValue(this.hp, 50)
-
+    
     //UI2
-    this.testButton = this.add.image(80, 830, "UI_Utility").setOrigin(0).setScrollFactor(0);
-    this.add.image(1780, 74, "BtnExit").setOrigin(0).setScrollFactor(0).setScale(0.7)
-      .setInteractive()
+    this.testButton = this.add.image(55, 555, "UI_Utility").setOrigin(0).setScrollFactor(0);
+    this.add.image(1190, 50, "BtnExit").setOrigin(0).setScrollFactor(0).setScale(0.7)
+    .setInteractive()
       .on('pointerdown', () => {
         this.clickSound.play();
-        this.scene.start('menuScene');
-        this.pregameSound.stop();
+        this.ingameSound.stop();
         this.sfx_char_footstep.stop();
+        this.ambientSound.stop();
+        this.scene.start('menuScene');
       });
-    this.testButton.setInteractive();
-    this.testButton.on('pointerdown', () => {
-      console.log("UESD HP POTION");
-      useHpPotion(this.characterData.id);
+    this.isUseHpPotion = false;
+    this.testButton.setInteractive().on('pointerdown', () => {
+      this.isUseHpPotion = true;
     });
-
+    
     //mycam
     this.myCam = this.cameras.main;
-    this.myCam.setBounds(0, 0, 4168, gameConfig.scale.height); //furthest distance the cam is allowed to move
+    this.myCam.setBounds(0, 0, 2779, gameConfig.scale.height); //furthest distance the cam is allowed to move
     this.myCam.startFollow(this.player);
 
     //pause screen
@@ -233,9 +220,9 @@ export default class catalonia_scene2_1 extends BaseScene {
       // can take option or not
       const takeable = this.eventOptions[idx][0];
 
-      this.options[idx] = this.add.sprite(gameConfig.scale.width/2, gameConfig.scale.height/2 -100 + idx*100, 'btnBlank');
+      this.options[idx] = this.add.sprite(gameConfig.scale.width/2, gameConfig.scale.height/2 -100 + idx*70, 'btnBlank').setScale(0.67);
       this.options[idx].text = this.add.text(
-        gameConfig.scale.width/2, gameConfig.scale.height/2 - 100 + idx*100, this.eventOptions[idx][1].description, { fill: '#fff', align: 'center', fontSize: '30px' })
+        gameConfig.scale.width/2, gameConfig.scale.height/2 - 100 + idx*70, this.eventOptions[idx][1].description, { fill: '#fff', align: 'center', fontSize: '20px' })
       .setScrollFactor(0).setVisible(false).setOrigin(0.5);
       this.options[idx].setInteractive().setScrollFactor(0).setVisible(false);
       if (takeable) {
@@ -260,10 +247,11 @@ export default class catalonia_scene2_1 extends BaseScene {
           this.setValue(this.stamina, this.characterTakeOptions[idx].currentStamina/this.characterTakeOptions[idx].maxStamina*100);
           this.setValue(this.mana, this.characterTakeOptions[idx].currentMana/this.characterTakeOptions[idx].maxMana*100);
           this.setValue(this.morale, this.characterTakeOptions[idx].currentMorale/this.characterTakeOptions[idx].maxMorale*100);
-          this.characterData = this.characterTakeOption[idx];
-          console.log(this.characterData);
           // update character after choose option
           updateCharacterStats(this.characterTakeOptions[idx]);
+          if(this.isUseHpPotion == true){
+            useHpPotion(this.characterTakeOptions[idx].id);
+          };
         }
       });
     };
@@ -272,16 +260,16 @@ export default class catalonia_scene2_1 extends BaseScene {
   update() {
     //new player logic
     if (this.player.body.touching.down && this.isInteracting == false) {
-      this.player.setVelocityX(350);
+      this.player.setVelocityX(200);
     }
 
-    if (this.player.x > 4168) {
+    if (this.player.x > 2779) {
       this.ingameSound.stop();
       this.sfx_char_footstep.stop();
       this.scene.start('catalonia_scene2_2');
     }
 
-    if (this.player.x > 3000 && this.isInteracted == false) {
+    if (this.player.x > 1400 && this.isInteracted == false) {
       this.triggerPause();
       this.ambientSound.stop();
       this.sfx_char_footstep.stop();

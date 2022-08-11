@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import gameConfig from '../GameConfig';
+import BaseScene from './BaseScene'
 const exhausted_text = 'metaverse/exhausted.png';
 const btnBlank = 'metaverse/scenes/selection.png';
 const BtnExit = 'metaverse/scenes/UI_exit.png';
@@ -8,7 +9,7 @@ const ground = 'metaverse/transparent-ground.png';
 const exhaustedSprite = 'metaverse/character_sprite_exhausted.png';
 
 
-class exhausted extends Phaser.Scene {
+class exhausted extends BaseScene {
   constructor() {
     super('exhausted');
   }
@@ -24,8 +25,8 @@ class exhausted extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image("ground", ground);
     this.clearSceneCache();
+    this.load.image("ground", ground);
     this.load.image('exhausted_text', exhausted_text);
     this.load.spritesheet('btnBlank', btnBlank, { frameWidth: 1102, frameHeight: 88});
     this.load.image('BtnExit', BtnExit);
@@ -39,11 +40,11 @@ class exhausted extends Phaser.Scene {
   create() {
     // platforms
     const platforms = this.physics.add.staticGroup();
-    for (let x = -100; x < 1920*4; x += 1) {
-      platforms.create(x, 950, "ground").refreshBody();
+    for (let x = -50; x < gameConfig.scale.width; x += 4) {
+      platforms.create(x, 635, "ground").refreshBody();
     }
     //player
-    this.player = this.physics.add.sprite(700, 780, "exhaustedSprite");
+    this.player = this.physics.add.sprite(467, 520, "exhaustedSprite").setScale(0.67);
     this.player.setCollideWorldBounds(false);
     this.physics.add.collider(this.player, platforms);
 
@@ -57,14 +58,14 @@ class exhausted extends Phaser.Scene {
 
     this.clickSound = this.sound.add('clickSound');
     this.hoverSound = this.sound.add('hoverSound');
-    this.exhausted_text = this.add.image(gameConfig.scale.width/2, gameConfig.scale.height/4, 'exhausted_text');
-    this.add.image(1780, 74, "BtnExit").setOrigin(0).setScrollFactor(0).setScale(0.7)
+    this.exhausted_text = this.add.image(gameConfig.scale.width/2, gameConfig.scale.height/4, 'exhausted_text').setScale(0.67);
+    this.add.image(1185, 50, "BtnExit").setOrigin(0).setScrollFactor(0).setScale(0.7)
       .setInteractive()
       .on('pointerdown', () => {
         this.clickSound.play();
         this.scene.start('menuScene');
       });
-    this.playagain = this.add.sprite(gameConfig.scale.width/2, gameConfig.scale.height/2, 'btnBlank');
+    this.playagain = this.add.sprite(gameConfig.scale.width/2, gameConfig.scale.height/2, 'btnBlank').setScale(0.67);
     this.playagain.setInteractive().setScrollFactor(0);
     this.playagain.on('pointerover', () => {
       this.playagain.setFrame(1);
@@ -82,8 +83,8 @@ class exhausted extends Phaser.Scene {
 
   update() {
     //new player logic
-    if (this.player.body.touching.down && this.player.x < 1920/2) {
-      this.player.setVelocityX(200);
+    if (this.player.body.touching.down && this.player.x < gameConfig.scale.width/2) {
+      this.player.setVelocityX(135);
     } else {
       this.player.setVelocityX(0);
     }

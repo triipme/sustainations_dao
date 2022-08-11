@@ -1,7 +1,9 @@
 import Phaser from 'phaser';
+import BaseScene from './BaseScene'
+
 const bg = 'metaverse/UI_finish.png';
 
-class thanks extends Phaser.Scene {
+class thanks extends BaseScene {
   constructor() {
     super('thanks');
   }
@@ -11,6 +13,7 @@ class thanks extends Phaser.Scene {
   }
 
   preload() {
+    this.addLoadingScreen();
     this.clearSceneCache();
     this.load.image('bg', bg);
   }
@@ -20,7 +23,7 @@ class thanks extends Phaser.Scene {
     this.pregameSound = this.sound.add('pregameSound');
     this.pregameSound.play();
     this.background = this.add.image(0, 0, 'bg').setOrigin(0);
-    this.add.image(1780, 74, "BtnExit").setOrigin(0).setScrollFactor(0).setScale(0.7)
+    this.add.image(1185, 50, "BtnExit").setOrigin(0).setScrollFactor(0).setScale(0.7)
       .setInteractive()
       .on('pointerdown', () => {
         this.clickSound.play();

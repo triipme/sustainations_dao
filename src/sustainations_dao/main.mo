@@ -1312,7 +1312,9 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
                   intelligence = character.intelligence;
                   vitality = character.vitality;
                   luck = character.luck;
-                  currentHP = character.currentHP + usableItem.increaseStat;
+                  currentHP = if((character.currentHP + usableItem.increaseStat) >= character.maxHP) 
+                                {character.maxHP}
+                              else {character.currentHP + usableItem.increaseStat};
                   maxHP = character.maxHP;
                   currentMana = character.currentMana;
                   maxMana = character.maxMana;
