@@ -143,6 +143,16 @@ function loadEventItem(){
   });
 };
 
+
+function useHpPotion(characterId){
+  return new Promise((resolve, reject) => {
+    const { user } = store.getState();
+    const rs = user.actor.useHpPotion(characterId);
+    resolve(rs);
+  });
+};
+
+
 export {
   loadQuestItems,
   loadCharacter,
@@ -160,5 +170,6 @@ export {
   listCharacterCollectsMaterials,
   canGetARItem,
   canGetARItemPromise,
-  loadEventItem
+  loadEventItem,
+  useHpPotion
 }

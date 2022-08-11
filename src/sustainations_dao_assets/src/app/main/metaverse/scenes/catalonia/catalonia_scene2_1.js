@@ -7,7 +7,8 @@ import {
   updateCharacterStats,
   getCharacterStatus,
   characterTakeOption,
-  listCharacterSelectsItems
+  listCharacterSelectsItems,
+  useHpPotion
 } from '../../GameApi';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
@@ -183,7 +184,7 @@ export default class catalonia_scene2_1 extends BaseScene {
     // this.setValue(this.hp, 50)
 
     //UI2
-    this.add.image(80, 830, "UI_Utility").setOrigin(0).setScrollFactor(0);
+    this.testButton = this.add.image(80, 830, "UI_Utility").setOrigin(0).setScrollFactor(0);
     this.add.image(1780, 74, "BtnExit").setOrigin(0).setScrollFactor(0).setScale(0.7)
       .setInteractive()
       .on('pointerdown', () => {
@@ -192,6 +193,11 @@ export default class catalonia_scene2_1 extends BaseScene {
         this.pregameSound.stop();
         this.sfx_char_footstep.stop();
       });
+    this.testButton.setInteractive();
+    this.testButton.on('pointerdown', () => {
+      console.log("UESD HP POTION");
+      useHpPotion(this.characterData.id);
+    });
 
     //mycam
     this.myCam = this.cameras.main;
@@ -254,6 +260,8 @@ export default class catalonia_scene2_1 extends BaseScene {
           this.setValue(this.stamina, this.characterTakeOptions[idx].currentStamina/this.characterTakeOptions[idx].maxStamina*100);
           this.setValue(this.mana, this.characterTakeOptions[idx].currentMana/this.characterTakeOptions[idx].maxMana*100);
           this.setValue(this.morale, this.characterTakeOptions[idx].currentMorale/this.characterTakeOptions[idx].maxMorale*100);
+          this.characterData = this.characterTakeOption[idx];
+          console.log(this.characterData);
           // update character after choose option
           updateCharacterStats(this.characterTakeOptions[idx]);
         }

@@ -184,6 +184,7 @@ module {
     id : Text;
     name : Text;
     image : Text;
+    increaseStat : Float;
   };
 
   public type EventItem = {

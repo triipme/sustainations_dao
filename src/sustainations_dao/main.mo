@@ -1287,6 +1287,53 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
+  public shared({caller}) func useHpPotion(characterId : Text) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsCharacter = state.characters.get(characterId);
+    switch (rsCharacter) {
+      case (null) { #err(#NotFound); };
+      case (?character) {
+        switch (state.eventItems.get(Principal.toText(caller))) {
+          case (null) { #err(#NotFound); };
+          case (?eventItem) {
+            for((_, usableItem) in state.usableItems.entries()){
+              if(eventItem.itemId == usableItem.id){
+                var newCharacter : Types.Character = {
+                  userId = character.userId;
+                  id = character.id;
+                  name = character.name;
+                  level = character.level;
+                  currentExp = character.currentExp;
+                  levelUpExp = character.levelUpExp;
+                  status = character.status;
+                  strength = character.strength;
+                  intelligence = character.intelligence;
+                  vitality = character.vitality;
+                  luck = character.luck;
+                  currentHP = character.currentHP + usableItem.increaseStat;
+                  maxHP = character.maxHP;
+                  currentMana = character.currentMana;
+                  maxMana = character.maxMana;
+                  currentStamina = character.currentStamina;
+                  maxStamina = character.maxStamina;
+                  currentMorale = character.currentMorale;
+                  maxMorale = character.maxMorale;
+                  classId = character.classId;
+                  gearIds = character.gearIds;
+                  materialIds = character.materialIds;
+                };
+                let updatedCharacter = state.characters.replace(character.id, newCharacter);
+              };
+            };
+            #ok("Success");
+          };
+        };
+      };
+    };
+  };
+
   public shared({caller}) func deleteCharacter(id : Text) : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
@@ -1560,6 +1607,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
           id = usableItem.id;
           name = usableItem.name;
           image = usableItem.image;
+          increaseStat = usableItem.increaseStat;
         });
         #ok("Success");
       };
