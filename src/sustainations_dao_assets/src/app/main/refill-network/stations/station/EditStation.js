@@ -9,7 +9,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import useThemeMediaQuery from '@fuse/hooks/useThemeMediaQuery';
 import FusePageCarded from '@fuse/core/FusePageCarded';
 import FuseLoading from '@fuse/core/FuseLoading';
-import StationFormHeader from './StationFormHeader';
+import FormHeader from '../../../../shared-components/FormHeader';
 import StationForm from './StationForm';
 /**
  * Form Validation Schema
@@ -115,7 +115,7 @@ const EditStation = () => {
 
   return (
     <FusePageCarded
-      header={<StationFormHeader actionText="Edit" />}
+      header={<FormHeader actionText="Edit Station" backLink="/refill-network/stations" />}
       content={<StationForm
         methods={methods} submitLoading={submitLoading}
         onSubmit={onSubmit}

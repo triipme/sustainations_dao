@@ -31,8 +31,8 @@ function UserAgreement() {
         "NotAuthorized": "Please sign in!."
       }[Object.keys(error)[0]] || 'Error! Please try again later!'
       dispatch(showMessage({ message }));
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (

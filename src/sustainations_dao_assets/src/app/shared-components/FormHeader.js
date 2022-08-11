@@ -1,13 +1,12 @@
 import Button from '@mui/material/Button';
-import Input from '@mui/material/Input';
-import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
+import { useTheme } from '@mui/material/styles';
 
-function StationsHeader({ handleSearchText }) {
-
+function FormHeader({ actionText, backLink, saveBtn }) {
+  const theme = useTheme();
   return (
     <div className="flex flex-col sm:flex-row space-y-16 sm:space-y-0 flex-1 w-full items-center justify-between py-32 px-24 md:px-32">
       <Typography
@@ -17,51 +16,35 @@ function StationsHeader({ handleSearchText }) {
         delay={300}
         className="text-24 md:text-32 font-extrabold tracking-tight"
       >
-        Stations
+        {actionText}
       </Typography>
 
       <div className="flex flex-col w-full sm:w-auto sm:flex-row space-y-16 sm:space-y-0 flex-1 items-center justify-end space-x-8">
-        <Paper
-          component={motion.div}
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1, transition: { delay: 0.2 } }}
-          className="flex items-center w-full sm:max-w-256 space-x-8 px-16 rounded-full border-1 shadow-0"
-        >
-          <FuseSvgIcon color="disabled">search_outlined</FuseSvgIcon>
-
-          <Input
-            placeholder="Search stations"
-            className="flex flex-1"
-            disableUnderline
-            fullWidth
-            inputProps={{
-              'aria-label': 'Search',
-            }}
-            onChange={handleSearchText}
-          />
-        </Paper>
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0, transition: { delay: 0.2 } }}
         >
           <Button
-            to="/refill-network/stations/new"
+            to={backLink}
             component={Link}
-            className="px-16 min-w-128"
+            className="mb-8"
             color="secondary"
-            variant="contained"
+            variant="text"
             startIcon={
-              <FuseSvgIcon className="" size={20}>
-                add
+              <FuseSvgIcon size={20}>
+                {theme.direction === 'ltr'
+                  ? 'arrow_back'
+                  : 'arrow_forward'}
               </FuseSvgIcon>
             }
           >
-            Create Station
+            Back to list
           </Button>
+          {saveBtn}
         </motion.div>
       </div>
     </div>
   );
 }
 
-export default StationsHeader;
+export default FormHeader;

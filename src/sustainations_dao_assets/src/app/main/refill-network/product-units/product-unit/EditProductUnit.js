@@ -5,24 +5,22 @@ import * as yup from 'yup';
 import { selectUser } from 'app/store/userSlice';
 import { showMessage } from 'app/store/fuse/messageSlice';
 import { useForm } from 'react-hook-form';
-import { useNavigate, Navigate, useParams } from 'react-router-dom';
-import { authRoles } from "../../../../auth";
-import FuseUtils from '@fuse/utils';
+import { useNavigate, useParams } from 'react-router-dom';
 import useThemeMediaQuery from '@fuse/hooks/useThemeMediaQuery';
 import FusePageCarded from '@fuse/core/FusePageCarded';
 import FuseLoading from '@fuse/core/FuseLoading';
 import FormHeader from '../../../../shared-components/FormHeader';
-import StaffForm from './StaffForm';
+import CategoryForm from '../../categories/category/CategoryForm';
 /**
  * Form Validation Schema
  */
 const schema = yup.object().shape({
-  username: yup
+  name: yup
     .string()
-    .required('You must enter a staff name'),
+    .required('You must enter a tag name'),
 });
 
-const EditStaff = () => {
+const EditProductUnit = () => {
   const [loading, setLoading] = useState(true);
   const [submitLoading, setSubmitLoading] = useState(false);
   const dispatch = useDispatch();
@@ -30,17 +28,12 @@ const EditStaff = () => {
   const user = useSelector(selectUser);
   const navigate = useNavigate();
   const routeParams = useParams();
-  const { staffPrincipal } = routeParams;
-
-  if (!FuseUtils.hasPermission(authRoles.refillBrandOwner, user.role)) {
-    dispatch(showMessage({ message: 'Required owner role.' }));
-    return (<Navigate to="/refill-network/brand" />);
-  }
+  const { productUnitId } = routeParams;
 
   const methods = useForm({
     mode: 'onChange',
     defaultValues: {
-      username: ''
+      name: '',
     },
     resolver: yupResolver(schema),
   });
@@ -50,10 +43,10 @@ const EditStaff = () => {
     (async () => {
       setLoading(true);
       try {
-        const result = await user.actor.getRBManager(staffPrincipal)
+        const result = await user.actor.getRBProductUnit(productUnitId)
         if ('ok' in result) {
           reset({
-            username:result.ok.username
+            name: result.ok.name,
           });
         } else {
           navigate('/404');
@@ -65,13 +58,13 @@ const EditStaff = () => {
     })();
   }, [user]);
 
-  const handleSubmit = async (data) => {
+  const onSubmit = async (data) => {
     setSubmitLoading(true);
     try {
-      const result = await user.actor.updateRBManager(staffPrincipal, data.username);
+      const result = await user.actor.updateRBProductUnit(productUnitId, data.name);
       if ("ok" in result) {
         dispatch(showMessage({ message: 'Success!' }));
-        navigate('/refill-network/staffs');
+        navigate('/refill-network/product-units');
       } else {
         throw result?.err;
       }
@@ -79,8 +72,8 @@ const EditStaff = () => {
       console.log(error);
       const message = {
         "NotAuthorized": "Please sign in!.",
-        "OwnerRoleRequired": 'Required owner role.',
-        "Notfound": "Staff is not found."
+        "AdminRoleRequired": 'Required admin role.',
+        "Notfound": "Product unit is not found."
       }[Object.keys(error)[0]] || 'Error! Please try again later!'
       dispatch(showMessage({ message }));
     }
@@ -93,14 +86,14 @@ const EditStaff = () => {
 
   return (
     <FusePageCarded
-      header={<FormHeader actionText="Edit Staff" backLink="/refill-network/staffs" />}
-      content={<StaffForm
+      header={<FormHeader actionText="Edit Product Unit" backLink="/refill-network/product-units" />}
+      content={<CategoryForm
         methods={methods} submitLoading={submitLoading}
-        handleSubmit={handleSubmit} showPrincipal={false}
+        onSubmit={onSubmit} backLink="/refill-network/product-units"
       />}
       scroll={isMobile ? 'normal' : 'content'}
     />
   );
 }
 
-export default EditStaff;
+export default EditProductUnit;

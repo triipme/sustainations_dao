@@ -3,34 +3,7 @@ import TableRow from '@mui/material/TableRow';
 import TableHead from '@mui/material/TableHead';
 import { lighten } from '@mui/material/styles';
 
-const rows = [
-  {
-    id: 'index',
-    align: 'left',
-    disablePadding: false,
-    label: '#',
-  },
-  {
-    id: 'principal',
-    align: 'left',
-    disablePadding: false,
-    label: 'Principal',
-  },
-  {
-    id: 'name',
-    align: 'left',
-    disablePadding: false,
-    label: 'Name',
-  },
-  {
-    id: 'actions',
-    align: 'right',
-    disablePadding: false,
-    label: 'Actions',
-  }
-];
-
-function StaffsTableHead() {
+function ContentsTableHead({ rows }) {
   return (
     <TableHead>
       <TableRow className="h-48 sm:h-64">
@@ -57,4 +30,4 @@ function StaffsTableHead() {
   );
 }
 
-export default StaffsTableHead;
+export default ContentsTableHead;

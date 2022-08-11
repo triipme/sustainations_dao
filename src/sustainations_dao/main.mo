@@ -1175,6 +1175,19 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
+  public query({ caller }) func getRBCategory(categoryId : Text) : async Response<Types.RBCategory> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    switch (state.refillBrand.categories.get(categoryId)) {
+      case (null) { #err(#NotFound); };
+      case (?category) {
+        #ok(category);
+      };
+    };
+  };
+
   public shared({ caller }) func updateRBCategory(uuid : Text, name : Text) : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
@@ -1252,6 +1265,19 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
+  public query({ caller }) func getRBTag(tagId : Text) : async Response<Types.RBTag> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    switch (state.refillBrand.tags.get(tagId)) {
+      case (null) { #err(#NotFound); };
+      case (?tag) {
+        #ok(tag);
+      };
+    };
+  };
+
   public shared({ caller }) func updateRBTag(uuid : Text, name : Text) : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
@@ -1325,6 +1351,19 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
       case (?manager) {
         let uuid = await setRBProductUnit(manager.brandId, name, null);
         #ok(uuid);
+      };
+    };
+  };
+
+  public query({ caller }) func getRBProductUnit(puId : Text) : async Response<Types.RBProductUnit> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    switch (state.refillBrand.productUnits.get(puId)) {
+      case (null) { #err(#NotFound); };
+      case (?pu) {
+        #ok(pu);
       };
     };
   };
@@ -1414,6 +1453,19 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
       case (?manager) {
         let uuid = await setRBProduct(manager.brandId, payload, null);
         #ok(uuid);
+      };
+    };
+  };
+
+  public query({ caller }) func getRBProduct(prodId : Text) : async Response<Types.RBProduct> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    switch (state.refillBrand.products.get(prodId)) {
+      case (null) { #err(#NotFound); };
+      case (?product) {
+        #ok(product);
       };
     };
   };

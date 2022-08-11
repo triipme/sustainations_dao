@@ -5,7 +5,7 @@ import { selectUser } from 'app/store/userSlice';
 import FuseLoading from '@fuse/core/FuseLoading';
 import useThemeMediaQuery from '@fuse/hooks/useThemeMediaQuery';
 import FusePageCarded from '@fuse/core/FusePageCarded';
-import StationsHeader from './StationsHeader';
+import ContentsHeader from '../../../shared-components/ContentsHeader';
 import StationsTable from './StationsTable';
 
 const Stations = () => {
@@ -47,8 +47,14 @@ const Stations = () => {
 
   return (
     <FusePageCarded
-      header={<StationsHeader handleSearchText={handleSearchText} />}
-      content={<StationsTable stations={filteredData} searchText={searchText} />}
+    header={
+      <ContentsHeader
+        handleSearchText={handleSearchText}
+        searchPlaceholder="Search Stations" title="Stations"
+        addLink="/refill-network/stations/new" addLinkText="Create Station"
+      />
+    }
+      content={<StationsTable stations={filteredData} />}
       scroll={isMobile ? 'normal' : 'content'}
     />
   );

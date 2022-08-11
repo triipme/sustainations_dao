@@ -9,26 +9,17 @@ import { useNavigate } from 'react-router-dom';
 import useThemeMediaQuery from '@fuse/hooks/useThemeMediaQuery';
 import FusePageCarded from '@fuse/core/FusePageCarded';
 import FormHeader from '../../../../shared-components/FormHeader';
-import StationForm from './StationForm';
+import CategoryForm from '../../categories/category/CategoryForm';
 /**
  * Form Validation Schema
  */
 const schema = yup.object().shape({
   name: yup
     .string()
-    .required('You must enter a station name'),
-  phone: yup
-    .string()
-    .required('You must enter a station phone number'),
-  address: yup
-    .string()
-    .required('You must enter a station address'),
-  activate: yup
-    .boolean()
-    .required('You must select a station status'),
+    .required('You must enter a tag name'),
 });
 
-const NewStation = () => {
+const NewTag = () => {
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
@@ -38,34 +29,18 @@ const NewStation = () => {
   const methods = useForm({
     mode: 'onChange',
     defaultValues: {
-      uid: '',
       name: '',
-      phone: '',
-      address: '',
-      latitude: '',
-      longitude: '',
-      activate: true,
     },
     resolver: yupResolver(schema),
   });
 
   const onSubmit = async (data) => {
     setLoading(true);
-    const payload = {
-      brandId: user.brandId,
-      uid: [data.uid],
-      name: data.name,
-      phone: data.phone,
-      address: data.address,
-      latitude: [parseFloat(data.latitude)],
-      longitude: [parseFloat(data.longitude)],
-      activate: data.activate == true,
-    };
     try {
-      const result = await user.actor.createRBStation(payload);
+      const result = await user.actor.createRBTag(data.name);
       if ("ok" in result) {
         dispatch(showMessage({ message: 'Success!' }));
-        navigate('/refill-network/stations');
+        navigate('/refill-network/tags');
       } else {
         throw result?.err;
       }
@@ -82,14 +57,14 @@ const NewStation = () => {
 
   return (
     <FusePageCarded
-      header={<FormHeader actionText="Create Station" backLink="/refill-network/stations" />}
-      content={<StationForm
+      header={<FormHeader actionText="Create Tag" backLink="/refill-network/tags" />}
+      content={<CategoryForm
         methods={methods} submitLoading={loading}
-        onSubmit={onSubmit}
+        onSubmit={onSubmit} backLink="/refill-network/tags"
       />}
       scroll={isMobile ? 'normal' : 'content'}
     />
   );
 }
 
-export default NewStation;
+export default NewTag;

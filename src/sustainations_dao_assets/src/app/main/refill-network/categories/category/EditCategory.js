@@ -5,24 +5,22 @@ import * as yup from 'yup';
 import { selectUser } from 'app/store/userSlice';
 import { showMessage } from 'app/store/fuse/messageSlice';
 import { useForm } from 'react-hook-form';
-import { useNavigate, Navigate, useParams } from 'react-router-dom';
-import { authRoles } from "../../../../auth";
-import FuseUtils from '@fuse/utils';
+import { useNavigate, useParams } from 'react-router-dom';
 import useThemeMediaQuery from '@fuse/hooks/useThemeMediaQuery';
 import FusePageCarded from '@fuse/core/FusePageCarded';
 import FuseLoading from '@fuse/core/FuseLoading';
 import FormHeader from '../../../../shared-components/FormHeader';
-import StaffForm from './StaffForm';
+import CategoryForm from './CategoryForm';
 /**
  * Form Validation Schema
  */
 const schema = yup.object().shape({
-  username: yup
+  name: yup
     .string()
-    .required('You must enter a staff name'),
+    .required('You must enter a category name'),
 });
 
-const EditStaff = () => {
+const EditCategory = () => {
   const [loading, setLoading] = useState(true);
   const [submitLoading, setSubmitLoading] = useState(false);
   const dispatch = useDispatch();
@@ -30,17 +28,12 @@ const EditStaff = () => {
   const user = useSelector(selectUser);
   const navigate = useNavigate();
   const routeParams = useParams();
-  const { staffPrincipal } = routeParams;
-
-  if (!FuseUtils.hasPermission(authRoles.refillBrandOwner, user.role)) {
-    dispatch(showMessage({ message: 'Required owner role.' }));
-    return (<Navigate to="/refill-network/brand" />);
-  }
+  const { categoryId } = routeParams;
 
   const methods = useForm({
     mode: 'onChange',
     defaultValues: {
-      username: ''
+      name: '',
     },
     resolver: yupResolver(schema),
   });
@@ -50,10 +43,10 @@ const EditStaff = () => {
     (async () => {
       setLoading(true);
       try {
-        const result = await user.actor.getRBManager(staffPrincipal)
+        const result = await user.actor.getRBCategory(categoryId)
         if ('ok' in result) {
           reset({
-            username:result.ok.username
+            name: result.ok.name,
           });
         } else {
           navigate('/404');
@@ -65,13 +58,13 @@ const EditStaff = () => {
     })();
   }, [user]);
 
-  const handleSubmit = async (data) => {
+  const onSubmit = async (data) => {
     setSubmitLoading(true);
     try {
-      const result = await user.actor.updateRBManager(staffPrincipal, data.username);
+      const result = await user.actor.updateRBCategory(categoryId, data.name);
       if ("ok" in result) {
         dispatch(showMessage({ message: 'Success!' }));
-        navigate('/refill-network/staffs');
+        navigate('/refill-network/categories');
       } else {
         throw result?.err;
       }
@@ -79,8 +72,8 @@ const EditStaff = () => {
       console.log(error);
       const message = {
         "NotAuthorized": "Please sign in!.",
-        "OwnerRoleRequired": 'Required owner role.',
-        "Notfound": "Staff is not found."
+        "AdminRoleRequired": 'Required admin role.',
+        "Notfound": "Category is not found."
       }[Object.keys(error)[0]] || 'Error! Please try again later!'
       dispatch(showMessage({ message }));
     }
@@ -93,14 +86,14 @@ const EditStaff = () => {
 
   return (
     <FusePageCarded
-      header={<FormHeader actionText="Edit Staff" backLink="/refill-network/staffs" />}
-      content={<StaffForm
+      header={<FormHeader actionText="Edit Category" backLink="/refill-network/categories" />}
+      content={<CategoryForm
         methods={methods} submitLoading={submitLoading}
-        handleSubmit={handleSubmit} showPrincipal={false}
+        onSubmit={onSubmit} backLink="/refill-network/categories"
       />}
       scroll={isMobile ? 'normal' : 'content'}
     />
   );
 }
 
-export default EditStaff;
+export default EditCategory;

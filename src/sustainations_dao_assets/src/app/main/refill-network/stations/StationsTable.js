@@ -13,7 +13,41 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 
 import withRouter from '@fuse/core/withRouter';
+import ContentsTableHead from '../../../shared-components/ContentsTableHead';
 import StationsTableHead from './StationsTableHead';
+
+const rows = [
+  {
+    id: 'index',
+    align: 'left',
+    disablePadding: false,
+    label: '#',
+  },
+  {
+    id: 'name',
+    align: 'left',
+    disablePadding: false,
+    label: 'Name',
+  },
+  {
+    id: 'phone',
+    align: 'left',
+    disablePadding: false,
+    label: 'Phone',
+  },
+  {
+    id: 'address',
+    align: 'left',
+    disablePadding: false,
+    label: 'Address',
+  },
+  {
+    id: 'status',
+    align: 'right',
+    disablePadding: false,
+    label: 'Status',
+  }
+];
 
 function StationsTable(props) {
   const { stations } = props;
@@ -50,7 +84,7 @@ function StationsTable(props) {
     <div className="w-full flex flex-col min-h-full">
       <FuseScrollbars className="grow overflow-x-auto">
         <Table stickyHeader className="min-w-xl" aria-labelledby="tableTitle">
-          <StationsTableHead />
+        <ContentsTableHead rows={rows} />
 
           <TableBody>
             {stations.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)

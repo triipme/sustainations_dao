@@ -11,6 +11,17 @@ const EditStaff = lazy(() => import("./staffs/staff/EditStaff"));
 const Stations = lazy(() => import("./stations/Stations"));
 const NewStation = lazy(() => import("./stations/station/NewStation"));
 const EditStation = lazy(() => import("./stations/station/EditStation"));
+const Categories = lazy(() => import("./categories/Categories"));
+const NewCategory = lazy(() => import("./categories/category/NewCategory"));
+const EditCategory = lazy(() => import("./categories/category/EditCategory"));
+const Tags = lazy(() => import("./tags/Tags"));
+const NewTag = lazy(() => import("./tags/tag/NewTag"));
+const EditTag = lazy(() => import("./tags/tag/EditTag"));
+const ProductUnits = lazy(() => import("./product-units/ProductUnits"));
+const NewProductUnit = lazy(() => import("./product-units/product-unit/NewProductUnit"));
+const EditProductUnit = lazy(() => import("./product-units/product-unit/EditProductUnit"));
+const Products = lazy(() => import("./products/Products"));
+const Product = lazy(() => import("./products/product/Product"));
 
 const RefillNetworkConfig = {
   settings: {
@@ -72,6 +83,70 @@ const RefillNetworkConfig = {
             {
               path: ":stationId/edit",
               element: <EditStation />
+            }
+          ]
+        },
+        {
+          path: "categories",
+          children: [
+            {
+              index: true,
+              element: <Categories />
+            },
+            {
+              path: "new",
+              element: <NewCategory />
+            },
+            {
+              path: ":categoryId/edit",
+              element: <EditCategory />
+            }
+          ]
+        },
+        {
+          path: "tags",
+          children: [
+            {
+              index: true,
+              element: <Tags />
+            },
+            {
+              path: "new",
+              element: <NewTag />
+            },
+            {
+              path: ":tagId/edit",
+              element: <EditTag />
+            }
+          ]
+        },
+        {
+          path: "product-units",
+          children: [
+            {
+              index: true,
+              element: <ProductUnits />
+            },
+            {
+              path: "new",
+              element: <NewProductUnit />
+            },
+            {
+              path: ":productUnitId/edit",
+              element: <EditProductUnit />
+            }
+          ]
+        },
+        {
+          path: "products",
+          children: [
+            {
+              index: true,
+              element: <Products />
+            },
+            {
+              path: ":productId/*",
+              element: <Product />
             }
           ]
         }

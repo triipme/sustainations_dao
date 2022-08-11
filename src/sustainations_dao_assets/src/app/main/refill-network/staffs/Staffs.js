@@ -9,7 +9,7 @@ import FuseUtils from '@fuse/utils';
 import FuseLoading from '@fuse/core/FuseLoading';
 import useThemeMediaQuery from '@fuse/hooks/useThemeMediaQuery';
 import FusePageCarded from '@fuse/core/FusePageCarded';
-import StaffsHeader from './StaffsHeader';
+import ContentsHeader from '../../../shared-components/ContentsHeader';
 import StaffsTable from './StaffsTable';
 
 const Staffs = () => {
@@ -57,8 +57,14 @@ const Staffs = () => {
 
   return (
     <FusePageCarded
-      header={<StaffsHeader handleSearchText={handleSearchText} />}
-      content={<StaffsTable user={user} staffs={filteredData} searchText={searchText} />}
+      header={
+        <ContentsHeader
+          handleSearchText={handleSearchText}
+          searchPlaceholder="Search Staffs" title="Staffs"
+          addLink="/refill-network/staffs/new" addLinkText="Create Staff"
+        />
+      }
+      content={<StaffsTable user={user} staffs={filteredData} />}
       scroll={isMobile ? 'normal' : 'content'}
     />
   );

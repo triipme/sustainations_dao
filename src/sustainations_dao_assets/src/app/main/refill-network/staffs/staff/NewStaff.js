@@ -10,7 +10,7 @@ import { authRoles } from "../../../../auth";
 import FuseUtils from '@fuse/utils';
 import useThemeMediaQuery from '@fuse/hooks/useThemeMediaQuery';
 import FusePageCarded from '@fuse/core/FusePageCarded';
-import StaffFormHeader from './StaffFormHeader';
+import FormHeader from '../../../../shared-components/FormHeader';
 import StaffForm from './StaffForm';
 /**
  * Form Validation Schema
@@ -69,7 +69,7 @@ const NewStaff = () => {
 
   return (
     <FusePageCarded
-      header={<StaffFormHeader actionText="Add" />}
+      header={<FormHeader actionText="Add Staff" backLink="/refill-network/staffs" />}
       content={<StaffForm
         methods={methods} submitLoading={loading}
         onSubmit={onSubmit} showPrincipal={true}
