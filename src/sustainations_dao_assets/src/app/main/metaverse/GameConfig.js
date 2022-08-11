@@ -30,8 +30,8 @@ const gameConfig = {
   type: Phaser.CANVAS,
   parent: "sustainations-slug",
   scale: {
-    width: 960,
-    height: 540,
+    width: 1280,
+    height: 720,
     pixelArt: true,
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH

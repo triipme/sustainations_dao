@@ -93,41 +93,41 @@ class selectItemScene extends BaseScene {
     this.clickSound = this.sound.add('clickSound');
 
     this.add.image(0, 0, 'bg').setOrigin(0);
-    this.btnBack = this.add.image(40, 25, 'btnBack')
+    this.btnBack = this.add.image(40, 35, 'btnBack')
       .setOrigin(0).setInteractive();
     this.btnBack.on('pointerdown', () => {
       this.clickSound.play();
       this.scene.transition({target: 'selectMap', duration: 0 });
     });
-    this.add.image(90, 0, 'effect').setOrigin(0);
-    this.add.image(210, 107, 'player').setOrigin(0);
-    this.add.image(292, 195, 'UI_strength').setOrigin(0).setScale(0.55);
+    this.add.image(120, 0, 'effect').setOrigin(0);
+    this.add.image(280, 143, 'player').setOrigin(0);
+    this.add.image(390, 260, 'UI_strength').setOrigin(0).setScale(0.55);
     // strength text
-    this.strengthText = this.add.text(315, 227, String(this.characterStrength), { fill: '#fff', align: 'center', fontSize: '20px', fontStyle: 'italic' })
+    this.strengthText = this.add.text(420, 303, String(this.characterStrength), { fill: '#fff', align: 'center', fontSize: '27px', fontStyle: 'italic' })
       .setScrollFactor(0);
 
-    this.add.image(25, 100, 'UI_NameCard').setOrigin(0);
-    this.add.image(25, 160, 'UI_HP').setOrigin(0);
-    this.add.image(25, 220, 'UI_Stamina').setOrigin(0);
-    this.add.image(25, 280, 'UI_Mana').setOrigin(0);
-    this.add.image(25, 340, 'UI_Morale').setOrigin(0);
+    this.add.image(35, 100, 'UI_NameCard').setOrigin(0);
+    this.add.image(35, 175, 'UI_HP').setOrigin(0);
+    this.add.image(35, 250, 'UI_Stamina').setOrigin(0);
+    this.add.image(35, 325, 'UI_Mana').setOrigin(0);
+    this.add.image(35, 400, 'UI_Morale').setOrigin(0);
 
-    this.hp = this.makeBar(79, 186, 75, 11, 0x74e044);
-    this.stamina =  this.makeBar(79, 186+60, 75, 11, 0xcf311f);
-    this.mana = this.makeBar(79, 186+120, 75, 11, 0xc038f6);
-    this.morale = this.makeBar(79, 186+180, 75, 11, 0x63dafb);
+    this.hp = this.makeBar(107, 210, 100, 15, 0x74e044);
+    this.stamina =  this.makeBar(107, 210+75, 100, 15, 0xcf315f);
+    this.mana = this.makeBar(107, 210+150, 100, 15, 0xc038f6);
+    this.morale = this.makeBar(107, 210+225, 100, 15, 0x63dafb);
 
     this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
     this.setValue(this.stamina, this.characterData.currentStamina/this.characterData.maxStamina*100);
     this.setValue(this.mana, this.characterData.currentMana/this.characterData.maxMana*100);
     this.setValue(this.morale, this.characterData.currentMorale/this.characterData.maxMorale*100);
 
-    this.add.image(617, 35, 'pickItemText').setOrigin(0);
+    this.add.image(823, 47, 'pickItemText').setOrigin(0);
     this.gridItem = [];
     for (let row = 0; row <= 3; row++){
       for (let col = 0; col <= 3; col++){
         this.gridItem.push(
-          this.add.sprite(375 + 109*(col+1), 83*(row+1), "itembox").setOrigin(0).setInteractive().setScale(0.5)
+          this.add.sprite(500 + 145*(col+1), 111*(row+1), "itembox").setOrigin(0).setInteractive().setScale(0.67)
         );
         if(this.itemNames[col+row*4] == undefined) {
           this.gridItem[col+row*4].setFrame(2);
@@ -146,11 +146,11 @@ class selectItemScene extends BaseScene {
           }
           this.strengthText.setText(String(this.characterStrength));
         });
-        this.add.image(435 + 109 * (col + 1), 45 + 83*(row + 1), this.itemNames[col+row*4]).setScale(0.5);
+        this.add.image(580 + 145 * (col + 1), 60 + 111*(row + 1), this.itemNames[col+row*4]).setScale(0.67);
       }
     }
-    this.btnClear = this.add.sprite(550, 435, "btnClear")
-      .setOrigin(0).setInteractive().setScale(0.5);
+    this.btnClear = this.add.sprite(733, 580, "btnClear")
+      .setOrigin(0).setInteractive().setScale(0.67);
     this.btnClear.on('pointerover', () => {
       this.btnClear.setFrame(1);
       this.hoverSound.play()
@@ -168,8 +168,8 @@ class selectItemScene extends BaseScene {
       this.strengthText.setText(String(this.characterStrength));
     });
 
-    this.btnGo = this.add.sprite(700, 435, "btnGo")
-      .setOrigin(0).setInteractive().setScale(0.5);
+    this.btnGo = this.add.sprite(933, 580, "btnGo")
+      .setOrigin(0).setInteractive().setScale(0.67);
     this.btnGo.on('pointerover', () => {
       this.btnGo.setFrame(1);
       this.hoverSound.play()

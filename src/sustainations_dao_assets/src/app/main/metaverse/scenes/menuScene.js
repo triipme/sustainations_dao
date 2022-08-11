@@ -82,13 +82,13 @@ class menuScene extends BaseScene {
     this.clickSound = this.sound.add('clickSound');
 
     this.background = this.add.image(0, 0, "menu_bg").setOrigin(0);
-    this.welcomeText = this.add.image(480, 105, "welcomeText");
+    this.welcomeText = this.add.image(640, 140, "welcomeText");
     this.noti = this.add.image(100, 100, "cs_noti")
       .setOrigin(0).setVisible(false).setScale(0.7);
 
     //btn
-    this.introduction_btn = this.add.sprite(480, 170, "introduction_btn")
-      .setInteractive().setScale(0.5);
+    this.introduction_btn = this.add.sprite(640, 220, "introduction_btn")
+      .setInteractive().setScale(0.7);
     this.introduction_btn.on("pointerover", () => {
       this.introduction_btn.setFrame(1);
       this.hoverSound.play();
@@ -101,8 +101,8 @@ class menuScene extends BaseScene {
       window.open("https://www.youtube.com/watch?v=ZgwDobu5OcY", "_blank");
     });
 
-    this.quest_btn = this.add.sprite(480, 230, "quest_btn")
-    .setInteractive().setScale(0.5);
+    this.quest_btn = this.add.sprite(640, 300, "quest_btn")
+    .setInteractive().setScale(0.7);
     this.quest_btn.on("pointerover", () => {
       this.quest_btn.setFrame(1);
       this.hoverSound.play();
@@ -115,8 +115,8 @@ class menuScene extends BaseScene {
       this.scene.transition({ target: "selectMap", duration: 0 });
     });
 
-    this.bootcamp_btn = this.add.sprite(480, 290, "bootcamp_btn")
-      .setInteractive().setScale(0.5);
+    this.bootcamp_btn = this.add.sprite(640, 380, "bootcamp_btn")
+      .setInteractive().setScale(0.7);
     this.bootcamp_btn.on("pointerover", () => {
       this.bootcamp_btn.setFrame(1);
       this.hoverSound.play();
@@ -130,8 +130,8 @@ class menuScene extends BaseScene {
       history.push("/metaverse/bootcamp");
     });
 
-    this.land_btn = this.add.sprite(480, 350, "land_btn")
-      .setInteractive().setScale(0.5);
+    this.land_btn = this.add.sprite(640, 460, "land_btn")
+      .setInteractive().setScale(0.7);
     this.land_btn.on("pointerover", () => {
       this.land_btn.setFrame(1);
       this.hoverSound.play();
@@ -143,8 +143,8 @@ class menuScene extends BaseScene {
       history.push("/metaverse/land");
     });
 
-    this.departure_btn = this.add.sprite(480, 410, "departure_btn")
-      .setInteractive().setScale(0.5);
+    this.departure_btn = this.add.sprite(640, 540, "departure_btn")
+      .setInteractive().setScale(0.7);
     this.departure_btn.on("pointerover", () => {
       this.departure_btn.setFrame(1);
       this.hoverSound.play();

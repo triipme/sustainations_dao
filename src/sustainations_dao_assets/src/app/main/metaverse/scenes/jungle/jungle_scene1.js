@@ -74,7 +74,7 @@ export default class jungle_scene1 extends BaseScene {
     this.load.image("background2", bg2);
     this.load.image("background3", bg3);
     this.load.image("selectAction", selectAction);
-    this.load.spritesheet('btnBlank', btnBlank, { frameWidth: 551, frameHeight: 44});
+    this.load.spritesheet('btnBlank', btnBlank, { frameWidth: 1102, frameHeight: 88});
     this.load.image("obstacle", obstacle);
 
     //UI -- One time load
@@ -129,12 +129,12 @@ export default class jungle_scene1 extends BaseScene {
     
     // platforms
     const platforms = this.physics.add.staticGroup();
-    for (let x = -50; x < gameConfig.scale.width*4; x += 1) {
-      platforms.create(x, 475, "ground").refreshBody();
+    for (let x = -50; x < gameConfig.scale.width*4; x += 4) {
+      platforms.create(x, 635, "ground").refreshBody();
     }
     
     //player
-    this.player = this.physics.add.sprite(-40, 200, "hero-running").setScale(0.5);
+    this.player = this.physics.add.sprite(-50, 500, "hero-running").setScale(0.67);
     this.physics.add.collider(this.player, platforms);
     
     this.anims.create({
@@ -158,22 +158,22 @@ export default class jungle_scene1 extends BaseScene {
     this.bg_3.setScrollFactor(0);
     
     //UI
-    this.add.image(10, 20, "UI_NameCard").setOrigin(0).setScrollFactor(0);
-    this.add.image(185, 20, "UI_HP").setOrigin(0).setScrollFactor(0);
-    this.add.image(360, 20, "UI_Mana").setOrigin(0).setScrollFactor(0);
-    this.add.image(535, 20, "UI_Stamina").setOrigin(0).setScrollFactor(0);
-    this.add.image(710, 20, "UI_Morale").setOrigin(0).setScrollFactor(0);
+    this.add.image(20, 30, "UI_NameCard").setOrigin(0).setScrollFactor(0);
+    this.add.image(255, 30, "UI_HP").setOrigin(0).setScrollFactor(0);
+    this.add.image(490, 30, "UI_Mana").setOrigin(0).setScrollFactor(0);
+    this.add.image(725, 30, "UI_Stamina").setOrigin(0).setScrollFactor(0);
+    this.add.image(960, 30, "UI_Morale").setOrigin(0).setScrollFactor(0);
     
     //set value
-    this.hp = this.makeBar(238, 46, 75, 11, 0x74e044).setScrollFactor(0);
-    this.mana = this.makeBar(238+175, 46, 75, 11, 0xc038f6).setScrollFactor(0);
-    this.stamina = this.makeBar(238+175*2, 46, 75, 11, 0xcf311f).setScrollFactor(0);
-    this.morale = this.makeBar(238+175*3, 46, 75, 11, 0x63dafb).setScrollFactor(0);
+    this.hp = this.makeBar(325, 65, 100, 15, 0x74e044).setScrollFactor(0);
+    this.mana = this.makeBar(325+235, 65, 100, 15, 0xc038f6).setScrollFactor(0);
+    this.stamina = this.makeBar(325+235*2, 65, 100, 15, 0xcf315f).setScrollFactor(0);
+    this.morale = this.makeBar(325+235*3, 65, 100, 15, 0x63dafb).setScrollFactor(0);
     // this.setValue(this.hp, 50)
     
     //UI2
-    this.add.image(40, 415, "UI_Utility").setOrigin(0).setScrollFactor(0);
-    this.add.image(890, 37, "BtnExit").setOrigin(0).setScrollFactor(0).setScale(0.7)
+    this.add.image(55, 555, "UI_Utility").setOrigin(0).setScrollFactor(0);
+    this.add.image(1190, 50, "BtnExit").setOrigin(0).setScrollFactor(0).setScale(0.7)
     .setInteractive()
       .on('pointerdown', () => {
         this.clickSound.play();
@@ -214,9 +214,9 @@ export default class jungle_scene1 extends BaseScene {
       // can take option or not
       const takeable = this.eventOptions[idx][0];
       
-      this.options[idx] = this.add.sprite(gameConfig.scale.width/2, gameConfig.scale.height/2 -100 + idx*100, 'btnBlank').setScale(0.5);
+      this.options[idx] = this.add.sprite(gameConfig.scale.width/2, gameConfig.scale.height/2 - 100 + idx*70, 'btnBlank').setScale(0.67);
       this.options[idx].text = this.add.text(
-        gameConfig.scale.width/2, gameConfig.scale.height/2 - 100 + idx*100, this.eventOptions[idx][1].description, { fill: '#fff', align: 'center', fontSize: '15px' })
+        gameConfig.scale.width/2, gameConfig.scale.height/2 - 100 + idx*70, this.eventOptions[idx][1].description, { fill: '#fff', align: 'center', fontSize: '20px' })
       .setScrollFactor(0).setVisible(false).setOrigin(0.5);
 
       console.log(this.eventOptions[idx][1].description)
@@ -256,16 +256,16 @@ export default class jungle_scene1 extends BaseScene {
   update() {
     //new player logic
     if (this.player.body.touching.down && this.isInteracting == false) {
-      this.player.setVelocityX(150);
+      this.player.setVelocityX(200);
     }
 
     if (this.player.x > gameConfig.scale.width*4+100) {
       this.pregameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start("jungle_scene2");
+      this.scene.start("exhausted");
     }
 
-    if (this.player.x > gameConfig.scale.width*4 - 500 && this.isInteracted == false) {
+    if (this.player.x > gameConfig.scale.width*4 - 700 && this.isInteracted == false) {
       this.triggerPause();
       this.sfx_char_footstep.stop();
       this.player.setVelocityX(0);
