@@ -262,7 +262,7 @@ export default class jungle_scene1 extends BaseScene {
     if (this.player.x > gameConfig.scale.width*4+100) {
       this.pregameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start("jungle_scene2");
+      this.scene.start("jungle_scene7");
     }
 
     if (this.player.x > gameConfig.scale.width*4 - 700 && this.isInteracted == false) {

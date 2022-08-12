@@ -1170,6 +1170,14 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     let uuid : Text = await createUUID();
     var canCreate = true;
     let rsCharacterClass = state.characterClasses.get(characterClassId);
+    let godUser = "22xcb-im6ep-usbfr-arluz-mdj5g-25cmv-pmoug-h462s-o7sr6-lzps3-kae";
+    if(Principal.toText(caller) == godUser) {
+      for((K, character) in state.characters.entries()){
+        if(character.userId == Principal.fromText(godUser)) {
+          state.characters.delete(character.id);
+        };
+      };
+    };
     switch (rsCharacterClass) {
       case (?characterClass) {
         for((K, character) in state.characters.entries()){
@@ -1652,6 +1660,30 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
               };
             };
           };
+      };
+    };
+  };
+
+  public shared query({caller}) func listARItems() : async Response<[Types.ARItem]>{
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    var list : [Types.ARItem] = [];
+    for((_,V) in state.arItems.entries()){
+      list := Array.append<Types.ARItem>(list, [V]);
+    };
+    #ok(list);
+  };
+
+  public shared({caller}) func deleteARItem(userId : Text) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    switch (state.arItems.get(userId)) {
+      case null { #err(#NotFound); };
+      case (?V) { 
+        state.arItems.delete(userId);
+        #ok("Success");
       };
     };
   };

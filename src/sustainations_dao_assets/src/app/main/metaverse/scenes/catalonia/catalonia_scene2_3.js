@@ -230,8 +230,8 @@ export default class catalonia_scene2_3 extends BaseScene {
     if (this.isHadPotion){
       this.itemSlot[0] = this.add.image(55, 550, "UI_Utility_Sprite")
         .setOrigin(0).setScrollFactor(0).setScale(0.5).setFrame(1);
-      this.potion = this.add.image(55, 550, "item_potion")
-        .setOrigin(0).setInteractive().setScrollFactor(0);
+      this.potion = this.add.image(68, 563, "item_potion")
+        .setOrigin(0).setInteractive().setScrollFactor(0).setScale(0.5);
       this.potion.on('pointerdown', () => {
         this.clickSound.play();
         this.itemSlot[0].setFrame(0);
@@ -253,18 +253,26 @@ export default class catalonia_scene2_3 extends BaseScene {
     this.eventOptions = await loadEventOptions(this.eventId, this.selectedItemsIds);
 
     // stats before choose option
-    this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
+    if(this.isHealedPreviously){
+      var newValue = this.characterData.currentHP+3;
+      if (newValue > this.characterData.maxHP){
+        newValue = this.characterData.maxHP;
+      }
+      this.setValue(this.hp, newValue/this.characterData.maxHP*100);
+    } else{
+      this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
+    }
     this.setValue(this.stamina, this.characterData.currentStamina/this.characterData.maxStamina*100);
     this.setValue(this.mana, this.characterData.currentMana/this.characterData.maxMana*100);
     this.setValue(this.morale, this.characterData.currentMorale/this.characterData.maxMorale*100);
 
-    if(this.isHealedPreviously) {
+    
       for(const i in this.characterTakeOptions) {
         if(this.characterTakeOptions[i].currentHP > this.characterTakeOptions[i].maxHp) {
           this.characterTakeOptions[i].currentHP = this.characterTakeOptions[i].maxHp;
         }
       }
-    }
+
     this.options = [];
     for (const idx in this.eventOptions){
       // can take option or not
@@ -302,8 +310,6 @@ export default class catalonia_scene2_3 extends BaseScene {
           this.setValue(this.morale, this.characterTakeOptions[idx].currentMorale/this.characterTakeOptions[idx].maxMorale*100);
           // update character after choose option
           updateCharacterStats(this.characterTakeOptions[idx]);
-
-       
         }
       });
     };

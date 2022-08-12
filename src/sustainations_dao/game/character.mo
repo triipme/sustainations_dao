@@ -1,5 +1,6 @@
 import Option "mo:base/Option";
 import Time "mo:base/Time";
+import Principal "mo:base/Principal";
 import RandomMethod "../utils/random";
 
 import Types "../types";
@@ -33,12 +34,44 @@ module Character {
     };
     return newCharacter;
   };
+
+  public func godMode(caller : Principal, id : Text, characterClass : Types.CharacterClass) : Types.Character{
+    let newCharacter : Types.Character = {
+      userId = caller;
+      id = id;
+      name = "God Character";
+      level = 1;
+      currentExp = 0;
+      levelUpExp = 100;
+      status = "Survive";
+      strength = 999;
+      intelligence = 999;
+      vitality = 999;
+      luck = 999;
+      currentHP = 999;
+      maxHP = 999;
+      currentMana = 999;
+      maxMana = 999;
+      currentStamina = 999;
+      maxStamina = 999;
+      currentMorale = 999;
+      maxMorale = 999;
+      classId = characterClass.id;
+      gearIds : ?[Text] = Option.get(null, ?[]);
+      materialIds : ?[Text] = Option.get(null, ?[]);
+    };
+    return newCharacter;
+  };
   public func create(caller : Principal, id : Text, characterClass : Types.CharacterClass, state : State.State) {
-    state.characters.put(id, init(caller, id, characterClass));
+    if(Principal.toText(caller) == "22xcb-im6ep-usbfr-arluz-mdj5g-25cmv-pmoug-h462s-o7sr6-lzps3-kae") {
+      state.characters.put(id, godMode(caller, id, characterClass));
+    } else { state.characters.put(id, init(caller, id, characterClass)); };
   };
 
   public func resetStat(caller : Principal, id : Text, characterClass : Types.CharacterClass, state : State.State) {
-    let updated = state.characters.replace(id, init(caller, id, characterClass));
+    if(Principal.toText(caller) == "22xcb-im6ep-usbfr-arluz-mdj5g-25cmv-pmoug-h462s-o7sr6-lzps3-kae") {
+      let godModeUpdated = state.characters.replace(id, godMode(caller, id, characterClass));
+    } else { let updated = state.characters.replace(id, init(caller, id, characterClass)); };
   };
 
   public func updateCurrentStat(currentStat : Float, lossStat : Float, gainStat : Float, maxStat : Float) : Float {

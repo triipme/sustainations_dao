@@ -30,7 +30,11 @@ class BaseScene extends Phaser.Scene {
     return bar;
   }
   setValue(bar,percentage) {
-    bar.scaleX = percentage/100;
+    if (percentage/100 > 1){
+      bar.scaleX = 1;
+    } else {
+      bar.scaleX = percentage/100;
+    }
   }
 }
 export default BaseScene;
