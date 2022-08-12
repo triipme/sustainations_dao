@@ -51,8 +51,9 @@ function AuthProvider({ children }) {
           };
           avatar = await getFile(profile?.avatar[0]);
         }
+        const profileRole = _.keys(profile?.role) || ['user'];
         const userState = {
-          role: result?.ok?.agreement ? _.union(_.keys(profile?.role), brandRole) : ['needAgreement'],
+          role: result?.ok?.agreement ? _.union(profileRole, brandRole) : ['needAgreement'],
           actor,
           depositAddress: result?.ok?.depositAddress,
           balance: result?.ok?.balance,
