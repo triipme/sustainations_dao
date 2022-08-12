@@ -32,10 +32,10 @@ function UserNavbarHeader(_props) {
 
   return (
     <Root className="user relative flex flex-col items-center justify-center p-16 pb-14 shadow-0">
-      <div className="flex items-center justify-center mb-24">
+      <div className="flex items-center justify-center mb-24 w-128 h-128">
         <QRCode
           size={256}
-          style={{ height: "auto", maxWidth: "8rem", width: "100%" }}
+          style={{ height: "auto", maxWidth: "20rem", width: "100%" }}
           value={user.depositAddress}
           viewBox={`0 0 256 256`}
         />

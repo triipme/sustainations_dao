@@ -1,4 +1,4 @@
-/*@tailwind base;*/
+/* @tailwind base; */
 @tailwind components;
 @tailwind utilities;
 
@@ -230,4 +230,58 @@ input:-webkit-autofill:active
 
 .black-bg {
   background-color: #000000 !important;
+}
+
+.sm\:max-w-256 {
+  max-width: 25.6rem;
+}
+
+.ml-auto {
+  margin-left: auto;
+}
+
+.bg-opacity-0 {
+  --tw-bg-opacity: 0;
+}
+.bg-opacity-5 {
+  --tw-bg-opacity: 0.05;
+}
+.bg-opacity-10 {
+  --tw-bg-opacity: 0.1;
+}
+.bg-opacity-20 {
+  --tw-bg-opacity: 0.2;
+}
+.bg-opacity-25 {
+  --tw-bg-opacity: 0.25;
+}
+.bg-opacity-30 {
+  --tw-bg-opacity: 0.3;
+}
+.bg-opacity-40 {
+  --tw-bg-opacity: 0.4;
+}
+.bg-opacity-50 {
+  --tw-bg-opacity: 0.5;
+}
+.bg-opacity-60 {
+  --tw-bg-opacity: 0.6;
+}
+.bg-opacity-70 {
+  --tw-bg-opacity: 0.7;
+}
+.bg-opacity-75 {
+  --tw-bg-opacity: 0.75;
+}
+.bg-opacity-80 {
+  --tw-bg-opacity: 0.8;
+}
+.bg-opacity-90 {
+  --tw-bg-opacity: 0.9;
+}
+.bg-opacity-95 {
+  --tw-bg-opacity: 0.95;
+}
+.bg-opacity-100 {
+  --tw-bg-opacity: 1;
 }

@@ -11,6 +11,8 @@ import UserAgreementConfig from "../main/user-agreement/UserAgreementConfig";
 import UserAgreementsConfig from "../main/user-agreements/UserAgreementsConfig";
 import MetaverseConfig from "../main/metaverse/MetaverseConfig";
 import AdminConfig from "../main/admin/AdminConfig";
+import ProfileConfig from "../main/profile/ProfileConfig";
+import RefillNetworkConfig from "../main/refill-network/RefillNetWorkConfig";
 
 import ProposalProductsConfig from "../main/proposal-products/ProposalProductsConfig";
 const routeConfigs = [
@@ -23,7 +25,9 @@ const routeConfigs = [
   SignOutConfig,
   SignInConfig,
   AdminConfig,
-  ProposalProductsConfig
+  ProposalProductsConfig,
+  ProfileConfig,
+  RefillNetworkConfig,
 ];
 
 const routes = [
