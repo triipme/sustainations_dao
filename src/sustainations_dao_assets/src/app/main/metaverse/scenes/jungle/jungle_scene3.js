@@ -8,8 +8,7 @@ import {
   updateCharacterStats,
   getCharacterStatus,
   characterTakeOption,
-  listCharacterSelectsItems,
-  takeOptionAbility
+  listCharacterSelectsItems
 } from '../../GameApi';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
@@ -33,17 +32,13 @@ export default class jungle_scene3 extends BaseScene {
   }
 
   preload() {
+    this.addLoadingScreen();
     this.eventId = "e3";
+    // load character
     this.load.rexAwait(function(successCallback, failureCallback) {
-      getCharacterStatus().then( (result) => {
-        this.characterStatus = result.ok;
-        successCallback();
-      });
-    }, this);
-    
-    this.load.rexAwait(function(successCallback, failureCallback) {
-      loadEventOptions(this.eventId).then( (result) => {
-        this.eventOptions = result;
+      loadCharacter().then( (result) => {
+        this.characterData = result.ok[1];
+        console.log(this.characterData);
         successCallback();
       });
     }, this);
@@ -55,19 +50,13 @@ export default class jungle_scene3 extends BaseScene {
       });
     }, this);
 
-    //loading screen
-    this.add.image(
-      gameConfig.scale.width/2, gameConfig.scale.height/2 - 50, 'logo'
-    ).setOrigin(0.5, 0.5).setScale(0.26);
-    this.anims.create({
-      key: 'loading-anims',
-      frames: this.anims.generateFrameNumbers("loading", {start: 0, end: 11}),
-      frameRate: 12,
-      repeat: -1
-    });
-    this.add.sprite(
-      gameConfig.scale.width/2, gameConfig.scale.height/2 + 150, "loading"
-    ).setScale(0.07).play('loading-anims');
+    this.load.rexAwait(function(successCallback, failureCallback) {
+      getCharacterStatus().then( (result) => {
+        this.characterStatus = result.ok;
+        successCallback();
+      });
+    }, this);
+
     //Preload
     this.clearSceneCache();
     this.isInteracting = false;
@@ -144,14 +133,12 @@ export default class jungle_scene3 extends BaseScene {
 
       // platforms
     const platforms = this.physics.add.staticGroup();
-    for (let x = -100; x < 1920*4; x += 1) {
-      platforms.create(x, 950, "ground").refreshBody();
+    for (let x = -50; x < gameConfig.scale.width*4; x += 4) {
+      platforms.create(x, 635, "ground").refreshBody();
     }
 
     //player
-    this.player = this.physics.add.sprite(-80, 700, "hero-running");
-    this.player.setBounce(0.25);
-    this.player.setCollideWorldBounds(false);
+    this.player = this.physics.add.sprite(-50, 500, "hero-running").setScale(0.67);
     this.physics.add.collider(this.player, platforms);
 
     this.anims.create({
@@ -175,28 +162,28 @@ export default class jungle_scene3 extends BaseScene {
     this.bg_3.setScrollFactor(0);
 
     //UI
-    this.add.image(20, 40, "UI_NameCard").setOrigin(0).setScrollFactor(0);
-    this.add.image(370, 40, "UI_HP").setOrigin(0).setScrollFactor(0);
-    this.add.image(720, 40, "UI_Mana").setOrigin(0).setScrollFactor(0);
-    this.add.image(1070, 40, "UI_Stamina").setOrigin(0).setScrollFactor(0);
-    this.add.image(1420, 40, "UI_Morale").setOrigin(0).setScrollFactor(0);
+    this.add.image(20, 30, "UI_NameCard").setOrigin(0).setScrollFactor(0);
+    this.add.image(255, 30, "UI_HP").setOrigin(0).setScrollFactor(0);
+    this.add.image(490, 30, "UI_Mana").setOrigin(0).setScrollFactor(0);
+    this.add.image(725, 30, "UI_Stamina").setOrigin(0).setScrollFactor(0);
+    this.add.image(960, 30, "UI_Morale").setOrigin(0).setScrollFactor(0);
+    
     //set value
-    this.hp = this.makeBar(476, 92, 150, 22, 0x74e044).setScrollFactor(0);
-    this.mana = this.makeBar(476+350, 92, 150, 22, 0xc038f6).setScrollFactor(0);
-    this.stamina = this.makeBar(476+350*2, 92, 150, 22, 0xcf311f).setScrollFactor(0);
-    this.morale = this.makeBar(476+350*3, 92, 150, 22, 0x63dafb).setScrollFactor(0);
+    this.hp = this.makeBar(325, 65, 100, 15, 0x74e044).setScrollFactor(0);
+    this.mana = this.makeBar(325+235, 65, 100, 15, 0xc038f6).setScrollFactor(0);
+    this.stamina = this.makeBar(325+235*2, 65, 100, 15, 0xcf315f).setScrollFactor(0);
+    this.morale = this.makeBar(325+235*3, 65, 100, 15, 0x63dafb).setScrollFactor(0);
     // this.setValue(this.hp, 50)
-
+    
     //UI2
-    this.add.image(80, 830, "UI_Utility").setOrigin(0).setScrollFactor(0);
-    this.add.image(1780, 74, "BtnExit").setOrigin(0).setScrollFactor(0).setScale(0.7)
-      .setInteractive()
+    this.add.image(55, 555, "UI_Utility").setOrigin(0).setScrollFactor(0);
+    this.add.image(1190, 50, "BtnExit").setOrigin(0).setScrollFactor(0).setScale(0.7)
+    .setInteractive()
       .on('pointerdown', () => {
         this.clickSound.play();
         this.scene.start('menuScene');
         this.pregameSound.stop();
         this.sfx_char_footstep.stop();
-        this.sfx_monkey.stop();
       });
 
     //mycam
@@ -215,26 +202,26 @@ export default class jungle_scene3 extends BaseScene {
     this.selectAction.setScrollFactor(0);
     this.selectAction.setVisible(false);
 
-    // load character
-    this.characterData = await loadCharacter();
-    // list taken items by character
-    this.takenItems = await listCharacterSelectsItems(this.characterData.id);
-    console.log(this.takenItems);
+   // load selected items ids
+   this.selectedItemsIds = await listCharacterSelectsItems(this.characterData.id);
+   console.log(this.selectedItemsIds);
+   // load event options
+   this.eventOptions = await loadEventOptions(this.eventId, this.selectedItemsIds);
+
     // stats before choose option
     this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
     this.setValue(this.stamina, this.characterData.currentStamina/this.characterData.maxStamina*100);
     this.setValue(this.mana, this.characterData.currentMana/this.characterData.maxMana*100);
     this.setValue(this.morale, this.characterData.currentMorale/this.characterData.maxMorale*100);
 
-    // load event options
     this.options = [];
     for (const idx in this.eventOptions){
       // can take option or not
-      const takeable = await takeOptionAbility(this.eventOptions[idx].id, this.takenItems);
+      const takeable = this.eventOptions[idx][0];
 
-      this.options[idx] = this.add.sprite(gameConfig.scale.width/2, gameConfig.scale.height/2 -100 + idx*100, 'btnBlank');
+      this.options[idx] = this.add.sprite(gameConfig.scale.width/2, gameConfig.scale.height/2 -100 + idx*70, 'btnBlank').setScale(0.67);
       this.options[idx].text = this.add.text(
-        gameConfig.scale.width/2, gameConfig.scale.height/2 - 100 + idx*100, this.eventOptions[idx].description, { fill: '#fff', align: 'center', fontSize: '30px' })
+        gameConfig.scale.width/2, gameConfig.scale.height/2 - 100 + idx*70, this.eventOptions[idx][1].description, { fill: '#fff', align: 'center', fontSize: '20px' })
       .setScrollFactor(0).setVisible(false).setOrigin(0.5);
       this.options[idx].setInteractive().setScrollFactor(0).setVisible(false);
       if (takeable) {
@@ -249,7 +236,6 @@ export default class jungle_scene3 extends BaseScene {
         this.options[idx].setFrame(2);
       }
 
-      
       this.options[idx].on('pointerdown', () => {
         if (takeable){
           this.triggerContinue();
@@ -270,17 +256,17 @@ export default class jungle_scene3 extends BaseScene {
   update() {
     //new player logic
     if (this.player.body.touching.down && this.isInteracting == false) {
-      this.player.setVelocityX(350);
+      this.player.setVelocityX(200);
     }
 
-    if (this.player.x > 1920*4) {
+    if (this.player.x > gameConfig.scale.width*4) {
       this.ingameSound.stop();
       this.sfx_monkey.stop();
       this.sfx_char_footstep.stop();
       this.scene.start("jungle_scene4");
     }
 
-    if (this.player.x > 1920*4 -1000 && this.isInteracted == false) {
+    if (this.player.x > gameConfig.scale.width*4 - 700 && this.isInteracted == false) {
       this.triggerPause();
       this.ambientSound.stop();
       this.sfx_char_footstep.stop();
@@ -293,7 +279,7 @@ export default class jungle_scene3 extends BaseScene {
       this.player.stop()
     }
 
-    if (this.player.x > 1920*2 && this.isCloseToObstacle == false) {
+    if (this.player.x > gameConfig.scale.width*2 && this.isCloseToObstacle == false) {
       this.sfx_monkey.play();
       this.isCloseToObstacle = true;
     }

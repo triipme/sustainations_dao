@@ -44,8 +44,16 @@ class selectItemScene extends BaseScene {
   }
 
   preload() {
+    this.addLoadingScreen();
     this.itemNames = [];
     this.itemStrength = [];
+    this.load.rexAwait(function(successCallback, failureCallback) {
+      loadCharacter().then( (result) => {
+        this.characterData = result.ok[1];
+        console.log(this.characterData);
+        successCallback();
+      });
+    }, this);
     this.load.rexAwait(function(successCallback, failureCallback) {
       loadQuestItems(this.map).then( (result) => {
         this.questItems = result;
@@ -57,19 +65,7 @@ class selectItemScene extends BaseScene {
         successCallback();
       });
     }, this);
-    //loading screen
-    this.add.image(
-      gameConfig.scale.width/2, gameConfig.scale.height/2 - 50, 'logo'
-    ).setOrigin(0.5, 0.5).setScale(0.26);
-    this.anims.create({
-      key: 'loading-anims',
-      frames: this.anims.generateFrameNumbers("loading", {start: 0, end: 11}),
-      frameRate: 12,
-      repeat: -1
-    });
-    this.add.sprite(
-      gameConfig.scale.width/2, gameConfig.scale.height/2 + 150, "loading"
-    ).setScale(0.07).play('loading-anims');
+    
     //preload
     this.clearCache();
     this.load.image("bg", bg);
@@ -90,49 +86,48 @@ class selectItemScene extends BaseScene {
 
   //async 
   async create(data) {
-    // load character
-    this.characterData = await loadCharacter();
+    // load character strength
     this.characterStrength = this.characterData.strength;
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
 
     this.add.image(0, 0, 'bg').setOrigin(0);
-    this.btnBack = this.add.image(80, 50, 'btnBack')
+    this.btnBack = this.add.image(40, 35, 'btnBack')
       .setOrigin(0).setInteractive();
     this.btnBack.on('pointerdown', () => {
       this.clickSound.play();
       this.scene.transition({target: 'selectMap', duration: 0 });
     });
-    this.add.image(180, 0, 'effect').setOrigin(0);
-    this.add.image(420, 215, 'player').setOrigin(0);
-    this.add.image(585, 390, 'UI_strength').setOrigin(0).setScale(0.55);
+    this.add.image(120, 0, 'effect').setOrigin(0);
+    this.add.image(280, 143, 'player').setOrigin(0);
+    this.add.image(390, 260, 'UI_strength').setOrigin(0).setScale(0.55);
     // strength text
-    this.strengthText = this.add.text(630, 455, String(this.characterStrength), { fill: '#fff', align: 'center', fontSize: '40px', fontStyle: 'italic' })
+    this.strengthText = this.add.text(420, 303, String(this.characterStrength), { fill: '#fff', align: 'center', fontSize: '27px', fontStyle: 'italic' })
       .setScrollFactor(0);
 
-    this.add.image(50, 200, 'UI_NameCard').setOrigin(0);
-    this.add.image(50, 320, 'UI_HP').setOrigin(0);
-    this.add.image(50, 440, 'UI_Stamina').setOrigin(0);
-    this.add.image(50, 560, 'UI_Mana').setOrigin(0);
-    this.add.image(50, 680, 'UI_Morale').setOrigin(0);
+    this.add.image(35, 100, 'UI_NameCard').setOrigin(0);
+    this.add.image(35, 175, 'UI_HP').setOrigin(0);
+    this.add.image(35, 250, 'UI_Stamina').setOrigin(0);
+    this.add.image(35, 325, 'UI_Mana').setOrigin(0);
+    this.add.image(35, 400, 'UI_Morale').setOrigin(0);
 
-    this.hp = this.makeBar(158, 372, 150, 22, 0x74e044);
-    this.stamina =  this.makeBar(158, 372+120, 150, 22, 0xcf311f);
-    this.mana = this.makeBar(158, 372+240, 150, 22, 0xc038f6);
-    this.morale = this.makeBar(158, 372+360, 150, 22, 0x63dafb);
+    this.hp = this.makeBar(107, 210, 100, 15, 0x74e044);
+    this.stamina =  this.makeBar(107, 210+75, 100, 15, 0xcf315f);
+    this.mana = this.makeBar(107, 210+150, 100, 15, 0xc038f6);
+    this.morale = this.makeBar(107, 210+225, 100, 15, 0x63dafb);
 
     this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
     this.setValue(this.stamina, this.characterData.currentStamina/this.characterData.maxStamina*100);
     this.setValue(this.mana, this.characterData.currentMana/this.characterData.maxMana*100);
     this.setValue(this.morale, this.characterData.currentMorale/this.characterData.maxMorale*100);
 
-    this.add.image(1234, 70, 'pickItemText').setOrigin(0);
+    this.add.image(823, 47, 'pickItemText').setOrigin(0);
     this.gridItem = [];
     for (let row = 0; row <= 3; row++){
       for (let col = 0; col <= 3; col++){
         this.gridItem.push(
-          this.add.sprite(750 + 218*(col+1), 166*(row+1), "itembox").setOrigin(0).setInteractive()
+          this.add.sprite(500 + 145*(col+1), 111*(row+1), "itembox").setOrigin(0).setInteractive().setScale(0.67)
         );
         if(this.itemNames[col+row*4] == undefined) {
           this.gridItem[col+row*4].setFrame(2);
@@ -151,11 +146,11 @@ class selectItemScene extends BaseScene {
           }
           this.strengthText.setText(String(this.characterStrength));
         });
-        this.add.image(750 + 120 + 218 * (col + 1), 90 + 166*(row + 1), this.itemNames[col+row*4]);
+        this.add.image(580 + 145 * (col + 1), 60 + 111*(row + 1), this.itemNames[col+row*4]);
       }
     }
-    this.btnClear = this.add.sprite(1100, 870, "btnClear")
-      .setOrigin(0).setInteractive();
+    this.btnClear = this.add.sprite(733, 580, "btnClear")
+      .setOrigin(0).setInteractive().setScale(0.67);
     this.btnClear.on('pointerover', () => {
       this.btnClear.setFrame(1);
       this.hoverSound.play()
@@ -173,8 +168,8 @@ class selectItemScene extends BaseScene {
       this.strengthText.setText(String(this.characterStrength));
     });
 
-    this.btnGo = this.add.sprite(1400, 870, "btnGo")
-      .setOrigin(0).setInteractive();
+    this.btnGo = this.add.sprite(933, 580, "btnGo")
+      .setOrigin(0).setInteractive().setScale(0.67);
     this.btnGo.on('pointerover', () => {
       this.btnGo.setFrame(1);
       this.hoverSound.play()

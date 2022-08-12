@@ -174,11 +174,49 @@ const Metaverse = () => {
     });
   };
 
+  const createMaterial = () => {
+    return new Promise(resolve => {
+      const materials = data[6];
+      materials.forEach(async material => {
+        try {
+          if (!!actor?.createMaterial) {
+            const rs = await actor.createMaterial(material);
+            console.log("Create Material");
+            console.log(rs);
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      });
+      resolve();
+    });
+  };
+
+  const createUsableItem = () => {
+    return new Promise(resolve => {
+      const usableItems = data[7];
+      usableItems.forEach(async usableItem => {
+        try {
+          if (!!actor?.createQuestItem) {
+            const rs = await actor.createUsableItem(usableItem);
+            console.log("Create Usable Item");
+            console.log(rs);
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      });
+      resolve();
+    });
+  };
+
   const handleSubmit = async () => {
     setLoading(true);
     await createItem();
     await createQuest();
     await createQuestItem();
+    await createUsableItem();
+    await createMaterial();
     await createEvent();
     await createEventOption();
     await createCharacterClass();

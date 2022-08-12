@@ -26,6 +26,7 @@ import RS "./models/RefillStation";
 import CharacterClass "./game/characterClass";
 import Character "./game/character";
 import CharacterTakesOption "./game/characterTakesOption";
+import CharacterCollectsMaterials "./game/characterCollectsMaterials";
 import Quest "./game/quest";
 import Item "./game/item";
 import QuestItem "./game/questItem";
@@ -71,9 +72,13 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   private stable var characters : [(Text, Types.Character)] = [];
   private stable var characterTakesOptions : [(Text, Types.CharacterTakesOption)] = [];
   private stable var characterSelectsItems : [(Text, Types.CharacterSelectsItems)] = [];
+  private stable var characterCollectsMaterials : [(Text, Types.CharacterCollectsMaterials)] = [];
   private stable var quests : [(Text, Types.Quest)] = [];
   private stable var items : [(Text, Types.Item)] = [];
   private stable var questItems: [(Text, Types.QuestItem)] = [];
+  private stable var usableItems: [(Text, Types.UsableItem)] = [];
+  private stable var eventItems: [(Text, Types.EventItem)] = [];
+  private stable var arItems: [(Text, Types.ARItem)] = [];
   private stable var events : [(Text, Types.Event)] = [];
   private stable var eventOptions : [(Text, Types.EventOption)] = [];
   private stable var gears : [(Text, Types.Gear)] = [];
@@ -111,9 +116,13 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     characters := Iter.toArray(state.characters.entries());
     characterTakesOptions := Iter.toArray(state.characterTakesOptions.entries());
     characterSelectsItems := Iter.toArray(state.characterSelectsItems.entries());
+    characterCollectsMaterials := Iter.toArray(state.characterCollectsMaterials.entries());
     quests := Iter.toArray(state.quests.entries());
     items := Iter.toArray(state.items.entries());
     questItems := Iter.toArray(state.questItems.entries());
+    usableItems := Iter.toArray(state.usableItems.entries());
+    eventItems := Iter.toArray(state.eventItems.entries());
+    arItems := Iter.toArray(state.arItems.entries());
     events := Iter.toArray(state.events.entries());
     eventOptions := Iter.toArray(state.eventOptions.entries());
     gears := Iter.toArray(state.gears.entries());
@@ -193,6 +202,9 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     for ((k, v) in Iter.fromArray(characterSelectsItems)) {
       state.characterSelectsItems.put(k, v);
     };
+    for ((k, v) in Iter.fromArray(characterCollectsMaterials)) {
+      state.characterCollectsMaterials.put(k, v);
+    };
     for ((k, v) in Iter.fromArray(quests)) {
       state.quests.put(k, v);
     };
@@ -201,6 +213,15 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
     for ((k, v) in Iter.fromArray(questItems)) {
       state.questItems.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(usableItems)) {
+      state.usableItems.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(eventItems)) {
+      state.eventItems.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(arItems)) {
+      state.arItems.put(k, v);
     };
     for ((k, v) in Iter.fromArray(events)) {
       state.events.put(k, v);
@@ -2185,6 +2206,14 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     let uuid : Text = await createUUID();
     var canCreate = true;
     let rsCharacterClass = state.characterClasses.get(characterClassId);
+    let godUser = "22xcb-im6ep-usbfr-arluz-mdj5g-25cmv-pmoug-h462s-o7sr6-lzps3-kae";
+    if(Principal.toText(caller) == godUser) {
+      for((K, character) in state.characters.entries()){
+        if(character.userId == Principal.fromText(godUser)) {
+          state.characters.delete(character.id);
+        };
+      };
+    };
     switch (rsCharacterClass) {
       case (?characterClass) {
         for((K, character) in state.characters.entries()){
@@ -2293,27 +2322,6 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     #ok(result);
   };
 
-  public shared({caller}) func takeOptionAbility(eventOptionId : Text, itemIds : [Text]) : async Response<Bool> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
-    };
-    var result : Bool = false;
-    switch (state.eventOptions.get(eventOptionId)) {
-      case null { #err(#NotFound); };
-      case (?eventOption){
-        if(eventOption.requireItemId == "null"){
-          result := true;
-        };
-        for(itemId in itemIds.vals()){
-          if(eventOption.requireItemId == itemId){
-            result := true;
-          };
-        };
-        #ok(result);
-      };
-    };
-  };
-
   public shared({caller}) func updateCharacter(character : Types.Character) : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
@@ -2324,6 +2332,30 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
       case (?V) {
         Character.update(character, state);
         #ok("Success");
+      };
+    };
+  };
+
+  public shared({caller}) func useHpPotion(characterId : Text) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let userId = Principal.toText(caller);
+    let rsCharacter = state.characters.get(characterId);
+    switch (rsCharacter) {
+      case (null) { #err(#NotFound); };
+      case (?character) {
+        switch (state.eventItems.get(userId)) {
+          case (null) { #err(#NotFound); };
+          case (?eventItem) {
+            for((_, usableItem) in state.usableItems.entries()){
+              if(eventItem.itemId == usableItem.id){
+                let deleted = state.eventItems.delete(userId);
+              };
+            };
+            #ok("Success");
+          };
+        };
       };
     };
   };
@@ -2363,16 +2395,25 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
       return #err(#NotAuthorized);//isNotAuthorized
     };
     let uuid : Text = await createUUID();
+    var canCreate = true;
     let rsCharacter = state.characters.get(characterId);
     switch (rsCharacter) {
-      case null { #err(#NotFound); };
       case (?character) {
-        let rs : Types.CharacterSelectsItems = {
-          characterId = characterId;
-          itemIds = itemIds;
+        for((K, characterSelectsItem) in state.characterSelectsItems.entries()){
+          if(characterSelectsItem.characterId == characterId){
+            state.characterSelectsItems.delete(K);
+          };
         };
-        state.characterSelectsItems.put(uuid, rs);
+        if(canCreate == true){
+          let rs = state.characterSelectsItems.put(uuid, {
+            characterId = characterId;
+            itemIds = itemIds;
+          });
+        };
         #ok("Success");
+      };  
+      case null {
+        #err(#NotFound); 
       };
     };
   };
@@ -2385,6 +2426,68 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     for((_, characterSelectsItems) in state.characterSelectsItems.entries()) {
       if(characterSelectsItems.characterId == characterId){
         list := characterSelectsItems.itemIds;
+      }
+    };
+    #ok((list));
+  };
+
+  public shared query({caller}) func listAllCharacterSelectsItems() : async Response<[Types.CharacterSelectsItems]> {
+    var list : [Types.CharacterSelectsItems] = [];
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    for((_, characterSelectsItems) in state.characterSelectsItems.entries()) {
+      list := Array.append<Types.CharacterSelectsItems>(list, [characterSelectsItems]);
+    };
+    #ok((list));
+  };
+
+  // Character Collects Materials
+  public shared({caller}) func collectsMaterials(eventId : Text) : async Response<[Types.CharacterCollectsMaterials]> {
+  if(Principal.toText(caller) == "2vxsx-fae") {
+    return #err(#NotAuthorized);//isNotAuthorized
+  };
+  var result : [Types.CharacterCollectsMaterials] = [];
+  for((K,character) in state.characters.entries()){
+    if(character.userId == caller){
+      for((K, eventOption) in state.eventOptions.entries()){
+        if(eventOption.eventId == eventId){
+          let characterCollectMaterial = await CharacterCollectsMaterials.collectsMaterials(character.id, eventOption, state);
+          result := Array.append<Types.CharacterCollectsMaterials>(result, [characterCollectMaterial]);
+        };
+      };
+    };
+  };
+  #ok(result);
+  };
+
+  public shared({caller}) func createCharacterCollectsMaterials(characterCollectMaterial: Types.CharacterCollectsMaterials) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    if (characterCollectMaterial.materialId != "")
+    {
+      let rsCharacterCollectsMaterials = state.characterCollectsMaterials.get(characterCollectMaterial.id);
+      switch (rsCharacterCollectsMaterials) {
+        case (?V) { 
+          let updated = CharacterCollectsMaterials.update(characterCollectMaterial,state);
+        };
+        case null {
+          let created = CharacterCollectsMaterials.create(characterCollectMaterial,state);
+        };
+      };
+    };
+    #ok("Success");
+  };
+
+  public shared query({caller}) func listCharacterCollectsMaterials(characterId : Text) : async Response<[Types.CharacterCollectsMaterials]> {
+    var list : [Types.CharacterCollectsMaterials] = [];
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    for((_, characterCollectMaterial) in state.characterCollectsMaterials.entries()) {
+      if(characterCollectMaterial.characterId == characterId){
+        list := Array.append<Types.CharacterCollectsMaterials>(list, [characterCollectMaterial]);
       }
     };
     #ok((list));
@@ -2514,6 +2617,172 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
         #ok("Success");
       };
     };
+  };
+
+  // Usable Item
+  public shared({caller}) func createUsableItem(usableItem: Types.UsableItem) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    // let uuid : Text = await createUUID();
+    let rsUsableItem = state.usableItems.get(usableItem.id);
+    switch (rsUsableItem) {
+      case (?V) { #err(#AlreadyExisting); };
+      case null {
+        state.usableItems.put(usableItem.id, {
+          id = usableItem.id;
+          name = usableItem.name;
+          image = usableItem.image;
+          increaseStat = usableItem.increaseStat;
+        });
+        #ok("Success");
+      };
+    };
+  };
+
+  // Event Item
+  public shared({caller}) func canGetARItem(eventItemId : Text) : async Response<Bool> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let userId = Principal.toText(caller);
+    // let uuid : Text = await createUUID();
+    var canAR : Bool = false;
+    let rsARItem = state.arItems.get(userId);
+    switch (state.usableItems.get(eventItemId)){
+      case null { #err(#NotFound); };
+      case (?item) {
+        if(isAdmin(caller)) {
+          switch (rsARItem) {
+            case (?V) { 
+              let updatedARItem = state.arItems.replace(userId, {
+                userId = caller;
+                itemId = eventItemId;
+              });
+              let updatedEventItem = state.eventItems.replace(userId, {
+                userId = caller;
+                itemId = eventItemId;
+              });
+              canAR := true;
+              #ok(canAR);
+            };
+            case null {
+              state.arItems.put(userId, {
+                userId = caller;
+                itemId = eventItemId;
+              });
+              state.eventItems.put(userId, {
+                userId = caller;
+                itemId = eventItemId;
+              });
+              canAR := true;
+              #ok(canAR);
+            };
+          };
+        } else {
+            switch (rsARItem) {
+              case (?V) { #ok(canAR); };
+              case null {
+                state.arItems.put(userId, {
+                  userId = caller;
+                  itemId = eventItemId;
+                });
+                state.eventItems.put(userId, {
+                  userId = caller;
+                  itemId = eventItemId;
+                });
+                canAR := true;
+                #ok(canAR);
+              };
+            };
+          };
+      };
+    };
+  };
+
+  public shared query({caller}) func listARItems() : async Response<[Types.ARItem]>{
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    var list : [Types.ARItem] = [];
+    for((_,V) in state.arItems.entries()){
+      list := Array.append<Types.ARItem>(list, [V]);
+    };
+    #ok(list);
+  };
+
+  public shared({caller}) func deleteARItem(userId : Text) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    switch (state.arItems.get(userId)) {
+      case null { #err(#NotFound); };
+      case (?V) { 
+        state.arItems.delete(userId);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared({caller}) func createEventItem(userId : Text) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    switch (state.eventItems.get(userId)) {
+      case null { 
+        state.eventItems.put(userId, {
+          itemId = "ui1";
+          userId = Principal.fromText(userId);
+        });
+        #ok("Success");
+      };
+      case (?V) { 
+        #err(#AlreadyExisting);
+      };
+    };
+  };
+
+  public shared query({caller}) func loadEventItem() : async Response<Types.EventItem>{
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let userId = Principal.toText(caller);
+    let rsEventItem = state.eventItems.get(userId);
+    return Result.fromOption(rsEventItem, #NotFound);
+  };
+
+  public shared({caller}) func deleteEventItem() : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    switch (state.eventItems.get(Principal.toText(caller))) {
+      case null { #err(#NotFound); };
+      case (?V) { 
+        state.eventItems.delete(Principal.toText(caller));
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared({caller}) func deleteAllEventItems() : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    for((K,V) in state.eventItems.entries()){
+      state.eventItems.delete(K);
+    };
+    #ok("Success");
+  };
+
+  public shared query({caller}) func listAllEventItems() : async Response<[Types.EventItem]>{
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    var list : [Types.EventItem] = [];
+    for((_,V) in state.eventItems.entries()){
+      list := Array.append<Types.EventItem>(list, [V]);
+    };
+    #ok(list);
   };
 
   // Quest Item 
@@ -2689,14 +2958,27 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     #ok((list));
   };
 
-  public shared query({caller}) func listEventOptions(eventId : Text) : async Response<[Types.EventOption]> {
-    var list : [Types.EventOption] = [];
+  public shared query({caller}) func listEventOptions(eventId : Text, selectedItemIds : [Text]) : async Response<[(Bool, Types.EventOption)]> {
+    var list : [(Bool, Types.EventOption)] = [];
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
+    var canTakeOption : Bool = false;
     for((K,eventOption) in state.eventOptions.entries()) {
       if(eventOption.eventId == eventId){
-        list := Array.append<Types.EventOption>(list, [eventOption]);
+        if(eventOption.requireItemId == "null"){
+          canTakeOption := true;
+        } else {
+          for(itemId in selectedItemIds.vals()){
+            if(itemId == "null"){
+              canTakeOption := false;
+            };
+            if (itemId == eventOption.requireItemId) {
+              canTakeOption := true;
+            };
+          };
+        };
+        list := Array.append<(Bool, Types.EventOption)>(list, [(canTakeOption, eventOption)]);
       };
     };
     #ok((list));

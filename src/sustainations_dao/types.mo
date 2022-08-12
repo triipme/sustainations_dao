@@ -153,6 +153,13 @@ module {
     itemIds : [Text];
   };
 
+  public type CharacterCollectsMaterials = {
+    id : Text;
+    characterId: Text;
+    materialId: Text;
+    amount: Int;
+  };
+
   //--------------------- Quest ---------------------//
   public type Quest = {
     id : Text;
@@ -174,6 +181,23 @@ module {
     id : Text;
     itemId : Text;
     questId : Text;
+  };
+
+  public type UsableItem = {
+    id : Text;
+    name : Text;
+    image : Text;
+    increaseStat : Float;
+  };
+
+  public type EventItem = {
+    userId : Principal;
+    itemId : Text;
+  };
+
+  public type ARItem = {
+    userId : Principal;
+    itemId : Text;
   };
 
   //--------------------- Event ---------------------//
