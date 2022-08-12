@@ -297,6 +297,9 @@ export default class catalonia_scene7 extends BaseScene {
           this.clickSound.play();
           this.sfx_char_footstep.play();
           // stats after choose option
+          if(this.characterTakeOptions[idx].currentHP > this.characterTakeOptions[idx].maxHp) {
+            this.characterTakeOptions[idx].currentHP = this.characterTakeOptions[idx].maxHp;
+          }
           this.setValue(this.hp, this.characterTakeOptions[idx].currentHP/this.characterTakeOptions[idx].maxHP*100);
           this.setValue(this.stamina, this.characterTakeOptions[idx].currentStamina/this.characterTakeOptions[idx].maxStamina*100);
           this.setValue(this.mana, this.characterTakeOptions[idx].currentMana/this.characterTakeOptions[idx].maxMana*100);

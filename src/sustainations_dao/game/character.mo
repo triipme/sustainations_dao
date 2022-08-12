@@ -110,13 +110,13 @@ module Character {
       intelligence = character.intelligence;
       vitality = character.vitality;
       luck = character.luck;
-      currentHP = character.currentHP;
+      currentHP = if(character.currentHP > character.maxHP) { character.maxHP } else { character.currentHP };
       maxHP = character.maxHP;
-      currentMana = character.currentMana;
+      currentMana = if(character.currentMana > character.maxMana) { character.maxMana } else { character.currentMana };
       maxMana = character.maxMana;
-      currentStamina = character.currentStamina;
+      currentStamina = if(character.currentStamina > character.maxStamina) { character.maxStamina } else { character.currentStamina };
       maxStamina = character.maxStamina;
-      currentMorale = character.currentMorale;
+      currentMorale = if(character.currentMorale > character.maxMorale) { character.maxMorale } else { character.currentMorale };
       maxMorale = character.maxMorale;
       classId = character.classId;
       gearIds = character.gearIds;
