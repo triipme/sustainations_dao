@@ -258,6 +258,13 @@ export default class catalonia_scene2_3 extends BaseScene {
     this.setValue(this.mana, this.characterData.currentMana/this.characterData.maxMana*100);
     this.setValue(this.morale, this.characterData.currentMorale/this.characterData.maxMorale*100);
 
+    if(this.isHealedPreviously) {
+      for(const i in this.characterTakeOptions) {
+        if(this.characterTakeOptions[i].currentHP > this.characterTakeOptions[i].maxHp) {
+          this.characterTakeOptions[i].currentHP = this.characterTakeOptions[i].maxHp;
+        }
+      }
+    }
     this.options = [];
     for (const idx in this.eventOptions){
       // can take option or not
@@ -279,8 +286,7 @@ export default class catalonia_scene2_3 extends BaseScene {
       } else {
         this.options[idx].setFrame(2);
       }
-
-     
+      console.log("BEFORE CURRENT HP",this.characterTakeOptions[idx].currentHP)
 
       this.options[idx].on('pointerdown', () => {
         if(takeable){
@@ -288,12 +294,7 @@ export default class catalonia_scene2_3 extends BaseScene {
           this.clickSound.play();
           this.sfx_char_footstep.play();
           // stats after choose option
-          console.log("BEFORE CURRENT HP",this.characterTakeOptions[idx].currentHP)
 
-          if(this.characterTakeOptions[idx].currentHP > this.characterTakeOptions[idx].maxHp) {
-            console.log("GGGGGG")
-            this.characterTakeOptions[idx].currentHP = this.characterTakeOptions[idx].maxHp;
-          }
           console.log("AFTER CURRENT HP",this.characterTakeOptions[idx].currentHP)
           this.setValue(this.hp, this.characterTakeOptions[idx].currentHP/this.characterTakeOptions[idx].maxHP*100);
           this.setValue(this.stamina, this.characterTakeOptions[idx].currentStamina/this.characterTakeOptions[idx].maxStamina*100);
@@ -302,11 +303,7 @@ export default class catalonia_scene2_3 extends BaseScene {
           // update character after choose option
           updateCharacterStats(this.characterTakeOptions[idx]);
 
-          console.log("is Healed Previously",this.isUsedPotion);
-          if(this.isUsedPotion) {
-            console.log("USED HP POTION");
-            console.log(useHpPotion(this.characterTakeOptions[idx].id));
-          };
+       
         }
       });
     };

@@ -253,7 +253,13 @@ export default class catalonia_scene2_2 extends BaseScene {
     this.setValue(this.stamina, this.characterData.currentStamina/this.characterData.maxStamina*100);
     this.setValue(this.mana, this.characterData.currentMana/this.characterData.maxMana*100);
     this.setValue(this.morale, this.characterData.currentMorale/this.characterData.maxMorale*100);
-
+    if(this.isHealedPreviously) {
+      for(const i in this.characterTakeOptions) {
+        if(this.characterTakeOptions[i].currentHP > this.characterTakeOptions[i].maxHp) {
+          this.characterTakeOptions[i].currentHP = this.characterTakeOptions[i].maxHp;
+        }
+      }
+    }
     // load event options
     this.options = [];
     for (const idx in this.eventOptions){
