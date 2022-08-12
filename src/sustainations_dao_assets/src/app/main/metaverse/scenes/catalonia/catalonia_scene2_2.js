@@ -7,7 +7,9 @@ import {
   updateCharacterStats,
   getCharacterStatus,
   characterTakeOption,
-  listCharacterSelectsItems
+  listCharacterSelectsItems,
+  loadEventItem,
+  useHpPotion,useHpPotionAwait
 } from '../../GameApi';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
@@ -21,6 +23,14 @@ const btnBlank = 'metaverse/scenes/selection.png';
 export default class catalonia_scene2_2 extends BaseScene {
   constructor() {
     super('catalonia_scene2_2');
+  }
+  
+  init(data) {
+    this.isHealedPreviously = data.isUsedPotion;
+    console.log('healed', this.isHealedPreviously);
+    // if isHealedPre {
+    //    takeOption.currentHp + 3;
+    // }
   }
   
   clearSceneCache() {
@@ -101,6 +111,15 @@ export default class catalonia_scene2_2 extends BaseScene {
     console.log(this.characterStatus);
     if(this.characterStatus == 'Exhausted') {
       this.scene.start('exhausted');
+    } else {
+      if(this.isHealedPreviously) {
+        for(const i in this.characterTakeOptions) {
+          this.characterTakeOptions[i].currentHP += 3;
+          if(this.characterTakeOptions[i].currentHP > this.characterTakeOptions[i].maxHp) {
+            this.characterTakeOptions[i].currentHP = this.characterTakeOptions[i].maxHp;
+          }
+        }
+      }
     }
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
@@ -169,9 +188,7 @@ export default class catalonia_scene2_2 extends BaseScene {
     this.stamina = this.makeBar(325+235*2, 65, 100, 15, 0xcf315f).setScrollFactor(0);
     this.morale = this.makeBar(325+235*3, 65, 100, 15, 0x63dafb).setScrollFactor(0);
     // this.setValue(this.hp, 50)
-    
-    //UI2
-    this.add.image(55, 555, "UI_Utility").setOrigin(0).setScrollFactor(0);
+
     this.add.image(1190, 50, "BtnExit").setOrigin(0).setScrollFactor(0).setScale(0.7)
     .setInteractive()
       .on('pointerdown', () => {
@@ -197,6 +214,34 @@ export default class catalonia_scene2_2 extends BaseScene {
     this.veil.setVisible(false);
     this.selectAction.setScrollFactor(0);
     this.selectAction.setVisible(false);
+
+    this.eventItem = await loadEventItem();
+    //UI2
+    this.isHadPotion = false;
+    console.log("EVENT ITEM",this.eventItem);
+    if(this.eventItem != undefined) {
+      this.isHadPotion = true;
+    };
+    console.log("HAD POTION ", this.isHadPotion);
+    this.isUsedPotion = false;
+    this.itemSlot = [];
+    if (this.isHadPotion){
+      this.itemSlot[0] = this.add.image(55, 550, "UI_Utility_Sprite")
+        .setOrigin(0).setScrollFactor(0).setScale(0.5).setFrame(1);
+      this.potion = this.add.image(55, 550, "item_potion")
+        .setOrigin(0).setInteractive().setScrollFactor(0);
+      this.potion.on('pointerdown', () => {
+        this.clickSound.play();
+        this.itemSlot[0].setFrame(0);
+        this.potion.setVisible(false);
+        this.isUsedPotion = true;
+        console.log("Used potion => ",useHpPotion(this.characterData.id));
+      });
+    } else {
+      this.itemSlot[0] = this.add.image(55, 550, "UI_Utility_Sprite").setOrigin(0).setScrollFactor(0).setScale(0.5);
+    }
+    this.itemSlot[1] =this.add.image(125, 505, "UI_Utility_Sprite").setOrigin(0).setScrollFactor(0).setScale(0.5);
+    this.itemSlot[2] =this.add.image(195, 550, "UI_Utility_Sprite").setOrigin(0).setScrollFactor(0).setScale(0.5);
 
     // load selected items ids
     this.selectedItemsIds = await listCharacterSelectsItems(this.characterData.id);
@@ -243,7 +288,13 @@ export default class catalonia_scene2_2 extends BaseScene {
           this.setValue(this.mana, this.characterTakeOptions[idx].currentMana/this.characterTakeOptions[idx].maxMana*100);
           this.setValue(this.morale, this.characterTakeOptions[idx].currentMorale/this.characterTakeOptions[idx].maxMorale*100);
           // update character after choose option
-          updateCharacterStats(this.characterTakeOptions[idx]);
+          updateCharacterStats(this.characterTakeOptions[idx]); 
+
+          // console.log("is Healed Previously",this.isUsedPotion);
+          // if(this.isUsedPotion) {
+          //   console.log("USED HP POTION");
+          //   console.log(useHpPotion(this.characterTakeOptions[idx].id));
+          // };
         }
       });
     };
@@ -258,7 +309,7 @@ export default class catalonia_scene2_2 extends BaseScene {
     if (this.player.x > 2339) {
       this.ingameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start('catalonia_scene2_3');
+      this.scene.start('catalonia_scene2_3', {isUsedPotion: this.isUsedPotion});
     }
 
     if (this.player.x > 1200 && this.isInteracted == false) {

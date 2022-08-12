@@ -65,6 +65,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   private stable var questItems: [(Text, Types.QuestItem)] = [];
   private stable var usableItems: [(Text, Types.UsableItem)] = [];
   private stable var eventItems: [(Text, Types.EventItem)] = [];
+  private stable var arItems: [(Text, Types.ARItem)] = [];
   private stable var events : [(Text, Types.Event)] = [];
   private stable var eventOptions : [(Text, Types.EventOption)] = [];
   private stable var gears : [(Text, Types.Gear)] = [];
@@ -97,6 +98,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     questItems := Iter.toArray(state.questItems.entries());
     usableItems := Iter.toArray(state.usableItems.entries());
     eventItems := Iter.toArray(state.eventItems.entries());
+    arItems := Iter.toArray(state.arItems.entries());
     events := Iter.toArray(state.events.entries());
     eventOptions := Iter.toArray(state.eventOptions.entries());
     gears := Iter.toArray(state.gears.entries());
@@ -166,6 +168,9 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
     for ((k, v) in Iter.fromArray(eventItems)) {
       state.eventItems.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(arItems)) {
+      state.arItems.put(k, v);
     };
     for ((k, v) in Iter.fromArray(events)) {
       state.events.put(k, v);
@@ -1291,42 +1296,17 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
+    let userId = Principal.toText(caller);
     let rsCharacter = state.characters.get(characterId);
     switch (rsCharacter) {
       case (null) { #err(#NotFound); };
       case (?character) {
-        switch (state.eventItems.get(Principal.toText(caller))) {
+        switch (state.eventItems.get(userId)) {
           case (null) { #err(#NotFound); };
           case (?eventItem) {
             for((_, usableItem) in state.usableItems.entries()){
               if(eventItem.itemId == usableItem.id){
-                var newCharacter : Types.Character = {
-                  userId = character.userId;
-                  id = character.id;
-                  name = character.name;
-                  level = character.level;
-                  currentExp = character.currentExp;
-                  levelUpExp = character.levelUpExp;
-                  status = character.status;
-                  strength = character.strength;
-                  intelligence = character.intelligence;
-                  vitality = character.vitality;
-                  luck = character.luck;
-                  currentHP = if((character.currentHP + usableItem.increaseStat) >= character.maxHP) 
-                                {character.maxHP}
-                              else {character.currentHP + usableItem.increaseStat};
-                  maxHP = character.maxHP;
-                  currentMana = character.currentMana;
-                  maxMana = character.maxMana;
-                  currentStamina = character.currentStamina;
-                  maxStamina = character.maxStamina;
-                  currentMorale = character.currentMorale;
-                  maxMorale = character.maxMorale;
-                  classId = character.classId;
-                  gearIds = character.gearIds;
-                  materialIds = character.materialIds;
-                };
-                let updatedCharacter = state.characters.replace(character.id, newCharacter);
+                let deleted = state.eventItems.delete(userId);
               };
             };
             #ok("Success");
@@ -1624,14 +1604,18 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     let userId = Principal.toText(caller);
     // let uuid : Text = await createUUID();
     var canAR : Bool = false;
-    let rsEventItem = state.eventItems.get(userId);
+    let rsARItem = state.arItems.get(userId);
     switch (state.usableItems.get(eventItemId)){
       case null { #err(#NotFound); };
       case (?item) {
         if(isAdmin(caller)) {
-          switch (rsEventItem) {
+          switch (rsARItem) {
             case (?V) { 
-              let updated = state.eventItems.replace(userId, {
+              let updatedARItem = state.arItems.replace(userId, {
+                userId = caller;
+                itemId = eventItemId;
+              });
+              let updatedEventItem = state.eventItems.replace(userId, {
                 userId = caller;
                 itemId = eventItemId;
               });
@@ -1639,6 +1623,10 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
               #ok(canAR);
             };
             case null {
+              state.arItems.put(userId, {
+                userId = caller;
+                itemId = eventItemId;
+              });
               state.eventItems.put(userId, {
                 userId = caller;
                 itemId = eventItemId;
@@ -1648,9 +1636,13 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
             };
           };
         } else {
-            switch (rsEventItem) {
+            switch (rsARItem) {
               case (?V) { #ok(canAR); };
               case null {
+                state.arItems.put(userId, {
+                  userId = caller;
+                  itemId = eventItemId;
+                });
                 state.eventItems.put(userId, {
                   userId = caller;
                   itemId = eventItemId;
@@ -1664,24 +1656,31 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared query({caller}) func loadEventItem() : async Response<Types.UsableItem>{
+  public shared({caller}) func createEventItem(userId : Text) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    switch (state.eventItems.get(userId)) {
+      case null { 
+        state.eventItems.put(userId, {
+          itemId = "ui1";
+          userId = Principal.fromText(userId);
+        });
+        #ok("Success");
+      };
+      case (?V) { 
+        #err(#AlreadyExisting);
+      };
+    };
+  };
+
+  public shared query({caller}) func loadEventItem() : async Response<Types.EventItem>{
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
-    var list : [Types.UsableItem] = [];
     let userId = Principal.toText(caller);
     let rsEventItem = state.eventItems.get(userId);
-    switch (rsEventItem) {
-      case null { #err(#NotFound); };
-      case (? eventItem) {
-        for((_,V) in state.usableItems.entries()){
-          if(eventItem.itemId == V.id) {
-            list := Array.append<Types.UsableItem>(list, [V]);
-          };
-        };
-        #ok(list[0]);
-      };
-    };
+    return Result.fromOption(rsEventItem, #NotFound);
   };
 
   public shared({caller}) func deleteEventItem() : async Response<Text> {
@@ -1695,6 +1694,16 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
         #ok("Success");
       };
     };
+  };
+
+  public shared({caller}) func deleteAllEventItems() : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    for((K,V) in state.eventItems.entries()){
+      state.eventItems.delete(K);
+    };
+    #ok("Success");
   };
 
   public shared query({caller}) func listAllEventItems() : async Response<[Types.EventItem]>{

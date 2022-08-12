@@ -120,13 +120,6 @@ async function listCharacterCollectsMaterials(characterId){
   return result;
 };
 
-async function canGetARItem(eventItemId){
-  const { user } = store.getState();
-  const func = async () => await user.actor.canGetARItem(eventItemId);
-  const result = (await func()).ok;
-  return result;
-};
-
 function canGetARItemPromise(eventItemId){
   return new Promise((resolve, reject) => {
     const { user } = store.getState();
@@ -135,14 +128,13 @@ function canGetARItemPromise(eventItemId){
   });
 };
 
-function loadEventItem(){
-  return new Promise((resolve, reject) => {
-    const { user } = store.getState();
-    const rs = user.actor.loadEventItem();
-    resolve(rs);
-  });
-};
 
+async function loadEventItem(){
+  const { user } = store.getState();
+  const func = async () => await user.actor.loadEventItem();
+  const result = (await func()).ok;
+  return result;
+};
 
 function useHpPotion(characterId){
   return new Promise((resolve, reject) => {
@@ -151,7 +143,6 @@ function useHpPotion(characterId){
     resolve(rs);
   });
 };
-
 
 export {
   loadQuestItems,
@@ -168,7 +159,6 @@ export {
   characterCollectsMaterials,
   createCharacterCollectsMaterials,
   listCharacterCollectsMaterials,
-  canGetARItem,
   canGetARItemPromise,
   loadEventItem,
   useHpPotion

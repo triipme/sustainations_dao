@@ -5,7 +5,8 @@ import history from "@history";
 
 import { 
   loadCharacter,
-  getCharacterStatus
+  getCharacterStatus,
+  canGetARItemPromise
 } from '../../GameApi';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
@@ -31,6 +32,7 @@ export default class jungle_scene7 extends BaseScene {
 
   preload() {
     this.addLoadingScreen();
+    this.eventItemId = "ui1";
     this.load.rexAwait(function(successCallback, failureCallback) {
       loadCharacter().then( (result) => {
         this.characterData = result.ok[1];
@@ -38,13 +40,21 @@ export default class jungle_scene7 extends BaseScene {
         successCallback();
       });
     }, this);
+
     this.load.rexAwait(function(successCallback, failureCallback) {
       getCharacterStatus().then( (result) => {
         this.characterStatus = result.ok;
         successCallback();
       });
     }, this);
-    
+
+    this.load.rexAwait(function(successCallback, failureCallback) {
+      canGetARItemPromise(this.eventItemId).then( (result) => {
+        this.canGetARItem = result.ok;
+        successCallback();
+      });
+    }, this);
+
     //Preload
     this.clearSceneCache();
     this.isInteracting = false;
@@ -211,7 +221,9 @@ export default class jungle_scene7 extends BaseScene {
         this.triggerContinue();
         this.sfx_char_footstep.play();
         this.clickSound.play();
-        history.push("/metaverse/ar");
+        if(this.canGetARItem == true) {
+          history.push("/metaverse/ar");
+        };
       });
     };
   }

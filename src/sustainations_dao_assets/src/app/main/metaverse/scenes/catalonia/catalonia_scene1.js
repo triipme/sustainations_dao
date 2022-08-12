@@ -8,9 +8,8 @@ import {
   getCharacterStatus,
   characterTakeOption,
   listCharacterSelectsItems,
-  canGetARItem,
-  canGetARItemPromise,
-  loadEventItem
+  loadEventItem,
+  useHpPotion
 } from '../../GameApi';
 import { func } from 'prop-types';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
@@ -24,6 +23,8 @@ const btnBlank = 'metaverse/scenes/selection.png';
 
 const BtnExit = 'metaverse/scenes/UI_exit.png'
 const UI_Utility = 'metaverse/scenes/UI-utility.png'
+const UI_Utility_Sprite = 'metaverse/scenes/UI_Utility_Sprite.png'
+const item_potion = 'metaverse/selectItems/item_medicine.png'
 
 export default class catalonia_scene1 extends BaseScene {
   constructor() {
@@ -66,20 +67,6 @@ export default class catalonia_scene1 extends BaseScene {
       });
     }, this);
 
-    this.load.rexAwait(function(successCallback, failureCallback) {
-      canGetARItemPromise(this.eventItemId).then( (result) => {
-        this.canGetARItem = result.ok;
-        successCallback();
-      });
-    }, this);
-
-    this.load.rexAwait(function(successCallback, failureCallback) {
-      loadEventItem().then( (result) => {
-        this.eventItem = result.ok;
-        successCallback();
-      });
-    }, this);
-  
     //Preload
     this.clearSceneCache();
     this.isInteracting = false;
@@ -98,7 +85,8 @@ export default class catalonia_scene1 extends BaseScene {
 
     //UI -- One time load
     this.load.image("BtnExit", BtnExit);
-    this.load.image("UI_Utility", UI_Utility);
+    this.load.spritesheet('UI_Utility_Sprite', UI_Utility_Sprite, { frameWidth: 192, frameHeight: 192});
+    this.load.image("item_potion", item_potion);
   }
   
   //defined function
@@ -196,8 +184,6 @@ export default class catalonia_scene1 extends BaseScene {
     this.morale = this.makeBar(325+235*3, 65, 100, 15, 0x63dafb).setScrollFactor(0);
     // this.setValue(this.hp, 50)
     
-    //UI2
-    this.add.image(55, 555, "UI_Utility").setOrigin(0).setScrollFactor(0);
     this.add.image(1190, 50, "BtnExit").setOrigin(0).setScrollFactor(0).setScale(0.7)
     .setInteractive()
       .on('pointerdown', () => {
@@ -222,9 +208,34 @@ export default class catalonia_scene1 extends BaseScene {
     this.selectAction.setScrollFactor(0);
     this.selectAction.setVisible(false);
 
-    console.log("preload", this.canGetARItem);
-    console.log("create",await canGetARItem("ui1"));
-    console.log(this.eventItem);
+    // load event item
+    this.eventItem = await loadEventItem();
+    //UI
+    this.isHadPotion = false;
+    console.log("EVENT ITEM",this.eventItem);
+    if(this.eventItem != undefined) {
+      this.isHadPotion = true;
+    };
+    console.log("HAD POTION ", this.isHadPotion);
+    this.isUsedPotion = false;
+    this.itemSlot = [];
+    if (this.isHadPotion){
+      this.itemSlot[0] = this.add.image(55, 550, "UI_Utility_Sprite")
+        .setOrigin(0).setScrollFactor(0).setScale(0.5).setFrame(1);
+      this.potion = this.add.image(55, 550, "item_potion")
+        .setOrigin(0).setInteractive().setScrollFactor(0);
+      this.potion.on('pointerdown', () => {
+        this.clickSound.play();
+        this.itemSlot[0].setFrame(0);
+        this.potion.setVisible(false);
+        this.isUsedPotion = true;
+        console.log("Used potion => ",useHpPotion(this.characterData.id));
+      });
+    } else {
+      this.itemSlot[0] = this.add.image(55, 550, "UI_Utility_Sprite").setOrigin(0).setScrollFactor(0).setScale(0.5);
+    }
+    this.itemSlot[1] =this.add.image(125, 505, "UI_Utility_Sprite").setOrigin(0).setScrollFactor(0).setScale(0.5);
+    this.itemSlot[2] =this.add.image(195, 550, "UI_Utility_Sprite").setOrigin(0).setScrollFactor(0).setScale(0.5);
 
     // load selected items ids
     this.selectedItemsIds = await listCharacterSelectsItems(this.characterData.id);
@@ -287,7 +298,7 @@ export default class catalonia_scene1 extends BaseScene {
     if (this.player.x > gameConfig.scale.width*4) {
       this.pregameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start("catalonia_scene2_1");
+      this.scene.start("catalonia_scene2_1", {isUsedPotion: this.isUsedPotion});
     }
 
     if (this.player.x > gameConfig.scale.width*4 - 700 && this.isInteracted == false) {

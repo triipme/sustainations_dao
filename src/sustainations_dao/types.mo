@@ -192,6 +192,11 @@ module {
     itemId : Text;
   };
 
+  public type ARItem = {
+    userId : Principal;
+    itemId : Text;
+  };
+
   //--------------------- Event ---------------------//
   public type Event = {
     id : Text;
