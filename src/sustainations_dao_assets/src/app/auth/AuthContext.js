@@ -5,11 +5,11 @@ import _ from '@lodash';
 import FuseSplashScreen from '@fuse/core/FuseSplashScreen';
 import { showMessage } from 'app/store/fuse/messageSlice';
 import { logoutUser, setUser } from 'app/store/userSlice';
+import { getS3Object } from '../hooks';
 import DfinityAgentService from './services/dfinityAgentService';
 
 import { AuthClient } from '@dfinity/auth-client';
 import { canisterId, createActor } from '../../../../declarations/sustainations_dao';
-import settingsConfig from 'app/configs/settingsConfig';
 
 const AuthContext = React.createContext();
 
@@ -31,23 +31,38 @@ function AuthProvider({ children }) {
           }
         });
         const principal = identity.getPrincipal().toText();
-        let balance, depositAddress, isAdmin;
         const result = await actor.getUserInfo();
-        if ('ok' in result) {
-          balance = parseInt(result.ok.balance);
-          depositAddress = result.ok.depositAddress;
-          isAdmin = result.ok.isAdmin;
+        let brandRole = [];
+        const brandRoles = _.keys(result?.ok?.brandRole[0]);
+        if (_.includes(brandRoles, 'owner')) {
+          brandRole = ['brandOwner'];
         }
+        if (_.includes(brandRoles, 'staff')) {
+          brandRole = ['brandStaff'];
+        }
+        const profile = result?.ok?.profile[0];
+        let avatar = '';
+        if (profile?.avatar[0]) {
+          async function getFile(path) {
+            if (path) {
+              const file = await getS3Object(path);
+              return file;
+            }
+          };
+          avatar = await getFile(profile?.avatar[0]);
+        }
+        const profileRole = _.isEmpty(profile?.role) ? ['user'] : _.keys(profile?.role);
         const userState = {
-          role: result.ok.agreement
-            ? [...settingsConfig.defaultAuth, isAdmin ? 'admin' : null]
-            : ['needAgreement'],
+          role: result?.ok?.agreement ? _.union(profileRole, brandRole) : ['needAgreement'],
           actor,
-          depositAddress,
-          balance,
-          principal
+          depositAddress: result?.ok?.depositAddress,
+          balance: result?.ok?.balance,
+          principal,
+          brandId: result?.ok?.brandId[0],
+          profile,
+          avatar
         };
-        console.log('userState', userState, result);
+
         dispatch(setUser(userState));
         setWaitAuthCheck(false);
       } else {

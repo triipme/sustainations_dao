@@ -24,7 +24,7 @@ class FuseAuthorization extends Component {
     }
   }
 
-  shouldComponentUpdate(nextProps, nextState) {
+  shouldComponentUpdate(_nextProps, nextState) {
     return nextState.accessGranted !== this.state.accessGranted;
   }
 

@@ -1,5 +1,6 @@
 import { replace } from 'lodash';
 import numeral from 'numeral';
+import moment from "moment";
 import NumberFormat from 'react-number-format';
 
 export function fCurrency(number) {
@@ -20,6 +21,10 @@ export function fShortenNumber(number) {
 
 export function fData(number) {
   return numeral(number).format('0.0 b');
+}
+
+export function fDate(number, format) {
+  return moment.unix(parseInt(number / BigInt(1e9))).format(format)
 }
 
 export function fICP(amount) {

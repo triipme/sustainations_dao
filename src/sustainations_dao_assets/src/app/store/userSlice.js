@@ -43,6 +43,9 @@ const initialState = {
   depositAddress: '',
   principal: '',
   balance: 0,
+  brandId: null,
+  profile: {},
+  avatar: '',
 };
 
 const userSlice = createSlice({

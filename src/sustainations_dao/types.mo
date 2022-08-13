@@ -3,6 +3,7 @@ import Time "mo:base/Time";
 import Nat "mo:base/Nat";
 import Nat64 "mo:base/Nat64";
 import List "mo:base/List";
+import RS "models/RefillStation";
 
 import MemoryCardEngineModel "models/MemoryCardEngine";
 
@@ -15,6 +16,7 @@ module {
   public type Profile = {
     username : ?Text;
     avatar : ?Text;
+    phone : ?Text;
     role : Role;
   };
   // User Agreement
@@ -74,6 +76,7 @@ module {
     #executeApprovedProposal;
     #awardUserAgreement;
     #rewardTop;
+    #collectTreasuryContribution;
   };
   public type TxRecord = {
     uuid : Text;
@@ -285,6 +288,9 @@ module {
     #ProposalIsNotOpened;
     #AlreadyVoted;
     #AdminRoleRequired;
+    #OwnerRoleRequired;
+    #StationNotFound;
+    #InvalidData;
   };
 
   public let proposalCategories = [
@@ -314,6 +320,17 @@ module {
   public let proposalFundingTypes = [
     "100% Funded", "Partially Funded"
   ];
+
+  // Refill Stations
+  public type Currency = RS.Currency;
+  public type RefillBrand = RS.Brand;
+  public type RBManager = RS.Manager;
+  public type RBStation = RS.Station;
+  public type RBCategory = RS.Category;
+  public type RBTag = RS.Tag;
+  public type RBProductUnit = RS.ProductUnit;
+  public type RBProduct = RS.Product;
+  public type RBOrder = RS.Order;
 
   // Memory Card Engine
   public type MemoryCardEngineGame = MemoryCardEngineModel.Game;

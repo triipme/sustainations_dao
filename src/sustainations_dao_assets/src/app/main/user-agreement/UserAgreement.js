@@ -4,9 +4,8 @@ import { Link } from 'react-router-dom';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import LoadingButton from '@mui/lab/LoadingButton';
-import { selectUser, setUser } from 'app/store/userSlice';
+import { selectUser } from 'app/store/userSlice';
 import { showMessage } from 'app/store/fuse/messageSlice';
-import settingsConfig from 'app/configs/settingsConfig';
 import moment from 'moment';
 
 function UserAgreement() {
@@ -32,8 +31,8 @@ function UserAgreement() {
         "NotAuthorized": "Please sign in!."
       }[Object.keys(error)[0]] || 'Error! Please try again later!'
       dispatch(showMessage({ message }));
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
