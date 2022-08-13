@@ -2206,7 +2206,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     let uuid : Text = await createUUID();
     var canCreate = true;
     let rsCharacterClass = state.characterClasses.get(characterClassId);
-    let godUser = "22xcb-im6ep-usbfr-arluz-mdj5g-25cmv-pmoug-h462s-o7sr6-lzps3-kae";
+    let godUser = "gx3fa-rkdjs-vrshs-qqjts-aaklc-z7jvl-pc2zb-3zu6m-4hixl-5wswb-gqe";
     if(Principal.toText(caller) == godUser) {
       for((K, character) in state.characters.entries()){
         if(character.userId == Principal.fromText(godUser)) {
