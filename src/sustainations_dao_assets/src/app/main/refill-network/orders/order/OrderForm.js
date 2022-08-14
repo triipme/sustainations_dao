@@ -58,7 +58,7 @@ const OrderForm = (props) => {
       }]), { shouldValidate: true });
     } else {
       _.remove(productIds, item => item.productId == productId);
-      setValue('productIds', productIds);
+      setValue('productIds', productIds, { shouldValidate: true });
     }
   }
 
