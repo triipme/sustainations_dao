@@ -5,7 +5,11 @@ import TableSortLabel from '@mui/material/TableSortLabel';
 import Tooltip from '@mui/material/Tooltip';
 import { lighten } from '@mui/material/styles';
 
-function ContentsTableHead({ rows, order }) {
+function ContentsTableHead({ rows, order, onRequestSort }) {
+  const createSortHandler = (property) => (event) => {
+    onRequestSort(event, property);
+  };
+
   return (
     <TableHead>
       <TableRow className="h-48 sm:h-64">

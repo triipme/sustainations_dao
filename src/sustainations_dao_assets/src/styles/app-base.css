@@ -285,3 +285,9 @@ input:-webkit-autofill:active
 .bg-opacity-100 {
   --tw-bg-opacity: 1;
 }
+.clear-both {
+  clear: both;
+}
+.border-error {
+  border: 1px solid #f44336;
+}

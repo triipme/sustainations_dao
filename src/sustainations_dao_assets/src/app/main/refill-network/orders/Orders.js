@@ -26,9 +26,9 @@ const Orders = () => {
         const station = _.find(sRes.ok, item => item[0] == order[1].stationId);
         return {
           orderId: order[0],
-          stationName: station?.name,
+          stationName: station[1]?.name,
           totalAmount: order[1].totalAmount,
-          status: order[1].history[0].status,
+          status: _.capitalize(_.keys(order[1].history[0].status)[0]),
           timestamp: order[1].history[0].timestamp
         }
       });

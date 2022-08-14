@@ -75,6 +75,7 @@ module {
     stationId : Text;
     products : [OrderProduct];
     totalAmount : Float;
+    note : ?Text;
     history : [OrderStatusHistory];
   };
 
@@ -82,16 +83,16 @@ module {
     productId : Text;
     price : Float;
     currency : Text; // currency code
-    quantity : Nat;
+    quantity : Float;
   };
 
   public type OrderStatus = {
-    #canceled : Text;
+    #canceled;
     #new;
     #pending;
     #delivering;
     #delivered;
-    #rejected : Text;
+    #rejected;
   };
 
   public type OrderStatusHistory = {
