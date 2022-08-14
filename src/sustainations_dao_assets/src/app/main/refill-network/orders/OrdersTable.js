@@ -71,6 +71,12 @@ function OrdersTable(props) {
     id: null,
   });
 
+  const formatter = new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND',
+    minimumFractionDigits: 2,
+  });
+
   function handleChangePage(_event, value) {
     setPage(value);
   }
@@ -82,17 +88,15 @@ function OrdersTable(props) {
   function handleRequestSort(_event, property) {
     const id = property;
     let direction = 'desc';
-
     if (order.id === property && order.direction === 'desc') {
       direction = 'asc';
     }
-
     setOrder({
       direction,
       id,
     });
   }
-
+console.log(data);
   if (data.length === 0) {
     return (
       <motion.div
@@ -152,7 +156,7 @@ function OrdersTable(props) {
                       scope="row"
                       padding="none"
                     >
-                      {index + 1}
+                      {page * rowsPerPage + index + 1}
                     </TableCell>
 
                     <TableCell className="p-4 md:p-16" component="th" scope="row">
@@ -160,7 +164,7 @@ function OrdersTable(props) {
                     </TableCell>
 
                     <TableCell className="p-4 md:p-16" component="th" scope="row" align="right">
-                      {item[1].totalAmount}
+                      {formatter.format(item.totalAmount)}
                     </TableCell>
 
                     <TableCell className="p-4 md:p-16" component="th" scope="row">
@@ -168,7 +172,7 @@ function OrdersTable(props) {
                     </TableCell>
 
                     <TableCell className="p-4 md:p-16" component="th" scope="row">
-                      {fDate(item.date, 'lll')}
+                      {fDate(item.timestamp, 'lll')}
                     </TableCell>
 
                     <TableCell className="p-4 md:p-16" component="th" scope="row" align="right">

@@ -66,7 +66,7 @@ function RefillBrandsTable(props) {
                       scope="row"
                       padding="none"
                     >
-                      {index + 1}
+                      {page * rowsPerPage + index + 1}
                     </TableCell>
 
                     <TableCell className="p-4 md:p-16" component="th" scope="row">

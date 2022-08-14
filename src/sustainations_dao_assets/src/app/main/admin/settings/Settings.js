@@ -20,7 +20,7 @@ import { showMessage } from 'app/store/fuse/messageSlice';
  */
 const schema = yup.object().shape({
   treasuryContribution: yup.number().typeError('You must enter a treasury contribution')
-    .moreThan(0, 'You must enter a positive treasury contribution'),
+    .min(0, 'You must enter a non-negative treasury contribution'),
 });
 
 const Settings = () => {

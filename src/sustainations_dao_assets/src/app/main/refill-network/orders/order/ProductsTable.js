@@ -1,10 +1,10 @@
 import FuseScrollbars from '@fuse/core/FuseScrollbars';
 import _ from '@lodash';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
 import {
-  Chip,
+  Checkbox,
+  Table,
+  TableBody,
+  TableCell,
   TablePagination,
   TableRow,
   Typography
@@ -13,8 +13,7 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 
 import withRouter from '@fuse/core/withRouter';
-import ContentsTableHead from '../../../shared-components/ContentsTableHead';
-import StationsTableHead from './StationsTableHead';
+import ContentsTableHead from '../../../../shared-components/ContentsTableHead';
 
 const rows = [
   {
@@ -24,39 +23,35 @@ const rows = [
     label: '#',
   },
   {
+    id: 'image',
+    align: 'left',
+    disablePadding: false,
+    label: '',
+  },
+  {
     id: 'name',
     align: 'left',
     disablePadding: false,
     label: 'Name',
   },
   {
-    id: 'phone',
+    id: 'categories',
     align: 'left',
     disablePadding: false,
-    label: 'Phone',
+    label: 'Category',
   },
   {
-    id: 'address',
+    id: 'price',
     align: 'left',
     disablePadding: false,
-    label: 'Address',
-  },
-  {
-    id: 'status',
-    align: 'right',
-    disablePadding: false,
-    label: 'Status',
+    label: 'Price',
   }
 ];
 
-function StationsTable(props) {
-  const { stations } = props;
+function ProductsTable(props) {
+  const { data, onSelectProduct, selectedProductIds, error } = props;
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-
-  function handleClick(stationId) {
-    props.navigate(`/refill-network/stations/${stationId}/edit`);
-  }
 
   function handleChangePage(_event, value) {
     setPage(value);
@@ -66,7 +61,7 @@ function StationsTable(props) {
     setRowsPerPage(event.target.value);
   }
 
-  if (stations.length === 0) {
+  if (data.length === 0) {
     return (
       <motion.div
         initial={{ opacity: 0 }}
@@ -74,53 +69,64 @@ function StationsTable(props) {
         className="flex flex-1 items-center justify-center h-full"
       >
         <Typography color="text.secondary" variant="h5">
-          There are no stations!
+          No data found!
         </Typography>
       </motion.div>
     );
   }
 
   return (
-    <div className="w-full flex flex-col min-h-full">
+    <div className={`w-full flex flex-col min-h-full ${error && 'border-error rounded-2xl'}`}>
       <FuseScrollbars className="grow overflow-x-auto">
         <Table stickyHeader className="min-w-xl" aria-labelledby="tableTitle">
-        <ContentsTableHead rows={rows} />
-
+          <ContentsTableHead rows={rows} />
           <TableBody>
-            {stations.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((station, index) => {
+            {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+              .map((item) => {
+                const isSelected = _.findIndex(selectedProductIds, {'productId': item.id}) !== -1;
                 return (
                   <TableRow
                     className="h-72 cursor-pointer"
                     hover
-                    key={station[0]}
-                    onClick={() => handleClick(station[0])}
+                    role="checkbox"
+                    aria-checked={isSelected}
+                    tabIndex={-1}
+                    selected={isSelected}
+                    onClick={(_event) => onSelectProduct(item.id)}
+                    key={item.id}
                   >
+                    <TableCell className="w-40 md:w-64 text-center" padding="none">
+                      <Checkbox
+                        checked={isSelected}
+                        onClick={(event) => event.stopPropagation()}
+                        onChange={(_event) => onSelectProduct(item.id)}
+                      />
+                    </TableCell>
+
                     <TableCell
-                      className="w-40 md:w-64 text-center"
+                      className="w-64 px-4 md:px-0"
                       component="th"
                       scope="row"
-                      padding="none"
-                    >
-                      {page * rowsPerPage + index + 1}
+                      padding="none">
+                      {item?.image && (
+                        <img
+                          className="w-full block rounded"
+                          src={item?.image}
+                          alt={item.name}
+                        />
+                      )}
                     </TableCell>
 
                     <TableCell className="p-4 md:p-16" component="th" scope="row">
-                      {station[1].name}
+                      {item.name}
                     </TableCell>
 
                     <TableCell className="p-4 md:p-16" component="th" scope="row">
-                      {station[1].phone}
+                      {item?.categories?.join(', ')}
                     </TableCell>
 
                     <TableCell className="p-4 md:p-16" component="th" scope="row">
-                      {station[1].address}
-                    </TableCell>
-
-                    <TableCell className="p-4 md:p-16" component="th" scope="row" align="right">
-                      {station[1].activate ? (
-                        <Chip label="Active" color="primary" />
-                      ) : (<Chip label="Inactive" color="warning" />)}
+                      {item.price}
                     </TableCell>
                   </TableRow>
                 );
@@ -132,7 +138,7 @@ function StationsTable(props) {
       <TablePagination
         className="shrink-0 border-t-1"
         component="div"
-        count={stations.length}
+        count={data.length}
         rowsPerPage={rowsPerPage}
         page={page}
         backIconButtonProps={{
@@ -148,4 +154,4 @@ function StationsTable(props) {
   );
 }
 
-export default withRouter(StationsTable);
+export default withRouter(ProductsTable);

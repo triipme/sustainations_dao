@@ -113,7 +113,7 @@ function ProductsTable(props) {
                   <TableRow
                     className="h-72"
                     hover
-                    key={item[0]}
+                    key={item.id}
                   >
                     <TableCell
                       className="w-40 md:w-64 text-center"
@@ -121,7 +121,7 @@ function ProductsTable(props) {
                       scope="row"
                       padding="none"
                     >
-                      {index + 1}
+                      {page * rowsPerPage + index + 1}
                     </TableCell>
 
                     <TableCell
@@ -129,38 +129,38 @@ function ProductsTable(props) {
                       component="th"
                       scope="row"
                       padding="none">
-                      {item[1]?.image && (
+                      {item?.image && (
                         <img
                           className="w-full block rounded"
-                          src={item[1]?.image}
-                          alt={item[1].name}
+                          src={item?.image}
+                          alt={item.name}
                         />
                       )}
                     </TableCell>
 
                     <TableCell className="p-4 md:p-16" component="th" scope="row">
-                      {item[1].name}
+                      {item.name}
                     </TableCell>
 
                     <TableCell className="p-4 md:p-16" component="th" scope="row">
-                      {item[1]?.categories?.join(', ')}
+                      {item?.categories?.join(', ')}
                     </TableCell>
 
                     <TableCell className="p-4 md:p-16" component="th" scope="row">
-                      {item[1].price}
+                      {item.price}
                     </TableCell>
 
                     <TableCell className="p-4 md:p-16" component="th" scope="row" align="right">
                       <IconButton
                         aria-label="edit" color="primary"
-                        to={_.replace(editPathLink, ':itemId', item[0])}
+                        to={_.replace(editPathLink, ':itemId', item.id)}
                         component={Link}
                       >
                         <EditIcon />
                       </IconButton>
                       <IconButton
                         aria-label="delete" color="warning"
-                        onClick={() => confirmDeleteItem(item[0])}
+                        onClick={() => confirmDeleteItem(item.id)}
                       >
                         <DeleteIcon />
                       </IconButton>
