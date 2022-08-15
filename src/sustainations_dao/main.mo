@@ -2963,17 +2963,17 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
-    var canTakeOption : Bool = false;
     for((K,eventOption) in state.eventOptions.entries()) {
+      var canTakeOption : Bool = false;
       if(eventOption.eventId == eventId){
-        if(eventOption.requireItemId == "null"){
+        if(eventOption.requireItemId == "null") {
           canTakeOption := true;
         } else {
           for(itemId in selectedItemIds.vals()){
             if(itemId == "null"){
               canTakeOption := false;
             };
-            if (itemId == eventOption.requireItemId) {
+            if(itemId == eventOption.requireItemId) {
               canTakeOption := true;
             };
           };
