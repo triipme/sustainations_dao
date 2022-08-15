@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { useState, useLayoutEffect } from "react";
+import { useState, useEffect, useLayoutEffect } from "react";
 import { useSelector, useDispatch } from 'react-redux';
 import { useAsyncMemo } from "use-async-memo";
 import { selectUser } from 'app/store/userSlice';
@@ -8,7 +8,7 @@ import { showMessage } from "app/store/fuse/messageSlice";
 import FuseLoading from '@fuse/core/FuseLoading';
 import useThemeMediaQuery from '@fuse/hooks/useThemeMediaQuery';
 import FusePageCarded from '@fuse/core/FusePageCarded';
-import ContentsHeader from '../../../shared-components/ContentsHeader';
+import ProductsHeader from './ProductsHeader';
 import ProductsTable from './ProductsTable';
 
 const Products = () => {
@@ -19,6 +19,8 @@ const Products = () => {
   const [modalLoading, setModalLoading] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [filteredData, setFilteredData] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('all');
 
   const products = useAsyncMemo(async () => {
     setLoading(true);
@@ -32,35 +34,50 @@ const Products = () => {
     }
     const result = await Promise.all(res.ok.map(async product => {
       const image = await loadImage(product[1].images[0][0]);
-      return [
-        product[0],
-        {
-          image,
-          name: product[1].name,
-          categories: product[1].categories,
-          price: product[1].price,
-          currency: product[1].currency
-        }
-      ]
+      return  {
+        id: product[0],
+        image,
+        name: product[1].name,
+        categories: product[1].categories,
+        price: product[1].price,
+        currency: product[1].currency
+      }
     }));
     setLoading(false);
     return result;
   }, [user]);
 
   useLayoutEffect(() => {
+    async function loadCatregories() {
+      setLoading(true);
+      const result = await user.actor.listRBCategories(user.brandId);
+      setCategories(result.ok.map(cat => cat[1].name));
+      setLoading(false);
+    }
+    loadCatregories();
+  }, [user]);
+
+  useEffect(() => {
     function getFilteredArray() {
-      if (searchText.length === 0) {
+      if (searchText.length === 0 && selectedCategory === 'all') {
         return products;
       }
       return _.filter(products, (item) => {
-        return item[1].name.toLowerCase().includes(searchText.toLowerCase());
+        if (selectedCategory !== 'all' && !_.includes(item.categories, selectedCategory)) {
+          return false;
+        }
+        return item.name.toLowerCase().includes(searchText.toLowerCase());
       });
     }
 
     if (products) {
       setFilteredData(getFilteredArray());
     }
-  }, [products, searchText]);
+  }, [products, searchText, selectedCategory]);
+
+  function handleSelectedCategory(event) {
+    setSelectedCategory(event.target.value);
+  }
 
   function handleSearchText(event) {
     setSearchText(event.target.value);
@@ -72,7 +89,7 @@ const Products = () => {
       const result = await user.actor.deleteRBProduct(selectedId);
       if ("ok" in result) {
         dispatch(showMessage({ message: 'Success!' }));
-        _.remove(products, item => item[0] == selectedId);
+        _.remove(products, item => item.id == selectedId);
       } else {
         throw result?.err;
       }
@@ -95,8 +112,9 @@ const Products = () => {
   return (
     <FusePageCarded
       header={
-        <ContentsHeader
-          handleSearchText={handleSearchText}
+        <ProductsHeader
+          handleSearchText={handleSearchText} categories={categories}
+          selectedCategory={selectedCategory} handleSelectedCategory={handleSelectedCategory}
           searchPlaceholder="Search products" title="Products"
           addLink="/refill-network/products/new" addLinkText="Create Product"
         />

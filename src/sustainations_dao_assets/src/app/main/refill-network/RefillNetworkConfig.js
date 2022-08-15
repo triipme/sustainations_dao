@@ -23,6 +23,9 @@ const EditProductUnit = lazy(() => import("./product-units/product-unit/EditProd
 const Products = lazy(() => import("./products/Products"));
 const Product = lazy(() => import("./products/product/Product"));
 const Orders = lazy(() => import("./orders/Orders"));
+const Order = lazy(() => import("./orders/order/Order"));
+const NewOrder = lazy(() => import("./orders/order/NewOrder"));
+const EditOrder = lazy(() => import("./orders/order/EditOrder"));
 
 const RefillNetworkConfig = {
   settings: {
@@ -157,6 +160,18 @@ const RefillNetworkConfig = {
             {
               index: true,
               element: <Orders />
+            },
+            {
+              path: "new",
+              element: <NewOrder />
+            },
+            {
+              path: ":orderId",
+              element: <Order />
+            },
+            {
+              path: ":orderId/edit",
+              element: <EditOrder />
             }
           ]
         }

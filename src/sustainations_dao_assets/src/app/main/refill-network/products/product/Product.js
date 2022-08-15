@@ -220,8 +220,8 @@ function Product() {
         "Notfound": "Product is not found."
       }[Object.keys(error)[0]] || 'Error! Please try again later!'
       dispatch(showMessage({ message }));
+      setSubmitLoading(false);
     }
-    setSubmitLoading(false);
   };
 
   /**
