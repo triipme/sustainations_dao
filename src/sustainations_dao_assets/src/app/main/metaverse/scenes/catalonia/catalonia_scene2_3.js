@@ -118,6 +118,7 @@ export default class catalonia_scene2_3 extends BaseScene {
           this.characterTakeOptions[i].currentHP += 3;
           if(this.characterTakeOptions[i].currentHP > this.characterTakeOptions[i].maxHp) {
             this.characterTakeOptions[i].currentHP = this.characterTakeOptions[i].maxHp;
+            console.log("CURRENTTTTT HPPPPPPP", this.characterTakeOptions[i].currentHP);
           }
         }
       }
@@ -266,13 +267,6 @@ export default class catalonia_scene2_3 extends BaseScene {
     this.setValue(this.mana, this.characterData.currentMana/this.characterData.maxMana*100);
     this.setValue(this.morale, this.characterData.currentMorale/this.characterData.maxMorale*100);
 
-    
-      for(const i in this.characterTakeOptions) {
-        if(this.characterTakeOptions[i].currentHP > this.characterTakeOptions[i].maxHp) {
-          this.characterTakeOptions[i].currentHP = this.characterTakeOptions[i].maxHp;
-        }
-      }
-
     this.options = [];
     for (const idx in this.eventOptions){
       // can take option or not
@@ -294,16 +288,13 @@ export default class catalonia_scene2_3 extends BaseScene {
       } else {
         this.options[idx].setFrame(2);
       }
-      console.log("BEFORE CURRENT HP",this.characterTakeOptions[idx].currentHP)
-
+  
       this.options[idx].on('pointerdown', () => {
         if(takeable){
           this.triggerContinue();
           this.clickSound.play();
           this.sfx_char_footstep.play();
           // stats after choose option
-
-          console.log("AFTER CURRENT HP",this.characterTakeOptions[idx].currentHP)
           this.setValue(this.hp, this.characterTakeOptions[idx].currentHP/this.characterTakeOptions[idx].maxHP*100);
           this.setValue(this.stamina, this.characterTakeOptions[idx].currentStamina/this.characterTakeOptions[idx].maxStamina*100);
           this.setValue(this.mana, this.characterTakeOptions[idx].currentMana/this.characterTakeOptions[idx].maxMana*100);

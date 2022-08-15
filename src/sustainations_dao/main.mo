@@ -37,6 +37,7 @@ import GearClass "./game/gearClass";
 import GearRarity "./game/gearRarity";
 import GearSubstat "./game/gearSubstat";
 import Material "./game/material";
+import Inventory "./game/inventory";
 
 shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   stable var transferFee : Nat64 = 10_000;
@@ -2461,17 +2462,29 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     #ok("Success");
   };
 
-  public shared query({caller}) func listCharacterCollectsMaterials(characterId : Text) : async Response<[Types.CharacterCollectsMaterials]> {
+  public shared({caller}) func resetCharacterCollectsMaterials(characterId : Text) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    for ((K,characterCollectMaterial) in state.characterCollectsMaterials.entries()) {
+      if (characterCollectMaterial.characterId == characterId) {
+        let updated = state.characterCollectsMaterials.remove(characterCollectMaterial.id);
+      };   
+    };
+    #ok("Success");
+  };
+
+  public shared query({caller}) func listCharacterCollectsMaterials(characterId : Text) : async Response<[(Types.CharacterCollectsMaterials)]> {
     var list : [Types.CharacterCollectsMaterials] = [];
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
-    for((_, characterCollectMaterial) in state.characterCollectsMaterials.entries()) {
-      if(characterCollectMaterial.characterId == characterId){
+    for((key , characterCollectMaterial) in state.characterCollectsMaterials.entries()) {
+      if (characterCollectMaterial.characterId == characterId) {
         list := Array.append<Types.CharacterCollectsMaterials>(list, [characterCollectMaterial]);
-      }
+      };
     };
-    #ok((list));
+    #ok(list);
   };
 
   // Quest
@@ -3316,4 +3329,37 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   };
 
   // Inventory
+  public shared({caller}) func createInventory(characterId : Text) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    for ((K,characterCollectMaterial) in state.characterCollectsMaterials.entries()) {
+      if (characterCollectMaterial.amount != 0 and characterCollectMaterial.characterId == characterId) {
+        let newInventory = await Inventory.storeMaterials(characterCollectMaterial,state);
+        let rsInventory = state.inventories.get(newInventory.id);
+        switch (rsInventory) {
+          case (?V) { 
+            let updated = Inventory.update(newInventory,state);
+          };
+          case null {
+            let created = Inventory.create(newInventory,state);
+          };
+        };
+      };
+    };
+    #ok("Success");
+  };
+
+  public shared query({caller}) func listInventories(characterId : Text) : async Response<[Types.Inventory]> {
+    var list : [Types.Inventory] = [];
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    for((_, inventory) in state.inventories.entries()) {
+      if(inventory.characterId == characterId){
+        list := Array.append<Types.Inventory>(list, [inventory]);
+      };
+    };
+    #ok((list));
+  };
 };

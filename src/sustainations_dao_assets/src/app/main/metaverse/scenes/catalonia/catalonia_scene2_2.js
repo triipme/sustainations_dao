@@ -9,7 +9,8 @@ import {
   characterTakeOption,
   listCharacterSelectsItems,
   loadEventItem,
-  useHpPotion,useHpPotionAwait
+  useHpPotion,
+  characterCollectsMaterials
 } from '../../GameApi';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
@@ -28,9 +29,6 @@ export default class catalonia_scene2_2 extends BaseScene {
   init(data) {
     this.isHealedPreviously = data.isUsedPotion;
     console.log('healed', this.isHealedPreviously);
-    // if isHealedPre {
-    //    takeOption.currentHp + 3;
-    // }
   }
   
   clearSceneCache() {
@@ -63,6 +61,13 @@ export default class catalonia_scene2_2 extends BaseScene {
     this.load.rexAwait(function(successCallback, failureCallback) {
       getCharacterStatus().then( (result) => {
         this.characterStatus = result.ok;
+        successCallback();
+      });
+    }, this);
+
+    this.load.rexAwait(function(successCallback, failureCallback) {
+      characterCollectsMaterials(this.eventId).then( (result) => {
+        this.characterCollectMaterials = result;
         successCallback();
       });
     }, this);
@@ -291,8 +296,6 @@ export default class catalonia_scene2_2 extends BaseScene {
         this.options[idx].setFrame(2);
       }
 
-      
-
       this.options[idx].on('pointerdown', () => {
         if (takeable){
           this.triggerContinue();
@@ -308,12 +311,6 @@ export default class catalonia_scene2_2 extends BaseScene {
           this.setValue(this.morale, this.characterTakeOptions[idx].currentMorale/this.characterTakeOptions[idx].maxMorale*100);
           // update character after choose option
           updateCharacterStats(this.characterTakeOptions[idx]); 
-
-          // console.log("is Healed Previously",this.isUsedPotion);
-          // if(this.isUsedPotion) {
-          //   console.log("USED HP POTION");
-          //   console.log(useHpPotion(this.characterTakeOptions[idx].id));
-          // };
         }
       });
     };

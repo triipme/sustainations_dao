@@ -98,6 +98,7 @@ module {
     id : Text;
     name : Text;
     level : Int;
+    temporaryExp : Int;
     currentExp : Int;
     levelUpExp : Int;
     status : Text;
@@ -115,7 +116,7 @@ module {
     maxMorale : Float;
     classId : Text;
     gearIds : ?[Text];
-    materialIds : ?[Text];
+    inventorySize : Int;
   };
 
   public type CharacterClass = {
@@ -273,8 +274,9 @@ module {
   //--------------------- Inventory ---------------------//
   public type Inventory = {
     id : Text;
-    name : Text;
-    size : Int;
+    characterId : Text;
+    materialId : Text;
+    amount : Int;
   };
 
   // Error codes

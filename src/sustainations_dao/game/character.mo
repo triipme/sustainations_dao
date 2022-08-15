@@ -14,6 +14,7 @@ module Character {
       name = "Default Character";
       level = 1;
       currentExp = 0;
+      temporaryExp = 0;
       levelUpExp = 100;
       status = "Survive";
       strength = characterClass.baseStrength;
@@ -30,7 +31,7 @@ module Character {
       maxMorale = characterClass.baseMorale;
       classId = characterClass.id;
       gearIds : ?[Text] = Option.get(null, ?[]);
-      materialIds : ?[Text] = Option.get(null, ?[]);
+      inventorySize = 10;
     };
     return newCharacter;
   };
@@ -42,6 +43,7 @@ module Character {
       name = "God Character";
       level = 1;
       currentExp = 0;
+      temporaryExp = 0;
       levelUpExp = 100;
       status = "Survive";
       strength = 999;
@@ -58,7 +60,7 @@ module Character {
       maxMorale = 999;
       classId = characterClass.id;
       gearIds : ?[Text] = Option.get(null, ?[]);
-      materialIds : ?[Text] = Option.get(null, ?[]);
+      inventorySize = 10;
     };
     return newCharacter;
   };
@@ -99,10 +101,10 @@ module Character {
       id = character.id;
       name = character.name;
       level = character.level;
-      currentExp = character.currentExp + eventOption.gainExp;
+      temporaryExp = character.temporaryExp + eventOption.gainExp;
+      currentExp = character.currentExp;
       levelUpExp = character.levelUpExp;
       status = character.status;
-      // status = isExhaust(character.status, updatedHP, updatedStamina, updatedMorale);
       strength = updateCurrentStat(character.strength, strengthRequire, 0, character.strength);
       intelligence = character.intelligence;
       vitality = character.vitality;
@@ -117,7 +119,7 @@ module Character {
       maxMorale = character.maxMorale;
       classId = character.classId;
       gearIds = character.gearIds;
-      materialIds = character.materialIds;
+      inventorySize = character.inventorySize;
     };
     return newCharacter;
   };
@@ -137,6 +139,7 @@ module Character {
       name = character.name;
       level = character.level;
       currentExp = character.currentExp;
+      temporaryExp = character.temporaryExp;
       levelUpExp = character.levelUpExp;
       status = isExhaust(character.status, character.currentHP, character.currentStamina, character.currentMorale);
       strength = character.strength;
@@ -153,8 +156,37 @@ module Character {
       maxMorale = character.maxMorale;
       classId = character.classId;
       gearIds = character.gearIds;
-      materialIds = character.materialIds;
+      inventorySize = character.inventorySize;
     };
     let updatedCharacter = state.characters.replace(character.id, newCharacter);
+  };
+
+  public func gainCharacterExp(character : Types.Character, state : State.State) {
+    var newCharacter : Types.Character = {
+      userId = character.userId;
+      id = character.id;
+      name = character.name;
+      level = character.level;
+      currentExp = character.currentExp + character.temporaryExp;
+      temporaryExp = 0;
+      levelUpExp = character.levelUpExp;
+      status = character.status;
+      strength = character.strength;
+      intelligence = character.intelligence;
+      vitality = character.vitality;
+      luck = character.luck;
+      currentHP = character.currentHP;
+      maxHP = character.maxHP;
+      currentMana = character.currentMana;
+      maxMana = character.maxMana;
+      currentStamina = character.currentStamina;
+      maxStamina = character.maxStamina;
+      currentMorale = character.currentMorale;
+      maxMorale = character.maxMorale;
+      classId = character.classId;
+      gearIds = character.gearIds;
+      inventorySize = character.inventorySize;
+    };
+    let updateCharacter = state.characters.replace(character.id, newCharacter);
   };
 }

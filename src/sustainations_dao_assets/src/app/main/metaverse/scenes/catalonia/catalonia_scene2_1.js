@@ -9,7 +9,8 @@ import {
   characterTakeOption,
   listCharacterSelectsItems,
   loadEventItem,
-  useHpPotion
+  useHpPotion,
+  characterCollectsMaterials
 } from '../../GameApi';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
@@ -57,6 +58,13 @@ export default class catalonia_scene2_1 extends BaseScene {
     this.load.rexAwait(function(successCallback, failureCallback) {
       getCharacterStatus().then( (result) => {
         this.characterStatus = result.ok;
+        successCallback();
+      });
+    }, this);
+
+    this.load.rexAwait(function(successCallback, failureCallback) {
+      characterCollectsMaterials(this.eventId).then( (result) => {
+        this.characterCollectMaterials = result;
         successCallback();
       });
     }, this);
@@ -111,7 +119,7 @@ export default class catalonia_scene2_1 extends BaseScene {
           this.characterTakeOptions[i].currentHP += 3;
           if(this.characterTakeOptions[i].currentHP > this.characterTakeOptions[i].maxHp) {
             this.characterTakeOptions[i].currentHP = this.characterTakeOptions[i].maxHp;
-            console.log(this.characterTakeOptions[i].currentHP);
+            console.log("CURRENTTTTT HPPPPPPP", this.characterTakeOptions[i].currentHP);
           }
         }
       }
@@ -247,15 +255,7 @@ export default class catalonia_scene2_1 extends BaseScene {
     this.eventOptions = await loadEventOptions(this.eventId, this.selectedItemsIds);
     console.log(this.eventOptions);
     // stats before choose option
-    if(this.isHealedPreviously){
-      var newValue = this.characterData.currentHP+3;
-      if (newValue > this.characterData.maxHP){
-        newValue = this.characterData.maxHP;
-      }
-      this.setValue(this.hp, newValue/this.characterData.maxHP*100);
-    } else{
-      this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
-    }
+    this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
     this.setValue(this.stamina, this.characterData.currentStamina/this.characterData.maxStamina*100);
     this.setValue(this.mana, this.characterData.currentMana/this.characterData.maxMana*100);
     this.setValue(this.morale, this.characterData.currentMorale/this.characterData.maxMorale*100);

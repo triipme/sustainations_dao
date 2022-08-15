@@ -9,7 +9,8 @@ import {
   characterTakeOption,
   listCharacterSelectsItems,
   loadEventItem,
-  useHpPotion
+  useHpPotion,
+  characterCollectsMaterials
 } from '../../GameApi';
 import { func } from 'prop-types';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
@@ -62,6 +63,13 @@ export default class catalonia_scene1 extends BaseScene {
     this.load.rexAwait(function(successCallback, failureCallback) {
       getCharacterStatus().then( (result) => {
         this.characterStatus = result.ok;
+        successCallback();
+      });
+    }, this);
+
+    this.load.rexAwait(function(successCallback, failureCallback) {
+      characterCollectsMaterials(this.eventId).then( (result) => {
+        this.characterCollectMaterials = result;
         successCallback();
       });
     }, this);

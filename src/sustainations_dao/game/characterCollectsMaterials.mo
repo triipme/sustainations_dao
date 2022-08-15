@@ -23,28 +23,23 @@ module CharacterCollectsMaterials {
 
     // check to get the lost/gained material id
     if ( randomPercent > 0 and randomPercent <= eventOption.riskChance ) {
-      if (Text.contains(eventOption.riskLost,#text "/") == true)
-      {
+      if (Text.contains(eventOption.riskLost,#text "/") == true) {
         let materialList = Iter.toArray(Text.split(eventOption.riskLost,#text "/"));
         materialId := await Material.getRandomMaterial(materialList,state);
         amount := -1;
       };
     }
     else if ( randomPercent > eventOption.riskChance and randomPercent <= (eventOption.riskChance + eventOption.luckyChance) ) {
-      if (Text.contains(eventOption.gainByLuck,#text "/") == true)
-      {
+      if (Text.contains(eventOption.gainByLuck,#text "/") == true) {
         materialId := await Material.getRandomMaterial(Iter.toArray(Text.split(eventOption.gainByLuck,#text "/")),state);
         amount := +2;
       };
     };
 
     // check if there is already a same data in database, if yes => update, if no => create 
-    for ((K,characterCollectMaterial) in state.characterCollectsMaterials.entries())
-    {
-      if (characterCollectMaterial.characterId == characterId and characterCollectMaterial.materialId == materialId)
-      {
-        //amount := Int.max(0,characterCollectMaterial.amount + amount);
-        amount := Int.max(0,characterCollectMaterial.amount + amount);
+    for ((K,characterCollectMaterial) in state.characterCollectsMaterials.entries()) {
+      if (characterCollectMaterial.characterId == characterId and characterCollectMaterial.materialId == materialId) {
+        amount := characterCollectMaterial.amount + amount;
         let updatedcharacterCollectsMaterials : Types.CharacterCollectsMaterials = {
           id = characterCollectMaterial.id;
           characterId = characterId;
@@ -55,7 +50,6 @@ module CharacterCollectsMaterials {
       };
     };
 
-    amount := Int.max(0,amount);
     let createdcharacterCollectsMaterials : Types.CharacterCollectsMaterials = {
       id = uuid;
       characterId = characterId;
@@ -73,4 +67,6 @@ module CharacterCollectsMaterials {
   public func update(characterCollectMaterial : Types.CharacterCollectsMaterials, state : State.State) {
     let updatedCharacterTakesOption = state.characterCollectsMaterials.replace(characterCollectMaterial.id, characterCollectMaterial);
   };
+
+
 }
