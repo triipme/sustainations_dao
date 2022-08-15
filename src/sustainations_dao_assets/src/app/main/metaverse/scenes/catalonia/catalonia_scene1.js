@@ -43,7 +43,6 @@ export default class catalonia_scene1 extends BaseScene {
   preload() {
     this.addLoadingScreen();
     this.eventId = "e7";
-    this.eventItemId = "ui1";
     // load character
     this.load.rexAwait(function(successCallback, failureCallback) {
       loadCharacter().then( (result) => {

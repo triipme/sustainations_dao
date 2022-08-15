@@ -111,6 +111,7 @@ export default class catalonia_scene2_1 extends BaseScene {
           this.characterTakeOptions[i].currentHP += 3;
           if(this.characterTakeOptions[i].currentHP > this.characterTakeOptions[i].maxHp) {
             this.characterTakeOptions[i].currentHP = this.characterTakeOptions[i].maxHp;
+            console.log(this.characterTakeOptions[i].currentHP);
           }
         }
       }
