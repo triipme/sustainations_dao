@@ -9,7 +9,8 @@ import {
   canGetARItemPromise,
   gainCharacterExp,
   resetCharacterCollectsMaterials,
-  listInventories
+  listInventories,
+  createInventory
 } from '../../GameApi';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
@@ -230,6 +231,7 @@ export default class jungle_scene7 extends BaseScene {
         };
       });
     };
+    createInventory(this.characterData.id);
     gainCharacterExp(this.characterData);
     this.inventory = await listInventories(this.characterData.id);
     resetCharacterCollectsMaterials(this.characterData.id);

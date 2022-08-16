@@ -9,7 +9,9 @@ import {
   characterTakeOption,
   listCharacterSelectsItems,
   loadEventItem,
-  useHpPotion
+  useHpPotion,
+  characterCollectsMaterials,
+  createCharacterCollectsMaterials
 } from '../../GameApi';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
@@ -68,6 +70,13 @@ export default class catalonia_scene2_3 extends BaseScene {
       });
     }, this);
 
+    this.load.rexAwait(function(successCallback, failureCallback) {
+      characterCollectsMaterials(this.eventId).then( (result) => {
+        this.characterCollectMaterials = result;
+        successCallback();
+      });
+    }, this);
+
     //Preload
     this.clearSceneCache();
     this.isInteracting = false;
@@ -116,10 +125,10 @@ export default class catalonia_scene2_3 extends BaseScene {
       if(this.isHealedPreviously) {
         for(const i in this.characterTakeOptions) {
           this.characterTakeOptions[i].currentHP += 3;
-          if(this.characterTakeOptions[i].currentHP > this.characterTakeOptions[i].maxHp) {
-            this.characterTakeOptions[i].currentHP = this.characterTakeOptions[i].maxHp;
-            console.log("CURRENTTTTT HPPPPPPP", this.characterTakeOptions[i].currentHP);
-          }
+          // if(this.characterTakeOptions[i].currentHP > this.characterTakeOptions[i].maxHp) {
+          //   this.characterTakeOptions[i].currentHP = this.characterTakeOptions[i].maxHp;
+          //   console.log("CURRENTTTTT HPPPPPPP", this.characterTakeOptions[i].currentHP);
+          // }
         }
       }
     }
@@ -301,6 +310,8 @@ export default class catalonia_scene2_3 extends BaseScene {
           this.setValue(this.morale, this.characterTakeOptions[idx].currentMorale/this.characterTakeOptions[idx].maxMorale*100);
           // update character after choose option
           updateCharacterStats(this.characterTakeOptions[idx]);
+          // create charactercollectsmaterials after choose option
+	        createCharacterCollectsMaterials(this.characterCollectMaterials[idx]);
         }
       });
     };

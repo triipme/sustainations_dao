@@ -1,7 +1,6 @@
 import { useRef, useState } from "react";
 import { Box, Button } from "@mui/material";
 import { read, readFile, utils } from "xlsx";
-import { DataGrid } from "@mui/x-data-grid";
 import { LoadingButton } from "@mui/lab";
 import { useSelector } from "react-redux";
 import FuseSvgIcon from "@fuse/core/FuseSvgIcon";
@@ -197,7 +196,7 @@ const Metaverse = () => {
       const usableItems = data[7];
       usableItems.forEach(async usableItem => {
         try {
-          if (!!actor?.createQuestItem) {
+          if (!!actor?.createUsableItem) {
             const rs = await actor.createUsableItem(usableItem);
             console.log("Create Usable Item");
             console.log(rs);
@@ -209,6 +208,23 @@ const Metaverse = () => {
       resolve();
     });
   };
+
+  // const addDataFromExcel = (sheetIndex, apiFunction) => {
+  //   return new Promise(resolve => {
+  //     const items = data[sheetIndex];
+  //     items.forEach(async item => {
+  //       try {
+  //         if (!!apiFunction) {
+  //           const rs = await apiFunction(item);
+  //           console.log("Create", rs);
+  //         }
+  //       } catch (error) {
+  //         console.log(error);
+  //       }
+  //     });
+  //     resolve();
+  //   });
+  // };
 
   const handleSubmit = async () => {
     setLoading(true);

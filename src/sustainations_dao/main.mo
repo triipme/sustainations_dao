@@ -2447,8 +2447,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
-    if (characterCollectMaterial.materialId != "")
-    {
+    if (characterCollectMaterial.materialId != "") {
       let rsCharacterCollectsMaterials = state.characterCollectsMaterials.get(characterCollectMaterial.id);
       switch (rsCharacterCollectsMaterials) {
         case (?V) { 
@@ -3338,7 +3337,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
         let newInventory = await Inventory.storeMaterials(characterCollectMaterial,state);
         let rsInventory = state.inventories.get(newInventory.id);
         switch (rsInventory) {
-          case (?V) { 
+          case (?V) {
             let updated = Inventory.update(newInventory,state);
           };
           case null {

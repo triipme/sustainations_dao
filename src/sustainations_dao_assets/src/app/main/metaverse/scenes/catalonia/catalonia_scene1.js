@@ -10,7 +10,8 @@ import {
   listCharacterSelectsItems,
   loadEventItem,
   useHpPotion,
-  characterCollectsMaterials
+  characterCollectsMaterials,
+  createCharacterCollectsMaterials
 } from '../../GameApi';
 import { func } from 'prop-types';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
@@ -291,6 +292,8 @@ export default class catalonia_scene1 extends BaseScene {
           this.setValue(this.morale, this.characterTakeOptions[idx].currentMorale/this.characterTakeOptions[idx].maxMorale*100);
           // update character after choose option
           updateCharacterStats(this.characterTakeOptions[idx]);
+          // create charactercollectsmaterials after choose option
+	        createCharacterCollectsMaterials(this.characterCollectMaterials[idx]);
         }
       });
     };

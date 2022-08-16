@@ -10,7 +10,8 @@ import {
   listCharacterSelectsItems,
   loadEventItem,
   useHpPotion,
-  characterCollectsMaterials
+  characterCollectsMaterials,
+  createCharacterCollectsMaterials
 } from '../../GameApi';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
@@ -117,10 +118,10 @@ export default class catalonia_scene2_1 extends BaseScene {
       if(this.isHealedPreviously) {
         for(const i in this.characterTakeOptions) {
           this.characterTakeOptions[i].currentHP += 3;
-          if(this.characterTakeOptions[i].currentHP > this.characterTakeOptions[i].maxHp) {
-            this.characterTakeOptions[i].currentHP = this.characterTakeOptions[i].maxHp;
-            console.log("CURRENTTTTT HPPPPPPP", this.characterTakeOptions[i].currentHP);
-          }
+          // if(this.characterTakeOptions[i].currentHP > this.characterTakeOptions[i].maxHp) {
+          //   this.characterTakeOptions[i].currentHP = this.characterTakeOptions[i].maxHp;
+          //   console.log("CURRENTTTTT HPPPPPPP", this.characterTakeOptions[i].currentHP);
+          // }
         }
       }
     }
@@ -253,6 +254,7 @@ export default class catalonia_scene2_1 extends BaseScene {
     console.log(this.selectedItemsIds);
     // load event options
     this.eventOptions = await loadEventOptions(this.eventId, this.selectedItemsIds);
+
     console.log(this.eventOptions);
     // stats before choose option
     this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
@@ -289,15 +291,17 @@ export default class catalonia_scene2_1 extends BaseScene {
           this.clickSound.play();
           this.sfx_char_footstep.play();
           // stats after choose option
-          if(this.characterTakeOptions[idx].currentHP > this.characterTakeOptions[idx].maxHp) {
-            this.characterTakeOptions[idx].currentHP = this.characterTakeOptions[idx].maxHp;
-          }
+          // if(this.characterTakeOptions[idx].currentHP > this.characterTakeOptions[idx].maxHp) {
+          //   this.characterTakeOptions[idx].currentHP = this.characterTakeOptions[idx].maxHp;
+          // }
           this.setValue(this.hp, this.characterTakeOptions[idx].currentHP/this.characterTakeOptions[idx].maxHP*100);
           this.setValue(this.stamina, this.characterTakeOptions[idx].currentStamina/this.characterTakeOptions[idx].maxStamina*100);
           this.setValue(this.mana, this.characterTakeOptions[idx].currentMana/this.characterTakeOptions[idx].maxMana*100);
           this.setValue(this.morale, this.characterTakeOptions[idx].currentMorale/this.characterTakeOptions[idx].maxMorale*100);
           // update character after choose option
           updateCharacterStats(this.characterTakeOptions[idx]);
+          // create charactercollectsmaterials after choose option
+	        createCharacterCollectsMaterials(this.characterCollectMaterials[idx]);
         }
       });
     };

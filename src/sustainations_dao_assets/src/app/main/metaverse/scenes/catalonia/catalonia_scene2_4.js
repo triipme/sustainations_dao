@@ -9,7 +9,9 @@ import {
   characterTakeOption,
   listCharacterSelectsItems,
   loadEventItem,
-  useHpPotion
+  useHpPotion,
+  characterCollectsMaterials,
+  createCharacterCollectsMaterials
 } from '../../GameApi';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
@@ -64,6 +66,13 @@ export default class catalonia_scene2_4 extends BaseScene {
       });
     }, this);
 
+    this.load.rexAwait(function(successCallback, failureCallback) {
+      characterCollectsMaterials(this.eventId).then( (result) => {
+        this.characterCollectMaterials = result;
+        successCallback();
+      });
+    }, this);
+
     //Preload
     this.clearSceneCache();
     this.isInteracting = false;
@@ -112,9 +121,9 @@ export default class catalonia_scene2_4 extends BaseScene {
       if(this.isHealedPreviously) {
         for(const i in this.characterTakeOptions) {
           this.characterTakeOptions[i].currentHP += 3;
-          if(this.characterTakeOptions[i].currentHP > this.characterTakeOptions[i].maxHp) {
-            this.characterTakeOptions[i].currentHP = this.characterTakeOptions[i].maxHp;
-          }
+          // if(this.characterTakeOptions[i].currentHP > this.characterTakeOptions[i].maxHp) {
+          //   this.characterTakeOptions[i].currentHP = this.characterTakeOptions[i].maxHp;
+          // }
         }
       }
     }
@@ -261,12 +270,7 @@ export default class catalonia_scene2_4 extends BaseScene {
     this.setValue(this.stamina, this.characterData.currentStamina/this.characterData.maxStamina*100);
     this.setValue(this.mana, this.characterData.currentMana/this.characterData.maxMana*100);
     this.setValue(this.morale, this.characterData.currentMorale/this.characterData.maxMorale*100);
-    for(const idx in this.eventOptions) {
-      if(this.characterTakeOptions[idx].currentHP > this.characterTakeOptions[idx].maxHp) {
-        console.log("GGGGGG")
-        this.characterTakeOptions[idx].currentHP = this.characterTakeOptions[idx].maxHp;
-      }
-    }
+    
     this.options = [];
     for (const idx in this.eventOptions){
       // can take option or not
@@ -289,23 +293,20 @@ export default class catalonia_scene2_4 extends BaseScene {
         this.options[idx].setFrame(2);
       }
 
-      
-
       this.options[idx].on('pointerdown', () => {
         if (takeable) {
           this.triggerContinue();
           this.clickSound.play();
           this.sfx_char_footstep.play();
           // stats after choose option
-          if(this.characterTakeOptions[idx].currentHP > this.characterTakeOptions[idx].maxHp) {
-            this.characterTakeOptions[idx].currentHP = this.characterTakeOptions[idx].maxHp;
-          }
           this.setValue(this.hp, this.characterTakeOptions[idx].currentHP/this.characterTakeOptions[idx].maxHP*100);
           this.setValue(this.stamina, this.characterTakeOptions[idx].currentStamina/this.characterTakeOptions[idx].maxStamina*100);
           this.setValue(this.mana, this.characterTakeOptions[idx].currentMana/this.characterTakeOptions[idx].maxMana*100);
           this.setValue(this.morale, this.characterTakeOptions[idx].currentMorale/this.characterTakeOptions[idx].maxMorale*100);
           // update character after choose option
           updateCharacterStats(this.characterTakeOptions[idx]);
+          // create charactercollectsmaterials after choose option
+	        createCharacterCollectsMaterials(this.characterCollectMaterials[idx]);
         }
       });
     };

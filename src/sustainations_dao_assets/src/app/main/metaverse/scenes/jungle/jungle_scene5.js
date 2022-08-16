@@ -9,7 +9,8 @@ import {
   getCharacterStatus,
   characterTakeOption,
   listCharacterSelectsItems,
-  takeOptionAbility
+  characterCollectsMaterials,
+  createCharacterCollectsMaterials
 } from '../../GameApi';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
@@ -55,6 +56,13 @@ export default class jungle_scene5 extends BaseScene {
     this.load.rexAwait(function(successCallback, failureCallback) {
       getCharacterStatus().then( (result) => {
         this.characterStatus = result.ok;
+        successCallback();
+      });
+    }, this);
+
+    this.load.rexAwait(function(successCallback, failureCallback) {
+      characterCollectsMaterials(this.eventId).then( (result) => {
+        this.characterCollectMaterials = result;
         successCallback();
       });
     }, this);
@@ -249,6 +257,8 @@ export default class jungle_scene5 extends BaseScene {
           this.setValue(this.morale, this.characterTakeOptions[idx].currentMorale/this.characterTakeOptions[idx].maxMorale*100);
           // update character after choose option
           updateCharacterStats(this.characterTakeOptions[idx]);
+          // create charactercollectsmaterials after choose option
+	        createCharacterCollectsMaterials(this.characterCollectMaterials[idx]);
         }
       });
     };
