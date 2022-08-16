@@ -187,75 +187,9 @@ export default class catalonia_scene7 extends BaseScene {
     this.bg_3.setOrigin(0, 0);
     this.bg_3.setScrollFactor(0);
 
-    //UI
-    this.add.image(20, 30, "UI_NameCard").setOrigin(0).setScrollFactor(0);
-    this.add.image(255, 30, "UI_HP").setOrigin(0).setScrollFactor(0);
-    this.add.image(490, 30, "UI_Mana").setOrigin(0).setScrollFactor(0);
-    this.add.image(725, 30, "UI_Stamina").setOrigin(0).setScrollFactor(0);
-    this.add.image(960, 30, "UI_Morale").setOrigin(0).setScrollFactor(0);
-    
-    //set value
-    this.hp = this.makeBar(325, 65, 100, 15, 0x74e044).setScrollFactor(0);
-    this.mana = this.makeBar(325+235, 65, 100, 15, 0xc038f6).setScrollFactor(0);
-    this.stamina = this.makeBar(325+235*2, 65, 100, 15, 0xcf315f).setScrollFactor(0);
-    this.morale = this.makeBar(325+235*3, 65, 100, 15, 0x63dafb).setScrollFactor(0);
-    // this.setValue(this.hp, 50)
-    
-    this.add.image(1190, 50, "BtnExit").setOrigin(0).setScrollFactor(0).setScale(0.7)
-    .setInteractive()
-      .on('pointerdown', () => {
-        this.clickSound.play();
-        this.ingameSound.stop();
-        this.sfx_char_footstep.stop();
-        this.ambientSound.stop();
-        this.scene.start('menuScene');
-      });
-
-    //mycam
-    this.myCam = this.cameras.main;
-    this.myCam.setBounds(0, 0, gameConfig.scale.width*4, gameConfig.scale.height); //furthest distance the cam is allowed to move
-    this.myCam.startFollow(this.player);
-
-    //pause screen
-    this.veil = this.add.graphics({x: 0, y: 0});
-    this.veil.fillStyle('0x000000', 0.2);
-    this.veil.fillRect(0,0, gameConfig.scale.width, gameConfig.scale.height);
-    this.selectAction = this.add.image(0, 0, 'selectAction').setOrigin(0,0);
-
-    this.veil.setScrollFactor(0);
-    this.veil.setVisible(false);
-    this.selectAction.setScrollFactor(0);
-    this.selectAction.setVisible(false);
-
-    // load event item
-    this.eventItem = await loadEventItem();
-    //UI2
-    this.isHadPotion = false;
-    console.log("EVENT ITEM",this.eventItem);
-    if(this.eventItem != undefined) {
-      this.isHadPotion = true;
-    };
-    console.log("HAD POTION ", this.isHadPotion);
-    this.isUsedPotion = false;
-    this.itemSlot = [];
-    if (this.isHadPotion){
-      this.itemSlot[0] = this.add.image(55, 550, "UI_Utility_Sprite")
-        .setOrigin(0).setScrollFactor(0).setScale(0.5).setFrame(1);
-      this.potion = this.add.image(68, 563, "item_potion")
-        .setOrigin(0).setInteractive().setScrollFactor(0).setScale(0.5);
-      this.potion.on('pointerdown', () => {
-        this.clickSound.play();
-        this.itemSlot[0].setFrame(0);
-        this.potion.setVisible(false);
-        this.isUsedPotion = true;
-        // delete hp potion
-        console.log("Used potion => ",useHpPotion(this.characterData.id));
-      });
-    } else {
-      this.itemSlot[0] = this.add.image(55, 550, "UI_Utility_Sprite").setOrigin(0).setScrollFactor(0).setScale(0.5);
-    }
-    this.itemSlot[1] =this.add.image(125, 505, "UI_Utility_Sprite").setOrigin(0).setScrollFactor(0).setScale(0.5);
-    this.itemSlot[2] =this.add.image(195, 550, "UI_Utility_Sprite").setOrigin(0).setScrollFactor(0).setScale(0.5);
+    this.createUIElements();
+    this.defineCamera(gameConfig.scale.width*4, gameConfig.scale.height);
+    this.createPauseScreen();
 
    // load selected items ids
    this.selectedItemsIds = await listCharacterSelectsItems(this.characterData.id);
