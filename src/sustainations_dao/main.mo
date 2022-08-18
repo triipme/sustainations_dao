@@ -2214,23 +2214,6 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared({caller}) func resetCharacterStat() : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
-    };
-    // let uuid : Text = await createUUID();
-    for((K,character) in state.characters.entries()){
-      if(character.userId == caller){
-        for((K,characterClass) in state.characterClasses.entries()){
-          if(character.classId == characterClass.id){
-            Character.resetStat(caller, character.id, characterClass, state);
-          };
-        };
-      };
-    };
-    #ok("Success");
-  };
-
   public shared query({caller}) func getCharacterStatus() : async Response<Text>{
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
@@ -2280,7 +2263,52 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
     #ok((list));
   };
-  
+
+  public shared({caller}) func updateCharacter(character : Types.Character) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsCharacter = state.characters.get(character.id);
+    switch (rsCharacter) {
+      case (null) { #err(#NotFound); };
+      case (?V) {
+        Character.update(character, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared({caller}) func deleteCharacter(id : Text) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsCharacter = state.characters.get(id);
+    switch (rsCharacter) {
+      case (null) { #err(#NotFound); };
+      case (?V) {
+        let deletedCharacter = state.characters.delete(id);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared({caller}) func resetCharacterStat() : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    // let uuid : Text = await createUUID();
+    for((K,character) in state.characters.entries()){
+      if(character.userId == caller){
+        for((K,characterClass) in state.characterClasses.entries()){
+          if(character.classId == characterClass.id){
+            Character.resetStat(caller, character.id, characterClass, state);
+          };
+        };
+      };
+    };
+    #ok("Success");
+  };
+
   public shared({caller}) func takeOption(eventId : Text) : async Response<[Types.Character]> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
@@ -2304,7 +2332,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     #ok(result);
   };
 
-  public shared({caller}) func updateCharacter(character : Types.Character) : async Response<Text> {
+  public shared({caller}) func gainCharacterExp(character : Types.Character) : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
@@ -2312,7 +2340,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     switch (rsCharacter) {
       case (null) { #err(#NotFound); };
       case (?V) {
-        Character.update(character, state);
+        Character.gainCharacterExp(character, state);
         #ok("Success");
       };
     };
@@ -2342,16 +2370,15 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared({caller}) func deleteCharacter(id : Text) : async Response<Text> {
+  public shared query({caller}) func getRemainingTime(waitingTime : Int, character : Types.Character) : async Response<Int> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
-    let rsCharacter = state.characters.get(id);
+    let rsCharacter = state.characters.get(character.id);
     switch (rsCharacter) {
       case (null) { #err(#NotFound); };
       case (?V) {
-        let deletedCharacter = state.characters.delete(id);
-        #ok("Success");
+        return #ok(Character.getRemainingTime(waitingTime, character));
       };
     };
   };

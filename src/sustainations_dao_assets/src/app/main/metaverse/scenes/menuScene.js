@@ -39,8 +39,7 @@ class menuScene extends BaseScene {
 
   preload() {
     this.addLoadingScreen();
-
-
+    
     //load audio 1 time
     this.load.audio('hoverSound', hoverSound);
     this.load.audio('clickSound', clickSound);

@@ -5,7 +5,9 @@ import {
   loadQuestItems, 
   loadCharacter,
   characterSelectsItems,
-  loadItemUrl
+  loadItemUrl,
+  resetCharacter,
+  loadCharacterAwait
 } from '../GameApi';
 import { throws } from 'assert';
 
@@ -48,9 +50,8 @@ class selectItemScene extends BaseScene {
     this.itemNames = [];
     this.itemStrength = [];
     this.load.rexAwait(function(successCallback, failureCallback) {
-      loadCharacter().then( (result) => {
-        this.characterData = result.ok[1];
-        console.log(this.characterData);
+      resetCharacter().then( (result) => {
+        this.resetedCharacter = result;
         successCallback();
       });
     }, this);
@@ -83,10 +84,12 @@ class selectItemScene extends BaseScene {
     this.load.spritesheet("btnClear", btnClear, { frameWidth: 339, frameHeight: 141 });
     this.load.spritesheet("btnGo", btnGo, { frameWidth: 339, frameHeight: 141 });
   }
-
+  
   //async 
   async create(data) {
     // load character strength
+    this.characterData = await loadCharacterAwait();
+    console.log("Character: ",this.characterData);
     this.characterStrength = this.characterData.strength;
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
@@ -116,6 +119,7 @@ class selectItemScene extends BaseScene {
     this.stamina =  this.makeBar(107, 210+75, 100, 15, 0xcf315f);
     this.mana = this.makeBar(107, 210+150, 100, 15, 0xc038f6);
     this.morale = this.makeBar(107, 210+225, 100, 15, 0x63dafb);
+
 
     this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
     this.setValue(this.stamina, this.characterData.currentStamina/this.characterData.maxStamina*100);

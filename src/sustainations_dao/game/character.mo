@@ -32,14 +32,15 @@ module Character {
       classId = characterClass.id;
       gearIds : ?[Text] = Option.get(null, ?[]);
       inventorySize = 10;
+      exhaustedTime = 0;
     };
     return newCharacter;
   };
 
-  public func godMode(caller : Principal, id : Text, characterClass : Types.CharacterClass) : Types.Character{
+  public func godMode(caller : Principal, characterId : Text, characterClassId : Text) : Types.Character{
     let newCharacter : Types.Character = {
       userId = caller;
-      id = id;
+      id = characterId;
       name = "God Character";
       level = 1;
       currentExp = 0;
@@ -58,43 +59,46 @@ module Character {
       maxStamina = 999;
       currentMorale = 999;
       maxMorale = 999;
-      classId = characterClass.id;
+      classId = characterClassId;
       gearIds : ?[Text] = Option.get(null, ?[]);
       inventorySize = 10;
+      exhaustedTime = 0;
     };
     return newCharacter;
   };
   public func create(caller : Principal, id : Text, characterClass : Types.CharacterClass, state : State.State) {
     if(Principal.toText(caller) == "gx3fa-rkdjs-vrshs-qqjts-aaklc-z7jvl-pc2zb-3zu6m-4hixl-5wswb-gqe") {
-      state.characters.put(id, godMode(caller, id, characterClass));
+      state.characters.put(id, godMode(caller, id, characterClass.id));
     } else { state.characters.put(id, init(caller, id, characterClass)); };
   };
 
   public func resetStat(caller : Principal, id : Text, characterClass : Types.CharacterClass, state : State.State) {
     if(Principal.toText(caller) == "gx3fa-rkdjs-vrshs-qqjts-aaklc-z7jvl-pc2zb-3zu6m-4hixl-5wswb-gqe") {
-      let godModeUpdated = state.characters.replace(id, godMode(caller, id, characterClass));
+      let godModeUpdated = state.characters.replace(id, godMode(caller, id, characterClass.id));
     } else { let updated = state.characters.replace(id, init(caller, id, characterClass)); };
   };
 
-  public func updateCurrentStat(currentStat : Float, lossStat : Float, gainStat : Float, maxStat : Float) : Float {
-    let result = currentStat - lossStat + gainStat;
-      if(result <= 0)
-        return 0;
-      if(result >= maxStat)
-        return maxStat;
-      return result;
+  public func limitStat(currentStat : Float, maxStat : Float) : Float {
+    if(currentStat <= 0) { return 0; };
+    if(currentStat > maxStat) 
+      { maxStat } 
+    else { currentStat };
+  };
+
+  public func updateCurrentStat(currentStat : Float, lossStat : Float, gainStat : Float, maxStat : Float) : async Float {
+    var lossRandomStat = lossStat;
+    if(lossStat != 0) {
+      lossRandomStat := await RandomMethod.randomNumber(lossStat - 1, lossStat + 1);
+    } else { lossRandomStat := 0 };
+    let result = currentStat - lossRandomStat + gainStat;
+    return limitStat(result, maxStat);
   };
 
   public func takeOption(character : Types.Character, strengthRequire : Float, eventOption : Types.EventOption, state : State.State) : async Types.Character {
-    let lossHP : Float = if(eventOption.lossHP != 0) {await RandomMethod.randomNumber(eventOption.lossHP - 1, eventOption.lossHP + 1)} else {0};
-    let lossMana : Float = if(eventOption.lossMana != 0) {await RandomMethod.randomNumber(eventOption.lossMana - 1, eventOption.lossMana + 1)} else {0};
-    let lossMorale : Float = if(eventOption.lossMorale != 0) {await RandomMethod.randomNumber(eventOption.lossMorale - 1, eventOption.lossMorale + 1)} else {0};
-    let lossStamina : Float = if(eventOption.lossStamina != 0) {await RandomMethod.randomNumber(eventOption.lossStamina - 1, eventOption.lossStamina + 1)} else {0};
-
-    let updatedHP = updateCurrentStat(character.currentHP, lossHP, eventOption.gainHP, character.maxHP);
-    let updatedMana = updateCurrentStat(character.currentMana, lossMana, eventOption.gainMana, character.maxMana);
-    let updatedStamina = updateCurrentStat(character.currentStamina, lossStamina, eventOption.gainStamina, character.maxStamina);
-    let updatedMorale = updateCurrentStat(character.currentMorale, lossMorale, eventOption.gainMorale, character.maxMorale);
+    let updatedHP = await updateCurrentStat(character.currentHP, eventOption.lossHP, eventOption.gainHP, character.maxHP);
+    let updatedMana = await updateCurrentStat(character.currentMana, eventOption.lossMana, eventOption.gainMana, character.maxMana);
+    let updatedStamina = await updateCurrentStat(character.currentStamina, eventOption.lossStamina, eventOption.gainStamina, character.maxStamina);
+    let updatedMorale = await updateCurrentStat(character.currentMorale, eventOption.lossMorale, eventOption.gainMorale, character.maxMorale);
 
     let newCharacter : Types.Character = {
       userId = character.userId;
@@ -105,7 +109,7 @@ module Character {
       currentExp = character.currentExp;
       levelUpExp = character.levelUpExp;
       status = character.status;
-      strength = updateCurrentStat(character.strength, strengthRequire, 0, character.strength);
+      strength = await updateCurrentStat(character.strength, strengthRequire, 0, character.strength);
       intelligence = character.intelligence;
       vitality = character.vitality;
       luck = character.luck;
@@ -120,16 +124,26 @@ module Character {
       classId = character.classId;
       gearIds = character.gearIds;
       inventorySize = character.inventorySize;
+      exhaustedTime = character.exhaustedTime;
     };
     return newCharacter;
   };
 
-  public func isExhaust(status : Text ,hp : Float, stamina : Float, morale : Float) : Text {
+  public func isExhaust(status : Text, hp : Float, stamina : Float, morale : Float) : Text {
     var result = status;
     if(hp == 0 or stamina == 0 or morale == 0){
       result := "Exhausted";
     };
     return result; 
+  };
+
+  public func getRemainingTime(waitingTime : Int, character : Types.Character) : Int {
+    let currentTime = Time.now()/1000000000;
+    if (currentTime - character.exhaustedTime >= waitingTime ){
+      return 0;
+    } else {
+      return waitingTime - (currentTime - character.exhaustedTime);
+    };
   };
 
   public func update(character : Types.Character, state : State.State) {
@@ -146,17 +160,19 @@ module Character {
       intelligence = character.intelligence;
       vitality = character.vitality;
       luck = character.luck;
-      currentHP = if(character.currentHP > character.maxHP) { character.maxHP } else { character.currentHP };
+      currentHP = limitStat(character.currentHP, character.maxHP);
       maxHP = character.maxHP;
-      currentMana = if(character.currentMana > character.maxMana) { character.maxMana } else { character.currentMana };
+      currentMana = limitStat(character.currentMana, character.maxMana);
       maxMana = character.maxMana;
-      currentStamina = if(character.currentStamina > character.maxStamina) { character.maxStamina } else { character.currentStamina };
+      currentStamina = limitStat(character.currentStamina, character.maxStamina);
       maxStamina = character.maxStamina;
-      currentMorale = if(character.currentMorale > character.maxMorale) { character.maxMorale } else { character.currentMorale };
+      currentMorale = limitStat(character.currentMorale, character.maxMorale);
       maxMorale = character.maxMorale;
       classId = character.classId;
       gearIds = character.gearIds;
       inventorySize = character.inventorySize;
+      exhaustedTime = if (isExhaust(character.status, character.currentHP, character.currentStamina, character.currentMorale) == "Exhausted") 
+                      { Time.now()/1000000000 } else { character.exhaustedTime };
     };
     let updatedCharacter = state.characters.replace(character.id, newCharacter);
   };
@@ -186,6 +202,7 @@ module Character {
       classId = character.classId;
       gearIds = character.gearIds;
       inventorySize = character.inventorySize;
+      exhaustedTime = character.exhaustedTime;
     };
     let updateCharacter = state.characters.replace(character.id, newCharacter);
   };

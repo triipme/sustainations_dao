@@ -8,6 +8,10 @@ const playagain_text = 'metaverse/playagain.png';
 const ground = 'metaverse/transparent-ground.png';
 const exhaustedSprite = 'metaverse/character_sprite_exhausted.png';
 
+import { 
+  loadCharacter,
+  getRemainingTime
+} from '../GameApi';
 
 class exhausted extends BaseScene {
   constructor() {
@@ -25,6 +29,14 @@ class exhausted extends BaseScene {
   }
 
   preload() {
+    this.load.rexAwait(function(successCallback, failureCallback) {
+      loadCharacter().then( (result) => {
+        this.characterData = result.ok[1];
+        console.log(this.characterData);
+        successCallback();
+      });
+    }, this);
+
     this.clearSceneCache();
     this.load.image("ground", ground);
     this.load.image('exhausted_text', exhausted_text);
@@ -37,7 +49,7 @@ class exhausted extends BaseScene {
     });
   }
   
-  create() {
+  async create() {
     // platforms
     const platforms = this.physics.add.staticGroup();
     for (let x = -50; x < gameConfig.scale.width; x += 4) {
@@ -79,6 +91,11 @@ class exhausted extends BaseScene {
       this.scene.start('selectMap');
     });
     this.playagain_text = this.add.image(gameConfig.scale.width/2, gameConfig.scale.height/2, 'playagain_text').setScale(0.3);
+    this.waitingTime = 60;
+    this.getRemainingTime = await getRemainingTime(this.waitingTime, this.characterData);
+
+    this.add.text(gameConfig.scale.width/2, 250, this.getRemainingTime, { align: 'center', fontSize: '80px', fontStyle: 'bold' })
+      .setOrigin(0);
   }
 
   update() {

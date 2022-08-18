@@ -19,6 +19,13 @@ function loadCharacter(){
   });
 };
 
+async function loadCharacterAwait(){
+  const { user } = store.getState();
+  const func = async () => await user.actor.readCharacter();
+  const rs = (await func()).ok[1];
+  return rs;
+};
+
 function updateCharacterStats(character){
   const promise = new Promise((resolve, reject) => {
     const { user } = store.getState();
@@ -178,6 +185,13 @@ async function listInventories(characterId){
   return rs;
 };
 
+async function getRemainingTime(waitingTime, character) {
+  const { user } = store.getState();
+  const getRemainingTime = async () => await user.actor.getRemainingTime(waitingTime, character);
+  const rs = (await getRemainingTime()).ok;
+  return rs;
+};
+
 // load image from S3
 function loadItemUrl(key) {
   let AWS = require('aws-sdk');
@@ -195,6 +209,7 @@ function loadItemUrl(key) {
 export {
   loadQuestItems,
   loadCharacter,
+  loadCharacterAwait,
   loadEventOptions,
   updateCharacterStats,
   getCharacterStatus,
@@ -213,5 +228,6 @@ export {
   gainCharacterExp,
   resetCharacterCollectsMaterials,
   createInventory,
-  listInventories
+  listInventories,
+  getRemainingTime
 }

@@ -117,6 +117,7 @@ module {
     classId : Text;
     gearIds : ?[Text];
     inventorySize : Int;
+    exhaustedTime : Int;
   };
 
   public type CharacterClass = {
