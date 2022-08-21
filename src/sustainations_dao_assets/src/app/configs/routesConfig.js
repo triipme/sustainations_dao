@@ -27,7 +27,7 @@ const routeConfigs = [
   AdminConfig,
   ProposalProductsConfig,
   ProfileConfig,
-  RefillNetworkConfig,
+  RefillNetworkConfig
 ];
 
 const routes = [

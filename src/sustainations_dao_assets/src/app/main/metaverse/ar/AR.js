@@ -5,7 +5,7 @@ const AR = () => {
   function handleMessage(e) {
     if (e.data === "model--clicled") {
       console.log(e);
-      history.back();
+      history.push("/metaverse/thanks");
     }
   }
   useEffect(() => {
