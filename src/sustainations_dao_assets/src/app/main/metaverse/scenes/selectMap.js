@@ -1,7 +1,11 @@
 import Phaser from 'phaser';
 import BaseScene from './BaseScene'
 import gameConfig from '../GameConfig';
-import { resetCharacter } from '../GameApi';
+import { 
+  resetCharacter,
+  loadCharacter,
+  getRemainingTime
+} from '../GameApi';
 const bg = 'metaverse/selectMap/background.png';
 const text = 'metaverse/selectMap/call_to_action.png';
 const selectArea = 'metaverse/selectMap/select-area.png';
@@ -24,9 +28,11 @@ class selectMap extends BaseScene {
 
   preload() {
     this.addLoadingScreen();
+
     this.load.rexAwait(function(successCallback, failureCallback) {
-      resetCharacter().then( (result) => {
-        this.resetedCharacter = result;
+      loadCharacter().then( (result) => {
+        this.characterData = result.ok[1];
+        console.log(this.characterData);
         successCallback();
       });
     }, this);
@@ -41,7 +47,7 @@ class selectMap extends BaseScene {
     this.load.image("btnBack", btnBack);
   }
 
-  create() {
+  async create() {
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
@@ -57,6 +63,8 @@ class selectMap extends BaseScene {
       this.clickSound.play();
       this.scene.transition({target: 'menuScene', duration: 0 });
     });
+    this.waitingTime = 60;
+    this.getRemainingTime = await getRemainingTime(this.waitingTime, this.characterData);
 
     this.selectAreaJungle = this.add.sprite(627, 467, 'selectArea')
       .setScale(0.18)
@@ -72,7 +80,11 @@ class selectMap extends BaseScene {
     });
     this.selectAreaJungle.on('pointerdown', () => {
       this.clickSound.play();
-      this.scene.start('selectItemScene', {map: 'jungle'});
+      if (this.getRemainingTime != 0) this.scene.start('exhausted');
+      else {
+        resetCharacter();
+        this.scene.start('selectItemScene', { map: 'jungle' });
+      };
     });
 
     this.selectAreaCatalonia = this.add.sprite(620, 337, 'selectArea')
@@ -89,7 +101,11 @@ class selectMap extends BaseScene {
     });
     this.selectAreaCatalonia.on('pointerdown', () => {
       this.clickSound.play();
-      this.scene.start('selectItemScene', {map: 'catalonia1'});
+      if (this.getRemainingTime != 0) this.scene.start('exhausted');
+      else {
+        resetCharacter();
+        this.scene.start('selectItemScene', { map: 'catalonia1' });
+      };
     });
 
     this.text = this.add.image(65, 425, 'text').setOrigin(0).setScale(0.7);
