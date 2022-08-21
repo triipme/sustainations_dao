@@ -94,8 +94,8 @@ class exhausted extends BaseScene {
     this.waitingTime = 60;
     this.getRemainingTime = await getRemainingTime(this.waitingTime, this.characterData);
 
-    this.add.text(gameConfig.scale.width/2, 250, this.getRemainingTime, { align: 'center', fontSize: '80px', fontStyle: 'bold' })
-      .setOrigin(0);
+    this.add.text(gameConfig.scale.width/2, 260, "Please wait: " + this.getRemainingTime + 's', { align: 'center', fontSize: '25px', fontStyle: 'Italic' })
+      .setOrigin(0.5);
   }
 
   update() {

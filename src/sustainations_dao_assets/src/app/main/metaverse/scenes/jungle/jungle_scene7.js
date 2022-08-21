@@ -12,6 +12,7 @@ import {
   listInventories,
   createInventory
 } from '../../GameApi';
+import {settings} from '../settings';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
 const bg1 = 'metaverse/scenes/jungle/Scene7/PNG/back-01.png';
@@ -167,7 +168,7 @@ export default class jungle_scene7 extends BaseScene {
   update() {
     //new player logic
     if (this.player.body.touching.down && this.isInteracting == false) {
-      this.player.setVelocityX(250);
+      this.player.setVelocityX(settings.movementSpeed);
     }
 
     if (this.player.x > gameConfig.scale.width) {
