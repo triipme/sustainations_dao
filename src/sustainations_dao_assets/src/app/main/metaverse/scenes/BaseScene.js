@@ -103,9 +103,14 @@ class BaseScene extends Phaser.Scene {
     .setInteractive()
       .on('pointerdown', () => {
         this.clickSound.play();
+        try {this.pregameSound.stop();} catch {}
+        try {this.ambientSound.stop();} catch {}
+        try {this.sfx_char_footstep.stop();} catch {}
+        try {this.sfx_small_waterfall.stop();} catch {}
+        try {this.sfx_big_waterfall.stop();} catch {}
+        try {this.ingameSound.stop();} catch {}
+        try {this.sfx_monkey.stop();} catch {}
         this.scene.start('menuScene');
-        this.pregameSound.stop();
-        this.sfx_char_footstep.stop();
     });
     //set value
     this.hp = this.makeBar(325, 65, 100, 15, 0x74e044).setScrollFactor(0);

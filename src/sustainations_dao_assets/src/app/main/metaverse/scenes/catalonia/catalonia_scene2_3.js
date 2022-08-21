@@ -7,6 +7,7 @@ import {
   listCharacterSelectsItems,
   createCharacterCollectsMaterials
 } from '../../GameApi';
+import {settings} from '../settings';
 import { isThisSecond } from 'date-fns';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
@@ -179,7 +180,7 @@ export default class catalonia_scene2_3 extends BaseScene {
   update() {
     //new player logic
     if (this.player.body.touching.down && this.isInteracting == false) {
-      this.player.setVelocityX(200);
+      this.player.setVelocityX(settings.movementSpeed);
     }
 
     if (this.player.x > 2171) {

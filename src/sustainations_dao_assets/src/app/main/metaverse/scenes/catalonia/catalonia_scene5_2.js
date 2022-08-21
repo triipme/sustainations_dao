@@ -7,6 +7,7 @@ import {
   listCharacterSelectsItems,
   createCharacterCollectsMaterials
 } from '../../GameApi';
+import {settings} from '../settings';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
 const bg1 = 'metaverse/scenes/catalonia/Scene5/part2/back.png';
@@ -175,7 +176,7 @@ export default class catalonia_scene5_2 extends BaseScene {
   update() {
     //new player logic
     if (this.player.body.touching.down && this.isInteracting == false) {
-      this.player.setVelocityX(200);
+      this.player.setVelocityX(settings.movementSpeed);
     }
 
     if (this.player.x > 2300) {
