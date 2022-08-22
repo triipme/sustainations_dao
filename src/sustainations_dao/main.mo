@@ -1967,7 +1967,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
         state.memoryCardEngine.players.put(await createUUID(), player);
         var completedCount = 0;
         if (Iter.size(Iter.fromArray(player.history)) == stagesSize) {
-          completedCount = 1;
+          completedCount := 1;
         };
         gamePlayAnalytics := {
           miniGamePlayCount = gamePlayAnalytics.miniGamePlayCount + 1;
