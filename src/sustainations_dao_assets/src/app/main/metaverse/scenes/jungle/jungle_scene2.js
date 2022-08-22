@@ -5,7 +5,8 @@ import {
   loadEventOptions, 
   updateCharacterStats,
   listCharacterSelectsItems,
-  createCharacterCollectsMaterials
+  createCharacterCollectsMaterials,
+  increaseQuestGameTurn
 } from '../../GameApi';
 import {settings} from '../settings';
 import { getTouchRippleUtilityClass } from '@mui/material';
@@ -106,6 +107,7 @@ export default class jungle_scene2 extends BaseScene {
 
     // load selected items ids
     this.selectedItemsIds = await listCharacterSelectsItems(this.characterData.id);
+    this.increaseQuestGameTurn = await increaseQuestGameTurn(this.characterData.id);
     console.log(this.selectedItemsIds);
     // load event options
     this.eventOptions = await loadEventOptions(this.eventId, this.selectedItemsIds);

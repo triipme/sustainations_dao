@@ -92,6 +92,11 @@ module {
   };
 
   // Game
+  public type QuestGameTurn = {
+    userId : Principal;
+    turns : Nat;
+  };
+  
   //--------------------- Character ---------------------//
   public type Character = {
     userId : Principal;

@@ -1,9 +1,17 @@
 import store from 'app/store';
 
 // call api
+// game turns
+async function increaseQuestGameTurn(characterId){
+  const { user } = store.getState();
+  const func = async () => await user.actor.increaseQuestGameTurn(characterId);
+  const rs = (await func()).ok;
+  return rs;
+};
 
 // character
 const characterClassId = "cc1";
+
 async function createDefautCharacter(){
   const { user } = store.getState();
   const create = async () => await user.actor.createCharacter(characterClassId);
@@ -157,6 +165,14 @@ async function loadEventItem(){
   return result;
 };
 
+function getHpPotion(){
+  return new Promise((resolve, reject) => {
+    const { user } = store.getState();
+    const rs = user.actor.getHpPotion();
+    resolve(rs);
+  });
+};
+
 // get AR item
 function canGetARItemPromise(eventItemId){
   return new Promise((resolve, reject) => {
@@ -207,6 +223,7 @@ function loadItemUrl(key) {
 
 
 export {
+  increaseQuestGameTurn,
   loadQuestItems,
   loadCharacter,
   loadCharacterAwait,
@@ -224,6 +241,7 @@ export {
   listCharacterCollectsMaterials,
   canGetARItemPromise,
   loadEventItem,
+  getHpPotion,
   useHpPotion,
   gainCharacterExp,
   resetCharacterCollectsMaterials,

@@ -9,7 +9,8 @@ import {
   getCharacterStatus,
   characterTakeOption,
   listCharacterSelectsItems,
-  characterCollectsMaterials
+  characterCollectsMaterials,
+  getHpPotion
 } from '../GameApi';
 
 class BaseScene extends Phaser.Scene {

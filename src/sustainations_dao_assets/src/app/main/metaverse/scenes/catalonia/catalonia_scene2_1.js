@@ -5,7 +5,8 @@ import {
   loadEventOptions, 
   updateCharacterStats,
   listCharacterSelectsItems,
-  createCharacterCollectsMaterials
+  createCharacterCollectsMaterials,
+  increaseQuestGameTurn
 } from '../../GameApi';
 import {settings} from '../settings';
 import { isThisSecond } from 'date-fns';
@@ -37,7 +38,7 @@ export default class catalonia_scene2_1 extends BaseScene {
   preload() {
     this.addLoadingScreen();
     this.initialLoad("e8");
-    
+
     //Preload
     this.clearSceneCache();
     this.isInteracting = false;
@@ -115,6 +116,7 @@ export default class catalonia_scene2_1 extends BaseScene {
 
     // load selected items ids
     this.selectedItemsIds = await listCharacterSelectsItems(this.characterData.id);
+    this.increaseQuestGameTurn = await increaseQuestGameTurn(this.characterData.id);
     console.log(this.selectedItemsIds);
     // load event options
     this.eventOptions = await loadEventOptions(this.eventId, this.selectedItemsIds);

@@ -69,6 +69,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     players : [(Text, Types.MemoryCardEnginePlayer)] = [];
     rewards : [(Text, Types.MemoryCardEngineReward)] = [];
   };
+  private stable var questGameTurns : [(Text, Types.QuestGameTurn)] = [];
   private stable var characterClasses : [(Text, Types.CharacterClass)] = [];
   private stable var characters : [(Text, Types.Character)] = [];
   private stable var characterTakesOptions : [(Text, Types.CharacterTakesOption)] = [];
@@ -113,6 +114,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
       players = Iter.toArray(state.memoryCardEngine.players.entries());
       rewards = Iter.toArray(state.memoryCardEngine.rewards.entries());
     };
+    questGameTurns := Iter.toArray(state.questGameTurns.entries());
     characterClasses := Iter.toArray(state.characterClasses.entries());
     characters := Iter.toArray(state.characters.entries());
     characterTakesOptions := Iter.toArray(state.characterTakesOptions.entries());
@@ -190,6 +192,9 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
     for ((k, v) in Iter.fromArray(memoryCardEngine.rewards)) {
       state.memoryCardEngine.rewards.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(questGameTurns)) {
+      state.questGameTurns.put(k, v);
     };
     for ((k, v) in Iter.fromArray(characterClasses)) {
       state.characterClasses.put(k, v);
@@ -2110,6 +2115,45 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   };
 
   // Game
+  public shared({caller}) func increaseQuestGameTurn(characterId : Text) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let userId = Principal.toText(caller);
+    switch (state.characters.get(characterId)) {
+      case null { #err(#NotFound); };
+      case (?character) {
+        switch (state.questGameTurns.get(userId)) {
+          case null {
+            state.questGameTurns.put(userId, {
+              userId = caller;
+              turns = 1;
+            });
+            #ok("Turn = 1");
+          };
+          case (?V) {
+            let updated = state.questGameTurns.replace(userId, {
+              userId = caller;
+              turns = V.turns + 1;
+            });
+            #ok("Turn + 1");
+          };
+        };
+      };
+    };
+  };
+
+  public shared query({caller}) func getAllQuestGameTurns() : async Response<Nat>{
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    var rs : Nat = 0;
+    for(V in state.questGameTurns.vals()) {
+      rs := rs + V.turns;
+    };
+    #ok(rs);
+  };
+
   // Character Class
   public shared({caller}) func createCharacterClass(characterClass : Types.CharacterClass) : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
@@ -2170,14 +2214,6 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
         #ok("Success");
       };
     };
-  };
-
-  // Get userId
-  public shared query({caller}) func getUserId() : async Response<Text>{
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
-    };
-    #ok(Principal.toText(caller));
   };
 
   // Character
@@ -2660,6 +2696,24 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
+  public shared query({caller}) func getHpPotion() : async Response<Types.UsableItem>{
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    var rs : [Types.UsableItem] = [];
+    switch (state.eventItems.get(Principal.toText(caller))) {
+      case null { #err(#NotFound); };
+      case (?eventItem) {
+        for((K,V) in state.usableItems.entries()) {
+          if(V.id == eventItem.itemId) {
+            rs := Array.append<Types.UsableItem>(rs, [V]);
+          };
+        };
+        #ok(rs[0]);
+      };
+    };
+  };
+
   // Event Item
   public shared({caller}) func canGetARItem(eventItemId : Text) : async Response<Bool> {
     if(Principal.toText(caller) == "2vxsx-fae") {
@@ -2669,7 +2723,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     // let uuid : Text = await createUUID();
     var canAR : Bool = false;
     let rsARItem = state.arItems.get(userId);
-    switch (state.usableItems.get(eventItemId)){
+    switch (state.usableItems.get(eventItemId)) {
       case null { #err(#NotFound); };
       case (?item) {
         if(isAdmin(caller)) {
