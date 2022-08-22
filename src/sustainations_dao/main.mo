@@ -2128,6 +2128,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
             state.questGameTurns.put(userId, {
               userId = caller;
               turns = 1;
+              clearedTurns = 0;
             });
             #ok("Turn = 1");
           };
@@ -2135,6 +2136,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
             let updated = state.questGameTurns.replace(userId, {
               userId = caller;
               turns = V.turns + 1;
+              clearedTurns = V.clearedTurns;
             });
             #ok("Turn + 1");
           };
@@ -2143,15 +2145,43 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared query({caller}) func getAllQuestGameTurns() : async Response<Nat>{
+  public shared({caller}) func increaseClearedQuestGameTurn(characterId : Text) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let userId = Principal.toText(caller);
+    switch (state.characters.get(characterId)) {
+      case null { #err(#NotFound); };
+      case (?character) {
+        switch (state.questGameTurns.get(userId)) {
+          case null { #err(#NotFound); };
+          case (?V) {
+            let updated = state.questGameTurns.replace(userId, {
+              userId = caller;
+              turns = V.turns;
+              clearedTurns = V.clearedTurns + 1;
+            });
+            #ok("Cleared Turn + 1");
+          };
+        };
+      };
+    };
+  };
+
+  public shared query({caller}) func getAllQuestGameTurns() : async Response<{turns : Nat; clearedTurns : Nat}>{
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
-    var rs : Nat = 0;
+    var turns : Nat = 0;
+    var clearedTurns : Nat = 0;
     for(V in state.questGameTurns.vals()) {
-      rs := rs + V.turns;
+      turns := turns + V.turns;
+      clearedTurns := clearedTurns + V.clearedTurns;
     };
-    #ok(rs);
+    #ok({
+      turns = turns;
+      clearedTurns = clearedTurns;
+    });
   };
 
   // Character Class

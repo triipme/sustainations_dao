@@ -9,6 +9,13 @@ async function increaseQuestGameTurn(characterId){
   return rs;
 };
 
+async function increaseClearedQuestGameTurn(characterId){
+  const { user } = store.getState();
+  const func = async () => await user.actor.increaseClearedQuestGameTurn(characterId);
+  const rs = (await func()).ok;
+  return rs;
+};
+
 // character
 const characterClassId = "cc1";
 
@@ -224,6 +231,7 @@ function loadItemUrl(key) {
 
 export {
   increaseQuestGameTurn,
+  increaseClearedQuestGameTurn,
   loadQuestItems,
   loadCharacter,
   loadCharacterAwait,

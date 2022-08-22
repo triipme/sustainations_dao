@@ -95,6 +95,7 @@ module {
   public type QuestGameTurn = {
     userId : Principal;
     turns : Nat;
+    clearedTurns : Nat;
   };
   
   //--------------------- Character ---------------------//

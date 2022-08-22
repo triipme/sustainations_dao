@@ -230,6 +230,7 @@ export default class catalonia_scene7 extends BaseScene {
     gainCharacterExp(this.characterData);
     this.inventory = await listInventories(this.characterData.id);
     resetCharacterCollectsMaterials(this.characterData.id);
+    this.increaseClearedQuestGameTurn = await increaseClearedQuestGameTurn(this.characterData.id);
   }
 
   update() {
