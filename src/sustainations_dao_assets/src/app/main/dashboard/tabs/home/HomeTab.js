@@ -74,12 +74,12 @@ function HomeTab() {
       <motion.div variants={item}>
         <InvestedProject counter={analysis.gamePlayCount.miniGameCompletedCount} objectLabel="Mini Game" counterLabel="Completed" />
       </motion.div>
-      <motion.div variants={item}>
+      {/* <motion.div variants={item}>
         <OpenProject counter={analysis.gamePlayCount.questPlayCount} objectLabel="Quest" counterLabel="Turns" />
       </motion.div>
       <motion.div variants={item}>
         <InvestedProject counter={analysis.gamePlayCount.questCompletedCount} objectLabel="Quest" counterLabel="Completed" />
-      </motion.div>
+      </motion.div> */}
       <motion.div variants={item} className="sm:col-span-2 md:col-span-4">
         <GithubIssuesWidget />
       </motion.div>
