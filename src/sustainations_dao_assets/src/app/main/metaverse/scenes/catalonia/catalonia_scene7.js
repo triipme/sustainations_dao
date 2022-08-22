@@ -9,7 +9,8 @@ import {
   createCharacterCollectsMaterials,
   resetCharacterCollectsMaterials,
   listInventories,
-  createInventory
+  createInventory,
+  increaseClearedQuestGameTurn
 } from '../../GameApi';
 import {settings} from '../settings';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
