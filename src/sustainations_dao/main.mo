@@ -1944,6 +1944,10 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     if (Principal.toText(caller) == "2vxsx-fae") {
       throw Error.reject("NotAuthorized");  //isNotAuthorized
     };
+    var stagesSize : Nat = 0;
+    for (V in state.memoryCardEngine.stages.vals()){
+      if (V.gameId == gameId) stagesSize += 1;
+    };
     let accountId = Account.toText(Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(caller)));
     switch (playerId) {
       case null {
@@ -1961,9 +1965,13 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
           updatedAt = Moment.now();
         };
         state.memoryCardEngine.players.put(await createUUID(), player);
+        var completedCount = 0;
+        if (Iter.size(Iter.fromArray(player.history)) == stagesSize) {
+          completedCount = 1;
+        };
         gamePlayAnalytics := {
           miniGamePlayCount = gamePlayAnalytics.miniGamePlayCount + 1;
-          miniGameCompletedCount = gamePlayAnalytics.miniGameCompletedCount;
+          miniGameCompletedCount = gamePlayAnalytics.miniGameCompletedCount + completedCount;
           questPlayCount = gamePlayAnalytics.questPlayCount;
           questCompletedCount = gamePlayAnalytics.questCompletedCount;
         };
@@ -1999,10 +2007,6 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
                   updatedAt = Moment.now();
                 };
                 let _ = state.memoryCardEngine.players.replace(pid, replacePlayer);
-                var stagesSize : Nat = 0;
-                for (V in state.memoryCardEngine.stages.vals()){
-                  if (V.gameId == gameId) stagesSize += 1;
-                };
                 if (Iter.size(Iter.fromArray(replacePlayer.history)) == stagesSize) {
                   gamePlayAnalytics := {
                     miniGamePlayCount = gamePlayAnalytics.miniGamePlayCount;
