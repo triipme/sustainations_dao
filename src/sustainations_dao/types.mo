@@ -361,4 +361,10 @@ module {
     cardType : Text;
     cardData : Text;
   };
+  public type GamePlayAnalytics = {
+    miniGamePlayCount : Nat;
+    miniGameCompletedCount : Nat;
+    questPlayCount : Nat;
+    questCompletedCount : Nat;
+  };
 };
