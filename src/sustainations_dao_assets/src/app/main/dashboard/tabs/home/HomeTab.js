@@ -20,6 +20,7 @@ function HomeTab() {
     setLoading(true);
     const result = await user.actor.dashboardAnalysis();
     setLoading(false);
+    console.log('result.ok', result.ok);
     return result.ok;
   }, [user]);
   const container = {
@@ -53,20 +54,32 @@ function HomeTab() {
         <OverdueProject counter={analysis.projects.overdue} objectLabel="Projects" />
       </motion.div>
       <motion.div variants={item}>
-        <OpenProject counter={analysis.projects.opening} objectLabel="Projects" />
+        <OpenProject counter={analysis.projects.opening} objectLabel="Projects" counterLabel="Open" />
       </motion.div>
       <motion.div variants={item}>
-        <InvestedProject counter={analysis.projects.invested} objectLabel="Projects" />
+        <InvestedProject counter={analysis.projects.invested} objectLabel="Invested Projects" counterLabel="Projects" />
       </motion.div>
       <motion.div variants={item}>
         <OverdueProject counter={analysis.products.overdue} objectLabel="Products" />
       </motion.div>
       <motion.div variants={item}>
-        <OpenProject counter={analysis.products.opening} objectLabel="Products" />
+        <OpenProject counter={analysis.products.opening} objectLabel="Products" counterLabel="Open" />
       </motion.div>
       <motion.div variants={item}>
-        <InvestedProject counter={analysis.products.invested} objectLabel="Products" />
+        <InvestedProject counter={analysis.products.invested} objectLabel="Invested Products" counterLabel="Products" />
       </motion.div>
+      <motion.div variants={item}>
+        <OpenProject counter={analysis.gamePlayCount.miniGamePlayCount} objectLabel="Mini Game" counterLabel="Turns" />
+      </motion.div>
+      <motion.div variants={item}>
+        <InvestedProject counter={analysis.gamePlayCount.miniGameCompletedCount} objectLabel="Mini Game" counterLabel="Completed" />
+      </motion.div>
+      {/* <motion.div variants={item}>
+        <OpenProject counter={analysis.gamePlayCount.questPlayCount} objectLabel="Quest" counterLabel="Turns" />
+      </motion.div>
+      <motion.div variants={item}>
+        <InvestedProject counter={analysis.gamePlayCount.questCompletedCount} objectLabel="Quest" counterLabel="Completed" />
+      </motion.div> */}
       <motion.div variants={item} className="sm:col-span-2 md:col-span-4">
         <GithubIssuesWidget />
       </motion.div>

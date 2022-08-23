@@ -30,7 +30,6 @@ module {
       players : Map<Text, Types.MemoryCardEnginePlayer>;
       rewards : Map<Text, Types.MemoryCardEngineReward>;
     };
-    questGameTurns : Map<Text, Types.QuestGameTurn>;
     characterClasses : Map<Text, Types.CharacterClass>;
     characters : Map<Text, Types.Character>;
     characterTakesOptions : Map<Text, Types.CharacterTakesOption>;
@@ -76,7 +75,6 @@ module {
         players = TrieMap.TrieMap<Text, Types.MemoryCardEnginePlayer>(Text.equal, Text.hash);
         rewards = TrieMap.TrieMap<Text, Types.MemoryCardEngineReward>(Text.equal, Text.hash);
       };
-      questGameTurns = TrieMap.TrieMap<Text, Types.QuestGameTurn>(Text.equal, Text.hash);
       characterClasses = TrieMap.TrieMap<Text, Types.CharacterClass>(Text.equal, Text.hash);
       characters = TrieMap.TrieMap<Text, Types.Character>(Text.equal, Text.hash);
       characterTakesOptions = TrieMap.TrieMap<Text, Types.CharacterTakesOption>(Text.equal, Text.hash);

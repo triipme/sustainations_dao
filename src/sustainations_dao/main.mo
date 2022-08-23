@@ -44,6 +44,12 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   stable var createProposalFee : Nat64 = 20_000;
   stable var voteFee : Nat64 = 20_000;
   stable var treasuryContribution : Float = 0.03;
+  stable var gamePlayAnalytics : Types.GamePlayAnalytics = {
+    miniGamePlayCount = 0;
+    miniGameCompletedCount = 0;
+    questPlayCount = 0;
+    questCompletedCount = 0;
+  };
 
   var state : State.State = State.empty();
 
@@ -69,7 +75,6 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     players : [(Text, Types.MemoryCardEnginePlayer)] = [];
     rewards : [(Text, Types.MemoryCardEngineReward)] = [];
   };
-  private stable var questGameTurns : [(Text, Types.QuestGameTurn)] = [];
   private stable var characterClasses : [(Text, Types.CharacterClass)] = [];
   private stable var characters : [(Text, Types.Character)] = [];
   private stable var characterTakesOptions : [(Text, Types.CharacterTakesOption)] = [];
@@ -114,7 +119,6 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
       players = Iter.toArray(state.memoryCardEngine.players.entries());
       rewards = Iter.toArray(state.memoryCardEngine.rewards.entries());
     };
-    questGameTurns := Iter.toArray(state.questGameTurns.entries());
     characterClasses := Iter.toArray(state.characterClasses.entries());
     characters := Iter.toArray(state.characters.entries());
     characterTakesOptions := Iter.toArray(state.characterTakesOptions.entries());
@@ -192,9 +196,6 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
     for ((k, v) in Iter.fromArray(memoryCardEngine.rewards)) {
       state.memoryCardEngine.rewards.put(k, v);
-    };
-    for ((k, v) in Iter.fromArray(questGameTurns)) {
-      state.questGameTurns.put(k, v);
     };
     for ((k, v) in Iter.fromArray(characterClasses)) {
       state.characterClasses.put(k, v);
@@ -297,6 +298,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
       opening : Nat;
       invested : Nat;
     };
+    gamePlayCount : Types.GamePlayAnalytics;
   };
   public query func dashboardAnalysis() : async Response<DashboardAnalysis> {
     var overdueProjects : Nat = 0;
@@ -329,7 +331,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
         };
       };
     };
-    #ok({
+    let result = {
       userAgreement= state.userAgreements.size();
       projects = {
         overdue = overdueProjects;
@@ -341,7 +343,10 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
         opening = openingProducts;
         invested = investedProducts;
       };
-    });
+      gamePlayCount = gamePlayAnalytics;
+    };
+    Debug.print(debug_show(result));
+    #ok(result);
   };
 
   public shared({ caller }) func submitAgreement() : async Response<Text> {
@@ -1939,6 +1944,10 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     if (Principal.toText(caller) == "2vxsx-fae") {
       throw Error.reject("NotAuthorized");  //isNotAuthorized
     };
+    var stagesSize : Nat = 0;
+    for (V in state.memoryCardEngine.stages.vals()){
+      if (V.gameId == gameId) stagesSize += 1;
+    };
     let accountId = Account.toText(Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(caller)));
     switch (playerId) {
       case null {
@@ -1956,6 +1965,16 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
           updatedAt = Moment.now();
         };
         state.memoryCardEngine.players.put(await createUUID(), player);
+        var completedCount = 0;
+        if (Iter.size(Iter.fromArray(player.history)) == stagesSize) {
+          completedCount := 1;
+        };
+        gamePlayAnalytics := {
+          miniGamePlayCount = gamePlayAnalytics.miniGamePlayCount + 1;
+          miniGameCompletedCount = gamePlayAnalytics.miniGameCompletedCount + completedCount;
+          questPlayCount = gamePlayAnalytics.questPlayCount;
+          questCompletedCount = gamePlayAnalytics.questCompletedCount;
+        };
         #ok();
       };
       case (?pid) {
@@ -1988,6 +2007,14 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
                   updatedAt = Moment.now();
                 };
                 let _ = state.memoryCardEngine.players.replace(pid, replacePlayer);
+                if (Iter.size(Iter.fromArray(replacePlayer.history)) == stagesSize) {
+                  gamePlayAnalytics := {
+                    miniGamePlayCount = gamePlayAnalytics.miniGamePlayCount;
+                    miniGameCompletedCount = gamePlayAnalytics.miniGameCompletedCount + 1;
+                    questPlayCount = gamePlayAnalytics.questPlayCount;
+                    questCompletedCount = gamePlayAnalytics.questCompletedCount;
+                  };
+                };
                 #ok();
               };
               case (?V) {
@@ -2115,75 +2142,6 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   };
 
   // Game
-  public shared({caller}) func increaseQuestGameTurn(characterId : Text) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
-    };
-    let userId = Principal.toText(caller);
-    switch (state.characters.get(characterId)) {
-      case null { #err(#NotFound); };
-      case (?character) {
-        switch (state.questGameTurns.get(userId)) {
-          case null {
-            state.questGameTurns.put(userId, {
-              userId = caller;
-              turns = 1;
-              clearedTurns = 0;
-            });
-            #ok("Turn = 1");
-          };
-          case (?V) {
-            let updated = state.questGameTurns.replace(userId, {
-              userId = caller;
-              turns = V.turns + 1;
-              clearedTurns = V.clearedTurns;
-            });
-            #ok("Turn + 1");
-          };
-        };
-      };
-    };
-  };
-
-  public shared({caller}) func increaseClearedQuestGameTurn(characterId : Text) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
-    };
-    let userId = Principal.toText(caller);
-    switch (state.characters.get(characterId)) {
-      case null { #err(#NotFound); };
-      case (?character) {
-        switch (state.questGameTurns.get(userId)) {
-          case null { #err(#NotFound); };
-          case (?V) {
-            let updated = state.questGameTurns.replace(userId, {
-              userId = caller;
-              turns = V.turns;
-              clearedTurns = V.clearedTurns + 1;
-            });
-            #ok("Cleared Turn + 1");
-          };
-        };
-      };
-    };
-  };
-
-  public shared query({caller}) func getAllQuestGameTurns() : async Response<{turns : Nat; clearedTurns : Nat}>{
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
-    };
-    var turns : Nat = 0;
-    var clearedTurns : Nat = 0;
-    for(V in state.questGameTurns.vals()) {
-      turns := turns + V.turns;
-      clearedTurns := clearedTurns + V.clearedTurns;
-    };
-    #ok({
-      turns = turns;
-      clearedTurns = clearedTurns;
-    });
-  };
-
   // Character Class
   public shared({caller}) func createCharacterClass(characterClass : Types.CharacterClass) : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
@@ -2407,6 +2365,12 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
       case (null) { #err(#NotFound); };
       case (?V) {
         Character.gainCharacterExp(character, state);
+        gamePlayAnalytics := {
+          miniGamePlayCount = gamePlayAnalytics.miniGamePlayCount;
+          miniGameCompletedCount = gamePlayAnalytics.miniGameCompletedCount;
+          questPlayCount = gamePlayAnalytics.questPlayCount;
+          questCompletedCount = gamePlayAnalytics.questCompletedCount + 1;
+        };
         #ok("Success");
       };
     };
@@ -2470,7 +2434,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
       return #err(#NotAuthorized);//isNotAuthorized
     };
     let uuid : Text = await createUUID();
-    var canCreate = true;
+    
     let rsCharacter = state.characters.get(characterId);
     switch (rsCharacter) {
       case (?character) {
@@ -2479,11 +2443,15 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
             state.characterSelectsItems.delete(K);
           };
         };
-        if(canCreate == true){
-          let rs = state.characterSelectsItems.put(uuid, {
-            characterId = characterId;
-            itemIds = itemIds;
-          });
+        let rs = state.characterSelectsItems.put(uuid, {
+          characterId = characterId;
+          itemIds = itemIds;
+        });
+        gamePlayAnalytics := {
+          miniGamePlayCount = gamePlayAnalytics.miniGamePlayCount;
+          miniGameCompletedCount = gamePlayAnalytics.miniGameCompletedCount;
+          questPlayCount = gamePlayAnalytics.questPlayCount + 1;
+          questCompletedCount = gamePlayAnalytics.questCompletedCount;
         };
         #ok("Success");
       };  

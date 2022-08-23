@@ -92,12 +92,6 @@ module {
   };
 
   // Game
-  public type QuestGameTurn = {
-    userId : Principal;
-    turns : Nat;
-    clearedTurns : Nat;
-  };
-  
   //--------------------- Character ---------------------//
   public type Character = {
     userId : Principal;
@@ -366,5 +360,11 @@ module {
     cardId : Text;
     cardType : Text;
     cardData : Text;
+  };
+  public type GamePlayAnalytics = {
+    miniGamePlayCount : Nat;
+    miniGameCompletedCount : Nat;
+    questPlayCount : Nat;
+    questCompletedCount : Nat;
   };
 };
