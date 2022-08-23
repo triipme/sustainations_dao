@@ -5,7 +5,7 @@ import {
   loadEventOptions, 
   updateCharacterStats,
   listCharacterSelectsItems,
-  createCharacterCollectsMaterials
+  createCharacterCollectsMaterials,
 } from '../../GameApi';
 import {settings} from '../settings';
 import { getTouchRippleUtilityClass } from '@mui/material';

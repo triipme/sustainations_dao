@@ -5,7 +5,7 @@ import {
   loadEventOptions, 
   updateCharacterStats,
   listCharacterSelectsItems,
-  createCharacterCollectsMaterials
+  createCharacterCollectsMaterials,
 } from '../../GameApi';
 import {settings} from '../settings';
 import { isThisSecond } from 'date-fns';
@@ -37,7 +37,7 @@ export default class catalonia_scene2_1 extends BaseScene {
   preload() {
     this.addLoadingScreen();
     this.initialLoad("e8");
-    
+
     //Preload
     this.clearSceneCache();
     this.isInteracting = false;

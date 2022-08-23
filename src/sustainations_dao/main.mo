@@ -2204,14 +2204,6 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  // Get userId
-  public shared query({caller}) func getUserId() : async Response<Text>{
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
-    };
-    #ok(Principal.toText(caller));
-  };
-
   // Character
   public shared({caller}) func createCharacter(characterClassId : Text) : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
@@ -2373,6 +2365,12 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
       case (null) { #err(#NotFound); };
       case (?V) {
         Character.gainCharacterExp(character, state);
+        gamePlayAnalytics := {
+          miniGamePlayCount = gamePlayAnalytics.miniGamePlayCount;
+          miniGameCompletedCount = gamePlayAnalytics.miniGameCompletedCount;
+          questPlayCount = gamePlayAnalytics.questPlayCount;
+          questCompletedCount = gamePlayAnalytics.questCompletedCount + 1;
+        };
         #ok("Success");
       };
     };
@@ -2436,7 +2434,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
       return #err(#NotAuthorized);//isNotAuthorized
     };
     let uuid : Text = await createUUID();
-    var canCreate = true;
+    
     let rsCharacter = state.characters.get(characterId);
     switch (rsCharacter) {
       case (?character) {
@@ -2445,11 +2443,15 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
             state.characterSelectsItems.delete(K);
           };
         };
-        if(canCreate == true){
-          let rs = state.characterSelectsItems.put(uuid, {
-            characterId = characterId;
-            itemIds = itemIds;
-          });
+        let rs = state.characterSelectsItems.put(uuid, {
+          characterId = characterId;
+          itemIds = itemIds;
+        });
+        gamePlayAnalytics := {
+          miniGamePlayCount = gamePlayAnalytics.miniGamePlayCount;
+          miniGameCompletedCount = gamePlayAnalytics.miniGameCompletedCount;
+          questPlayCount = gamePlayAnalytics.questPlayCount + 1;
+          questCompletedCount = gamePlayAnalytics.questCompletedCount;
         };
         #ok("Success");
       };  
@@ -2692,6 +2694,24 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
+  public shared query({caller}) func getHpPotion() : async Response<Types.UsableItem>{
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    var rs : [Types.UsableItem] = [];
+    switch (state.eventItems.get(Principal.toText(caller))) {
+      case null { #err(#NotFound); };
+      case (?eventItem) {
+        for((K,V) in state.usableItems.entries()) {
+          if(V.id == eventItem.itemId) {
+            rs := Array.append<Types.UsableItem>(rs, [V]);
+          };
+        };
+        #ok(rs[0]);
+      };
+    };
+  };
+
   // Event Item
   public shared({caller}) func canGetARItem(eventItemId : Text) : async Response<Bool> {
     if(Principal.toText(caller) == "2vxsx-fae") {
@@ -2701,7 +2721,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     // let uuid : Text = await createUUID();
     var canAR : Bool = false;
     let rsARItem = state.arItems.get(userId);
-    switch (state.usableItems.get(eventItemId)){
+    switch (state.usableItems.get(eventItemId)) {
       case null { #err(#NotFound); };
       case (?item) {
         if(isAdmin(caller)) {
