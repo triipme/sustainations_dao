@@ -110,6 +110,8 @@ class selectItemScene extends BaseScene {
       .setScrollFactor(0);
 
     this.add.image(35, 100, 'UI_NameCard').setOrigin(0);
+    this.add.text(105, 117, 'Trekker', { fill: '#000', align: 'center', fontSize: '9px', font: 'Arial'})
+    this.add.text(105, 135, 'abcdef', { fill: '#000', align: 'center', font: '15px Arial'})
     this.add.image(35, 175, 'UI_HP').setOrigin(0);
     this.add.image(35, 250, 'UI_Stamina').setOrigin(0);
     this.add.image(35, 325, 'UI_Mana').setOrigin(0);

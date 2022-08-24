@@ -95,6 +95,8 @@ class BaseScene extends Phaser.Scene {
   async createUIElements(isDisabled = false) {
     //UI
     this.add.image(20, 30, "UI_NameCard").setOrigin(0).setScrollFactor(0);
+    this.add.text(90, 47, 'Trekker', { fill: '#000', align: 'center', fontSize: '9px', font: 'Arial'}).setScrollFactor(0);
+    this.add.text(90, 65, 'abcdef', { fill: '#000', align: 'center', font: '15px Arial'}).setScrollFactor(0);
     this.add.image(255, 30, "UI_HP").setOrigin(0).setScrollFactor(0);
     this.add.image(490, 30, "UI_Mana").setOrigin(0).setScrollFactor(0);
     this.add.image(725, 30, "UI_Stamina").setOrigin(0).setScrollFactor(0);
