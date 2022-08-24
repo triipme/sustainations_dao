@@ -1,6 +1,16 @@
 import store from 'app/store';
 
 // call api
+
+// get user info
+function getUserInfo(){
+  return new Promise((resolve, reject) => {
+    const { user } = store.getState();
+    const rs = user.actor.getUserInfo();
+    resolve(rs);
+  });
+};
+
 // character
 const characterClassId = "cc1";
 
@@ -215,6 +225,7 @@ function loadItemUrl(key) {
 
 
 export {
+  getUserInfo,
   loadQuestItems,
   loadCharacter,
   loadCharacterAwait,

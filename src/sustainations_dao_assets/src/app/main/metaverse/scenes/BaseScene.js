@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import gameConfig from '../GameConfig';
-import { 
+import {
+  getUserInfo,
   loadEventItem,
   useHpPotion,
   loadEventOptions, 
@@ -20,6 +21,13 @@ class BaseScene extends Phaser.Scene {
 
   initialLoad(eventID) {
     this.eventId = eventID;
+    this.load.rexAwait(function(successCallback, failureCallback) {
+      getUserInfo().then( (result) => {
+        this.userInfo = result.ok;
+        console.log(this.userInfo);
+        successCallback();
+      });
+    }, this);
     // load character
     this.load.rexAwait(function(successCallback, failureCallback) {
       loadCharacter().then( (result) => {
@@ -97,7 +105,7 @@ class BaseScene extends Phaser.Scene {
     //UI
     this.add.image(20, 30, "UI_NameCard").setOrigin(0).setScrollFactor(0);
     this.add.text(90, 47, 'Trekker', { fill: '#000', align: 'center', fontSize: '9px', font: 'Arial'}).setScrollFactor(0);
-    this.add.text(90, 65, 'abcdef', { fill: '#000', align: 'center', font: '15px Arial'}).setScrollFactor(0);
+    this.add.text(90, 65, this.userInfo.profile[0].username, { fill: '#000', align: 'center', font: '15px Arial'}).setScrollFactor(0);
     this.add.image(255, 30, "UI_HP").setOrigin(0).setScrollFactor(0);
     this.add.image(490, 30, "UI_Mana").setOrigin(0).setScrollFactor(0);
     this.add.image(725, 30, "UI_Stamina").setOrigin(0).setScrollFactor(0);
