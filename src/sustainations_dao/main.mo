@@ -1841,6 +1841,23 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     }
   };
 
+  public shared({caller}) func memoryCardEngineStageDelete(stageId : Text) : async Response<()> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);// isNotAuthorized
+    };
+    if(isAdmin(caller)) {
+      state.memoryCardEngine.stages.delete(stageId);
+      for ((K, V) in state.memoryCardEngine.cards.entries()) {
+        if (Text.equal(V.stageId, stageId)) {
+          state.memoryCardEngine.cards.delete(K);
+        }
+      };
+      #ok();
+    } else {
+      #err(#AdminRoleRequired);
+    }
+  };
+
   public shared({caller}) func memoryCardEngineAllStages() : async Response<[(Text, Types.MemoryCardEngineStage)]>{
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);// isNotAuthorized
