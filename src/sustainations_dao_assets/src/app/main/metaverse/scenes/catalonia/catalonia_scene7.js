@@ -7,8 +7,7 @@ import {
   listCharacterSelectsItems,
   gainCharacterExp,
   createCharacterCollectsMaterials,
-  resetCharacterCollectsMaterials,
-  listInventories,
+  openInventory,
   createInventory,
 } from '../../GameApi';
 import {settings} from '../settings';
@@ -86,16 +85,7 @@ export default class catalonia_scene7 extends BaseScene {
   }
 
   async create() {
-    console.log(this.characterStatus);
-    if(this.characterStatus == 'Exhausted') {
-      this.scene.start('exhausted');
-    } else {
-      if(this.isHealedPreviously) {
-        for(const i in this.characterTakeOptions) {
-          this.characterTakeOptions[i].currentHP += 3;
-        }
-      }
-    }
+    this.isExhausted();
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
@@ -174,15 +164,7 @@ export default class catalonia_scene7 extends BaseScene {
    this.eventOptions = await loadEventOptions(this.eventId, this.selectedItemsIds);
 
     // stats before choose option
-    if(this.isHealedPreviously){
-      var newValue = this.characterData.currentHP+3;
-      if (newValue > this.characterData.maxHP){
-        newValue = this.characterData.maxHP;
-      }
-      this.setValue(this.hp, newValue/this.characterData.maxHP*100);
-    } else{
-      this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
-    }
+    this.usePotion();
     this.setValue(this.stamina, this.characterData.currentStamina/this.characterData.maxStamina*100);
     this.setValue(this.mana, this.characterData.currentMana/this.characterData.maxMana*100);
     this.setValue(this.morale, this.characterData.currentMorale/this.characterData.maxMorale*100);
@@ -228,8 +210,7 @@ export default class catalonia_scene7 extends BaseScene {
     };
     createInventory(this.characterData.id);
     gainCharacterExp(this.characterData);
-    this.inventory = await listInventories(this.characterData.id);
-    resetCharacterCollectsMaterials(this.characterData.id);
+    this.inventory = await openInventory(this.characterData.id);
   }
 
   update() {

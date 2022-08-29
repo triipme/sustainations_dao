@@ -104,7 +104,7 @@ export default class jungle_scene1 extends BaseScene {
     }
     this.physics.add.collider(this.player, platforms);
     
-    this.createUIElements(true);
+    this.createUIElements();
     this.defineCamera(gameConfig.scale.width*4, gameConfig.scale.height);
     this.createPauseScreen();
 

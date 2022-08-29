@@ -22,7 +22,10 @@ export default class jungle_scene5 extends BaseScene {
   constructor() {
     super('jungle_scene5');
   }
-
+  init(data) {
+    this.isHealedPreviously = data.isUsedPotion;
+    console.log('healed', this.isHealedPreviously);
+  }
   clearSceneCache() {
     const textures_list = ['ground', 'background1', 'background2', 
       'background3', 'selectAction', 'btnBlank', 'obstacle'];
@@ -30,7 +33,6 @@ export default class jungle_scene5 extends BaseScene {
       this.textures.remove(textures_list[index]);
     }
   }
-
   preload() {
     this.addLoadingScreen();
     this.initialLoad("e5");
@@ -76,9 +78,7 @@ export default class jungle_scene5 extends BaseScene {
   }
 
   async create() {
-    if(this.characterStatus == 'Exhausted') {
-      this.scene.start('exhausted');
-    }
+    this.isExhausted();
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
@@ -99,7 +99,7 @@ export default class jungle_scene5 extends BaseScene {
     }
     this.physics.add.collider(this.player, platforms);
 
-    this.createUIElements(true);
+    this.createUIElements();
     this.defineCamera(gameConfig.scale.width*4, gameConfig.scale.height);
     this.createPauseScreen();
 
@@ -110,7 +110,7 @@ export default class jungle_scene5 extends BaseScene {
     this.eventOptions = await loadEventOptions(this.eventId, this.selectedItemsIds);
 
     // stats before choose option
-    this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
+    this.usePotion();
     this.setValue(this.stamina, this.characterData.currentStamina/this.characterData.maxStamina*100);
     this.setValue(this.mana, this.characterData.currentMana/this.characterData.maxMana*100);
     this.setValue(this.morale, this.characterData.currentMorale/this.characterData.maxMorale*100);

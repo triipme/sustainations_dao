@@ -196,10 +196,10 @@ async function createInventory(characterId) {
   })
 };
 
-async function listInventories(characterId){
+async function openInventory(characterId){
   const { user } = store.getState();
-  const listInventories = async () => await user.actor.listInventories(characterId);
-  const rs = (await listInventories()).ok;
+  const func = async () => await user.actor.openInventory(characterId);
+  const rs = (await func()).ok;
   return rs;
 };
 
@@ -248,6 +248,6 @@ export {
   gainCharacterExp,
   resetCharacterCollectsMaterials,
   createInventory,
-  listInventories,
+  openInventory,
   getRemainingTime
 }
