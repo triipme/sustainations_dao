@@ -82,6 +82,8 @@ export default class catalonia_scene2_3 extends BaseScene {
 
   async create() {
     this.isExhausted();
+    this.listMaterial();
+
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');

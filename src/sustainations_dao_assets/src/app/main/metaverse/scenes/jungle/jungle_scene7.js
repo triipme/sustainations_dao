@@ -41,20 +41,7 @@ export default class jungle_scene7 extends BaseScene {
   preload() {
     this.addLoadingScreen();
     this.eventItemId = "ui1";
-    this.load.rexAwait(function(successCallback, failureCallback) {
-      loadCharacter().then( (result) => {
-        this.characterData = result.ok[1];
-        console.log(this.characterData);
-        successCallback();
-      });
-    }, this);
-
-    this.load.rexAwait(function(successCallback, failureCallback) {
-      getCharacterStatus().then( (result) => {
-        this.characterStatus = result.ok;
-        successCallback();
-      });
-    }, this);
+    this.initialLoad("");
 
     this.load.rexAwait(function(successCallback, failureCallback) {
       canGetARItemPromise(this.eventItemId).then( (result) => {
@@ -111,6 +98,7 @@ export default class jungle_scene7 extends BaseScene {
 
   async create() {
     this.isExhausted();
+    this.listMaterial();
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');

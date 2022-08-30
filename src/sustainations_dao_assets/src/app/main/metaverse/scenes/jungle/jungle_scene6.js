@@ -80,6 +80,7 @@ export default class jungle_scene6 extends BaseScene {
 
   async create() {
     this.isExhausted();
+    this.listMaterial();
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');

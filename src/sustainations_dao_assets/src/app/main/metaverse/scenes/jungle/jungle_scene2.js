@@ -80,6 +80,7 @@ export default class jungle_scene2 extends BaseScene {
 
   async create() {
     this.isExhausted();
+    this.listMaterial();
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
@@ -140,7 +141,7 @@ export default class jungle_scene2 extends BaseScene {
         this.options[idx].setFrame(2);
       }
       
-      this.options[idx].on('pointerdown', () => {
+      this.options[idx].on('pointerdown', async () => {
         if (takeable){
           this.triggerContinue();
           this.clickSound.play();

@@ -11,6 +11,7 @@ import {
   characterTakeOption,
   listCharacterSelectsItems,
   characterCollectsMaterials,
+  listCharacterCollectsMaterials,
   getHpPotion
 } from '../GameApi';
 
@@ -184,6 +185,11 @@ class BaseScene extends Phaser.Scene {
     } else{
       this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
     }
+  };
+
+  async listMaterial() {
+    this.collectedMaterials = await listCharacterCollectsMaterials(this.characterData.id);
+    console.log("MATERIAL",this.collectedMaterials);
   };
 
   defineCamera(width, height) {

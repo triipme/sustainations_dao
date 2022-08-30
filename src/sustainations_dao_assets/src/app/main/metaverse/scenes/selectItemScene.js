@@ -4,11 +4,11 @@ import BaseScene from './BaseScene';
 import {
   getUserInfo,
   loadQuestItems, 
-  loadCharacter,
   characterSelectsItems,
   loadItemUrl,
   resetCharacter,
-  loadCharacterAwait
+  loadCharacterAwait,
+  resetCharacterCollectsMaterials
 } from '../GameApi';
 import { throws } from 'assert';
 
@@ -129,7 +129,7 @@ class selectItemScene extends BaseScene {
     this.mana = this.makeBar(107, 210+150, 100, 15, 0xc038f6);
     this.morale = this.makeBar(107, 210+225, 100, 15, 0x63dafb);
 
-
+    resetCharacterCollectsMaterials(this.characterData.id);
     this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
     this.setValue(this.stamina, this.characterData.currentStamina/this.characterData.maxStamina*100);
     this.setValue(this.mana, this.characterData.currentMana/this.characterData.maxMana*100);

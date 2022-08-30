@@ -85,6 +85,7 @@ export default class jungle_scene1 extends BaseScene {
   }
   
   async create() {
+    this.listMaterial();
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
@@ -103,7 +104,6 @@ export default class jungle_scene1 extends BaseScene {
       platforms.create(x, 635, "ground").refreshBody();
     }
     this.physics.add.collider(this.player, platforms);
-    
     this.createUIElements();
     this.defineCamera(gameConfig.scale.width*4, gameConfig.scale.height);
     this.createPauseScreen();
@@ -145,7 +145,7 @@ export default class jungle_scene1 extends BaseScene {
         this.options[idx].setFrame(2);
       }
       
-      this.options[idx].on('pointerdown', () => {
+      this.options[idx].on('pointerdown', async () => {
         if (takeable){
           this.triggerContinue();
           this.clickSound.play();
@@ -160,7 +160,7 @@ export default class jungle_scene1 extends BaseScene {
           // update character after choose option
           updateCharacterStats(this.characterTakeOptions[idx]);
           // create charactercollectsmaterials after choose option
-	        createCharacterCollectsMaterials(this.characterCollectMaterials[idx]);
+          createCharacterCollectsMaterials(this.characterCollectMaterials[idx]);
         }
       });
     };
