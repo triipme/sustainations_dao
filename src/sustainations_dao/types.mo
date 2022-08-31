@@ -77,6 +77,7 @@ module {
     #awardUserAgreement;
     #rewardTop;
     #collectTreasuryContribution;
+    #payQuest;
   };
   public type TxRecord = {
     uuid : Text;
@@ -166,7 +167,7 @@ module {
   public type Quest = {
     id : Text;
     name : Text;
-    price : Int;
+    price : Nat;
     description : Text;
     images : Text;
   };

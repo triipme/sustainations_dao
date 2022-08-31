@@ -53,6 +53,7 @@ class selectItemScene extends BaseScene {
     this.load.rexAwait(function(successCallback, failureCallback) {
       getUserInfo().then( (result) => {
         this.userInfo = result.ok;
+        console.log(this.userInfo);
         successCallback();
       });
     }, this);

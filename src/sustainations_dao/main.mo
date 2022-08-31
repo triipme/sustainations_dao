@@ -2159,6 +2159,29 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   };
 
   // Game
+  public shared({ caller }) func payQuest(questId : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    switch (state.quests.get(questId)) {
+      case null { #err(#NotFound); };
+      case (?quest) {
+        switch (await deposit(Nat64.fromNat(quest.price), caller)) {
+          case(#ok(bIndex)) {
+            let uuid = await createUUID();
+            await recordTransaction(
+              caller, Nat64.fromNat(quest.price), caller, Principal.fromActor(this),
+              #payQuest, ?uuid, bIndex
+            );
+            #ok("Success");
+          };
+          case (#err(error)) {
+            #err(error);
+          };
+        };
+      };
+    };
+  };
   // Character Class
   public shared({caller}) func createCharacterClass(characterClass : Types.CharacterClass) : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
