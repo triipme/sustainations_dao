@@ -75,7 +75,7 @@ class exhausted extends BaseScene {
       .setInteractive()
       .on('pointerdown', () => {
         this.clickSound.play();
-        this.scene.start('menuScene');
+        this.scene.start('selectMap');
       });
     this.playagain = this.add.sprite(gameConfig.scale.width/2, gameConfig.scale.height/2, 'btnBlank').setScale(0.67);
     this.playagain.setInteractive().setScrollFactor(0);

@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import BaseScene from './BaseScene'
 import gameConfig from '../GameConfig';
+import history from "@history";
 import { 
   resetCharacter,
   loadCharacter,
@@ -61,7 +62,7 @@ class selectMap extends BaseScene {
       .setOrigin(0).setInteractive();
     this.btnBack.on('pointerdown', () => {
       this.clickSound.play();
-      this.scene.transition({target: 'menuScene', duration: 0 });
+      history.push("/metaverse");
     });
     this.waitingTime = 60;
     this.getRemainingTime = await getRemainingTime(this.waitingTime, this.characterData);

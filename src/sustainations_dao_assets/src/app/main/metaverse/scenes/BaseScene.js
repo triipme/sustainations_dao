@@ -121,7 +121,7 @@ class BaseScene extends Phaser.Scene {
         try {this.sfx_big_waterfall.stop();} catch {}
         try {this.ingameSound.stop();} catch {}
         try {this.sfx_monkey.stop();} catch {}
-        this.scene.start('menuScene');
+        this.scene.start('selectMap');
     });
     //set value
     this.hp = this.makeBar(325, 65, 100, 15, 0x74e044).setScrollFactor(0);
