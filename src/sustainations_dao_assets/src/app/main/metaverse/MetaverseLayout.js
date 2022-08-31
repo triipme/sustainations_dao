@@ -1,7 +1,22 @@
-import { Outlet } from "react-router-dom";
+import gameConfig from "./GameConfig";
+import GetData from "./GetData";
+class MetaverseQuests extends React.Component {
+  componentDidMount() {
+    this.slug = new Phaser.Game(gameConfig);
+    document.body.classList.add("black-bg");
+  }
 
-const MetaverseLayout = () => {
-  return <Outlet />;
-};
+  shouldComponentUpdate() {
+    return false;
+  }
 
-export default MetaverseLayout;
+  componentWillUnmount() {
+    document.body.classList.remove("black-bg");
+  }
+
+  render() {
+    return <div id="sustainations-slug"></div>;
+  }
+}
+
+export default MetaverseQuests;

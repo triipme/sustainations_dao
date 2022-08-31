@@ -39,11 +39,15 @@ const MetaverseConfig = {
   routes: [
     {
       path: "metaverse",
-      element: <MetaverseLayout />,
+      element: <Outlet />,
       children: [
         {
           index: true,
           element: <Metaverse />
+        },
+        {
+          path: "quests",
+          element: <MetaverseLayout />
         },
         {
           path: "bootcamp",
