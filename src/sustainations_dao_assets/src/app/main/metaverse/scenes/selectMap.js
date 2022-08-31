@@ -5,8 +5,9 @@ import history from "@history";
 import { 
   resetCharacter,
   loadCharacter,
-  getRemainingTime
+  getRemainingTime,
 } from '../GameApi';
+
 const bg = 'metaverse/selectMap/background.png';
 const text = 'metaverse/selectMap/call_to_action.png';
 const selectArea = 'metaverse/selectMap/select-area.png';
