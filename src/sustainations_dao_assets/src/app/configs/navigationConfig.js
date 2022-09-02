@@ -31,6 +31,29 @@ const navigationConfig = [
     url: '/proposal-products',
   },
   {
+    id: 'workspac3',
+    title: 'Workspac3',
+    type: 'collapse',
+    icon: 'workspaces_outlined',
+    children: [
+      {
+        id: 'workspac3-scrumboard',
+        title: 'Scrumboard',
+        type: 'item',
+        icon: 'view_column_outlined',
+        url: '/workspac3/scrumboard/boards',
+        end: true,
+      },
+      {
+        id: 'workspac3-note',
+        title: 'Notes',
+        type: 'item',
+        icon: 'event_note_outlined',
+        url: '/workspac3/notes'
+      }
+    ]
+  },
+  {
     id: 'metaverse',
     title: 'Metaverse',
     type: 'item',

@@ -6,6 +6,7 @@ import menuScene from './scenes/menuScene';
 import selectMap from './scenes/selectMap';
 import thanks from './scenes/thanks';
 import exhausted from './scenes/exhausted';
+import initializing from './scenes/initializing';
 
 import jungle_scene1 from './scenes/jungle/jungle_scene1';
 import jungle_scene2 from './scenes/jungle/jungle_scene2';
@@ -52,7 +53,7 @@ const gameConfig = {
       debug: false
     }
   },
-  scene: [preloadScene, menuScene, selectMap, selectItemScene, jungle_scene1, jungle_scene2, 
+  scene: [preloadScene, initializing, selectMap, selectItemScene, jungle_scene1, jungle_scene2, 
     jungle_scene3, jungle_scene4, jungle_scene5, jungle_scene6, jungle_scene7, thanks, exhausted, 
     catalonia_scene1, catalonia_scene2_1, catalonia_scene2_2, catalonia_scene2_3, catalonia_scene2_4, 
     catalonia_scene3, catalonia_scene5_1, catalonia_scene5_2, catalonia_scene6, catalonia_scene7]

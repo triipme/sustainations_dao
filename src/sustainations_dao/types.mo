@@ -167,7 +167,7 @@ module {
   public type Quest = {
     id : Text;
     name : Text;
-    price : Nat;
+    price : Nat64;
     description : Text;
     images : Text;
   };

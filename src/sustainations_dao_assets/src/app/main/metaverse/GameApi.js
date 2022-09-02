@@ -223,6 +223,13 @@ function loadItemUrl(key) {
   return signedUrl;
 };
 
+// pay quest
+async function payQuest(questId){
+  const { user } = store.getState();
+  const func = async () => await user.actor.payQuest(questId);
+  const result = (await func()).ok;
+  return result;
+};
 
 export {
   getUserInfo,
@@ -249,5 +256,6 @@ export {
   resetCharacterCollectsMaterials,
   createInventory,
   openInventory,
-  getRemainingTime
+  getRemainingTime,
+  payQuest
 }

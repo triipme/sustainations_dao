@@ -19,7 +19,7 @@ class preloadScene extends Phaser.Scene {
   }
 
   create() {
-    this.scene.start('menuScene');
+    this.scene.start('initializing');
   }
 }
 export default preloadScene;

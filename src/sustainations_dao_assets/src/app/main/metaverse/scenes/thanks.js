@@ -28,7 +28,7 @@ class thanks extends BaseScene {
       .on('pointerdown', () => {
         this.clickSound.play();
         this.pregameSound.stop();
-        this.scene.start('menuScene');
+        this.scene.start('selectMap');
       });
   }
 
