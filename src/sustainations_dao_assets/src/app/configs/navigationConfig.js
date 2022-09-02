@@ -41,8 +41,7 @@ const navigationConfig = [
         title: 'Scrumboard',
         type: 'item',
         icon: 'view_column_outlined',
-        url: '/workspac3/scrumboard/boards',
-        end: true,
+        url: '/workspac3/scrumboard/boards'
       },
       {
         id: 'workspac3-note',

@@ -516,12 +516,12 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     // Check ledger for value
     let balance = await ledger.account_balance({ account = accountId });
     // Transfer to default subaccount
-    let receipt = if (balance.e8s >= amount + transferFee + transferFee) {
+    let receipt = if (balance.e8s >= amount + transferFee) {
       await ledger.transfer({
         memo: Nat64    = 0;
         from_subaccount = ?Account.principalToSubaccount(caller);
         to = Account.accountIdentifier(Principal.fromActor(this), Account.defaultSubaccount());
-        amount = { e8s = amount + transferFee };
+        amount = { e8s = amount };
         fee = { e8s = transferFee };
         created_at_time = ?{ timestamp_nanos = Nat64.fromNat(Int.abs(Time.now())) };
       })
@@ -588,7 +588,8 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
-    switch (await deposit(createProposalFee, caller)) {
+    let amount = createProposalFee + transferFee;
+    switch (await deposit(amount, caller)) {
       case (#ok(bIndex)) {
         let uuid = await createUUID();
         let proposal : Types.Proposal = {
@@ -603,7 +604,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
         };
         // record transaction
         await recordTransaction(
-          caller, createProposalFee, caller, Principal.fromActor(this),
+          caller, amount, caller, Principal.fromActor(this),
           #createProposal, ?uuid, bIndex
         );
         state.proposals.put(uuid, proposal);
@@ -670,12 +671,12 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
         let voters = List.push(voter, proposal.voters);
         if (args.vote == #yes) {
           // deposit vote fee
-          switch (await deposit(voteFee, caller)) {
+          switch (await deposit(voteFee + transferFee, caller)) {
             case (#ok(bIndex)) {
               votesYes += voteFee;
               // record transaction
               await recordTransaction(
-                caller, voteFee, caller, Principal.fromActor(this),
+                caller, voteFee + transferFee, caller, Principal.fromActor(this),
                 #vote, ?proposal.uuid, bIndex
               );
               if (votesYes >= Nat64.fromNat(proposal.payload.fundingAmount)) {
