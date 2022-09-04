@@ -196,10 +196,10 @@ async function createInventory(characterId) {
   })
 };
 
-async function listInventories(characterId){
+async function openInventory(characterId){
   const { user } = store.getState();
-  const listInventories = async () => await user.actor.listInventories(characterId);
-  const rs = (await listInventories()).ok;
+  const func = async () => await user.actor.openInventory(characterId);
+  const rs = (await func()).ok;
   return rs;
 };
 
@@ -223,6 +223,13 @@ function loadItemUrl(key) {
   return signedUrl;
 };
 
+// pay quest
+async function payQuest(questId){
+  const { user } = store.getState();
+  const func = async () => await user.actor.payQuest(questId);
+  const result = (await func()).ok;
+  return result;
+};
 
 export {
   getUserInfo,
@@ -248,6 +255,7 @@ export {
   gainCharacterExp,
   resetCharacterCollectsMaterials,
   createInventory,
-  listInventories,
-  getRemainingTime
+  openInventory,
+  getRemainingTime,
+  payQuest
 }

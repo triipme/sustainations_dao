@@ -6,6 +6,8 @@ import {
   resetCharacter,
   loadCharacter,
   getRemainingTime,
+  payQuest,
+  getUserInfo
 } from '../GameApi';
 
 const bg = 'metaverse/selectMap/background.png';
@@ -30,7 +32,13 @@ class selectMap extends BaseScene {
 
   preload() {
     this.addLoadingScreen();
-
+    this.load.rexAwait(function(successCallback, failureCallback) {
+      getUserInfo().then( (result) => {
+        this.userInfo = result.ok;
+        console.log(this.userInfo);
+        successCallback();
+      });
+    }, this);
     this.load.rexAwait(function(successCallback, failureCallback) {
       loadCharacter().then( (result) => {
         this.characterData = result.ok[1];
@@ -51,6 +59,7 @@ class selectMap extends BaseScene {
 
   async create() {
     // add audios
+    console.log(this.userInfo.profile[0].balance)
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
 
@@ -80,13 +89,16 @@ class selectMap extends BaseScene {
       this.selectAreaJungle.setFrame(0);
       this.jungleLocationDetail.setVisible(false);
     });
-    this.selectAreaJungle.on('pointerdown', () => {
+    this.selectAreaJungle.on('pointerdown', async () => {
       this.clickSound.play();
       if (this.getRemainingTime != 0) this.scene.start('exhausted');
       else {
         resetCharacter();
         this.scene.start('selectItemScene', { map: 'jungle' });
       };
+
+      // pay for jungle quest
+      await payQuest("jungle");
     });
 
     this.selectAreaCatalonia = this.add.sprite(620, 337, 'selectArea')

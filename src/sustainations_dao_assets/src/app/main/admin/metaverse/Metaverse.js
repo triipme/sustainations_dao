@@ -209,23 +209,6 @@ const Metaverse = () => {
     });
   };
 
-  // const addDataFromExcel = (sheetIndex, apiFunction) => {
-  //   return new Promise(resolve => {
-  //     const items = data[sheetIndex];
-  //     items.forEach(async item => {
-  //       try {
-  //         if (!!apiFunction) {
-  //           const rs = await apiFunction(item);
-  //           console.log("Create", rs);
-  //         }
-  //       } catch (error) {
-  //         console.log(error);
-  //       }
-  //     });
-  //     resolve();
-  //   });
-  // };
-
   const handleSubmit = async () => {
     setLoading(true);
     await createItem();

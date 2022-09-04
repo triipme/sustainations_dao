@@ -11,6 +11,7 @@ import {
   characterTakeOption,
   listCharacterSelectsItems,
   characterCollectsMaterials,
+  listCharacterCollectsMaterials,
   getHpPotion
 } from '../GameApi';
 
@@ -24,7 +25,6 @@ class BaseScene extends Phaser.Scene {
     this.load.rexAwait(function(successCallback, failureCallback) {
       getUserInfo().then( (result) => {
         this.userInfo = result.ok;
-        console.log(this.userInfo);
         successCallback();
       });
     }, this);
@@ -162,6 +162,35 @@ class BaseScene extends Phaser.Scene {
     this.itemSlot[1] =this.add.image(125, 505, "UI_Utility_Sprite").setOrigin(0).setScrollFactor(0).setScale(0.5);
     this.itemSlot[2] =this.add.image(195, 550, "UI_Utility_Sprite").setOrigin(0).setScrollFactor(0).setScale(0.5);
   }
+
+  isExhausted() {
+    if(this.characterStatus == 'Exhausted') {
+      this.scene.start('exhausted');
+    } else {
+      if(this.isHealedPreviously) {
+        for(const i in this.characterTakeOptions) {
+          this.characterTakeOptions[i].currentHP += 3;
+        }
+      }
+    }
+  };
+
+  usePotion() {
+    if(this.isHealedPreviously){
+      var newValue = this.characterData.currentHP+3;
+      if (newValue > this.characterData.maxHP){
+        newValue = this.characterData.maxHP;
+      }
+      this.setValue(this.hp, newValue/this.characterData.maxHP*100);
+    } else{
+      this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
+    }
+  };
+
+  async listMaterial() {
+    this.collectedMaterials = await listCharacterCollectsMaterials(this.characterData.id);
+    console.log("MATERIAL",this.collectedMaterials);
+  };
 
   defineCamera(width, height) {
     this.myCam = this.cameras.main;
