@@ -16,6 +16,9 @@ const selectArea = 'metaverse/selectMap/select-area.png';
 const jungleLocationDetail = 'metaverse/selectMap/jungle_location_detail.png';
 const cataloniaLocationDetail = 'metaverse/selectMap/catalonia_location_detail.png';
 const btnBack = 'metaverse/selectItems/UI_back.png';
+const popupWindow = 'metaverse/selectMap/Jungle_popup.png';
+const popupClose = 'metaverse/selectMap/UI_ingame_close.png';
+const popupAccept = 'metaverse/selectMap/UI_ingame_popup_accept.png';
 
 class selectMap extends BaseScene {
   constructor() {
@@ -55,11 +58,13 @@ class selectMap extends BaseScene {
     this.load.image('cataloniaLocationDetail', cataloniaLocationDetail);
     this.load.spritesheet('selectArea', selectArea, { frameWidth: 498, frameHeight: 800});
     this.load.image("btnBack", btnBack);
+    this.load.image("popupWindow", popupWindow);
+    this.load.image("popupClose", popupClose);
+    this.load.image("popupAccept", popupAccept);
   }
 
   async create() {
     // add audios
-    console.log(this.userInfo.profile[0].balance)
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
 
@@ -74,6 +79,8 @@ class selectMap extends BaseScene {
       this.clickSound.play();
       history.push("/metaverse");
     });
+
+    this.currentICP = Number(this.userInfo.balance);
     this.waitingTime = 60;
     this.getRemainingTime = await getRemainingTime(this.waitingTime, this.characterData);
 
@@ -91,14 +98,13 @@ class selectMap extends BaseScene {
     });
     this.selectAreaJungle.on('pointerdown', async () => {
       this.clickSound.play();
-      if (this.getRemainingTime != 0) this.scene.start('exhausted');
-      else {
-        resetCharacter();
-        this.scene.start('selectItemScene', { map: 'jungle' });
-      };
-
-      // pay for jungle quest
-      await payQuest("jungle");
+      this.premiumPopupWindow.setVisible(true);
+      this.premiumPopupCloseBtn.setVisible(true);
+      if(this.currentICP >= 10000){
+        this.premiumPopupAcceptBtn.setVisible(true);
+      }
+      this.selectAreaJungle.disableInteractive();
+      this.selectAreaCatalonia.disableInteractive();
     });
 
     this.selectAreaCatalonia = this.add.sprite(620, 337, 'selectArea')
@@ -123,6 +129,33 @@ class selectMap extends BaseScene {
     });
 
     this.text = this.add.image(65, 425, 'text').setOrigin(0).setScale(0.7);
+
+    //jungle popup
+    this.premiumPopupWindow = this.add.image(gameConfig.scale.width/2, gameConfig.scale.height/2, "popupWindow")
+      .setScale(0.5).setVisible(false);
+    this.premiumPopupCloseBtn = this.add.image(gameConfig.scale.width/2+230, gameConfig.scale.height/2-150, "popupClose")
+      .setInteractive().setScale(0.25).setVisible(false);
+    this.premiumPopupAcceptBtn = this.add.image(gameConfig.scale.width/2, gameConfig.scale.height/2+165, "popupAccept")
+      .setInteractive().setScale(0.5).setVisible(false);
+
+    this.premiumPopupCloseBtn.on('pointerdown', () => {
+      this.clickSound.play();
+      this.premiumPopupWindow.setVisible(false);
+      this.premiumPopupCloseBtn.setVisible(false);
+      this.premiumPopupAcceptBtn.setVisible(false);
+      this.selectAreaJungle.setInteractive();
+      this.selectAreaCatalonia.setInteractive();
+    });
+    this.premiumPopupAcceptBtn.on('pointerdown', async () => {
+      this.clickSound.play();
+      if (this.getRemainingTime != 0) this.scene.start('exhausted');
+      else {
+        resetCharacter();
+        this.scene.start('selectItemScene', { map: 'jungle' });
+      };
+      // pay for jungle quest
+      await payQuest("jungle");
+    });
   }
 
 }
