@@ -2160,13 +2160,6 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   };
 
   // Game
-  public shared({ caller }) func addICP(userId : Text) : async Response<Text> {
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
-    };
-    let receipt = await rewardUserAgreement(Principal.fromText(userId));
-    #ok("Success");
-  };
   public shared({ caller }) func payQuest(questId : Text) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
