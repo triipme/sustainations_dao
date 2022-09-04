@@ -2160,6 +2160,29 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   };
 
   // Game
+  public shared({ caller }) func payQuest(questId : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    switch (state.quests.get(questId)) {
+      case null { #err(#NotFound); };
+      case (?quest) {
+        switch (await deposit(quest.price, caller)) {
+          case(#ok(bIndex)) {
+            await recordTransaction(
+              caller, quest.price, caller, Principal.fromActor(this),
+              #payQuest, ?questId, bIndex
+            );
+            #ok("Success");
+          };
+          case (#err(error)) {
+            #err(error);
+          };
+        };
+      };
+    };
+  };
+
   // Character Class
   public shared({caller}) func createCharacterClass(characterClass : Types.CharacterClass) : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
@@ -2552,14 +2575,21 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     #ok("Success");
   };
 
-  public shared query({caller}) func listCharacterCollectsMaterials(characterId : Text) : async Response<[(Types.CharacterCollectsMaterials)]> {
-    var list : [Types.CharacterCollectsMaterials] = [];
+  public shared query({caller}) func listCharacterCollectsMaterials(characterId : Text) : async Response<[{materialName : Text; amount : Int}]> {
+    var list : [{materialName : Text; amount : Int}] = [];
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
     for((key , characterCollectMaterial) in state.characterCollectsMaterials.entries()) {
       if (characterCollectMaterial.characterId == characterId) {
-        list := Array.append<Types.CharacterCollectsMaterials>(list, [characterCollectMaterial]);
+        for((K,V) in state.materials.entries()) {
+          if(characterCollectMaterial.materialId == K) {
+            list := Array.append<{materialName : Text; amount : Int}>(list, [{
+              materialName = V.name;
+              amount = characterCollectMaterial.amount;
+            }]);
+          };
+        };
       };
     };
     #ok(list);
@@ -3446,7 +3476,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     #ok("Success");
   };
 
-  public shared query({caller}) func listInventories(characterId : Text) : async Response<[Types.Inventory]> {
+  public shared query({caller}) func openInventory(characterId : Text) : async Response<[Types.Inventory]> {
     var list : [Types.Inventory] = [];
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized

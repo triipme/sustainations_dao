@@ -1,6 +1,16 @@
 import store from 'app/store';
 
 // call api
+
+// get user info
+function getUserInfo(){
+  return new Promise((resolve, reject) => {
+    const { user } = store.getState();
+    const rs = user.actor.getUserInfo();
+    resolve(rs);
+  });
+};
+
 // character
 const characterClassId = "cc1";
 
@@ -186,10 +196,10 @@ async function createInventory(characterId) {
   })
 };
 
-async function listInventories(characterId){
+async function openInventory(characterId){
   const { user } = store.getState();
-  const listInventories = async () => await user.actor.listInventories(characterId);
-  const rs = (await listInventories()).ok;
+  const func = async () => await user.actor.openInventory(characterId);
+  const rs = (await func()).ok;
   return rs;
 };
 
@@ -213,8 +223,16 @@ function loadItemUrl(key) {
   return signedUrl;
 };
 
+// pay quest
+async function payQuest(questId){
+  const { user } = store.getState();
+  const func = async () => await user.actor.payQuest(questId);
+  const result = (await func()).ok;
+  return result;
+};
 
 export {
+  getUserInfo,
   loadQuestItems,
   loadCharacter,
   loadCharacterAwait,
@@ -237,6 +255,7 @@ export {
   gainCharacterExp,
   resetCharacterCollectsMaterials,
   createInventory,
-  listInventories,
-  getRemainingTime
+  openInventory,
+  getRemainingTime,
+  payQuest
 }

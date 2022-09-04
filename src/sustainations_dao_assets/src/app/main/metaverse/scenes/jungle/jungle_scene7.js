@@ -8,9 +8,9 @@ import {
   getCharacterStatus,
   canGetARItemPromise,
   gainCharacterExp,
-  resetCharacterCollectsMaterials,
-  listInventories,
-  createInventory
+  openInventory,
+  createInventory,
+  getUserInfo
 } from '../../GameApi';
 import {settings} from '../settings';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
@@ -26,7 +26,10 @@ export default class jungle_scene7 extends BaseScene {
   constructor() {
     super('jungle_scene7');
   }
-
+  init(data) {
+    this.isHealedPreviously = data.isUsedPotion;
+    console.log('healed', this.isHealedPreviously);
+  }
   clearSceneCache() {
     const textures_list = ['ground', 'background1', 'background2', 
       'background3', 'selectAction', 'btnBlank', 'obstacle'];
@@ -38,24 +41,17 @@ export default class jungle_scene7 extends BaseScene {
   preload() {
     this.addLoadingScreen();
     this.eventItemId = "ui1";
-    this.load.rexAwait(function(successCallback, failureCallback) {
-      loadCharacter().then( (result) => {
-        this.characterData = result.ok[1];
-        console.log(this.characterData);
-        successCallback();
-      });
-    }, this);
-
-    this.load.rexAwait(function(successCallback, failureCallback) {
-      getCharacterStatus().then( (result) => {
-        this.characterStatus = result.ok;
-        successCallback();
-      });
-    }, this);
+    this.initialLoad("");
 
     this.load.rexAwait(function(successCallback, failureCallback) {
       canGetARItemPromise(this.eventItemId).then( (result) => {
         this.canGetARItem = result.ok;
+        successCallback();
+      });
+    }, this);
+    this.load.rexAwait(function(successCallback, failureCallback) {
+      getUserInfo().then( (result) => {
+        this.userInfo = result.ok;
         successCallback();
       });
     }, this);
@@ -101,9 +97,8 @@ export default class jungle_scene7 extends BaseScene {
   }
 
   async create() {
-    if(this.characterStatus == 'Exhausted') {
-      this.scene.start('exhausted');
-    }
+    this.isExhausted();
+    this.listMaterial();
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
@@ -125,12 +120,12 @@ export default class jungle_scene7 extends BaseScene {
     }
     this.physics.add.collider(this.player, platforms);
 
-    this.createUIElements(true);
+    this.createUIElements();
     this.defineCamera(gameConfig.scale.width, gameConfig.scale.height);
     this.createPauseScreen();
     
     // stats before choose option
-    this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
+    this.usePotion();
     this.setValue(this.stamina, this.characterData.currentStamina/this.characterData.maxStamina*100);
     this.setValue(this.mana, this.characterData.currentMana/this.characterData.maxMana*100);
     this.setValue(this.morale, this.characterData.currentMorale/this.characterData.maxMorale*100);
@@ -161,8 +156,7 @@ export default class jungle_scene7 extends BaseScene {
     };
     createInventory(this.characterData.id);
     gainCharacterExp(this.characterData);
-    this.inventory = await listInventories(this.characterData.id);
-    resetCharacterCollectsMaterials(this.characterData.id);
+    this.inventory = await openInventory(this.characterData.id);
   }
 
   update() {

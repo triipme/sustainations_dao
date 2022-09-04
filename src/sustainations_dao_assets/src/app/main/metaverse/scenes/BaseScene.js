@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import gameConfig from '../GameConfig';
-import { 
+import {
+  getUserInfo,
   loadEventItem,
   useHpPotion,
   loadEventOptions, 
@@ -10,6 +11,7 @@ import {
   characterTakeOption,
   listCharacterSelectsItems,
   characterCollectsMaterials,
+  listCharacterCollectsMaterials,
   getHpPotion
 } from '../GameApi';
 
@@ -20,6 +22,12 @@ class BaseScene extends Phaser.Scene {
 
   initialLoad(eventID) {
     this.eventId = eventID;
+    this.load.rexAwait(function(successCallback, failureCallback) {
+      getUserInfo().then( (result) => {
+        this.userInfo = result.ok;
+        successCallback();
+      });
+    }, this);
     // load character
     this.load.rexAwait(function(successCallback, failureCallback) {
       loadCharacter().then( (result) => {
@@ -96,6 +104,8 @@ class BaseScene extends Phaser.Scene {
   async createUIElements(isDisabled = false) {
     //UI
     this.add.image(20, 30, "UI_NameCard").setOrigin(0).setScrollFactor(0);
+    this.add.text(90, 47, 'Trekker', { fill: '#000', align: 'center', fontSize: '9px', font: 'Arial'}).setScrollFactor(0);
+    this.add.text(90, 65, this.userInfo.profile[0].username, { fill: '#000', align: 'center', font: '15px Arial'}).setScrollFactor(0);
     this.add.image(255, 30, "UI_HP").setOrigin(0).setScrollFactor(0);
     this.add.image(490, 30, "UI_Mana").setOrigin(0).setScrollFactor(0);
     this.add.image(725, 30, "UI_Stamina").setOrigin(0).setScrollFactor(0);
@@ -111,7 +121,7 @@ class BaseScene extends Phaser.Scene {
         try {this.sfx_big_waterfall.stop();} catch {}
         try {this.ingameSound.stop();} catch {}
         try {this.sfx_monkey.stop();} catch {}
-        this.scene.start('menuScene');
+        this.scene.start('selectMap');
     });
     //set value
     this.hp = this.makeBar(325, 65, 100, 15, 0x74e044).setScrollFactor(0);
@@ -152,6 +162,35 @@ class BaseScene extends Phaser.Scene {
     this.itemSlot[1] =this.add.image(125, 505, "UI_Utility_Sprite").setOrigin(0).setScrollFactor(0).setScale(0.5);
     this.itemSlot[2] =this.add.image(195, 550, "UI_Utility_Sprite").setOrigin(0).setScrollFactor(0).setScale(0.5);
   }
+
+  isExhausted() {
+    if(this.characterStatus == 'Exhausted') {
+      this.scene.start('exhausted');
+    } else {
+      if(this.isHealedPreviously) {
+        for(const i in this.characterTakeOptions) {
+          this.characterTakeOptions[i].currentHP += 3;
+        }
+      }
+    }
+  };
+
+  usePotion() {
+    if(this.isHealedPreviously){
+      var newValue = this.characterData.currentHP+3;
+      if (newValue > this.characterData.maxHP){
+        newValue = this.characterData.maxHP;
+      }
+      this.setValue(this.hp, newValue/this.characterData.maxHP*100);
+    } else{
+      this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
+    }
+  };
+
+  async listMaterial() {
+    this.collectedMaterials = await listCharacterCollectsMaterials(this.characterData.id);
+    console.log("MATERIAL",this.collectedMaterials);
+  };
 
   defineCamera(width, height) {
     this.myCam = this.cameras.main;
