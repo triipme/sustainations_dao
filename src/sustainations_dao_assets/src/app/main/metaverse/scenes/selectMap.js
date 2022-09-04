@@ -100,7 +100,7 @@ class selectMap extends BaseScene {
       this.clickSound.play();
       this.premiumPopupWindow.setVisible(true);
       this.premiumPopupCloseBtn.setVisible(true);
-      if(this.currentICP >= 10000){
+      if(this.currentICP >= 20000){
         this.premiumPopupAcceptBtn.setVisible(true);
       }
       this.selectAreaJungle.disableInteractive();
