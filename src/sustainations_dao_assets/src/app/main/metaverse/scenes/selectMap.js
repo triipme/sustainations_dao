@@ -58,7 +58,7 @@ class selectMap extends BaseScene {
     this.load.image('cataloniaLocationDetail', cataloniaLocationDetail);
     this.load.spritesheet('selectArea', selectArea, { frameWidth: 498, frameHeight: 800});
     this.load.image("btnBack", btnBack);
-    this.load.image("popupWindow", popupWindow);
+    this.load.spritesheet('popupWindow', popupWindow, { frameWidth: 980, frameHeight: 799});
     this.load.image("popupClose", popupClose);
     this.load.image("popupAccept", popupAccept);
   }
@@ -81,6 +81,7 @@ class selectMap extends BaseScene {
     });
 
     this.currentICP = Number(this.userInfo.balance);
+    this.requiredICP = 20000;
     this.waitingTime = 60;
     this.getRemainingTime = await getRemainingTime(this.waitingTime, this.characterData);
 
@@ -100,7 +101,7 @@ class selectMap extends BaseScene {
       this.clickSound.play();
       this.premiumPopupWindow.setVisible(true);
       this.premiumPopupCloseBtn.setVisible(true);
-      if(this.currentICP >= 20000){
+      if(this.currentICP >= this.requiredICP){
         this.premiumPopupAcceptBtn.setVisible(true);
       }
       this.selectAreaJungle.disableInteractive();
@@ -131,11 +132,14 @@ class selectMap extends BaseScene {
     this.text = this.add.image(65, 425, 'text').setOrigin(0).setScale(0.7);
 
     //jungle popup
-    this.premiumPopupWindow = this.add.image(gameConfig.scale.width/2, gameConfig.scale.height/2, "popupWindow")
+    this.premiumPopupWindow = this.add.sprite(gameConfig.scale.width/2, gameConfig.scale.height/2, "popupWindow")
       .setScale(0.5).setVisible(false);
+    if (this.currentICP < this.requiredICP) {
+      this.premiumPopupWindow.setFrame(1);
+    }
     this.premiumPopupCloseBtn = this.add.image(gameConfig.scale.width/2+230, gameConfig.scale.height/2-150, "popupClose")
       .setInteractive().setScale(0.25).setVisible(false);
-    this.premiumPopupAcceptBtn = this.add.image(gameConfig.scale.width/2, gameConfig.scale.height/2+165, "popupAccept")
+    this.premiumPopupAcceptBtn = this.add.image(gameConfig.scale.width/2, gameConfig.scale.height/2+115, "popupAccept")
       .setInteractive().setScale(0.5).setVisible(false);
 
     this.premiumPopupCloseBtn.on('pointerdown', () => {
