@@ -57,6 +57,13 @@ class BaseScene extends Phaser.Scene {
         successCallback();
       });
     }, this);
+
+    this.load.rexAwait(function(successCallback, failureCallback) {
+      getHpPotion().then( (result) => {
+        this.hpPotion = result.ok;
+        successCallback();
+      });
+    }, this);
   }
 
   createSceneLayers() {
@@ -169,7 +176,7 @@ class BaseScene extends Phaser.Scene {
     } else {
       if(this.isHealedPreviously) {
         for(const i in this.characterTakeOptions) {
-          this.characterTakeOptions[i].currentHP += 3;
+          this.characterTakeOptions[i].currentHP += this.hpPotion.increaseStat;
         }
       }
     }
@@ -177,7 +184,7 @@ class BaseScene extends Phaser.Scene {
 
   usePotion() {
     if(this.isHealedPreviously){
-      var newValue = this.characterData.currentHP+3;
+      var newValue = this.characterData.currentHP + this.hpPotion.increaseStat;
       if (newValue > this.characterData.maxHP){
         newValue = this.characterData.maxHP;
       }

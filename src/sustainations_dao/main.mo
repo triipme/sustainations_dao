@@ -2746,18 +2746,8 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
-    var rs : [Types.UsableItem] = [];
-    switch (state.eventItems.get(Principal.toText(caller))) {
-      case null { #err(#NotFound); };
-      case (?eventItem) {
-        for((K,V) in state.usableItems.entries()) {
-          if(V.id == eventItem.itemId) {
-            rs := Array.append<Types.UsableItem>(rs, [V]);
-          };
-        };
-        #ok(rs[0]);
-      };
-    };
+    let rs = state.usableItems.get("ui1");
+    return Result.fromOption(rs, #NotFound);
   };
 
   // Event Item
