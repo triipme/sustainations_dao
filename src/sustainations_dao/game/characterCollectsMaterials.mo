@@ -67,6 +67,4 @@ module CharacterCollectsMaterials {
   public func update(characterCollectMaterial : Types.CharacterCollectsMaterials, state : State.State) {
     let updatedCharacterTakesOption = state.characterCollectsMaterials.replace(characterCollectMaterial.id, characterCollectMaterial);
   };
-
-
 }

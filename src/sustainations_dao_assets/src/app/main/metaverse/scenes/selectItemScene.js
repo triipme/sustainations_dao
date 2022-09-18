@@ -1,13 +1,14 @@
 import Phaser from 'phaser';
 import gameConfig from '../GameConfig';
 import BaseScene from './BaseScene';
-import { 
+import {
+  getUserInfo,
   loadQuestItems, 
-  loadCharacter,
   characterSelectsItems,
   loadItemUrl,
   resetCharacter,
-  loadCharacterAwait
+  loadCharacterAwait,
+  resetCharacterCollectsMaterials
 } from '../GameApi';
 import { throws } from 'assert';
 
@@ -49,6 +50,13 @@ class selectItemScene extends BaseScene {
     this.addLoadingScreen();
     this.itemNames = [];
     this.itemStrength = [];
+    this.load.rexAwait(function(successCallback, failureCallback) {
+      getUserInfo().then( (result) => {
+        this.userInfo = result.ok;
+        console.log(this.userInfo);
+        successCallback();
+      });
+    }, this);
     this.load.rexAwait(function(successCallback, failureCallback) {
       resetCharacter().then( (result) => {
         this.resetedCharacter = result;
@@ -110,6 +118,8 @@ class selectItemScene extends BaseScene {
       .setScrollFactor(0);
 
     this.add.image(35, 100, 'UI_NameCard').setOrigin(0);
+    this.add.text(105, 117, 'Trekker', { fill: '#000', align: 'center', fontSize: '9px', font: 'Arial'})
+    this.add.text(105, 135, this.userInfo.profile[0].username, { fill: '#000', align: 'center', font: '15px Arial'})
     this.add.image(35, 175, 'UI_HP').setOrigin(0);
     this.add.image(35, 250, 'UI_Stamina').setOrigin(0);
     this.add.image(35, 325, 'UI_Mana').setOrigin(0);
@@ -120,7 +130,7 @@ class selectItemScene extends BaseScene {
     this.mana = this.makeBar(107, 210+150, 100, 15, 0xc038f6);
     this.morale = this.makeBar(107, 210+225, 100, 15, 0x63dafb);
 
-
+    resetCharacterCollectsMaterials(this.characterData.id);
     this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
     this.setValue(this.stamina, this.characterData.currentStamina/this.characterData.maxStamina*100);
     this.setValue(this.mana, this.characterData.currentMana/this.characterData.maxMana*100);

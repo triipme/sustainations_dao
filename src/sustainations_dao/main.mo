@@ -516,12 +516,12 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     // Check ledger for value
     let balance = await ledger.account_balance({ account = accountId });
     // Transfer to default subaccount
-    let receipt = if (balance.e8s >= amount + transferFee + transferFee) {
+    let receipt = if (balance.e8s >= amount + transferFee) {
       await ledger.transfer({
         memo: Nat64    = 0;
         from_subaccount = ?Account.principalToSubaccount(caller);
         to = Account.accountIdentifier(Principal.fromActor(this), Account.defaultSubaccount());
-        amount = { e8s = amount + transferFee };
+        amount = { e8s = amount };
         fee = { e8s = transferFee };
         created_at_time = ?{ timestamp_nanos = Nat64.fromNat(Int.abs(Time.now())) };
       })
@@ -588,7 +588,8 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
-    switch (await deposit(createProposalFee, caller)) {
+    let amount = createProposalFee + transferFee;
+    switch (await deposit(amount, caller)) {
       case (#ok(bIndex)) {
         let uuid = await createUUID();
         let proposal : Types.Proposal = {
@@ -603,7 +604,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
         };
         // record transaction
         await recordTransaction(
-          caller, createProposalFee, caller, Principal.fromActor(this),
+          caller, amount, caller, Principal.fromActor(this),
           #createProposal, ?uuid, bIndex
         );
         state.proposals.put(uuid, proposal);
@@ -670,12 +671,12 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
         let voters = List.push(voter, proposal.voters);
         if (args.vote == #yes) {
           // deposit vote fee
-          switch (await deposit(voteFee, caller)) {
+          switch (await deposit(voteFee + transferFee, caller)) {
             case (#ok(bIndex)) {
               votesYes += voteFee;
               // record transaction
               await recordTransaction(
-                caller, voteFee, caller, Principal.fromActor(this),
+                caller, voteFee + transferFee, caller, Principal.fromActor(this),
                 #vote, ?proposal.uuid, bIndex
               );
               if (votesYes >= Nat64.fromNat(proposal.payload.fundingAmount)) {
@@ -2159,6 +2160,61 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   };
 
   // Game
+  public shared({ caller }) func addICP(userId : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let receipt = await rewardUserAgreement(Principal.fromText(userId));
+    #ok("Success");
+  };
+  public shared({ caller }) func payQuest(questId : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    switch (state.quests.get(questId)) {
+      case null { #err(#NotFound); };
+      case (?quest) {
+        switch (await deposit(quest.price, caller)) {
+          case(#ok(bIndex)) {
+            await recordTransaction(
+              caller, quest.price, caller, Principal.fromActor(this),
+              #payQuest, ?questId, bIndex
+            );
+            #ok("Success");
+          };
+          case (#err(error)) {
+            #err(error);
+          };
+        };
+      };
+    };
+  };
+
+  public shared({ caller }) func payQuestbyUserId(questId : Text, userId : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    switch (state.quests.get(questId)) {
+      case null { #err(#NotFound); };
+      case (?quest) {
+        switch (await deposit(transferFee, Principal.fromText(userId))) {
+          case(#ok(bIndex)) {
+            let uuid = await createUUID();
+            await recordTransaction(
+              Principal.fromText(userId), transferFee, Principal.fromText(userId), Principal.fromActor(this),
+              #payQuest, ?questId, bIndex
+            );
+            #ok("Success");
+          };
+          case (#err(error)) {
+            #err(error);
+          };
+        };
+      };
+    };
+  };
+
+
   // Character Class
   public shared({caller}) func createCharacterClass(characterClass : Types.CharacterClass) : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
@@ -2551,14 +2607,21 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     #ok("Success");
   };
 
-  public shared query({caller}) func listCharacterCollectsMaterials(characterId : Text) : async Response<[(Types.CharacterCollectsMaterials)]> {
-    var list : [Types.CharacterCollectsMaterials] = [];
+  public shared query({caller}) func listCharacterCollectsMaterials(characterId : Text) : async Response<[{materialName : Text; amount : Int}]> {
+    var list : [{materialName : Text; amount : Int}] = [];
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
     for((key , characterCollectMaterial) in state.characterCollectsMaterials.entries()) {
       if (characterCollectMaterial.characterId == characterId) {
-        list := Array.append<Types.CharacterCollectsMaterials>(list, [characterCollectMaterial]);
+        for((K,V) in state.materials.entries()) {
+          if(characterCollectMaterial.materialId == K) {
+            list := Array.append<{materialName : Text; amount : Int}>(list, [{
+              materialName = V.name;
+              amount = characterCollectMaterial.amount;
+            }]);
+          };
+        };
       };
     };
     #ok(list);
@@ -3445,7 +3508,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     #ok("Success");
   };
 
-  public shared query({caller}) func listInventories(characterId : Text) : async Response<[Types.Inventory]> {
+  public shared query({caller}) func openInventory(characterId : Text) : async Response<[Types.Inventory]> {
     var list : [Types.Inventory] = [];
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
