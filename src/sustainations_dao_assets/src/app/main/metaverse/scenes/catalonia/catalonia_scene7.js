@@ -241,7 +241,7 @@ export default class catalonia_scene7 extends BaseScene {
     if (this.player.x > gameConfig.scale.width*4) {
       this.ingameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start('thanks');
+      this.scene.start('catalonia_scene8');
     }
 
     if (this.player.x > 3967 && this.isInteracted == false) {

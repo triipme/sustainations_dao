@@ -100,6 +100,12 @@ class BaseScene extends Phaser.Scene {
     this.add.image(490, 30, "UI_Mana").setOrigin(0).setScrollFactor(0);
     this.add.image(725, 30, "UI_Stamina").setOrigin(0).setScrollFactor(0);
     this.add.image(960, 30, "UI_Morale").setOrigin(0).setScrollFactor(0);
+
+    this.add.image(20, 100, "item_ingame_HP").setOrigin(0).setScrollFactor(0);
+    this.add.image(20, 150, "item_ingame_HP").setOrigin(0).setScrollFactor(0);
+    this.add.image(20, 200, "item_ingame_HP").setOrigin(0).setScrollFactor(0);
+    this.add.image(20, 250, "item_ingame_HP").setOrigin(0).setScrollFactor(0);
+
     this.add.image(1190, 50, "BtnExit").setOrigin(0).setScrollFactor(0).setScale(0.7)
     .setInteractive()
       .on('pointerdown', () => {
@@ -198,6 +204,26 @@ class BaseScene extends Phaser.Scene {
     } else {
       bar.scaleX = percentage/100;
     }
+  }
+ showLossStat(character_before, character_after){
+    let lossStamina = character_after.currentStamina - character_before.currentStamina
+    let lossHp = character_after.currentHP - character_before.currentHP
+    let lossMana = character_after.currentMana - character_before.currentMana
+    let lossMorale = character_after.currentMorale - character_before.currentMorale
+    if (lossHp != 0){
+      console.log('HP: ', lossHp)
+    }
+    if (lossMana != 0){
+      console.log('MANA: ', lossMana)
+    }
+    if (lossStamina != 0){
+      console.log('STAMINA: ', lossStamina)
+    }
+    if (lossMorale != 0){
+      console.log('MORALE: ', lossMorale)
+    }
+    let r = [lossHp, lossMana, lossStamina, lossMorale]
+    return r
   }
 }
 export default BaseScene;
