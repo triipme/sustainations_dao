@@ -20,16 +20,18 @@ module {
     aId : Text;
     gameId : Text;
     gameSlug : Text;
-    history : [
-      {
-        stageId : Text;
-        turn : Nat;
-        timing : Float;
-      }
-    ];
+    history : [GameProgress];
     createdAt : Int;
     updatedAt : Int;
   };
+
+  public type GameProgress = {
+    stageId : Text;
+    selected : [?(Text, Text)];
+    turn : Nat; // default 0
+    timing : Float; // default 0
+  };
+  
   public type Reward = {
     reward : Nat64;
     playerId : Text;

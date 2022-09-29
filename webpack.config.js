@@ -11,11 +11,7 @@ const dotenv = require("dotenv").config({ path: __dirname + "/.env" });
 function initCanisterEnv() {
   let localCanisters, prodCanisters;
   try {
-    localCanisters = require(path.resolve(
-      ".dfx",
-      "local",
-      "canister_ids.json"
-    ));
+    localCanisters = require(path.resolve(".dfx", "local", "canister_ids.json"));
   } catch (error) {
     console.log("No local canister_ids.json found. Continuing production");
   }
@@ -26,15 +22,13 @@ function initCanisterEnv() {
   }
 
   const network =
-    process.env.DFX_NETWORK ||
-    (process.env.NODE_ENV === "production" ? "ic" : "local");
+    process.env.DFX_NETWORK || (process.env.NODE_ENV === "production" ? "ic" : "local");
 
   const canisterConfig = network === "local" ? localCanisters : prodCanisters;
 
   return Object.entries(canisterConfig).reduce((prev, current) => {
     const [canisterName, canisterDetails] = current;
-    prev[canisterName.toUpperCase() + "_CANISTER_ID"] =
-      canisterDetails[network];
+    prev[canisterName.toUpperCase() + "_CANISTER_ID"] = canisterDetails[network];
     return prev;
   }, {});
 }
@@ -52,12 +46,12 @@ module.exports = {
   entry: {
     // The frontend.entrypoint points to the HTML file for this build, so we need
     // to replace the extension to `.js`.
-    index: path.join(__dirname, asset_entry).replace(/\.html$/, ".js"),
+    index: path.join(__dirname, asset_entry).replace(/\.html$/, ".js")
   },
   devtool: isDevelopment ? "source-map" : false,
   optimization: {
     minimize: !isDevelopment,
-    minimizer: [new TerserPlugin()],
+    minimizer: [new TerserPlugin()]
   },
   resolve: {
     extensions: [".js", ".ts", ".jsx", ".tsx"],
@@ -66,26 +60,35 @@ module.exports = {
       buffer: require.resolve("buffer/"),
       events: require.resolve("events/"),
       stream: require.resolve("stream-browserify/"),
-      util: require.resolve("util/"),
+      util: require.resolve("util/")
     },
     alias: {
-      '@components': path.resolve(__dirname, './src/sustainations_dao_assets/src/@fuse'),
-      '@fuse': path.resolve(__dirname, './src/sustainations_dao_assets/src/@fuse'),
-      '@history': path.resolve(__dirname, './src/sustainations_dao_assets/src/@history'),
-      '@lodash': path.resolve(__dirname, './src/sustainations_dao_assets/src/@lodash'),
-      '@mock-api': path.resolve(__dirname, './src/sustainations_dao_assets/src/@mock-api'),
-      'api': path.resolve(__dirname, './src/sustainations_dao_assets/src/api'),
-      'app/store': path.resolve(__dirname, './src/sustainations_dao_assets/src/app/store'),
-      'app/shared-components': path.resolve(__dirname, './src/sustainations_dao_assets/src/app/shared-components'),
-      'app/configs': path.resolve(__dirname, './src/sustainations_dao_assets/src/app/configs'),
-      'app/theme-layouts': path.resolve(__dirname, './src/sustainations_dao_assets/src/app/theme-layouts'),
-      'app/AppContext': path.resolve(__dirname, './src/sustainations_dao_assets/src/app/AppContext'),
-      'react': path.resolve('./node_modules/react'),
-    },
+      "@components": path.resolve(__dirname, "./src/sustainations_dao_assets/src/@fuse"),
+      "@fuse": path.resolve(__dirname, "./src/sustainations_dao_assets/src/@fuse"),
+      "@history": path.resolve(__dirname, "./src/sustainations_dao_assets/src/@history"),
+      "@lodash": path.resolve(__dirname, "./src/sustainations_dao_assets/src/@lodash"),
+      "@mock-api": path.resolve(__dirname, "./src/sustainations_dao_assets/src/@mock-api"),
+      "api": path.resolve(__dirname, "./src/sustainations_dao_assets/src/api"),
+      "app/store": path.resolve(__dirname, "./src/sustainations_dao_assets/src/app/store"),
+      "app/shared-components": path.resolve(
+        __dirname,
+        "./src/sustainations_dao_assets/src/app/shared-components"
+      ),
+      "app/configs": path.resolve(__dirname, "./src/sustainations_dao_assets/src/app/configs"),
+      "app/theme-layouts": path.resolve(
+        __dirname,
+        "./src/sustainations_dao_assets/src/app/theme-layouts"
+      ),
+      "app/AppContext": path.resolve(
+        __dirname,
+        "./src/sustainations_dao_assets/src/app/AppContext"
+      ),
+      "react": path.resolve("./node_modules/react")
+    }
   },
   output: {
     filename: "index.js",
-    path: path.join(__dirname, "dist", frontendDirectory),
+    path: path.join(__dirname, "dist", frontendDirectory)
   },
 
   // Depending in the language or framework you are using for
@@ -129,7 +132,7 @@ module.exports = {
       },
       {
         test: /\.(css|scss|sass)$/i,
-        use: ["style-loader", "css-loader", "sass-loader", 'postcss-loader']
+        use: ["style-loader", "css-loader", "sass-loader", "postcss-loader"]
       },
       {
         test: [/\.vert$/, /\.frag$/],
@@ -140,13 +143,7 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       template: path.join(__dirname, asset_entry),
-      favicon: path.join(
-        __dirname,
-        "src",
-        "sustainations_dao_assets",
-        "assets",
-        "favicon.ico"
-      ),
+      favicon: path.join(__dirname, "src", "sustainations_dao_assets", "assets", "favicon.ico"),
       cache: false,
       minify: !isDevelopment
         ? {
@@ -161,27 +158,27 @@ module.exports = {
             minifyCSS: true,
             minifyURLs: true
           }
-        : undefined,
+        : undefined
     }),
     new CopyPlugin({
       patterns: [
         {
           from: path.join(__dirname, "src", frontendDirectory, "assets"),
-          to: path.join(__dirname, "dist", frontendDirectory),
-        },
-      ],
+          to: path.join(__dirname, "dist", frontendDirectory)
+        }
+      ]
     }),
     new webpack.EnvironmentPlugin({
       NODE_ENV: "development",
       II_URL: isDevelopment
         ? dotenv.parsed.CANISTER_IDENTITY_LOCAL_URL
         : "https://identity.ic0.app/#authorize",
-      ...canisterEnvVariables,
+      ...canisterEnvVariables
     }),
     new webpack.ProvidePlugin({
       Buffer: [require.resolve("buffer/"), "Buffer"],
       process: require.resolve("process/browser"),
-      "React": "react",
+      "React": "react"
     }),
     new Dotenv({
       path: "./.env" // Path to .env file (this is the default)
@@ -192,7 +189,7 @@ module.exports = {
     new webpack.DefinePlugin({
       CANVAS_RENDERER: JSON.stringify(true),
       WEBGL_RENDERER: JSON.stringify(true)
-    }),
+    })
   ],
   // proxy /api to port 8000 during development
   devServer: {
@@ -201,14 +198,14 @@ module.exports = {
         target: "http://localhost:8000",
         changeOrigin: true,
         pathRewrite: {
-          "^/api": "/api",
-        },
-      },
+          "^/api": "/api"
+        }
+      }
     },
     hot: true,
     port: 3000,
     watchFiles: [path.resolve(__dirname, "src", frontendDirectory)],
     liveReload: true,
-    historyApiFallback: true,
-  },
+    historyApiFallback: true
+  }
 };
