@@ -24,7 +24,7 @@ const MemoryCardEngineTop = ({ slug, gameId }) => {
     return list
       ?.map((l, l_i) => {
         const col2 = totalTurn(l?.[0].history);
-        const col3 = (totalTime(l?.[0].history) / Math.pow(10, 9)).toFixed(2);
+        const col3 = totalTime(l?.[0].history);
         return {
           col1: String(l?.[0].aId),
           col2,

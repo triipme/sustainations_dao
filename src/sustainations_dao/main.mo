@@ -2114,11 +2114,10 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared({caller}) func memoryCardEngineCardPair(pairCard : (Text, Text), gameId : Text, stageId : Text, playerId : Text, gameSlug : Text) : async Response<Bool> {
+  public shared({caller}) func memoryCardEngineCardPair(pairCard : (Text, Text, Float), gameId : Text, stageId : Text, playerId : Text, gameSlug : Text) : async Response<Bool> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       throw Error.reject("NotAuthorized");  //isNotAuthorized
     };
-
     switch (state.memoryCardEngine.players.get(playerId)){
       case null { return #err(#NotFound); };
       case (?player) {
@@ -2135,6 +2134,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
             for (value in player.history.vals()) {
               // kiem tra neu GameProgress co stageId = stageId dau vao thi thay doi GameProgress do, roi dua do mang newHistory
               if (value.stageId == stageId) {
+                
                 let newValue : Types.MemoryCardEngineGameProgress = {
                   stageId = value.stageId;
                   selected = Array.append(value.selected, [?pairCard]);
@@ -2147,7 +2147,6 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
                 newHistory := Array.append<Types.MemoryCardEngineGameProgress>(newHistory, [value]);
               };
             };
-            
             let replacePlayer : Types.MemoryCardEnginePlayer = {
               aId = player.aId;
               gameId = player.gameId;
@@ -2157,7 +2156,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
               updatedAt = Moment.now();
             };
             let _ = state.memoryCardEngine.players.replace(playerId, replacePlayer);
-            return #ok(Text.equal(pairCard));
+            return #ok(Text.equal(pairCard.0, pairCard.1));
           };
         };
       };
@@ -2176,7 +2175,6 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
           Array.find<Types.MemoryCardEngineGameProgress>(player.history, func (h) : Bool {
           Text.equal(stageId, h.stageId);
         });
-
         switch (found) {
           case null {
             return #err(#NotFound);
@@ -2185,17 +2183,41 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
             var newHistory : [Types.MemoryCardEngineGameProgress] = [];
             for (value in player.history.vals()) {
               if (value.stageId == stageId and 
-                Int.equal(value.selected.size(), 0) and
+                Int.greater(value.selected.size(), 0) and
                 Nat.equal(value.turn, 0) and
                 Float.equal(value.timing, 0)
               ) {
-                let newValue : Types.MemoryCardEngineGameProgress = {
-                  stageId = value.stageId;
-                  selected = selected;
-                  turn = selected.size();
-                  timing = Float.fromInt(Time.now() - player.updatedAt);
-                };
-                newHistory := Array.append<Types.MemoryCardEngineGameProgress>(newHistory, [newValue]);
+                var temp : Float = 0;
+                var isCheating = false;
+                let oldSelected : [?(Text, Text)] = 
+                  Array.map(value.selected, func (s : ?(Text, Text, Float)) : ?(Text, Text) {
+                    switch (s) {
+                      case null { return null };
+                      case (? v) { 
+                        if (temp < v.2) {
+                          temp := v.2;
+                        } else {
+                          isCheating := true;
+                        };
+                        return ?(v.0, v.1);
+                      };
+                    }
+                  });
+                
+                if (selected == oldSelected and not(isCheating)) { //cheat
+                  let newValue : Types.MemoryCardEngineGameProgress = {
+                    stageId = value.stageId;
+                    selected = value.selected;
+                    turn = selected.size();
+                    timing = switch (value.selected[value.selected.size()-1]) {
+                      case null { 0 };
+                      case (? s) { s.2 }
+                    };
+                  };
+                  newHistory := Array.append<Types.MemoryCardEngineGameProgress>(newHistory, [newValue]);
+                } else {
+                  newHistory := Array.append<Types.MemoryCardEngineGameProgress>(newHistory, [value]);
+                }
               } else {
                 newHistory := Array.append<Types.MemoryCardEngineGameProgress>(newHistory, [value]);
               };
@@ -2233,7 +2255,18 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
         Text.equal(gameSlug, V.gameSlug) and
         Text.equal(gameId, V.gameId)
       ) {
-        listTop := Array.append(listTop, [?V]);
+        var temp = true;
+        for (value in V.history.vals()) {
+          if (
+            Nat.equal(value.turn, 0) and
+            Float.equal(value.timing, 0)
+          ) {
+            temp := false;
+          }
+        };
+        if (temp) {
+          listTop := Array.append(listTop, [?V]);
+        }
       }
     };
     #ok(listTop);
@@ -2255,7 +2288,18 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
         Text.equal(gameSlug, V.gameSlug) and
         Text.equal(gameId, V.gameId)
       ) {
-        listTop := Array.append(listTop, [?(K, V)]);
+        var temp = true;
+        for (value in V.history.vals()) {
+          if (
+            Nat.equal(value.turn, 0) and
+            Float.equal(value.timing, 0)
+          ) {
+            temp := false;
+          }
+        };
+        if (temp) {
+          listTop := Array.append(listTop, [?(K, V)]);
+        }
       }
     };
     #ok(listTop);
@@ -2269,7 +2313,18 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
       var listTop : [Types.MemoryCardEnginePlayer] = [];
       for(V in state.memoryCardEngine.players.vals()) {
         if(Text.equal(gameSlug, V.gameSlug) and Text.equal(gameId, V.gameId)) {
-          listTop := Array.append(listTop, [V]);
+         var temp = true;
+          for (value in V.history.vals()) {
+            if (
+              Nat.equal(value.turn, 0) and
+              Float.equal(value.timing, 0)
+            ) {
+              temp := false;
+            }
+          };
+          if (temp) {
+            listTop := Array.append(listTop, [V]);
+          }
         }
       };
       #ok(listTop);

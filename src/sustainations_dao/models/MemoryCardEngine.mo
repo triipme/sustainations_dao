@@ -27,7 +27,7 @@ module {
 
   public type GameProgress = {
     stageId : Text;
-    selected : [?(Text, Text)];
+    selected : [?(Text, Text, Float)]; //cardId1, cardId2, time_select
     turn : Nat; // default 0
     timing : Float; // default 0
   };

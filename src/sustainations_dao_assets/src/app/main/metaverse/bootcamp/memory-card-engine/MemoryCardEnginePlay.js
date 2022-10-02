@@ -50,18 +50,20 @@ const MemoryCardEnginePlay = () => {
       console.log(error);
     }
   }, []);
-  const pair = useCallback(async () => {
+  const pair = useCallback(async (cardId1, cardId2) => {
     try {
       const { stageId, player, gameId, gameSlug } = stateLocation;
-      const rsCards = await actor.memoryCardEngineStartStage(
+      const rsPair = await actor.memoryCardEngineCardPair(
+        [cardId1, cardId2, +(ref.current.getTime() / 100).toFixed(2)],
         gameId,
         stageId,
-        [].concat(player?.[0] || []),
+        player,
         gameSlug
       );
-      if ("ok" in rsCards) {
-        setCards(rsCards.ok[0].flat());
-        stateLocation.player = rsCards.ok[1];
+      if ("ok" in rsPair) {
+        return rsPair.ok;
+      } else {
+        throw rsPair.err;
       }
     } catch (error) {
       console.log(error);
@@ -74,24 +76,29 @@ const MemoryCardEnginePlay = () => {
   //compare selected cards
   useEffect(() => {
     if (choiceOne && choiceTwo) {
-      setDisabled(true);
-      if (choiceOne[0] === choiceTwo[0]) {
-        setCards(prevCards => {
-          return prevCards.map(card => {
-            if (
-              (card[0] === choiceOne[0] && card[1].data === choiceOne[1].data) ||
-              (card[0] === choiceTwo[0] && card[1].data === choiceTwo[1].data)
-            ) {
-              return { ...card, matched: true };
-            } else {
-              return card;
-            }
+      (async () => {
+        setDisabled(true);
+        ref.current.pause();
+        const rsPair = await pair(choiceOne[0], choiceTwo[0]);
+        ref.current.resume();
+        if (rsPair) {
+          setCards(prevCards => {
+            return prevCards.map(card => {
+              if (
+                (card[0] === choiceOne[0] && card[1].data === choiceOne[1].data) ||
+                (card[0] === choiceTwo[0] && card[1].data === choiceTwo[1].data)
+              ) {
+                return { ...card, matched: true };
+              } else {
+                return card;
+              }
+            });
           });
-        });
-        resetTurn();
-      } else {
-        setTimeout(() => resetTurn(), 500);
-      }
+          resetTurn();
+        } else {
+          setTimeout(() => resetTurn(), 500);
+        }
+      })();
     }
   }, [choiceTwo?.[0]]);
   //handle choice
@@ -181,6 +188,15 @@ const TimingPlay = memo(
     useImperativeHandle(ref, () => ({
       resetTime() {
         setTime(0);
+      },
+      pause() {
+        setIsLoading(true);
+      },
+      resume() {
+        setIsLoading(false);
+      },
+      getTime() {
+        return time;
       }
     }));
 
