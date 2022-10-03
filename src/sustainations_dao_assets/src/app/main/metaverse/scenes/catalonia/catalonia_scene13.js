@@ -9,19 +9,17 @@ import {
 } from '../../GameApi';
 import {settings} from '../settings';
 import { isThisSecond } from 'date-fns';
-import { readEvent } from '../../GameApi';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
-const bg1 = 'metaverse/scenes/catalonia/Scene11/PNG/back.png';
-const bg2 = 'metaverse/scenes/catalonia/Scene11/PNG/mid.png';
-const bg3 = 'metaverse/scenes/catalonia/Scene11/PNG/front.png';
-const obstacle = 'metaverse/scenes/catalonia/Scene11/PNG/obstacle.png';
+const bg1 = 'metaverse/scenes/catalonia/Scene13/PNG/back.png';
+const bg2 = 'metaverse/scenes/catalonia/Scene13/PNG/mid.png';
+const bg3 = 'metaverse/scenes/catalonia/Scene13/PNG/front.png';
 const selectAction = 'metaverse/scenes/background_menu.png';
 const btnBlank = 'metaverse/scenes/selection.png';
 
-export default class catalonia_scene11 extends BaseScene {
+export default class catalonia_scene13 extends BaseScene {
   constructor() {
-    super('catalonia_scene11');
+    super('catalonia_scene13');
   }
   // init(data) {
   //   this.isHealedPreviously = data.isUsedPotion;
@@ -37,7 +35,7 @@ export default class catalonia_scene11 extends BaseScene {
 
   preload() {
     this.addLoadingScreen();
-    this.initialLoad("e20");
+    this.initialLoad("e22");
 
     //Preload
     this.clearSceneCache();
@@ -54,7 +52,7 @@ export default class catalonia_scene11 extends BaseScene {
     this.load.image("background3", bg3);
     this.load.image("selectAction", selectAction);
     this.load.spritesheet('btnBlank', btnBlank, { frameWidth: 1102, frameHeight: 88});
-    this.load.image("obstacle", obstacle);
+    // this.load.image("obstacle", obstacle);
   }
 
   //defined function
@@ -62,7 +60,6 @@ export default class catalonia_scene11 extends BaseScene {
     this.isInteracting = true;
     this.veil.setVisible(true);
     this.selectAction.setVisible(true);
-    this.des.setVisible(true);
     for (const idx in this.options){
       this.options[idx].setVisible(true);
       this.options[idx].text.setVisible(true);
@@ -71,7 +68,6 @@ export default class catalonia_scene11 extends BaseScene {
   triggerContinue(){
     this.veil.setVisible(false);
     this.selectAction.setVisible(false);
-    this.des.setVisible(false);
     for (const idx in this.options){
       this.options[idx].setVisible(false);
       this.options[idx].text.setVisible(false);
@@ -129,15 +125,6 @@ export default class catalonia_scene11 extends BaseScene {
     this.setValue(this.mana, this.characterData.currentMana/this.characterData.maxMana*100);
     this.setValue(this.morale, this.characterData.currentMorale/this.characterData.maxMorale*100);
 
-      // load description of event
-      const event = await readEvent(this.eventId)
-
-      // Description: 
-     this.des = this.add.text(gameConfig.scale.width / 2, gameConfig.scale.height / 3 - 120, event.description, {
-       fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif',
-       fontSize: 20, fill: "#ff0044"
-     }).setScrollFactor(0).setVisible(false).setOrigin(0.5);;
-
     // load event options
     this.options = [];
     for (const idx in this.eventOptions){
@@ -189,10 +176,10 @@ export default class catalonia_scene11 extends BaseScene {
     if (this.player.x > 3800) {
       this.ingameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start('catalonia_scene12', {isUsedPotion: this.isUsedPotion});
+      this.scene.start('thanks', {isUsedPotion: this.isUsedPotion});
     }
 
-    if (this.player.x > 2940 && this.isInteracted == false) {
+    if (this.player.x > 2500 && this.isInteracted == false) {
       this.triggerPause();
       this.ambientSound.stop();
       this.sfx_char_footstep.stop();
@@ -209,7 +196,7 @@ export default class catalonia_scene11 extends BaseScene {
     // scroll the texture of the tilesprites proportionally to the camera scroll
     this.bg_1.tilePositionX = this.myCam.scrollX * .3;
     this.bg_2.tilePositionX = this.myCam.scrollX * 1;
-    this.obstacle.tilePositionX = this.myCam.scrollX * 1;
+    // this.obstacle.tilePositionX = this.myCam.scrollX * 1;
     this.bg_3.tilePositionX = this.myCam.scrollX * 1;
   }
 }

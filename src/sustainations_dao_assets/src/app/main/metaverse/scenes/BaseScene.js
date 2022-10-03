@@ -111,10 +111,10 @@ class BaseScene extends Phaser.Scene {
     this.add.image(725, 30, "UI_Stamina").setOrigin(0).setScrollFactor(0);
     this.add.image(960, 30, "UI_Morale").setOrigin(0).setScrollFactor(0);
 
-    this.add.image(20, 100, "item_ingame_HP").setOrigin(0).setScrollFactor(0);
-    this.add.image(20, 150, "item_ingame_HP").setOrigin(0).setScrollFactor(0);
-    this.add.image(20, 200, "item_ingame_HP").setOrigin(0).setScrollFactor(0);
-    this.add.image(20, 250, "item_ingame_HP").setOrigin(0).setScrollFactor(0);
+    // this.add.image(20, 100, "item_ingame_HP").setOrigin(0).setScrollFactor(0);
+    // this.add.image(20, 150, "item_ingame_HP").setOrigin(0).setScrollFactor(0);
+    // this.add.image(20, 200, "item_ingame_HP").setOrigin(0).setScrollFactor(0);
+    // this.add.image(20, 250, "item_ingame_HP").setOrigin(0).setScrollFactor(0);
 
     this.add.image(1190, 50, "BtnExit").setOrigin(0).setScrollFactor(0).setScale(0.7)
     .setInteractive()

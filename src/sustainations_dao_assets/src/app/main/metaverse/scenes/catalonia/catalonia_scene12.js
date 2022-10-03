@@ -11,10 +11,10 @@ import {settings} from '../settings';
 import { isThisSecond } from 'date-fns';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
-const bg1 = 'metaverse/scenes/catalonia/Scene10/PNG/back.png';
-const bg2 = 'metaverse/scenes/catalonia/Scene10/PNG/mid.png';
-const bg3 = 'metaverse/scenes/catalonia/Scene10/PNG/front.png';
-const obstacle = 'metaverse/scenes/catalonia/Scene10/PNG/obstacle.png';
+const bg1 = 'metaverse/scenes/catalonia/Scene12/PNG/back.png';
+const bg2 = 'metaverse/scenes/catalonia/Scene12/PNG/mid.png';
+const bg3 = 'metaverse/scenes/catalonia/Scene12/PNG/front.png';
+const obstacle = 'metaverse/scenes/catalonia/Scene12/PNG/obstacle.png';
 const selectAction = 'metaverse/scenes/background_menu.png';
 const btnBlank = 'metaverse/scenes/selection.png';
 
@@ -36,7 +36,7 @@ export default class catalonia_scene12 extends BaseScene {
 
   preload() {
     this.addLoadingScreen();
-    this.initialLoad("e8");
+    this.initialLoad("e21");
 
     //Preload
     this.clearSceneCache();
@@ -177,10 +177,10 @@ export default class catalonia_scene12 extends BaseScene {
     if (this.player.x > 3800) {
       this.ingameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start('thanks', {isUsedPotion: this.isUsedPotion});
+      this.scene.start('catalonia_scene13', {isUsedPotion: this.isUsedPotion});
     }
 
-    if (this.player.x > 2000 && this.isInteracted == false) {
+    if (this.player.x > 2080 && this.isInteracted == false) {
       this.triggerPause();
       this.ambientSound.stop();
       this.sfx_char_footstep.stop();
