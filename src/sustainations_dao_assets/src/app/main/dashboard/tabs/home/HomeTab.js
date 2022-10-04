@@ -20,7 +20,6 @@ function HomeTab() {
     setLoading(true);
     const result = await user.actor.dashboardAnalysis();
     setLoading(false);
-    console.log('result.ok', result.ok);
     return result.ok;
   }, [user]);
   const container = {

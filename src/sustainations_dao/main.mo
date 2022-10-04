@@ -38,6 +38,7 @@ import GearRarity "./game/gearRarity";
 import GearSubstat "./game/gearSubstat";
 import Material "./game/material";
 import Inventory "./game/inventory";
+import WsNote "./models/Workspac3Note";
 
 shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   stable var transferFee : Nat64 = 10_000;
@@ -94,6 +95,10 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   private stable var gearSubstats : [(Text, Types.GearSubstat)] = [];
   private stable var materials : [(Text, Types.Material)] = [];
   private stable var inventories : [(Text, Types.Inventory)] = [];
+  private stable var workspac3 = {
+    notes : [(Text, WsNote.Note)] = [];
+    noteLabels : [(Principal, List.List<Text>)] = [];
+  };
 
   system func preupgrade() {
     Debug.print("Begin preupgrade");
@@ -138,6 +143,10 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     gearSubstats := Iter.toArray(state.gearSubstats.entries());
     materials := Iter.toArray(state.materials.entries());
     inventories := Iter.toArray(state.inventories.entries());
+    workspac3 := {
+      notes = Iter.toArray(state.workspac3.notes.entries());
+      noteLabels = Iter.toArray(state.workspac3.noteLabels.entries());
+    };
     Debug.print("End preupgrade");
   };
 
@@ -253,6 +262,12 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
     for ((k, v) in Iter.fromArray(inventories)) {
       state.inventories.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(workspac3.notes)) {
+      state.workspac3.notes.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(workspac3.noteLabels)) {
+      state.workspac3.noteLabels.put(k, v);
     };
     Debug.print("End postupgrade");
   };
@@ -3487,5 +3502,115 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
       };
     };
     #ok((list));
+  };
+
+  /** Workspac3 **/
+  // Notes
+  public shared({ caller }) func createWsNote(payload : WsNote.NotePayoad) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let uuid = await createUUID();
+    let note : WsNote.Note = {
+      owner = caller;
+      timestamp = Time.now();
+      payload;
+    };
+    state.workspac3.notes.put(uuid, note);
+    #ok(uuid);
+  };
+
+  public query({ caller }) func getWsNotes() : async Response<[(Text, WsNote.Note)]> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    var list : [(Text, WsNote.Note)] = [];
+    for((uuid, note) in state.workspac3.notes.entries()) {
+      if (Principal.equal(caller, note.owner)) {
+        list := Array.append<(Text, WsNote.Note)>(list, [(uuid, note)]);
+      };
+    };
+    #ok(list);
+  };
+
+  public query({ caller }) func getWsNote(noteId : Text) : async Response<WsNote.Note> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    switch (state.workspac3.notes.get(noteId)) {
+      case (null) { #err(#NotFound); };
+      case (?note) {
+        if (Principal.equal(caller, note.owner)) {
+          #ok(note);
+        } else {
+          #err(#NotFound);
+        };
+      };
+    };
+  };
+
+  public shared({ caller }) func updateWsNote(uuid : Text, payload : WsNote.NotePayoad) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    switch (state.workspac3.notes.get(uuid)) {
+      case (null) { #err(#NotFound) };
+      case (?note) {
+        if (Principal.equal(caller, note.owner)) {
+          let newNote = {
+            owner = caller;
+            timestamp = note.timestamp;
+            payload;
+          };
+          let replaced = state.workspac3.notes.replace(uuid, newNote);
+          #ok(uuid);
+        } else {
+          #err(#NotFound);
+        };
+      };
+    };
+  };
+
+  public shared({ caller }) func deleteWsNote(uuid : Text) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    switch (state.workspac3.notes.get(uuid)) {
+      case (null) { #err(#NotFound) };
+      case (?note) {
+        if (Principal.equal(caller, note.owner)) {
+          state.workspac3.notes.delete(uuid);
+          #ok(uuid);
+        } else {
+          #err(#NotFound);
+        };
+      };
+    };
+  };
+
+  // Note Labels
+  public shared({ caller }) func setWsNoteLabels(labels : [Text]) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let noteLabels = List.fromArray(labels);
+    state.workspac3.noteLabels.put(caller, noteLabels);
+    #ok("Success");
+  };
+
+  public query({ caller }) func getWsNoteLabels() : async Response<[Text]> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    switch (state.workspac3.noteLabels.get(caller)) {
+      case (null) { #ok(WsNote.defaultNoteLabels); };
+      case (?noteLabels) {
+        #ok(List.toArray(noteLabels));
+      };
+    };
   };
 };

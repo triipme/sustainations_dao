@@ -1,8 +1,10 @@
+import List "mo:base/List";
 import Text "mo:base/Text";
 import TrieMap "mo:base/TrieMap";
 import Principal "mo:base/Principal";
 
 import Types "types";
+import WsNote "./models/Workspac3Note";
 
 module {
   private type Map<K, V> = TrieMap.TrieMap<K, V>;
@@ -49,6 +51,10 @@ module {
     gearSubstats : Map<Text, Types.GearSubstat>;
     materials : Map<Text, Types.Material>;
     inventories : Map<Text, Types.Inventory>;
+    workspac3 : {
+      notes : Map<Text, WsNote.Note>;
+      noteLabels : Map<Principal, List.List<Text>>;
+    };
   };
 
   public func empty() : State {
@@ -94,6 +100,10 @@ module {
       gearSubstats = TrieMap.TrieMap<Text, Types.GearSubstat>(Text.equal, Text.hash);
       materials = TrieMap.TrieMap<Text, Types.Material>(Text.equal, Text.hash);
       inventories = TrieMap.TrieMap<Text, Types.Inventory>(Text.equal, Text.hash);
+      workspac3 = {
+        notes = TrieMap.TrieMap<Text, WsNote.Note>(Text.equal, Text.hash);
+        noteLabels = TrieMap.TrieMap<Principal, List.List<Text>>(Principal.equal, Principal.hash);
+      };
     };
   };
 };

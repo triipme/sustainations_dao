@@ -5,14 +5,12 @@ function NoteModel(data) {
 
   return _.defaults(data, {
     title: '',
-    content: '',
-    tasks: [],
+    description: '',
+    todos: [],
     image: '',
-    reminder: null,
+    remindTime: null,
     labels: [],
     archived: false,
-    createdAt: null,
-    updatedAt: null,
   });
 }
 

@@ -1,10 +1,12 @@
-import withReducer from 'app/store/withReducer';
+import _ from 'lodash';
 import { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { useAsyncMemo } from "use-async-memo";
 import { lighten, styled } from '@mui/material/styles';
 import { useParams } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import FusePageCarded from '@fuse/core/FusePageCarded';
+import FuseLoading from '@fuse/core/FuseLoading';
 import useThemeMediaQuery from '@fuse/hooks/useThemeMediaQuery';
 import LabelsDialog from './dialogs/labels/LabelsDialog';
 import NoteDialog from './dialogs/note/NoteDialog';
@@ -12,26 +14,99 @@ import NewNote from './NewNote';
 import NoteList from './NoteList';
 import NotesHeader from './NotesHeader';
 import NotesSidebarContent from './NotesSidebarContent';
-import reducer from './store';
-import { getLabels } from './store/labelsSlice';
-import { getNotes } from './store/notesSlice';
+import { selectUser } from 'app/store/userSlice';
+import { getS3Object } from '../../../hooks';
 
-const Root = styled(FusePageCarded)(({ theme }) => ({
+const Root = styled(FusePageCarded)(() => ({
   '& .FusePageCarded-header': {},
   '& .FusePageCarded-sidebar': {},
   '& .FusePageCarded-leftSidebar': {},
 }));
 
-function NotesApp(props) {
+function NotesApp() {
+  const user = useSelector(selectUser);
   const dispatch = useDispatch();
   const isMobile = useThemeMediaQuery((theme) => theme.breakpoints.down('lg'));
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(!isMobile);
-  const routeParams = useParams();
+  const { filter, label } = useParams();
+  const [filteredData, setFilteredData] = useState(null);
+  const [searchText, setSearchText] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [labels, setLabels] = useState([]);
+
+  async function loadImage(path) {
+    if (path) {
+      const file = await getS3Object(path);
+      return {
+        id: path.split("/")[2].split(".")[0],
+        file,
+        name: path
+      };
+    }
+  };
+  console.log('user', user);
+  const notes = useAsyncMemo(async () => {
+    setLoading(true);
+    const result = await user.actor.getWsNotes();
+    const data = await Promise.all(result.ok.map(async item => {
+      const image = await loadImage(item[1].payload.image[0]);
+      return  {
+        id: item[0],
+        owner: item[1].owner,
+        timestamp: item[1].timestamp,
+        payload: _.merge(item[1].payload, { image, archived: item[1].payload.archived.toString() })
+      }
+    }));
+    setLoading(false);
+    return data;
+  }, [user]);
 
   useEffect(() => {
-    dispatch(getNotes(routeParams));
-    dispatch(getLabels());
-  }, [dispatch, routeParams]);
+    async function loadLabels() {
+      setLoading(true);
+      const result = await user.actor.getWsNoteLabels();
+      setLabels(result.ok);
+      setLoading(false);
+    }
+    loadLabels();
+  }, [user]);
+
+  useEffect(() => {
+    function getFilteredArray() {
+      if (searchText.length === 0 && filter === '') {
+        return notes;
+      }
+      return _.filter(notes, (item) => {
+        let valid = true;
+        if (filter === 'labels') {
+          valid = _.includes(item.payload?.labels[0], label);
+        }
+        if (filter === 'archive') {
+          valid = item.payload.archived === 'true';
+        }
+        if (filter === 'reminders') {
+          valid = !_.isNil(item.payload.remindTime)
+        }
+        valid = valid && (
+          item.payload.title.toLowerCase().includes(searchText.toLowerCase())
+          || item.payload?.description?.toLowerCase()?.includes(searchText.toLowerCase())
+        );
+        return valid;
+      });
+    }
+
+    if (notes) {
+      setFilteredData(getFilteredArray());
+    }
+  }, [notes, searchText]);
+
+  function handleSearchText(event) {
+    setSearchText(event.target.value);
+  }
+
+  if (loading) {
+    return (<FuseLoading />);
+  }
 
   return (
     <>
@@ -48,7 +123,7 @@ function NotesApp(props) {
                     : lighten(theme.palette.background.default, 0.02),
               }}
             >
-              <NewNote />
+              <NewNote handleCreate={handleCreate} actor={user.actor} />
               <NoteList />
             </Box>
             <NoteDialog />
@@ -66,4 +141,4 @@ function NotesApp(props) {
   );
 }
 
-export default withReducer('notesApp', reducer)(NotesApp);
+export default NotesApp;

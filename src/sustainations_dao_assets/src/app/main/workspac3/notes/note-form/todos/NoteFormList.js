@@ -4,25 +4,25 @@ import NoteFormListItem from './NoteFormListItem';
 
 function NoteFormList(props) {
   function handleListItemChange(item) {
-    props.onCheckListChange(props.tasks.map((_item) => (_item.id === item.id ? item : _item)));
+    props.onCheckListChange(props.todos.map((_item) => (_item.id === item.id ? item : _item)));
   }
 
   function handleListItemRemove(id) {
-    props.onCheckListChange(props.tasks.filter((_item) => _item.id !== id));
+    props.onCheckListChange(props.todos.filter((_item) => _item.id !== id));
   }
 
   function handleListItemAdd(item) {
-    props.onCheckListChange([...props.tasks, item]);
+    props.onCheckListChange([...props.todos, item]);
   }
 
-  if (!props.tasks) {
+  if (!props.todos) {
     return null;
   }
 
   return (
     <div className={props.className}>
       <List dense>
-        {props.tasks.map((item) => (
+        {props.todos.map((item) => (
           <NoteFormListItem
             item={item}
             key={item.id}

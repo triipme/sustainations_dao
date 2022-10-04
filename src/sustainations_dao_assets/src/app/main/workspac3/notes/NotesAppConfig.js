@@ -18,7 +18,7 @@ const NotesAppConfig = {
           element: <NotesApp />,
           children: [
             {
-              path: ':id',
+              path: ':label',
               element: <NotesApp />,
             },
           ],

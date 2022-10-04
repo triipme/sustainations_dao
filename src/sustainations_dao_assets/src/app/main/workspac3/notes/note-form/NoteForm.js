@@ -3,6 +3,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Controller, useForm } from 'react-hook-form';
 import _ from '@lodash';
 import Button from '@mui/material/Button';
+import LoadingButton from '@mui/lab/LoadingButton';
 import Fab from '@mui/material/Fab';
 import IconButton from '@mui/material/IconButton';
 import Input from '@mui/material/Input';
@@ -15,7 +16,7 @@ import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 import * as yup from 'yup';
 import format from 'date-fns/format';
 import { useDispatch } from 'react-redux';
-import NoteFormList from './tasks/NoteFormList';
+import NoteFormList from './todos/NoteFormList';
 import NoteFormLabelMenu from './NoteFormLabelMenu';
 import NoteFormReminder from './NoteFormReminder';
 import NoteFormUploadImage from './NoteFormUploadImage';
@@ -28,10 +29,10 @@ import NoteLabel from '../NoteLabel';
  */
 const schema = yup.object().shape({
   title: yup.string(),
-  content: yup.string(),
+  description: yup.string(),
   image: yup.string(),
-  tasks: yup.array(),
-  oneOfThemRequired: yup.bool().when(['title', 'content', 'image', 'tasks'], {
+  todos: yup.array(),
+  oneOfThemRequired: yup.bool().when(['title', 'content', 'image', 'todos'], {
     is: (a, b, c, d) => (!a && !b && !c && !d) || (!!a && !!b && !!c && !!d),
     then: yup.bool().required(''),
     otherwise: yup.bool(),
@@ -41,7 +42,7 @@ const schema = yup.object().shape({
 function NoteForm(props) {
   const [showList, setShowList] = useState(false);
   const routeParams = useParams();
-  const dispatch = useDispatch();
+  const [submitLoading, setSubmitLoading] = useState(false);
 
   const defaultValues = _.merge(
     {},
@@ -82,11 +83,13 @@ function NoteForm(props) {
   /**
    * Create New Note
    */
-  function onCreate(data) {
+  const onCreate = async(data) => {
     if (!props.onCreate) {
       return;
     }
-    props.onCreate(data);
+    setSubmitLoading(true);
+    await props.onCreate(data);
+    setSubmitLoading(true);
   }
 
   return (
@@ -154,7 +157,7 @@ function NoteForm(props) {
           </div>
 
           <Controller
-            name="tasks"
+            name="todos"
             control={control}
             defaultValue={[]}
             render={({ field: { onChange, value } }) => {
@@ -163,7 +166,7 @@ function NoteForm(props) {
               }
               return (
                 <div className="px-16">
-                  <NoteFormList tasks={value || []} onCheckListChange={(val) => onChange(val)} />
+                  <NoteFormList todos={value || []} onCheckListChange={(val) => onChange(val)} />
                 </div>
               );
             }}
@@ -235,7 +238,7 @@ function NoteForm(props) {
             </div>
           </Tooltip>
 
-          <Tooltip title="Add tasks" placement="bottom">
+          <Tooltip title="Add todos" placement="bottom">
             <IconButton
               className="w-32 h-32 mx-4 p-0"
               onClick={() => setShowList(!showList)}
@@ -285,7 +288,7 @@ function NoteForm(props) {
 
         <div className="flex items-center">
           {props.variant === 'new' ? (
-            <Button
+            <LoadingButton
               className="m-4 p-8"
               type="submit"
               variant="contained"
@@ -293,9 +296,8 @@ function NoteForm(props) {
               size="small"
               onClick={handleSubmit(onCreate)}
               disabled={_.isEmpty(dirtyFields) || !isValid}
-            >
-              Create
-            </Button>
+              loading={submitLoading}
+            >Create</LoadingButton>
           ) : (
             <>
               <Tooltip title="Delete Note" placement="bottom">

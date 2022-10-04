@@ -96,7 +96,7 @@ function OrdersTable(props) {
       id,
     });
   }
-console.log(data);
+
   if (data.length === 0) {
     return (
       <motion.div

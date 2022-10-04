@@ -4,11 +4,15 @@ import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import NoteForm from './note-form/NoteForm';
-import { createNote } from './store/notesSlice';
+
+const errorMessages = {
+  "NotAuthorized": "Please sign in!.",
+  "Notfound": "Product is not found."
+}
 
 function NewNote(props) {
   const dispatch = useDispatch();
-
+  const { actor } = props;
   const [formOpen, setFormOpen] = useState(false);
 
   function handleFormOpen(ev) {
@@ -25,8 +29,35 @@ function NewNote(props) {
     document.removeEventListener('keydown', escFunction, false);
   }
 
-  function handleCreate(note) {
-    dispatch(createNote(note));
+  const handleCreate = async (note) => {
+    const payload = {
+      title: [note.title],
+      description: [note.description],
+      image: [note.image?.name],
+      todos: [note.todos],
+      labels: [note.labels],
+      remindTime: [note.remindTime?.unix()],
+      archived: note.archived == true,
+    };
+    try {
+      const result = await actor.createWsNote(payload);
+      if ("ok" in result) {
+        // upload image
+        if (note?.image) {
+          const uploadImage = await setS3Object({
+            file: note.image.base64data,
+            name: note.image.path
+          });
+          Promise.resolve(uploadImage);
+        }
+      } else {
+        throw result?.err;
+      }
+    } catch (error) {
+      console.log(error);
+      const message = errorMessages[Object.keys(error)[0]] || 'Error! Please try again later!'
+      dispatch(showMessage({ message }));
+    }
     handleFormClose();
   }
 

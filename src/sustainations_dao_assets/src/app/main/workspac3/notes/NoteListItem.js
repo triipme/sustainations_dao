@@ -44,9 +44,9 @@ function NoteListItem(props) {
           </Typography>
         )}
 
-        {props.note.tasks && props.note.tasks.length > 0 && (
+        {props.note.todos && props.note.todos.length > 0 && (
           <ul className="px-20 my-16 flex flex-wrap list-reset">
-            {props.note.tasks.map((item) => (
+            {props.note.todos.map((item) => (
               <li key={item.id} className="flex items-center w-full">
                 <FuseSvgIcon color={item.completed ? 'secondary' : 'disabled'} size={20}>
                   check_circle_outline_outlined

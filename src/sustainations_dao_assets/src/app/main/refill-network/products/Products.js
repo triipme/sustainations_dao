@@ -48,13 +48,13 @@ const Products = () => {
   }, [user]);
 
   useLayoutEffect(() => {
-    async function loadCatregories() {
+    async function loadCategories() {
       setLoading(true);
       const result = await user.actor.listRBCategories(user.brandId);
       setCategories(result.ok.map(cat => cat[1].name));
       setLoading(false);
     }
-    loadCatregories();
+    loadCategories();
   }, [user]);
 
   useEffect(() => {

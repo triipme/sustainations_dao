@@ -62,7 +62,6 @@ function AuthProvider({ children }) {
           profile,
           avatar
         };
-
         dispatch(setUser(userState));
         setWaitAuthCheck(false);
       } else {
