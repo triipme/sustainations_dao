@@ -12,6 +12,7 @@ import Nat "mo:base/Nat";
 import Option "mo:base/Option";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
+import Random "./utils/random";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
 import TrieMap "mo:base/TrieMap";
@@ -1951,38 +1952,73 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared({caller}) func memoryCardEngineSetPlayer({
-    turn : Nat;
-    gameId : Text;
-    timing : Float;
-    stageId : Text;
-    playerId : ?Text;
-    gameSlug : Text;
-  }) : async Response<()> {
+  private func duplicateAndShuffleEngineCards(stageId : Text) : async [?(Text, Types.MemoryCardEngineCard)] {
+    // duplicate MemoryCardEngineCards
+    var list : [?(Text, Types.MemoryCardEngineCard)] = [];
+    for((K, V) in state.memoryCardEngine.cards.entries()) {
+      if (V.stageId == stageId) {
+        if (not (Text.startsWith(V.data, #text "https://"))) {
+          var temp = Text.split(V.data, #text ":");
+          list := Array.append<?(Text, Types.MemoryCardEngineCard)>(list, [?(K, {
+            stageId = V.stageId;
+            cardType = V.cardType;
+            data = Option.get(temp.next(),V.data);
+          })]);
+          list := Array.append<?(Text, Types.MemoryCardEngineCard)>(list, [?(K, {
+            stageId = V.stageId;
+            cardType = V.cardType;
+            data = Option.get(temp.next(),V.data);
+          })]);
+        } else {
+          list := Array.append<?(Text, Types.MemoryCardEngineCard)>(list, [?(K, V)]);
+          list := Array.append<?(Text, Types.MemoryCardEngineCard)>(list, [?(K, V)]);
+        }
+      };
+    };
+
+    // shuffle MemoryCardEngineCards
+    var shuffleList : [var ?(Text, Types.MemoryCardEngineCard)] = Array.thaw(list);
+    let size = list.size();
+    let iter = Array.tabulate<?(Text, Types.MemoryCardEngineCard)>(size, func (n : Nat) : ?(Text, Types.MemoryCardEngineCard) {list[size - 1 - n];}).keys();
+    for (i in iter) {
+      let j : Nat = Int.abs(Float.toInt(await Random.randomNumber(0.0, Float.fromInt(i+1))));
+      let temp = shuffleList[i];
+      shuffleList[i] := shuffleList[j];
+      shuffleList[j] := temp;
+    };
+    Array.freeze(shuffleList);
+  };
+
+  public shared({caller}) func memoryCardEngineStartStage(gameId : Text, stageId : Text, playerId : ?Text, gameSlug : Text) : async Response<([?(Text, Types.MemoryCardEngineCard)], Text)> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       throw Error.reject("NotAuthorized");  //isNotAuthorized
     };
+
     var stagesSize : Nat = 0;
     for (V in state.memoryCardEngine.stages.vals()){
       if (V.gameId == gameId) stagesSize += 1;
     };
-    let accountId = Account.toText(Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(caller)));
+
+    let duplicateAndShuffleCards = await duplicateAndShuffleEngineCards(stageId);
     switch (playerId) {
       case null {
-        //first time - stage 1
+        let accountId = Account.toText(Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(caller)));
         let player : Types.MemoryCardEnginePlayer = {
           aId = accountId;
           gameId;
           gameSlug;
           history = [{
-            stageId;
-            turn;
-            timing;
+            stageId = stageId;
+            selected = []; // clear
+            turn = 0; // default
+            timing = 0; //default
           }];
           createdAt = Moment.now();
           updatedAt = Moment.now();
         };
-        state.memoryCardEngine.players.put(await createUUID(), player);
+        let newPlayerId = await createUUID();
+        state.memoryCardEngine.players.put(newPlayerId, player);
+        
         var completedCount = 0;
         if (Iter.size(Iter.fromArray(player.history)) == stagesSize) {
           completedCount := 1;
@@ -1993,34 +2029,32 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
           questPlayCount = gamePlayAnalytics.questPlayCount;
           questCompletedCount = gamePlayAnalytics.questCompletedCount;
         };
-        #ok();
+        return #ok((duplicateAndShuffleCards, newPlayerId));
       };
       case (?pid) {
         switch (await memoryCardEngineGetPlayer(caller, gameId, gameSlug)) {
           case (#err(error)) {
-            #err(error);
+            return #err(error);
           };
           case (#ok(K, oldData)) {
-            //stage 2,3
             let found = 
-              Array.find<{
-                stageId : Text;
-                turn : Nat;
-                timing : Float;
-              }>(oldData.history, func (h) : Bool {
+              Array.find<Types.MemoryCardEngineGameProgress>(oldData.history, func (h) : Bool {
               Text.equal(stageId, h.stageId);
             });
             switch (found) {
               case null {
+                let newValue : Types.MemoryCardEngineGameProgress = {
+                  stageId = stageId;
+                  selected = [];
+                  turn = 0;
+                  timing = 0;
+                }; 
+
                 let replacePlayer : Types.MemoryCardEnginePlayer = {
                   aId = oldData.aId;
-                  gameId;
-                  gameSlug;
-                  history = Array.append(oldData.history, [{
-                    stageId;
-                    turn;
-                    timing;
-                  }]);
+                  gameId = oldData.gameId;
+                  gameSlug = oldData.gameSlug;
+                  history = Array.append(oldData.history, [newValue]);
                   createdAt = oldData.createdAt;
                   updatedAt = Moment.now();
                 };
@@ -2033,15 +2067,175 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
                     questCompletedCount = gamePlayAnalytics.questCompletedCount;
                   };
                 };
-                #ok();
+                return #ok((duplicateAndShuffleCards, pid));
               };
               case (?V) {
-                #err(#AlreadyExisting);
-              }
-            }
-          }
-        }
-      }
+                var newHistory : [Types.MemoryCardEngineGameProgress] = [];
+
+                for (value in oldData.history.vals()) {
+                  // kiem tra neu GameProgress co stageId = stageId dau vao thi thay doi GameProgress do, roi dua do mang newHistory
+                  if (value.stageId == stageId) {
+                    let newValue : Types.MemoryCardEngineGameProgress = {
+                      stageId = value.stageId;
+                      selected = [];
+                      turn = value.turn;
+                      timing = value.timing;
+                    };
+                    newHistory := Array.append<Types.MemoryCardEngineGameProgress>(newHistory, [newValue]);
+                  } else {
+                    // neu khong phai thi dua GameProgress do mang newHIstory
+                    newHistory := Array.append<Types.MemoryCardEngineGameProgress>(newHistory, [value]);
+                  };
+                };
+                
+                let replacePlayer : Types.MemoryCardEnginePlayer = {
+                  aId = oldData.aId;
+                  gameId = oldData.gameId;
+                  gameSlug = oldData.gameSlug;
+                  history = newHistory;
+                  createdAt = oldData.createdAt;
+                  updatedAt = Moment.now();
+                };
+                let _ = state.memoryCardEngine.players.replace(pid, replacePlayer);
+                if (Iter.size(Iter.fromArray(replacePlayer.history)) == stagesSize) {
+                  gamePlayAnalytics := {
+                    miniGamePlayCount = gamePlayAnalytics.miniGamePlayCount;
+                    miniGameCompletedCount = gamePlayAnalytics.miniGameCompletedCount + 1;
+                    questPlayCount = gamePlayAnalytics.questPlayCount;
+                    questCompletedCount = gamePlayAnalytics.questCompletedCount;
+                  };
+                };
+                return #ok((duplicateAndShuffleCards, pid));
+              };
+            };
+          };
+        };
+      };
+    };
+  };
+
+  public shared({caller}) func memoryCardEngineCardPair(pairCard : (Text, Text, Float), gameId : Text, stageId : Text, playerId : Text, gameSlug : Text) : async Response<Bool> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      throw Error.reject("NotAuthorized");  //isNotAuthorized
+    };
+    switch (state.memoryCardEngine.players.get(playerId)){
+      case null { return #err(#NotFound); };
+      case (?player) {
+        let found = Array.find<Types.MemoryCardEngineGameProgress>(player.history, func (h) : Bool {
+          Text.equal(stageId, h.stageId);
+        });
+        switch (found) {
+          case null {
+            return #err(#NotFound);
+          };
+          case (?V) {
+            var newHistory : [Types.MemoryCardEngineGameProgress] = [];
+
+            for (value in player.history.vals()) {
+              // kiem tra neu GameProgress co stageId = stageId dau vao thi thay doi GameProgress do, roi dua do mang newHistory
+              if (value.stageId == stageId) {
+                
+                let newValue : Types.MemoryCardEngineGameProgress = {
+                  stageId = value.stageId;
+                  selected = Array.append(value.selected, [?pairCard]);
+                  turn = value.turn;
+                  timing = value.timing;
+                };
+                newHistory := Array.append<Types.MemoryCardEngineGameProgress>(newHistory, [newValue]);
+              } else {
+                // neu khong phai thi dua GameProgress do mang newHIstory
+                newHistory := Array.append<Types.MemoryCardEngineGameProgress>(newHistory, [value]);
+              };
+            };
+            let replacePlayer : Types.MemoryCardEnginePlayer = {
+              aId = player.aId;
+              gameId = player.gameId;
+              gameSlug = player.gameSlug;
+              history = newHistory;
+              createdAt = player.createdAt;
+              updatedAt = Moment.now();
+            };
+            let _ = state.memoryCardEngine.players.replace(playerId, replacePlayer);
+            return #ok(Text.equal(pairCard.0, pairCard.1));
+          };
+        };
+      };
+    };
+  };
+
+  public shared({caller}) func memoryCardEngineCompletedStage(selected : [?(Text, Text)], stageId : Text, playerId : Text) : async Response<()> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      throw Error.reject("NotAuthorized");  //isNotAuthorized
+    };
+
+    switch (state.memoryCardEngine.players.get(playerId)) {
+      case null { return #err(#NotFound); };
+      case (?player) {
+        let found = 
+          Array.find<Types.MemoryCardEngineGameProgress>(player.history, func (h) : Bool {
+          Text.equal(stageId, h.stageId);
+        });
+        switch (found) {
+          case null {
+            return #err(#NotFound);
+          };
+          case (?V) {
+            var newHistory : [Types.MemoryCardEngineGameProgress] = [];
+            for (value in player.history.vals()) {
+              if (value.stageId == stageId and 
+                Int.greater(value.selected.size(), 0) and
+                Nat.equal(value.turn, 0) and
+                Float.equal(value.timing, 0)
+              ) {
+                var temp : Float = 0;
+                var isCheating = false;
+                let oldSelected : [?(Text, Text)] = 
+                  Array.map(value.selected, func (s : ?(Text, Text, Float)) : ?(Text, Text) {
+                    switch (s) {
+                      case null { return null };
+                      case (? v) { 
+                        if (temp < v.2) {
+                          temp := v.2;
+                        } else {
+                          isCheating := true;
+                        };
+                        return ?(v.0, v.1);
+                      };
+                    }
+                  });
+                
+                if (selected == oldSelected and not(isCheating)) { //cheat
+                  let newValue : Types.MemoryCardEngineGameProgress = {
+                    stageId = value.stageId;
+                    selected = value.selected;
+                    turn = selected.size();
+                    timing = switch (value.selected[value.selected.size()-1]) {
+                      case null { 0 };
+                      case (? s) { s.2 }
+                    };
+                  };
+                  newHistory := Array.append<Types.MemoryCardEngineGameProgress>(newHistory, [newValue]);
+                } else {
+                  newHistory := Array.append<Types.MemoryCardEngineGameProgress>(newHistory, [value]);
+                }
+              } else {
+                newHistory := Array.append<Types.MemoryCardEngineGameProgress>(newHistory, [value]);
+              };
+            };
+            
+            let replacePlayer : Types.MemoryCardEnginePlayer = {
+              aId = player.aId;
+              gameId = player.gameId;
+              gameSlug = player.gameSlug;
+              history = newHistory;
+              createdAt = player.createdAt;
+              updatedAt = Moment.now();
+            };
+            let _ = state.memoryCardEngine.players.replace(playerId, replacePlayer);
+            return #ok(());
+          };
+        };
+      };
     };
   };
 
@@ -2061,7 +2255,18 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
         Text.equal(gameSlug, V.gameSlug) and
         Text.equal(gameId, V.gameId)
       ) {
-        listTop := Array.append(listTop, [?V]);
+        var temp = true;
+        for (value in V.history.vals()) {
+          if (
+            Nat.equal(value.turn, 0) and
+            Float.equal(value.timing, 0)
+          ) {
+            temp := false;
+          }
+        };
+        if (temp) {
+          listTop := Array.append(listTop, [?V]);
+        }
       }
     };
     #ok(listTop);
@@ -2083,7 +2288,18 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
         Text.equal(gameSlug, V.gameSlug) and
         Text.equal(gameId, V.gameId)
       ) {
-        listTop := Array.append(listTop, [?(K, V)]);
+        var temp = true;
+        for (value in V.history.vals()) {
+          if (
+            Nat.equal(value.turn, 0) and
+            Float.equal(value.timing, 0)
+          ) {
+            temp := false;
+          }
+        };
+        if (temp) {
+          listTop := Array.append(listTop, [?(K, V)]);
+        }
       }
     };
     #ok(listTop);
@@ -2097,7 +2313,18 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
       var listTop : [Types.MemoryCardEnginePlayer] = [];
       for(V in state.memoryCardEngine.players.vals()) {
         if(Text.equal(gameSlug, V.gameSlug) and Text.equal(gameId, V.gameId)) {
-          listTop := Array.append(listTop, [V]);
+         var temp = true;
+          for (value in V.history.vals()) {
+            if (
+              Nat.equal(value.turn, 0) and
+              Float.equal(value.timing, 0)
+            ) {
+              temp := false;
+            }
+          };
+          if (temp) {
+            listTop := Array.append(listTop, [V]);
+          }
         }
       };
       #ok(listTop);
@@ -2160,13 +2387,6 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   };
 
   // Game
-  public shared({ caller }) func addICP(userId : Text) : async Response<Text> {
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
-    };
-    let receipt = await rewardUserAgreement(Principal.fromText(userId));
-    #ok("Success");
-  };
   public shared({ caller }) func payQuest(questId : Text) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
@@ -2189,31 +2409,6 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
       };
     };
   };
-
-  public shared({ caller }) func payQuestbyUserId(questId : Text, userId : Text) : async Response<Text> {
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
-    };
-    switch (state.quests.get(questId)) {
-      case null { #err(#NotFound); };
-      case (?quest) {
-        switch (await deposit(transferFee, Principal.fromText(userId))) {
-          case(#ok(bIndex)) {
-            let uuid = await createUUID();
-            await recordTransaction(
-              Principal.fromText(userId), transferFee, Principal.fromText(userId), Principal.fromActor(this),
-              #payQuest, ?questId, bIndex
-            );
-            #ok("Success");
-          };
-          case (#err(error)) {
-            #err(error);
-          };
-        };
-      };
-    };
-  };
-
 
   // Character Class
   public shared({caller}) func createCharacterClass(characterClass : Types.CharacterClass) : async Response<Text> {

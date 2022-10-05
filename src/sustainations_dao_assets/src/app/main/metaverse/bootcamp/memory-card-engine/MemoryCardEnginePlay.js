@@ -5,25 +5,27 @@ import {
   memo,
   useCallback,
   useEffect,
+  useId,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState
 } from "react";
 import { useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import MemoryCardEngineCard from "./MemoryCardEngineCard";
-import { v4 as uuidv4 } from "uuid";
 
 const MemoryCardEnginePlay = () => {
   const { actor } = useSelector(state => state.user);
   const [cards, setCards] = useState([]);
-  const [turns, setTurns] = useState(0);
+  const [turns, setTurns] = useState([]);
   const [choiceOne, setChoiceOne] = useState(null);
   const [choiceTwo, setChoiceTwo] = useState(null);
   const [disabled, setDisabled] = useState(false);
   const navigate = useNavigate();
   const { state: stateLocation } = useLocation();
   const ref = useRef(null);
+  const prefixCard = useId();
 
   useEffect(() => {
     if (!stateLocation) {
@@ -33,15 +35,40 @@ const MemoryCardEnginePlay = () => {
 
   const api = useCallback(async () => {
     try {
-      const rsCards = await actor.memoryCardEngineCards(stateLocation.stageId);
+      const { stageId, player, gameId, gameSlug } = stateLocation;
+      const rsCards = await actor.memoryCardEngineStartStage(
+        gameId,
+        stageId,
+        [].concat(player?.[0] || []),
+        gameSlug
+      );
       if ("ok" in rsCards) {
-        shuffleCards(rsCards.ok);
+        setCards(rsCards.ok[0].flat());
+        stateLocation.player = rsCards.ok[1];
       }
     } catch (error) {
       console.log(error);
     }
   }, []);
-
+  const pair = useCallback(async (cardId1, cardId2) => {
+    try {
+      const { stageId, player, gameId, gameSlug } = stateLocation;
+      const rsPair = await actor.memoryCardEngineCardPair(
+        [cardId1, cardId2, +(ref.current.getTime() / 100).toFixed(2)],
+        gameId,
+        stageId,
+        player,
+        gameSlug
+      );
+      if ("ok" in rsPair) {
+        return rsPair.ok;
+      } else {
+        throw rsPair.err;
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }, []);
   useEffect(() => {
     api();
   }, []);
@@ -49,60 +76,48 @@ const MemoryCardEnginePlay = () => {
   //compare selected cards
   useEffect(() => {
     if (choiceOne && choiceTwo) {
-      setDisabled(true);
-      if (choiceOne.cardId === choiceTwo.cardId) {
-        setCards(prevCards => {
-          return prevCards.map(card => {
-            if (card.cardId === choiceOne.cardId) {
-              return { ...card, matched: true };
-            } else {
-              return card;
-            }
+      (async () => {
+        setDisabled(true);
+        ref.current.pause();
+        const rsPair = await pair(choiceOne[0], choiceTwo[0]);
+        ref.current.resume();
+        if (rsPair) {
+          setCards(prevCards => {
+            return prevCards.map(card => {
+              if (
+                (card[0] === choiceOne[0] && card[1].data === choiceOne[1].data) ||
+                (card[0] === choiceTwo[0] && card[1].data === choiceTwo[1].data)
+              ) {
+                return { ...card, matched: true };
+              } else {
+                return card;
+              }
+            });
           });
-        });
-        resetTurn();
-      } else {
-        setTimeout(() => resetTurn(), 500);
-      }
+          resetTurn();
+        } else {
+          setTimeout(() => resetTurn(), 500);
+        }
+      })();
     }
-  }, [choiceOne?.id, choiceTwo?.id]);
-
-  //shuffle
-  const shuffleCards = useCallback(cards => {
-    const shuffledCards = cards
-      .concat(cards)
-      .map((card, cardIndex, array) => ({
-        ...card[0][1],
-        cardId: card[0][0],
-        id: uuidv4(),
-        data: card[0][1].cardType === "text" ? card[0][1].data.split(":") : card[0][1].data,
-        dataType:
-          card[0][1].cardType === "text" ? (cardIndex > array.length / 2 - 1 ? 0 : 1) : "default"
-      }))
-      .sort(() => Math.random() - 0.5);
-    setTurns(0);
-    setChoiceOne(null);
-    setChoiceTwo(null);
-    setCards(shuffledCards);
-    ref.current?.resetTime();
-  }, []);
-
+  }, [choiceTwo?.[0]]);
   //handle choice
-  const handleChoice = card => {
-    choiceOne ? setChoiceTwo(card) : setChoiceOne(card);
+  const handleChoice = cardIndex => card => {
+    choiceOne ? setChoiceTwo({ ...card, cardIndex }) : setChoiceOne({ ...card, cardIndex });
   };
-
   //reset choice
-  const resetTurn = () => {
+  const resetTurn = useCallback(() => {
     setChoiceOne(null);
     setChoiceTwo(null);
-    setTurns(prevTurns => prevTurns + 1);
+    if (choiceTwo?.[0]) {
+      setTurns(prevTurns => [...prevTurns, [[choiceOne?.[0], choiceTwo?.[0]]]]);
+    }
     setDisabled(false);
-  };
-  const btnReset = () => {
+  }, [choiceTwo?.[0]]);
+  const btnReset = useCallback(() => {
     api();
     ref.current.resetTime();
-  };
+  }, []);
   return (
     stateLocation && (
       <Box className="container text-center" py={{ md: 5, xs: 0 }} px={{ md: 20, xs: 0 }}>
@@ -114,16 +129,25 @@ const MemoryCardEnginePlay = () => {
           New Game
         </Button>
         <Grid container spacing={{ md: 2, xs: 1 }}>
-          {cards?.map(card => (
-            <Grid key={card.id} item xs={4} md={3} lg={2.4}>
-              <MemoryCardEngineCard
-                {...card}
-                handleChoice={handleChoice}
-                flipped={card.id === choiceOne?.id || card.id === choiceTwo?.id || card.matched}
-                disabled={disabled}
-              />
-            </Grid>
-          ))}
+          {cards.length > 0 ? (
+            cards?.map((card, index) => (
+              <Grid key={`${prefixCard}-${index}`} item xs={4} md={3} lg={2.4}>
+                <MemoryCardEngineCard
+                  {...card}
+                  handleChoice={handleChoice(index)}
+                  flipped={
+                    //truong hop image can 1 cai khac nhau giua cac card
+                    // (card[0] === choiceOne?.[0] && card[1].data === choiceOne[1].data) ||
+                    // (card[0] === choiceTwo?.[0] && card[1].data === choiceTwo[1].data) ||
+                    index === choiceOne?.cardIndex || index === choiceTwo?.cardIndex || card.matched
+                  }
+                  disabled={disabled}
+                />
+              </Grid>
+            ))
+          ) : (
+            <FuseLoading />
+          )}
         </Grid>
       </Box>
     )
@@ -145,49 +169,52 @@ const TimingPlay = memo(
       }, 10);
       return () => clearTimeout(to);
     }, [time, isLoading]);
-
-    async function apiSetPlayer() {
-      try {
-        const rs = await actor?.memoryCardEngineSetPlayer({
-          playerId: [].concat(player?.[0] || []),
-          stageId,
-          gameSlug,
-          gameId,
-          turn: turns,
-          timing: parseFloat((time / 100).toFixed(2))
-        });
-        if ("ok" in rs) {
-          navigate(-1);
+    const completed = useCallback(() => {
+      (async () => {
+        try {
+          console.log(turns);
+          const rs = await actor?.memoryCardEngineCompletedStage(turns, stageId, player);
+          console.log(rs);
+          if ("ok" in rs) {
+            navigate(-1);
+          }
+        } catch (error) {
+          console.log(error);
+        } finally {
+          setIsLoading(false);
         }
-      } catch (error) {
-        console.log(error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
+      })();
+    }, [turns.length]);
     useImperativeHandle(ref, () => ({
       resetTime() {
-        resetTime();
+        setTime(0);
+      },
+      pause() {
+        setIsLoading(true);
+      },
+      resume() {
+        setIsLoading(false);
+      },
+      getTime() {
+        return time;
       }
     }));
-    function resetTime() {
-      setTime(0);
-    }
+
     useEffect(() => {
       if (cards.length > 0) {
         if (cards.every(card => card.matched)) {
           // submit to Server
           setIsLoading(true);
-          apiSetPlayer();
+          completed();
         }
       }
-      if (turns === 0) {
+      if (turns.length === 0) {
         setTime(0);
       }
-    }, [turns]);
+    }, [turns.length]);
     return (
       <Box my={2}>
-        <Typography variant="h6">Turns: {turns}</Typography>
+        <Typography variant="h6">Turns: {turns.length}</Typography>
         <Typography variant="h6">Time: {(time / 100).toFixed(2)}</Typography>
         {isLoading && <FuseLoading />}
       </Box>
