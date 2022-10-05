@@ -122,7 +122,7 @@ export default class catalonia_scene11 extends BaseScene {
     this.physics.add.collider(this.player, platforms);
 
     this.createUIElements();
-    this.defineCamera(3841, gameConfig.scale.height);
+    this.defineCamera(1920, gameConfig.scale.height);
     this.createPauseScreen();
 
     // load selected items ids
