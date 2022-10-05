@@ -165,12 +165,12 @@ export default class catalonia_scene1 extends BaseScene {
 
 
     this.des = this.make.text({
-      x: gameConfig.scale.width / 2 ,
+      x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
       text: "La Seu d'Urgell is a town located in the Catalan Pyrenees in Spain. \n\nLa Seu d'Urgell is also the capital of the comarca Alt Urgell.",
       origin: { x: 0.5, y: 0.5 },
       style: {
-        font: 'bold 32px Arial',
+        font: 'bold 25px Arial',
         fill: 'gray',
         wordWrap: { width: 400 }
       }
@@ -217,27 +217,12 @@ export default class catalonia_scene1 extends BaseScene {
 
           let loss_stat = this.showLossStat(this.characterData, this.characterTakeOptions[idx])
 
-
           //HP, Stamina, mana, morele in col
-          this.add.text(423, 60, loss_stat[0], {
-            fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif',
-            fontSize: 15, fill: "#ff0044"
-          }).setOrigin(0).setScrollFactor(0);
+          this.showColorLossStat(423, 65, loss_stat[0]);
+          this.showColorLossStat(460 + 200, 65, loss_stat[1]);
+          this.showColorLossStat(470 + 200 * 2 + 20, 65, loss_stat[2]);
+          this.showColorLossStat(490 + 200 * 3 + 35, 65, loss_stat[3]);
 
-          this.add.text(460 + 200, 60, loss_stat[1], {
-            fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif',
-            fontSize: 15, fill: "#ff0044"
-          }).setOrigin(0).setScrollFactor(0);
-
-          this.add.text(470 + 200 * 2 + 20, 60, loss_stat[2], {
-            fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif',
-            fontSize: 15, fill: "#ff0044"
-          }).setOrigin(0).setScrollFactor(0);
-
-          this.add.text(490 + 200 * 3 + 40, 60, loss_stat[3], {
-            fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif',
-            fontSize: 15, fill: "#ff0044"
-          }).setOrigin(0).setScrollFactor(0);
 
           // update character after choose option
           updateCharacterStats(this.characterTakeOptions[idx]);
@@ -245,9 +230,7 @@ export default class catalonia_scene1 extends BaseScene {
           createCharacterCollectsMaterials(this.characterCollectMaterials[idx]);
         }
       });
-
     };
-
   }
 
   update() {
@@ -259,7 +242,7 @@ export default class catalonia_scene1 extends BaseScene {
     if (this.player.x > gameConfig.scale.width * 4) {
       this.pregameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start("catalonia_scene8", { isUsedPotion: this.isUsedPotion });
+      this.scene.start("catalonia_scene2_1", { isUsedPotion: this.isUsedPotion });
     }
 
     if (this.player.x > gameConfig.scale.width * 4 - 700 && this.isInteracted == false) {

@@ -36,7 +36,7 @@ export default class catalonia_scene9 extends BaseScene {
   clearSceneCache() {
     const textures_list = ['bg', 'UI_strength', 'effect', 'player', 'pickItemText',
       'itembox', 'btnGo', 'btnClear', 'ground', 'background1', 'background2',
-      'background3', 'selectAction', 'btnBlank', 'obstacle'];
+      'background3', 'selectAction', 'btnBlank', 'obstacle', 'popupWindow'];
     for (const index in textures_list) {
       this.textures.remove(textures_list[index]);
     }
@@ -165,12 +165,12 @@ export default class catalonia_scene9 extends BaseScene {
 
 
     this.des = this.make.text({
-      x: gameConfig.scale.width / 2 ,
+      x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
       text: "Meranges is a village in the comarca of Cerdanya, province of Girona, Catalonia, north-eastern Spain.",
       origin: { x: 0.5, y: 0.5 },
       style: {
-        font: 'bold 32px Arial',
+        font: 'bold 25px Arial',
         fill: 'gray',
         wordWrap: { width: 400 }
       }
@@ -215,29 +215,13 @@ export default class catalonia_scene9 extends BaseScene {
           this.setValue(this.mana, this.characterTakeOptions[idx].currentMana / this.characterTakeOptions[idx].maxMana * 100);
           this.setValue(this.morale, this.characterTakeOptions[idx].currentMorale / this.characterTakeOptions[idx].maxMorale * 100);
 
+
+          //HP, Stamina, mana, morele in col 
           let loss_stat = this.showLossStat(this.characterData, this.characterTakeOptions[idx])
-
-
-          //HP, Stamina, mana, morele in col
-          this.add.text(423, 60, loss_stat[0], {
-            fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif',
-            fontSize: 15, fill: "#ff0044"
-          }).setOrigin(0).setScrollFactor(0);
-
-          this.add.text(460 + 200, 60, loss_stat[1], {
-            fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif',
-            fontSize: 15, fill: "#ff0044"
-          }).setOrigin(0).setScrollFactor(0);
-
-          this.add.text(470 + 200 * 2 + 20, 60, loss_stat[2], {
-            fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif',
-            fontSize: 15, fill: "#ff0044"
-          }).setOrigin(0).setScrollFactor(0);
-
-          this.add.text(490 + 200 * 3 + 40, 60, loss_stat[3], {
-            fontFamily: 'Georgia, "Goudy Bookletter 1911", Times, serif',
-            fontSize: 15, fill: "#ff0044"
-          }).setOrigin(0).setScrollFactor(0);
+          this.showColorLossStat(423, 65, loss_stat[0]);
+          this.showColorLossStat(460 + 200, 65, loss_stat[1]);
+          this.showColorLossStat(470 + 200 * 2 + 20, 65, loss_stat[2]);
+          this.showColorLossStat(490 + 200 * 3 + 35, 65, loss_stat[3]);
 
           // update character after choose option
           updateCharacterStats(this.characterTakeOptions[idx]);
