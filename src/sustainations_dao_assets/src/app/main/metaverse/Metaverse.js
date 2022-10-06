@@ -1,7 +1,6 @@
-import { styled } from "@mui/material/styles";
 import history from "@history";
 import { Box, Stack } from "@mui/material";
-import { useEffect } from "react";
+import MetaTags from 'app/shared-components/MetaTags';
 
 const btnWidth = 693;
 const btnHeight = 163;
@@ -10,9 +9,6 @@ const sm = 0.3;
 const lg = 0.5;
 const xl = 0.6;
 const Metaverse = () => {
-  function handleClick(e) {
-    history.replace("/metaverse");
-  }
   return (
     <Box
       sx={{
@@ -22,6 +18,7 @@ const Metaverse = () => {
         placeItems: "center",
         backgroundColor: "#000"
       }}>
+      <MetaTags title="Sustainations Metaverse" description="The first sustainability-themed metaverse on the Internet Computer" />
       <Box
         // component="img"
         // src="metaverse/UI_finish.png"

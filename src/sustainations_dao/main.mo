@@ -620,9 +620,9 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   public query({ caller }) func listProposals(
     proposalType : Types.ProposalType
   ) : async Response<[Types.Proposal]> {
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
-    };
+    // if (Principal.toText(caller) == "2vxsx-fae") {
+    //   return #err(#NotAuthorized);//isNotAuthorized
+    // };
     var list : [Types.Proposal] = [];
     for ((_uuid, proposal) in state.proposals.entries()) {
       if (proposal.status == #open) {
@@ -636,9 +636,9 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   };
 
   public query({caller}) func getProposal(uuid : Text) : async Response<Types.Proposal> {
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
-    };
+    // if (Principal.toText(caller) == "2vxsx-fae") {
+    //   return #err(#NotAuthorized);//isNotAuthorized
+    // };
     switch (state.proposals.get(uuid)) {
       case null { #err(#NotFound); };
       case (? proposal) { #ok(proposal); };
