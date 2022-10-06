@@ -20,7 +20,8 @@ const ProjectsConfig = {
     },
     {
       path: "projects/:projectId/",
-      element: <ShowProject />
+      element: <ShowProject />,
+      auth: null
     }
   ]
 };

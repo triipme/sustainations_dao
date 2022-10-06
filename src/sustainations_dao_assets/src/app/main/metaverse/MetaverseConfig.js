@@ -39,54 +39,48 @@ const MetaverseConfig = {
   routes: [
     {
       path: "metaverse",
+      element: <Metaverse />,
+      auth: null
+    },
+    {
+      path: "metaverse/quests",
+      element: <MetaverseLayout />
+    },
+    {
+      path: "metaverse/bootcamp",
       element: <Outlet />,
       children: [
         {
           index: true,
-          element: <Metaverse />,
-          auth: null
+          element: <BootCamp />
         },
         {
-          path: "quests",
-          element: <MetaverseLayout />
-        },
-        {
-          path: "bootcamp",
+          path: ":slug",
           element: <Outlet />,
           children: [
             {
               index: true,
-              element: <BootCamp />
+              element: <MemoryCardEngineLayout />
             },
             {
-              path: ":slug",
-              element: <Outlet />,
-              children: [
-                {
-                  index: true,
-                  element: <MemoryCardEngineLayout />
-                },
-                {
-                  path: "play",
-                  element: <MemoryCardEnginePlay />
-                }
-              ]
+              path: "play",
+              element: <MemoryCardEnginePlay />
             }
           ]
-        },
-        {
-          path: "land",
-          element: <Land />
-        },
-        {
-          path: "ar",
-          element: <AR />
-        },
-        {
-          path: "thanks",
-          element: <Thanks />
         }
       ]
+    },
+    {
+      path: "metaverse/land",
+      element: <Land />
+    },
+    {
+      path: "metaverse/ar",
+      element: <AR />
+    },
+    {
+      path: "metaverse/thanks",
+      element: <Thanks />
     }
   ]
 };

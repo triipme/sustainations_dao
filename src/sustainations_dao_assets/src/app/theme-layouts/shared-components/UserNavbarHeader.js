@@ -29,7 +29,9 @@ const Root = styled('div')(({ theme }) => ({
 
 function UserNavbarHeader(_props) {
   const user = useSelector(selectUser);
-
+  if (user.depositAddress == '') {
+    return (<></>)
+  }
   return (
     <Root className="user relative flex flex-col items-center justify-center p-16 pb-14 shadow-0">
       <div className="flex items-center justify-center mb-24 w-128 h-128">

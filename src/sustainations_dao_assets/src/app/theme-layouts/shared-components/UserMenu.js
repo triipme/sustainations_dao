@@ -13,7 +13,6 @@ import { selectUser } from 'app/store/userSlice';
 import QRCode from "react-qr-code";
 import { fICP } from '../../utils/NumberFormat';
 import _ from 'lodash';
-import { useAsyncMemo } from "use-async-memo";
 
 function UserMenu(_props) {
   const user = useSelector(selectUser);
@@ -27,6 +26,17 @@ function UserMenu(_props) {
   const userMenuClose = () => {
     setUserMenu(null);
   };
+
+  if (user.depositAddress == '') {
+    return (
+      <MenuItem component={Link} to="/sign-in" role="button">
+        <ListItemIcon className="min-w-40">
+          <FuseSvgIcon>login_outlined</FuseSvgIcon>
+        </ListItemIcon>
+        <ListItemText primary="Sign in" />
+      </MenuItem>
+    );
+  }
 
   return (
     <>
