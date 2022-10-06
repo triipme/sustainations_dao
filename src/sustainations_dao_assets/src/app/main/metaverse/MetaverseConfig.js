@@ -43,7 +43,8 @@ const MetaverseConfig = {
       children: [
         {
           index: true,
-          element: <Metaverse />
+          element: <Metaverse />,
+          auth: null
         },
         {
           path: "quests",

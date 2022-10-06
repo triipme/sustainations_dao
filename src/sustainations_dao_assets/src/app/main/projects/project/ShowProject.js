@@ -19,6 +19,7 @@ import { showMessage } from 'app/store/fuse/messageSlice';
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import ShowProjectMedia from './ShowProjectMedia';
+import MetaTags from 'app/shared-components/MetaTags';
 
 function ShowProject() {
   const dispatch = useDispatch();
@@ -87,6 +88,7 @@ function ShowProject() {
   const { images } = project.payload;
   return (
     <div className="flex flex-col items-center p-24 sm:p-40">
+      <MetaTags title="Sustainations DAO | Projects" />
       <div className="flex flex-col w-full max-w-7xl">
         <div className="flex items-center justify-between mb-8">
           <Button
