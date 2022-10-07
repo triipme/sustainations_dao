@@ -3478,4 +3478,11 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
     #ok((list));
   };
+
+  public shared query({caller}) func listAllInventories() : async Response<[(Text, Types.Inventory)]> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    #ok(Iter.toArray(state.inventories.entries()));
+  };
 };
