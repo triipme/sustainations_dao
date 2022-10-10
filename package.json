@@ -79,7 +79,7 @@
     "react-beautiful-dnd": "^13.1.0",
     "react-dom": "18.1.0",
     "react-draft-wysiwyg": "^1.14.7",
-    "react-hook-form": "^7.32.0",
+    "react-hook-form": "^7.37.0",
     "react-i18next": "^11.17.1",
     "react-leaflet": "^4.0.1",
     "react-leaflet-google-layer": "^2.0.7",
