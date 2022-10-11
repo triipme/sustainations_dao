@@ -26,6 +26,7 @@ import ProjectSubmit from './steps/ProjectSubmit';
 import { setS3Object } from "../../../hooks";
 import moment from 'moment';
 import MobileDetect from 'mobile-detect';
+import MetaTags from 'app/shared-components/MetaTags';
 
 /**
  * Form Validation Schema
@@ -162,6 +163,7 @@ function NewProduct({ proposalType }) {
 
   return (
     <div className="flex flex-col items-center p-24 sm:p-40">
+      <MetaTags title="Sustainations DAO | Projects" />
       <div className="flex flex-col w-full max-w-7xl">
         <div className="flex items-center">
           <Button

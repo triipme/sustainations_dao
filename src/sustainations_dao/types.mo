@@ -340,6 +340,7 @@ module {
   public type MemoryCardEngineGame = MemoryCardEngineModel.Game;
   public type MemoryCardEngineStage = MemoryCardEngineModel.Stage;
   public type MemoryCardEngineCard = MemoryCardEngineModel.Card;
+  public type MemoryCardEngineGameProgress = MemoryCardEngineModel.GameProgress; // thay doi
   public type MemoryCardEnginePlayer = MemoryCardEngineModel.Player;
   public type MemoryCardEngineReward = MemoryCardEngineModel.Reward;
   public type MemoryCardEnginePatternItemGames = {

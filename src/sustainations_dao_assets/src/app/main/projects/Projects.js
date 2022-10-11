@@ -18,6 +18,7 @@ import FusePageSimple from '@fuse/core/FusePageSimple';
 import useThemeMediaQuery from '@fuse/hooks/useThemeMediaQuery';
 import { selectUser } from 'app/store/userSlice';
 import ProjectCard from './ProjectCard';
+import MetaTags from 'app/shared-components/MetaTags';
 
 function Projects({ proposalType }) {
   const user = useSelector(selectUser);
@@ -85,6 +86,7 @@ function Projects({ proposalType }) {
             color: (theme) => theme.palette.getContrastText(theme.palette.primary.main),
           }}
         >
+          <MetaTags title="Sustainations DAO | Projects" />
           <div className="flex flex-col items-center justify-center  mx-auto w-full">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 0 } }}>
               <Typography color="inherit" className="text-18 font-semibold">

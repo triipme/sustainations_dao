@@ -22,6 +22,7 @@ const UserAgreementsConfig = {
       },
     },
   },
+  auth: null,
   routes: [
     {
       path: 'user-agreements/:uid',
