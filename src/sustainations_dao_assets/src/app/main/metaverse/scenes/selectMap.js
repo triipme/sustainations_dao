@@ -7,7 +7,8 @@ import {
   loadCharacter,
   getRemainingTime,
   payQuest,
-  getUserInfo
+  getUserInfo,
+  buyLandSlot
 } from '../GameApi';
 
 const bg = 'metaverse/selectMap/background.png';
@@ -49,6 +50,7 @@ class selectMap extends BaseScene {
         successCallback();
       });
     }, this);
+
 
     //preload
     this.clearCache();

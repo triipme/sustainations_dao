@@ -78,6 +78,7 @@ module {
     #rewardTop;
     #collectTreasuryContribution;
     #payQuest;
+    #buyLandSlot;
   };
   public type TxRecord = {
     uuid : Text;
@@ -92,7 +93,7 @@ module {
     timestamp : Time.Time;
   };
 
-  // Game
+  // Quest
   //--------------------- Character ---------------------//
   public type Character = {
     userId : Principal;
@@ -280,6 +281,36 @@ module {
     materialId : Text;
     amount : Int;
   };
+
+  // Land
+  //--------------------- Land Slot ---------------------//
+  public type LandSlot = {
+    id : Text;
+    ownerId : Principal;
+    isPremium : Bool;
+    isSelling : Bool;
+    zone : Int;
+    index : (Int,Int);
+    price: Float; 
+  };
+
+//--------------------- Land Transfer History ---------------------//
+  public type LandTransferHistory = {
+    id : Text;
+    buyerId : Principal;
+    ownerId : Principal;
+    landId : Text;
+    transferTime : Int;
+    price : Float;
+  };
+//--------------------- Land Buying Status ---------------------//
+  public type LandBuyingStatus = {
+    id : Principal;
+    currentZone: Int;
+    currentIndex : (Int,Int);
+    randomTimes : Int;
+  };
+
 
   // Error codes
   public type Error = {

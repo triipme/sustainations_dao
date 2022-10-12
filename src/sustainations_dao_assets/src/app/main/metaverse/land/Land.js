@@ -1,14 +1,20 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { GeoJSON, MapContainer, useMap, useMapEvents, TileLayer, Rectangle, ImageOverlay } from "react-leaflet";
 import Back from "./Back";
-import mapData from "./data/land_zone_20.json";
+import mapData from "./data/land_size_100_10x10_zone_20.json";
 import Footer from "./footer";
 import L, { CRS, LatLngBounds, Icon } from 'leaflet';
 import "./styles.css";
-import BigMap from "./map.js"
+import BigMap from "./map.js";
+import {
+  buyLandSlot,
+  createLandSlot,
+  getUserInfo,
+  loadLandSlots,
+  updateLandBuyingStatus
+} from '../GameApi';
 
-
-let ownerId = 2
+let ownerId = 3
 let cr_land = 0
 var numRandom = 3
 let availableLand = false
@@ -211,6 +217,7 @@ const Map = () => {
   }
 
   const btnPurchaseRand = () => {
+    
     setShow1(true)
     numRandom -= 1
     let landIdRand
@@ -219,8 +226,15 @@ const Map = () => {
       console.log('show1', landIdRand)
     } while (mapData.features[landIdRand].properties.ownerId && land !== landIdRand)
     if (landIdRand !== land)
+    {
       setLand(landIdRand)
+    }
     else setRender(!render)
+    updateLandBuyingStatus(
+      mapData.features[landIdRand].properties.zone,
+      [mapData.features[landIdRand].properties.i,mapData.features[landIdRand].properties.j],
+      numRandom
+    )
   }
   console.log(purchased2)
 
@@ -289,7 +303,11 @@ const Map = () => {
     }
     while (fl)
     setLand(temp)
-
+    updateLandBuyingStatus(
+      mapData.features[temp].properties.zone,
+      [mapData.features[temp].properties.i,mapData.features[temp].properties.j],
+      numRandom
+    )
   }
 
   return (
@@ -302,7 +320,7 @@ const Map = () => {
       {mode !== 'farm' && <Footer />}
       <GeoJSON key={Math.floor(Math.random() * 9999)} data={mapData.features} onEachFeature={onEachLandSlot} />
       {mode !== 'farm' && <div>
-        <button className="button-85" onClick={() => { offBtn1 = true; btnPurchaseRand() }} style={{
+        <button className="button-85" onClick={async () => { offBtn1 = true; btnPurchaseRand(); await buyLandSlot(); console.log("USER INFO"); console.log(await getUserInfo()); }} style={{
           left: 50,
           top: 100,
           zIndex: 10000,
@@ -344,7 +362,13 @@ const Map = () => {
               height: "20%",
               display: show1 ? "block" : "none"
             }}
-            onClick={() => {
+            onClick={async () => {     
+              createLandSlot (
+                mapData.features[land].properties.zone,
+                [mapData.features[land].properties.i,mapData.features[land].properties.j]
+              )
+              console.log("USER LANDSLOTS:")
+              console.log(await loadLandSlots())
               setPurchased1(true)
               setShow1(false)
               numRandom = 3
@@ -396,7 +420,15 @@ const Map = () => {
               height: "20%",
               display: show2 ? "block" : "none"
             }}
-            onClick={() => {
+            onClick={async () => {
+              console.log(mapData.features[land].properties.i,mapData.features[land].geometry.coordinates)
+              createLandSlot (
+                mapData.features[land].properties.zone,
+                [mapData.features[land].properties.i,mapData.features[land].properties.j],
+                mapData.features[land].geometry.coordinates[0]
+              )
+              console.log("USER LANDSLOTS:")
+              console.log(await loadLandSlots())
               setPurchased2(true)
               setShow2(false)
               numRandom = 3

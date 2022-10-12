@@ -38,6 +38,9 @@ import GearRarity "./game/gearRarity";
 import GearSubstat "./game/gearSubstat";
 import Material "./game/material";
 import Inventory "./game/inventory";
+import LandSlot "./land/landSlot";
+import LandTransferHistory "./land/landTransferHistory";
+import LandBuyingStatus "./land/landBuyingStatus";
 
 shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   stable var transferFee : Nat64 = 10_000;
@@ -3488,4 +3491,191 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
     #ok((list));
   };
+
+
+
+  // Land
+  public shared({ caller }) func buyLandSlot() : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    switch (await deposit(10000, caller)) {
+      case(#ok(bIndex)) {
+        await recordTransaction(
+          caller, 10000, caller, Principal.fromActor(this),
+          #buyLandSlot, null, bIndex
+        );
+        #ok("Success");
+      };
+      case (#err(error)) {
+        #err(error);
+      };
+    };
+  };
+  
+
+  public shared({caller}) func createLandSlot(zone : Int, index : (Int,Int)) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    var uuid : Text = await createUUID();
+    label whileLoop loop {
+      while (true) {
+      let rsLandSlot = state.landSlots.get(uuid);
+      switch (rsLandSlot) {
+          case (?V) {
+            uuid := await createUUID();
+          };
+          case null {
+            break whileLoop;
+          };
+        };
+      };
+    };
+    let newLandSlot : Types.LandSlot = {
+      id = uuid;
+      ownerId = caller;
+      isPremium = false;
+      isSelling = false;
+      zone = zone;
+      index = index;
+      price = 0.0;     
+    };
+    let created = state.landSlots.put(newLandSlot.id,newLandSlot);
+    ignore await createLandTransferHistory(newLandSlot.ownerId,newLandSlot.id,0.0001);
+    ignore await deleteLandBuyingStatus(Principal.toText(newLandSlot.ownerId));
+    #ok("Success");
+  };
+
+  public shared query({caller}) func listLandSlots() : async Response<[(Text, Types.LandSlot)]> {
+    var list : [(Text, Types.LandSlot)] = [];
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    for((key ,landSlot) in state.landSlots.entries()) {
+      if(landSlot.ownerId == caller){
+        list := Array.append<(Text, Types.LandSlot)>(list, [(key, landSlot)]);
+      }
+    };
+    #ok((list));
+  };
+
+  public shared query({caller}) func listAllLandSlots() : async Response<[(Text, Types.LandSlot)]> {
+    var list : [(Text, Types.LandSlot)] = [];
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    for((key ,landSlot) in state.landSlots.entries()) {
+      list := Array.append<(Text, Types.LandSlot)>(list, [(key, landSlot)]);
+    };
+    #ok((list));
+  };
+
+  // Land Transfer History
+  public shared({caller}) func createLandTransferHistory(buyerId : Principal,landId : Text, price : Float) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    var uuid : Text = await createUUID();
+    label whileLoop loop {
+      while (true) {
+      let rsLandTransferHistory = state.landTransferHitories.get(uuid);
+      switch (rsLandTransferHistory) {
+          case (?V) {
+            uuid := await createUUID();
+          };
+          case null {
+            break whileLoop;
+          };
+        };
+      };
+    };
+    let newLandTransferHistory : Types.LandTransferHistory = {
+      id = uuid;
+      buyerId = buyerId;
+      ownerId = Principal.fromActor(this);
+      landId = landId;
+      transferTime = Time.now();
+      price = price;   
+    };
+    let created = state.landTransferHitories.put(newLandTransferHistory.id,newLandTransferHistory);
+    #ok("Success");
+  };
+
+  public shared query({caller}) func listLandTransferHistories() : async Response<[(Text, Types.LandTransferHistory)]> {
+    var list : [(Text, Types.LandTransferHistory)] = [];
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    for((K,V) in state.landTransferHitories.entries()) {
+      list := Array.append<(Text, Types.LandTransferHistory)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+
+
+  // Land Buying Status
+  public shared({caller}) func updateLandBuyingStatus(zone : Int, index : (Int,Int),randomTimes : Int) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    
+    let newLandBuyingStatus : Types.LandBuyingStatus = {
+      id = caller;
+      currentZone = zone;
+      currentIndex = index;
+      randomTimes = randomTimes;
+    };
+    let principalId = Principal.toText(caller);
+    let rsLandBuyingStatus = state.landBuyingStatuses.get(principalId);
+    switch (rsLandBuyingStatus) {
+        case (?V) {
+          let updated = LandBuyingStatus.update(newLandBuyingStatus,state);
+        };
+        case null {
+          let created = LandBuyingStatus.create(newLandBuyingStatus,state); 
+        };
+      };
+    #ok("Success");
+  };
+
+  public shared query({caller}) func readLandBuyingStatus() : async Response<(Types.LandBuyingStatus)>{
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let id = Principal.toText(caller);
+    let rsLandBuyingStatus = state.landBuyingStatuses.get(id);
+    return Result.fromOption(rsLandBuyingStatus, #NotFound);
+  };
+
+  public shared({caller}) func deleteLandBuyingStatus(id : Text) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsLandBuyingStatus = state.landBuyingStatuses.get(id);
+    switch (rsLandBuyingStatus) {
+      case (null) { #err(#NotFound); };
+      case (?V) {
+        let deleted = state.landBuyingStatuses.delete(id);
+        #ok("Success");
+      };
+    };
+  };
+
+
+
+  public shared query({caller}) func listLandBuyingStatuses() : async Response<[(Text, Types.LandBuyingStatus)]> {
+    var list : [(Text, Types.LandBuyingStatus)] = [];
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    for((K,V) in state.landBuyingStatuses.entries()) {
+      list := Array.append<(Text, Types.LandBuyingStatus)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
 };
+
+
+
