@@ -106,7 +106,10 @@ function totalTurn(array) {
 }
 
 function totalTime(array) {
-  return array?.reduce((a, b) => a + b?.timing, 0);
+  return array?.reduce((a, b) => {
+    console.log(a, b);
+    return a + b?.timing;
+  }, 0);
 }
 
 // 1034009035;

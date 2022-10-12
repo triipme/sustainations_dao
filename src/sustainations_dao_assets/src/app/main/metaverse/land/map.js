@@ -7,7 +7,6 @@ import L, { CRS, LatLngBounds, Icon } from 'leaflet';
 import "./styles.css";
 
 const BigMap = () => {
-    // console.log(mapData)
     const onEachLand = (country, layer) => {
         layer.setStyle({
             color: "#002E5E",
@@ -15,7 +14,6 @@ const BigMap = () => {
         })
 
     }
-    console.log("run")
     return (
         <>
             <GeoJSON data={mapData.features} onEachFeature={onEachLand} />

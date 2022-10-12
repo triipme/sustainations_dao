@@ -278,6 +278,16 @@ async function loadLandBuyingStatuses(){
 };
 
 
+//read event
+async function readEvent(eventId) {
+  const {user} = store.getState();
+  const func = async() => await user.actor.readEvent(eventId);
+  const event = (await func()).ok;
+  return event;
+}
+
+
+
 export {
   getUserInfo,
   loadQuestItems,
