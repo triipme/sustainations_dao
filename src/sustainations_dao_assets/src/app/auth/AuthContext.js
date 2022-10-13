@@ -23,9 +23,10 @@ function AuthProvider({ children }) {
       const client = await AuthClient.create();
       const authenticated = await client.isAuthenticated();
       setIsAuthenticated(authenticated); //check isAuthorized first time
+      let actor;
       if (authenticated) {
         const identity = client.getIdentity();
-        const actor = createActor(canisterId, {
+        actor = createActor(canisterId, {
           agentOptions: {
             identity
           }
@@ -67,6 +68,18 @@ function AuthProvider({ children }) {
         setWaitAuthCheck(false);
       } else {
         pass();
+        actor = createActor(canisterId);
+        const userState = {
+          role: [],
+          actor,
+          depositAddress: '',
+          principal: '',
+          balance: 0,
+          brandId: null,
+          profile: {},
+          avatar: '',
+        };
+        dispatch(setUser(userState));
       }
     };
 

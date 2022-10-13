@@ -4,7 +4,7 @@ import {
   getUserInfo,
   loadEventItem,
   useHpPotion,
-  loadEventOptions, 
+  loadEventOptions,
   loadCharacter,
   updateCharacterStats,
   getCharacterStatus,
@@ -22,37 +22,37 @@ class BaseScene extends Phaser.Scene {
 
   initialLoad(eventID) {
     this.eventId = eventID;
-    this.load.rexAwait(function(successCallback, failureCallback) {
-      getUserInfo().then( (result) => {
+    this.load.rexAwait(function (successCallback, failureCallback) {
+      getUserInfo().then((result) => {
         this.userInfo = result.ok;
         successCallback();
       });
     }, this);
     // load character
-    this.load.rexAwait(function(successCallback, failureCallback) {
-      loadCharacter().then( (result) => {
+    this.load.rexAwait(function (successCallback, failureCallback) {
+      loadCharacter().then((result) => {
         this.characterData = result.ok[1];
         console.log(this.characterData);
         successCallback();
       });
     }, this);
 
-    this.load.rexAwait(function(successCallback, failureCallback) {
-      characterTakeOption(this.eventId).then( (result) => {
+    this.load.rexAwait(function (successCallback, failureCallback) {
+      characterTakeOption(this.eventId).then((result) => {
         this.characterTakeOptions = result;
         successCallback();
       });
     }, this);
 
-    this.load.rexAwait(function(successCallback, failureCallback) {
-      getCharacterStatus().then( (result) => {
+    this.load.rexAwait(function (successCallback, failureCallback) {
+      getCharacterStatus().then((result) => {
         this.characterStatus = result.ok;
         successCallback();
       });
     }, this);
 
-    this.load.rexAwait(function(successCallback, failureCallback) {
-      characterCollectsMaterials(this.eventId).then( (result) => {
+    this.load.rexAwait(function (successCallback, failureCallback) {
+      characterCollectsMaterials(this.eventId).then((result) => {
         this.characterCollectMaterials = result;
         successCallback();
       });
@@ -71,37 +71,37 @@ class BaseScene extends Phaser.Scene {
     this.bg_1 = this.add.tileSprite(0, 0, gameConfig.scale.width, gameConfig.scale.height, "background1");
     this.bg_1.setOrigin(0, 0);
     this.bg_1.setScrollFactor(0);
-    
+
     this.bg_2 = this.add.tileSprite(0, 0, gameConfig.scale.width, gameConfig.scale.height, "background2");
     this.bg_2.setOrigin(0, 0);
     this.bg_2.setScrollFactor(0);
-    
-    if (this.textures.exists("obstacle")){
+
+    if (this.textures.exists("obstacle")) {
       this.obstacle = this.add.tileSprite(0, 0, gameConfig.scale.width, gameConfig.scale.height, "obstacle")
-      .setOrigin(0,0)
-      .setScrollFactor(0);
+        .setOrigin(0, 0)
+        .setScrollFactor(0);
     } else {
       console.log('Obstacle not found');
     }
-    
+
     //player
     this.player = this.physics.add.sprite(-50, 500, "hero-running").setScale(0.67);
-    
+
     this.anims.create({
       key: "running-anims",
-      frames: this.anims.generateFrameNumbers("hero-running", {start: 1, end: 8}),
+      frames: this.anims.generateFrameNumbers("hero-running", { start: 1, end: 8 }),
       frameRate: 8,
       repeat: -1
     });
-    
+
     this.anims.create({
       key: "idle-anims",
-      frames: this.anims.generateFrameNumbers("hero-running", {start: 0, end: 0}),
+      frames: this.anims.generateFrameNumbers("hero-running", { start: 0, end: 0 }),
       frameRate: 1,
       repeat: -1
     });
     this.player.play('running-anims');
-    
+
     //frontlayer
     this.bg_3 = this.add.tileSprite(0, 0, gameConfig.scale.width, gameConfig.scale.height, "background3");
     this.bg_3.setOrigin(0, 0);
@@ -111,37 +111,43 @@ class BaseScene extends Phaser.Scene {
   async createUIElements(isDisabled = false) {
     //UI
     this.add.image(20, 30, "UI_NameCard").setOrigin(0).setScrollFactor(0);
-    this.add.text(90, 47, 'Trekker', { fill: '#000', align: 'center', fontSize: '9px', font: 'Arial'}).setScrollFactor(0);
-    this.add.text(90, 65, this.userInfo.profile[0].username, { fill: '#000', align: 'center', font: '15px Arial'}).setScrollFactor(0);
+    this.add.text(90, 47, 'Trekker', { fill: '#000', align: 'center', fontSize: '9px', font: 'Arial' }).setScrollFactor(0);
+    this.add.text(90, 65, this.userInfo.profile[0].username, { fill: '#000', align: 'center', font: '15px Arial' }).setScrollFactor(0);
     this.add.image(255, 30, "UI_HP").setOrigin(0).setScrollFactor(0);
     this.add.image(490, 30, "UI_Mana").setOrigin(0).setScrollFactor(0);
     this.add.image(725, 30, "UI_Stamina").setOrigin(0).setScrollFactor(0);
     this.add.image(960, 30, "UI_Morale").setOrigin(0).setScrollFactor(0);
+
+    // this.add.image(20, 100, "item_ingame_HP").setOrigin(0).setScrollFactor(0);
+    // this.add.image(20, 150, "item_ingame_HP").setOrigin(0).setScrollFactor(0);
+    // this.add.image(20, 200, "item_ingame_HP").setOrigin(0).setScrollFactor(0);
+    // this.add.image(20, 250, "item_ingame_HP").setOrigin(0).setScrollFactor(0);
+
     this.add.image(1190, 50, "BtnExit").setOrigin(0).setScrollFactor(0).setScale(0.7)
-    .setInteractive()
+      .setInteractive()
       .on('pointerdown', () => {
         this.clickSound.play();
-        try {this.pregameSound.stop();} catch {}
-        try {this.ambientSound.stop();} catch {}
-        try {this.sfx_char_footstep.stop();} catch {}
-        try {this.sfx_small_waterfall.stop();} catch {}
-        try {this.sfx_big_waterfall.stop();} catch {}
-        try {this.ingameSound.stop();} catch {}
-        try {this.sfx_monkey.stop();} catch {}
+        try { this.pregameSound.stop(); } catch { }
+        try { this.ambientSound.stop(); } catch { }
+        try { this.sfx_char_footstep.stop(); } catch { }
+        try { this.sfx_small_waterfall.stop(); } catch { }
+        try { this.sfx_big_waterfall.stop(); } catch { }
+        try { this.ingameSound.stop(); } catch { }
+        try { this.sfx_monkey.stop(); } catch { }
         this.scene.start('selectMap');
-    });
+      });
     //set value
     this.hp = this.makeBar(325, 65, 100, 15, 0x74e044).setScrollFactor(0);
-    this.mana = this.makeBar(325+235, 65, 100, 15, 0xc038f6).setScrollFactor(0);
-    this.stamina = this.makeBar(325+235*2, 65, 100, 15, 0xcf315f).setScrollFactor(0);
-    this.morale = this.makeBar(325+235*3, 65, 100, 15, 0x63dafb).setScrollFactor(0);
+    this.mana = this.makeBar(325 + 235, 65, 100, 15, 0xc038f6).setScrollFactor(0);
+    this.stamina = this.makeBar(325 + 235 * 2, 65, 100, 15, 0xcf315f).setScrollFactor(0);
+    this.morale = this.makeBar(325 + 235 * 3, 65, 100, 15, 0x63dafb).setScrollFactor(0);
 
     // load event item
     if (!isDisabled) {
       this.eventItem = await loadEventItem();
       this.isHadPotion = false;
-      console.log("EVENT ITEM",this.eventItem);
-      if(this.eventItem != undefined) {
+      console.log("EVENT ITEM", this.eventItem);
+      if (this.eventItem != undefined) {
         this.isHadPotion = true;
       };
     } else {
@@ -151,7 +157,7 @@ class BaseScene extends Phaser.Scene {
     console.log("HAD POTION ", this.isHadPotion);
     this.isUsedPotion = false;
     this.itemSlot = [];
-    if (this.isHadPotion){
+    if (this.isHadPotion) {
       this.itemSlot[0] = this.add.image(55, 550, "UI_Utility_Sprite")
         .setOrigin(0).setScrollFactor(0).setScale(0.5).setFrame(1);
       this.potion = this.add.image(68, 563, "item_potion")
@@ -161,42 +167,42 @@ class BaseScene extends Phaser.Scene {
         this.itemSlot[0].setFrame(0);
         this.potion.setVisible(false);
         this.isUsedPotion = true;
-        console.log("Used potion => ",useHpPotion(this.characterData.id));
+        console.log("Used potion => ", useHpPotion(this.characterData.id));
       });
     } else {
       this.itemSlot[0] = this.add.image(55, 550, "UI_Utility_Sprite").setOrigin(0).setScrollFactor(0).setScale(0.5);
     }
-    this.itemSlot[1] =this.add.image(125, 505, "UI_Utility_Sprite").setOrigin(0).setScrollFactor(0).setScale(0.5);
-    this.itemSlot[2] =this.add.image(195, 550, "UI_Utility_Sprite").setOrigin(0).setScrollFactor(0).setScale(0.5);
+    this.itemSlot[1] = this.add.image(125, 505, "UI_Utility_Sprite").setOrigin(0).setScrollFactor(0).setScale(0.5);
+    this.itemSlot[2] = this.add.image(195, 550, "UI_Utility_Sprite").setOrigin(0).setScrollFactor(0).setScale(0.5);
   }
 
   isExhausted() {
-    if(this.characterStatus == 'Exhausted') {
+    if (this.characterStatus == 'Exhausted') {
       this.scene.start('exhausted');
     } else {
-      if(this.isHealedPreviously) {
-        for(const i in this.characterTakeOptions) {
-          this.characterTakeOptions[i].currentHP += this.hpPotion.increaseStat;
+      if (this.isHealedPreviously) {
+        for (const i in this.characterTakeOptions) {
+          this.characterTakeOptions[i].currentHP += 3;
         }
       }
     }
   };
 
   usePotion() {
-    if(this.isHealedPreviously){
-      var newValue = this.characterData.currentHP + this.hpPotion.increaseStat;
-      if (newValue > this.characterData.maxHP){
+    if (this.isHealedPreviously) {
+      var newValue = this.characterData.currentHP + 3;
+      if (newValue > this.characterData.maxHP) {
         newValue = this.characterData.maxHP;
       }
-      this.setValue(this.hp, newValue/this.characterData.maxHP*100);
-    } else{
-      this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
+      this.setValue(this.hp, newValue / this.characterData.maxHP * 100);
+    } else {
+      this.setValue(this.hp, this.characterData.currentHP / this.characterData.maxHP * 100);
     }
   };
 
   async listMaterial() {
     this.collectedMaterials = await listCharacterCollectsMaterials(this.characterData.id);
-    console.log("MATERIAL",this.collectedMaterials);
+    console.log("MATERIAL", this.collectedMaterials);
   };
 
   defineCamera(width, height) {
@@ -205,28 +211,28 @@ class BaseScene extends Phaser.Scene {
     this.myCam.startFollow(this.player);
   }
 
-  createPauseScreen(){
-    this.veil = this.add.graphics({x: 0, y: 0})
+  createPauseScreen() {
+    this.veil = this.add.graphics({ x: 0, y: 0 })
       .fillStyle('0x000000', 0.2);
-    this.veil.fillRect(0,0, gameConfig.scale.width, gameConfig.scale.height)
+    this.veil.fillRect(0, 0, gameConfig.scale.width, gameConfig.scale.height)
       .setScrollFactor(0).setVisible(false);
     this.selectAction = this.add.image(0, 0, 'selectAction')
-      .setOrigin(0,0).setScrollFactor(0).setVisible(false);
+      .setOrigin(0, 0).setScrollFactor(0).setVisible(false);
   }
 
   //loading screen for every scene
   addLoadingScreen() {
     this.add.image(
-      gameConfig.scale.width/2, gameConfig.scale.height/2 - 35, 'logo'
+      gameConfig.scale.width / 2, gameConfig.scale.height / 2 - 35, 'logo'
     ).setOrigin(0.5, 0.5).setScale(0.15);
     this.anims.create({
       key: 'loading-anims',
-      frames: this.anims.generateFrameNumbers("loading", {start: 0, end: 11}),
+      frames: this.anims.generateFrameNumbers("loading", { start: 0, end: 11 }),
       frameRate: 12,
       repeat: -1
     });
     this.add.sprite(
-      gameConfig.scale.width/2, gameConfig.scale.height/2 + 100, "loading"
+      gameConfig.scale.width / 2, gameConfig.scale.height / 2 + 100, "loading"
     ).setScale(0.05).play('loading-anims');
   }
   //draw graphic bars
@@ -238,12 +244,53 @@ class BaseScene extends Phaser.Scene {
     bar.y = y;
     return bar;
   }
-  setValue(bar,percentage) {
-    if (percentage/100 > 1){
+  setValue(bar, percentage) {
+    if (percentage / 100 > 1) {
       bar.scaleX = 1;
     } else {
-      bar.scaleX = percentage/100;
+      bar.scaleX = percentage / 100;
     }
   }
+  showLossStat(character_before, character_after) {
+    let lossStamina = character_after.currentStamina - character_before.currentStamina
+    let lossHp = character_after.currentHP - character_before.currentHP
+    let lossMana = character_after.currentMana - character_before.currentMana
+    let lossMorale = character_after.currentMorale - character_before.currentMorale
+    if (lossHp != 0) {
+      console.log('HP: ', lossHp)
+    }
+    if (lossMana != 0) {
+      console.log('MANA: ', lossMana)
+    }
+    if (lossStamina != 0) {
+      console.log('STAMINA: ', lossStamina)
+    }
+    if (lossMorale != 0) {
+      console.log('MORALE: ', lossMorale)
+    }
+    let r = [lossHp, lossMana, lossStamina, lossMorale]
+    console.log("finish");
+    return r
+  }
+
+  showColorLossStat(x, y, stat) {
+    let fill1 = "#ff0044";
+    if (stat > 0) {
+      fill1 = "#008000";
+    }
+    if (stat != 0) {
+      if (stat > 0) {
+        stat = "+" + stat;
+      }
+
+      this.add.text(x, y, stat, {
+        font: 'bold 13px Arial',
+        fill: fill1
+      }).setOrigin(0).setScrollFactor(0);
+    }
+
+  }
+
+
 }
 export default BaseScene;

@@ -25,13 +25,13 @@ function MemoryCardEngineCard({ handleChoice, flipped, disabled, ...card }) {
       <Box
         className="flex items-center justify-center text-center relative"
         sx={{ height: { md: 300, xs: 160 } }}>
-        {!Array.isArray(card.data) ? (
+        {/^[https|http]+/g.test(card[1].data) ? (
           <motion.div
             className="absolute w-full h-full grid place-items-center"
             variants={variants}
             initial={{ rotateY: 90, transition: { delay: 0 } }}
             animate={!flipped ? "back" : "front"}>
-            <img src={card.data} alt="card" style={{ objectFit: "contain" }} />
+            <img src={flipped && card[1].data} alt="card" style={{ objectFit: "contain" }} />
           </motion.div>
         ) : (
           <motion.div
@@ -39,7 +39,7 @@ function MemoryCardEngineCard({ handleChoice, flipped, disabled, ...card }) {
             variants={variants}
             initial={{ rotateY: 90, transition: { delay: 0 } }}
             animate={!flipped ? "back" : "front"}>
-            <Typography variant="subtitle2">{card?.data[card?.dataType]}</Typography>
+            <Typography variant="subtitle2">{flipped && card[1].data}</Typography>
           </motion.div>
         )}
         {

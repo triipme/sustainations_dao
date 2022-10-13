@@ -30,6 +30,7 @@ const MemoryCardEngineStage = ({ gameId, slug: gameSlug }) => {
       })();
     }
   }, [gameId]);
+  console.log(player);
   const handleClick = stageId => {
     return () => navigate("play", { state: { stageId, gameSlug, player, gameId } });
   };
@@ -38,7 +39,14 @@ const MemoryCardEngineStage = ({ gameId, slug: gameSlug }) => {
       key={stages[0][0][0]}
       variant="contained"
       onClick={handleClick(stages[0][0][0])}
-      disabled={player?.[1].history.some(h => h.stageId === stages[0][0][0])}>
+      disabled={player?.[1].history.some(h => {
+        return (
+          h.stageId === stages[0][0][0] &&
+          h.timing > 0 &&
+          parseInt(h.turn) > 0 &&
+          h.selected.length > 0
+        );
+      })}>
       Play
     </Button>
   ) : (
@@ -53,7 +61,13 @@ const MemoryCardEngineStage = ({ gameId, slug: gameSlug }) => {
           <Button
             sx={{ mx: 1 }}
             key={stage[0][0]}
-            disabled={player?.[1].history.some(h => h.stageId === stage[0][0])}
+            disabled={player?.[1].history.some(
+              h =>
+                h.stageId === stage[0][0] &&
+                h.timing > 0 &&
+                parseInt(h.turn) > 0 &&
+                h.selected.length > 0
+            )}
             variant="contained"
             onClick={handleClick(stage[0][0])}>
             {stage[0][1].name}
