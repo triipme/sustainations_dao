@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import BaseScene from './BaseScene'
 import gameConfig from '../GameConfig';
 import history from "@history";
-import { 
+import {
   resetCharacter,
   loadCharacter,
   getRemainingTime,
@@ -15,6 +15,7 @@ const text = 'metaverse/selectMap/call_to_action.png';
 const selectArea = 'metaverse/selectMap/select-area.png';
 const jungleLocationDetail = 'metaverse/selectMap/jungle_location_detail.png';
 const cataloniaLocationDetail = 'metaverse/selectMap/catalonia_location_detail.png';
+const lavaLocationDetail = 'metaverse/selectMap/lava_location_detail.png';
 const btnBack = 'metaverse/selectItems/UI_back.png';
 const popupWindow = 'metaverse/selectMap/Jungle_popup.png';
 const popupClose = 'metaverse/selectMap/UI_ingame_close.png';
@@ -27,7 +28,7 @@ class selectMap extends BaseScene {
 
   clearCache() {
     const textures_list = ["bg", "welcomeText", 'introduction_btn', 'bootcamp_btn', 'departure_btn', 'land_btn', 'quest_btn'];
-    for (const index in textures_list){
+    for (const index in textures_list) {
       this.textures.remove(textures_list[index]);
     }
     console.clear();
@@ -35,15 +36,15 @@ class selectMap extends BaseScene {
 
   preload() {
     this.addLoadingScreen();
-    this.load.rexAwait(function(successCallback, failureCallback) {
-      getUserInfo().then( (result) => {
+    this.load.rexAwait(function (successCallback, failureCallback) {
+      getUserInfo().then((result) => {
         this.userInfo = result.ok;
         console.log(this.userInfo);
         successCallback();
       });
     }, this);
-    this.load.rexAwait(function(successCallback, failureCallback) {
-      loadCharacter().then( (result) => {
+    this.load.rexAwait(function (successCallback, failureCallback) {
+      loadCharacter().then((result) => {
         this.characterData = result.ok[1];
         console.log(this.characterData);
         successCallback();
@@ -56,9 +57,10 @@ class selectMap extends BaseScene {
     this.load.image('text', text);
     this.load.image('jungleLocationDetail', jungleLocationDetail);
     this.load.image('cataloniaLocationDetail', cataloniaLocationDetail);
-    this.load.spritesheet('selectArea', selectArea, { frameWidth: 498, frameHeight: 800});
+    this.load.image('lavaLocationDetail', lavaLocationDetail);
+    this.load.spritesheet('selectArea', selectArea, { frameWidth: 498, frameHeight: 800 });
     this.load.image("btnBack", btnBack);
-    this.load.spritesheet('popupWindow', popupWindow, { frameWidth: 980, frameHeight: 799});
+    this.load.spritesheet('popupWindow', popupWindow, { frameWidth: 980, frameHeight: 799 });
     this.load.image("popupClose", popupClose);
     this.load.image("popupAccept", popupAccept);
   }
@@ -72,7 +74,9 @@ class selectMap extends BaseScene {
     this.jungleLocationDetail = this.add.image(247, 167, 'jungleLocationDetail')
       .setVisible(false).setInteractive();
     this.cataloniaLocationDetail = this.add.image(247, 167, 'cataloniaLocationDetail')
-    .setVisible(false).setInteractive();
+      .setVisible(false).setInteractive();
+    this.lavaLocationDetail = this.add.image(247, 167, 'lavaLocationDetail')
+      .setVisible(false).setInteractive();
     this.btnBack = this.add.image(40, 25, 'btnBack')
       .setOrigin(0).setInteractive();
     this.btnBack.on('pointerdown', () => {
@@ -101,7 +105,7 @@ class selectMap extends BaseScene {
       this.clickSound.play();
       this.premiumPopupWindow.setVisible(true);
       this.premiumPopupCloseBtn.setVisible(true);
-      if(this.currentICP >= this.requiredICP){
+      if (this.currentICP >= this.requiredICP) {
         this.premiumPopupAcceptBtn.setVisible(true);
       }
       this.selectAreaJungle.disableInteractive();
@@ -129,17 +133,38 @@ class selectMap extends BaseScene {
       };
     });
 
+    this.selectAreaLava = this.add.sprite(1030, 250, 'selectArea')
+      .setScale(0.18)
+      .setInteractive();
+    this.selectAreaLava.on('pointerover', () => {
+      this.selectAreaLava.setFrame(1);
+      this.lavaLocationDetail.setVisible(true);
+      this.hoverSound.play();
+    });
+    this.selectAreaLava.on('pointerout', () => {
+      this.selectAreaLava.setFrame(0);
+      this.lavaLocationDetail.setVisible(false);
+    });
+    this.selectAreaLava.on('pointerdown', () => {
+      this.clickSound.play();
+      if (this.getRemainingTime != 0) this.scene.start('exhausted');
+      else {
+        resetCharacter();
+        this.scene.start('selectItemScene', { map: 'lava' });
+      };
+    });
+
     this.text = this.add.image(65, 425, 'text').setOrigin(0).setScale(0.7);
 
     //jungle popup
-    this.premiumPopupWindow = this.add.sprite(gameConfig.scale.width/2, gameConfig.scale.height/2, "popupWindow")
+    this.premiumPopupWindow = this.add.sprite(gameConfig.scale.width / 2, gameConfig.scale.height / 2, "popupWindow")
       .setScale(0.5).setVisible(false);
     if (this.currentICP < this.requiredICP) {
       this.premiumPopupWindow.setFrame(1);
     }
-    this.premiumPopupCloseBtn = this.add.image(gameConfig.scale.width/2+230, gameConfig.scale.height/2-150, "popupClose")
+    this.premiumPopupCloseBtn = this.add.image(gameConfig.scale.width / 2 + 230, gameConfig.scale.height / 2 - 150, "popupClose")
       .setInteractive().setScale(0.25).setVisible(false);
-    this.premiumPopupAcceptBtn = this.add.image(gameConfig.scale.width/2, gameConfig.scale.height/2+115, "popupAccept")
+    this.premiumPopupAcceptBtn = this.add.image(gameConfig.scale.width / 2, gameConfig.scale.height / 2 + 115, "popupAccept")
       .setInteractive().setScale(0.5).setVisible(false);
 
     this.premiumPopupCloseBtn.on('pointerdown', () => {

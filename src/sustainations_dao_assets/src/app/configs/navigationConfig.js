@@ -15,6 +15,7 @@ const navigationConfig = [
     type: 'item',
     icon: 'dashboard_outlined',
     url: '/dashboard',
+    auth: authRoles.alllRoles,
   },
   {
     id: 'projects',
@@ -29,12 +30,14 @@ const navigationConfig = [
     type: 'item',
     icon: 'cached_outlined',
     url: '/proposal-products',
+    auth: authRoles.alllRoles,
   },
   {
     id: 'workspac3',
     title: 'Workspac3',
     type: 'collapse',
     icon: 'workspaces_outlined',
+    auth: authRoles.alllRoles,
     children: [
       {
         id: 'workspac3-scrumboard',

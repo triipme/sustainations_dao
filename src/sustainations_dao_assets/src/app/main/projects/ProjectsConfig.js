@@ -11,7 +11,8 @@ const ProjectsConfig = {
   routes: [
     {
       path: "projects",
-      element: <Projects proposalType={{ project: null }} />
+      element: <Projects proposalType={{ project: null }} />,
+      auth: null
     },
     {
       path: "projects/new",
@@ -19,7 +20,8 @@ const ProjectsConfig = {
     },
     {
       path: "projects/:projectId/",
-      element: <ShowProject />
+      element: <ShowProject />,
+      auth: null
     }
   ]
 };

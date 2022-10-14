@@ -9,15 +9,14 @@ import {
 } from '../../GameApi';
 import { settings } from '../settings';
 import { func } from 'prop-types';
-import { readEvent, loadItemUrl } from '../../GameApi';
+import { readEvent } from '../../GameApi';
 
 const heroRunningSprite = 'metaverse/walkingsprite.png';
-// const heroRunningSprite = loadItemUrl('development/asset/walkingsprite.png');
 const ground = 'metaverse/transparent-ground.png';
-const bg1 = 'metaverse/scenes/catalonia/Scene1/PNG/back.png';
-const bg2 = 'metaverse/scenes/catalonia/Scene1/PNG/mid.png';
-const bg3 = 'metaverse/scenes/catalonia/Scene1/PNG/front.png';
-const obstacle = 'metaverse/scenes/catalonia/Scene1/PNG/obstacle.png';
+const bg1 = 'metaverse/scenes/lava/Scene5/PNG/back.png';
+const bg2 = 'metaverse/scenes/lava/Scene5/PNG/mid.png';
+const bg3 = 'metaverse/scenes/lava/Scene5/PNG/front.png';
+const obstacle = 'metaverse/scenes/lava/Scene5/PNG/obstacle.png';
 const selectAction = 'metaverse/scenes/background_menu.png';
 const btnBlank = 'metaverse/scenes/selection.png';
 
@@ -29,15 +28,15 @@ const item_potion = 'metaverse/scenes/item_ingame_HP.png'
 const popupWindo = 'metaverse/selectMap/Catalonia_popup.png';
 const popupClose = 'metaverse/selectMap/UI_ingame_close.png';
 
-export default class catalonia_scene1 extends BaseScene {
+export default class lava_scene5 extends BaseScene {
   constructor() {
-    super('catalonia_scene1');
+    super('lava_scene5');
   }
 
   clearSceneCache() {
     const textures_list = ['bg', 'UI_strength', 'effect', 'player', 'pickItemText',
       'itembox', 'btnGo', 'btnClear', 'ground', 'background1', 'background2',
-      'background3', 'selectAction', 'btnBlank', 'obstacle'];
+      'background3', 'selectAction', 'btnBlank', 'obstacle', 'popupWindow'];
     for (const index in textures_list) {
       this.textures.remove(textures_list[index]);
     }
@@ -45,7 +44,7 @@ export default class catalonia_scene1 extends BaseScene {
 
   preload() {
     this.addLoadingScreen();
-    this.initialLoad("e7");
+    this.initialLoad("e35");
 
     //Preload
     this.clearSceneCache();
@@ -123,7 +122,7 @@ export default class catalonia_scene1 extends BaseScene {
     this.physics.add.collider(this.player, platforms);
 
     this.createUIElements();
-    this.defineCamera(gameConfig.scale.width * 4, gameConfig.scale.height);
+    this.defineCamera(5118, gameConfig.scale.height);
     this.createPauseScreen();
 
     // load selected items ids
@@ -168,7 +167,7 @@ export default class catalonia_scene1 extends BaseScene {
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
-      text: "La Seu d'Urgell is a town located in the Catalan Pyrenees in Spain. \n\nLa Seu d'Urgell is also the capital of the comarca Alt Urgell.",
+      text: "A large chest is in front of us, is it a treasure?",
       origin: { x: 0.5, y: 0.5 },
       style: {
         font: 'bold 25px Arial',
@@ -216,14 +215,12 @@ export default class catalonia_scene1 extends BaseScene {
           this.setValue(this.mana, this.characterTakeOptions[idx].currentMana / this.characterTakeOptions[idx].maxMana * 100);
           this.setValue(this.morale, this.characterTakeOptions[idx].currentMorale / this.characterTakeOptions[idx].maxMorale * 100);
 
+          //HP, Stamina, mana, morele in col 
           let loss_stat = this.showLossStat(this.characterData, this.characterTakeOptions[idx])
-
-          //HP, Stamina, mana, morele in col
           this.showColorLossStat(423, 65, loss_stat[0]);
           this.showColorLossStat(460 + 200, 65, loss_stat[1]);
           this.showColorLossStat(470 + 200 * 2 + 20, 65, loss_stat[2]);
           this.showColorLossStat(490 + 200 * 3 + 35, 65, loss_stat[3]);
-
 
           // update character after choose option
           updateCharacterStats(this.characterTakeOptions[idx]);
@@ -231,7 +228,9 @@ export default class catalonia_scene1 extends BaseScene {
           createCharacterCollectsMaterials(this.characterCollectMaterials[idx]);
         }
       });
+
     };
+
   }
 
   update() {
@@ -240,13 +239,13 @@ export default class catalonia_scene1 extends BaseScene {
       this.player.setVelocityX(settings.movementSpeed);
     }
 
-    if (this.player.x > gameConfig.scale.width * 4) {
+    if (this.player.x > 5100) {
       this.pregameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start("catalonia_scene2_1", { isUsedPotion: this.isUsedPotion });
+      this.scene.start("thanks", { isUsedPotion: this.isUsedPotion });
     }
 
-    if (this.player.x > gameConfig.scale.width * 4 - 700 && this.isInteracted == false) {
+    if (this.player.x > 4200 && this.isInteracted == false) {
 
       this.premiumPopupWindow.setVisible(true);
       this.premiumPopupCloseBtn.setVisible(true);
@@ -256,7 +255,6 @@ export default class catalonia_scene1 extends BaseScene {
       this.player.setVelocityX(0);
       this.player.play('idle-anims');
       this.player.stop();
-
     }
 
     //bg
