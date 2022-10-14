@@ -3,7 +3,7 @@ import gameConfig from '../GameConfig';
 import BaseScene from './BaseScene';
 import {
   getUserInfo,
-  loadQuestItems, 
+  loadQuestItems,
   characterSelectsItems,
   loadItemUrl,
   resetCharacter,
@@ -35,8 +35,8 @@ class selectItemScene extends BaseScene {
 
   clearCache() {
     const textures_list = ['bg', 'text', 'selectArea', 'locationDetail', 'player', 'pickItemText',
-    'btnGo', 'btnClear'];
-    for (const index in textures_list){
+      'btnGo', 'btnClear'];
+    for (const index in textures_list) {
       this.textures.remove(textures_list[index]);
     }
     console.clear();
@@ -50,23 +50,23 @@ class selectItemScene extends BaseScene {
     this.addLoadingScreen();
     this.itemNames = [];
     this.itemStrength = [];
-    this.load.rexAwait(function(successCallback, failureCallback) {
-      getUserInfo().then( (result) => {
+    this.load.rexAwait(function (successCallback, failureCallback) {
+      getUserInfo().then((result) => {
         this.userInfo = result.ok;
         console.log(this.userInfo);
         successCallback();
       });
     }, this);
-    this.load.rexAwait(function(successCallback, failureCallback) {
-      resetCharacter().then( (result) => {
+    this.load.rexAwait(function (successCallback, failureCallback) {
+      resetCharacter().then((result) => {
         this.resetedCharacter = result;
         successCallback();
       });
     }, this);
-    this.load.rexAwait(function(successCallback, failureCallback) {
-      loadQuestItems(this.map).then( (result) => {
+    this.load.rexAwait(function (successCallback, failureCallback) {
+      loadQuestItems(this.map).then((result) => {
         this.questItems = result;
-        for(const index in result){
+        for (const index in result) {
           this.itemNames.push(result[index].name);
           this.itemStrength.push(result[index].strengthRequire);
           this.load.image(result[index].name, loadItemUrl(result[index].images));
@@ -74,7 +74,7 @@ class selectItemScene extends BaseScene {
         successCallback();
       });
     }, this);
-    
+
     //preload
     this.clearCache();
     this.load.image("bg", bg);
@@ -92,12 +92,12 @@ class selectItemScene extends BaseScene {
     this.load.spritesheet("btnClear", btnClear, { frameWidth: 339, frameHeight: 141 });
     this.load.spritesheet("btnGo", btnGo, { frameWidth: 339, frameHeight: 141 });
   }
-  
+
   //async 
   async create(data) {
     // load character strength
     this.characterData = await loadCharacterAwait();
-    console.log("Character: ",this.characterData);
+    console.log("Character: ", this.characterData);
     this.characterStrength = this.characterData.strength;
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
@@ -108,7 +108,7 @@ class selectItemScene extends BaseScene {
       .setOrigin(0).setInteractive();
     this.btnBack.on('pointerdown', () => {
       this.clickSound.play();
-      this.scene.transition({target: 'selectMap', duration: 0 });
+      this.scene.transition({ target: 'selectMap', duration: 0 });
     });
     this.add.image(120, 0, 'effect').setOrigin(0);
     this.add.image(280, 143, 'player').setOrigin(0);
@@ -118,49 +118,49 @@ class selectItemScene extends BaseScene {
       .setScrollFactor(0);
 
     this.add.image(35, 100, 'UI_NameCard').setOrigin(0);
-    this.add.text(105, 117, 'Trekker', { fill: '#000', align: 'center', fontSize: '9px', font: 'Arial'})
-    this.add.text(105, 135, this.userInfo.profile[0].username, { fill: '#000', align: 'center', font: '15px Arial'})
+    this.add.text(105, 117, 'Trekker', { fill: '#000', align: 'center', fontSize: '9px', font: 'Arial' })
+    this.add.text(105, 135, this.userInfo.profile[0].username, { fill: '#000', align: 'center', font: '15px Arial' })
     this.add.image(35, 175, 'UI_HP').setOrigin(0);
     this.add.image(35, 250, 'UI_Stamina').setOrigin(0);
     this.add.image(35, 325, 'UI_Mana').setOrigin(0);
     this.add.image(35, 400, 'UI_Morale').setOrigin(0);
 
     this.hp = this.makeBar(107, 210, 100, 15, 0x74e044);
-    this.stamina =  this.makeBar(107, 210+75, 100, 15, 0xcf315f);
-    this.mana = this.makeBar(107, 210+150, 100, 15, 0xc038f6);
-    this.morale = this.makeBar(107, 210+225, 100, 15, 0x63dafb);
+    this.stamina = this.makeBar(107, 210 + 75, 100, 15, 0xcf315f);
+    this.mana = this.makeBar(107, 210 + 150, 100, 15, 0xc038f6);
+    this.morale = this.makeBar(107, 210 + 225, 100, 15, 0x63dafb);
 
     resetCharacterCollectsMaterials(this.characterData.id);
-    this.setValue(this.hp, this.characterData.currentHP/this.characterData.maxHP*100);
-    this.setValue(this.stamina, this.characterData.currentStamina/this.characterData.maxStamina*100);
-    this.setValue(this.mana, this.characterData.currentMana/this.characterData.maxMana*100);
-    this.setValue(this.morale, this.characterData.currentMorale/this.characterData.maxMorale*100);
+    this.setValue(this.hp, this.characterData.currentHP / this.characterData.maxHP * 100);
+    this.setValue(this.stamina, this.characterData.currentStamina / this.characterData.maxStamina * 100);
+    this.setValue(this.mana, this.characterData.currentMana / this.characterData.maxMana * 100);
+    this.setValue(this.morale, this.characterData.currentMorale / this.characterData.maxMorale * 100);
 
     this.add.image(823, 47, 'pickItemText').setOrigin(0);
     this.gridItem = [];
-    for (let row = 0; row <= 3; row++){
-      for (let col = 0; col <= 3; col++){
+    for (let row = 0; row <= 3; row++) {
+      for (let col = 0; col <= 3; col++) {
         this.gridItem.push(
-          this.add.sprite(500 + 145*(col+1), 111*(row+1), "itembox").setOrigin(0).setInteractive().setScale(0.67)
+          this.add.sprite(500 + 145 * (col + 1), 111 * (row + 1), "itembox").setOrigin(0).setInteractive().setScale(0.67)
         );
-        if(this.itemNames[col+row*4] == undefined) {
-          this.gridItem[col+row*4].setFrame(2);
+        if (this.itemNames[col + row * 4] == undefined) {
+          this.gridItem[col + row * 4].setFrame(2);
         }
-        this.gridItem[col+row*4].isSelected = false;
-        this.gridItem[col+row*4].on('pointerdown', () => {
+        this.gridItem[col + row * 4].isSelected = false;
+        this.gridItem[col + row * 4].on('pointerdown', () => {
           this.clickSound.play();
-          if (this.gridItem[col+row*4].isSelected == false && this.itemNames[col+row*4] != undefined && this.characterStrength - this.itemStrength[col+row*4] > 0) {
-            this.gridItem[col+row*4].setFrame(1);
-            this.gridItem[col+row*4].isSelected = !this.gridItem[col+row*4].isSelected;
-            this.characterStrength -= this.itemStrength[col+row*4];
-          } else if (this.gridItem[col+row*4].isSelected == true && this.itemNames[col+row*4] != undefined){
-            this.gridItem[col+row*4].setFrame(0);
-            this.gridItem[col+row*4].isSelected = !this.gridItem[col+row*4].isSelected;
-            this.characterStrength += this.itemStrength[col+row*4];
+          if (this.gridItem[col + row * 4].isSelected == false && this.itemNames[col + row * 4] != undefined && this.characterStrength - this.itemStrength[col + row * 4] > 0) {
+            this.gridItem[col + row * 4].setFrame(1);
+            this.gridItem[col + row * 4].isSelected = !this.gridItem[col + row * 4].isSelected;
+            this.characterStrength -= this.itemStrength[col + row * 4];
+          } else if (this.gridItem[col + row * 4].isSelected == true && this.itemNames[col + row * 4] != undefined) {
+            this.gridItem[col + row * 4].setFrame(0);
+            this.gridItem[col + row * 4].isSelected = !this.gridItem[col + row * 4].isSelected;
+            this.characterStrength += this.itemStrength[col + row * 4];
           }
           this.strengthText.setText(String(this.characterStrength));
         });
-        this.add.image(580 + 145 * (col + 1), 60 + 111*(row + 1), this.itemNames[col+row*4]);
+        this.add.image(580 + 145 * (col + 1), 60 + 111 * (row + 1), this.itemNames[col + row * 4]);
       }
     }
     this.btnClear = this.add.sprite(733, 580, "btnClear")
@@ -193,18 +193,21 @@ class selectItemScene extends BaseScene {
     });
     this.btnGo.on('pointerdown', () => {
       this.clickSound.play();
-      switch(data.map){
+      switch (data.map) {
         case 'catalonia1':
           this.scene.start('catalonia_scene1');
           break;
         case 'jungle':
           this.scene.start('jungle_scene1');
           break;
+        case 'lava':
+          this.scene.start('lava_scene1');
+          break;
         default:
           console.log('invalid map name');
       }
       const returnValue = [];
-      for (let idx = 0; idx < this.itemNames.length; idx++){
+      for (let idx = 0; idx < this.itemNames.length; idx++) {
         if (this.gridItem[idx].isSelected == true) {
           returnValue.push(this.questItems[idx].id);
         }

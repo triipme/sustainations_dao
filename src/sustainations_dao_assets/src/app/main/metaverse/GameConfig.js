@@ -33,6 +33,12 @@ import catalonia_scene11 from './scenes/catalonia/catalonia_scene11';
 import catalonia_scene12 from './scenes/catalonia/catalonia_scene12';
 import catalonia_scene13 from './scenes/catalonia/catalonia_scene13';
 
+import lava_scene1 from './scenes/lava/lava_scene1';
+import lava_scene2 from './scenes/lava/lava_scene2';
+import lava_scene3 from './scenes/lava/lava_scene3';
+import lava_scene4 from './scenes/lava/lava_scene4';
+import lava_scene5 from './scenes/lava/lava_scene5';
+
 const gameConfig = {
   type: Phaser.CANVAS,
   parent: "sustainations-slug",
@@ -63,7 +69,8 @@ const gameConfig = {
     jungle_scene3, jungle_scene4, jungle_scene5, jungle_scene6, jungle_scene7, thanks, exhausted, 
     catalonia_scene1, catalonia_scene2_1, catalonia_scene2_2, catalonia_scene2_3, catalonia_scene2_4, 
     catalonia_scene3, catalonia_scene5_1, catalonia_scene5_2, catalonia_scene6, catalonia_scene7, catalonia_scene8,
-    catalonia_scene9, catalonia_scene10, catalonia_scene11, catalonia_scene12, catalonia_scene13]
+    catalonia_scene9, catalonia_scene10, catalonia_scene11, catalonia_scene12, catalonia_scene13, 
+    lava_scene1, lava_scene2, lava_scene3, lava_scene4, lava_scene5] 
 };
 
 export default gameConfig;
