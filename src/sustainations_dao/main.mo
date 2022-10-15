@@ -3616,7 +3616,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
 
 
   // Land Buying Status
-  public shared({caller}) func updateLandBuyingStatus(zone : Int, index : (Int,Int),randomTimes : Int) : async Response<Text> {
+  public shared({caller}) func updateLandBuyingStatus(zone : Int, landIndex : Int,randomTimes : Int) : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
@@ -3624,7 +3624,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     let newLandBuyingStatus : Types.LandBuyingStatus = {
       id = caller;
       currentZone = zone;
-      currentIndex = index;
+      currentLandIndex = landIndex;
       randomTimes = randomTimes;
     };
     let principalId = Principal.toText(caller);

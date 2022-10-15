@@ -307,7 +307,8 @@ module {
   public type LandBuyingStatus = {
     id : Principal;
     currentZone: Int;
-    currentIndex : (Int,Int);
+    currentLandIndex: Int;
+    //currentIndex : (Int,Int);
     randomTimes : Int;
   };
 

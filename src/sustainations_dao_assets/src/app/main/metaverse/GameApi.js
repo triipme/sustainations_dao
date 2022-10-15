@@ -231,53 +231,6 @@ async function payQuest(questId){
   return result;
 };
 
-// LandSlot
-async function buyLandSlot() {
-  const { user } = store.getState();
-  const func = async () => await user.actor.buyLandSlot();
-  const result = (await func()).ok;
-  return result;
-}
-
-async function createLandSlot(zone,index) {
-  const { user } = store.getState();
-  const func = async () => await user.actor.createLandSlot(zone,index);
-  const result = (await func()).ok;
-  return result;
-};
-
-async function loadLandSlots(){
-  const { user } = store.getState();
-  const listLandSlots = async () => await user.actor.listLandSlots();
-  const landTransferHistories = (await listLandSlots()).ok;
-  return landTransferHistories;
-};
-
-// load LandTransferHistories
-async function loadLandTransferHistories(){
-  const { user } = store.getState();
-  const listLandTransferHistories = async () => await user.actor.listLandTransferHistories();
-  const landTransferHistories = (await listLandTransferHistories()).ok;
-  return landTransferHistories;
-};
-
-// update LandBuyingStatus
-async function updateLandBuyingStatus(zone,index,randomTimes) {
-  const { user } = store.getState();
-  const func = async () => await user.actor.updateLandBuyingStatus(zone,index,randomTimes);
-  const result = (await func()).ok;
-  return result;
-};
-
-// load LandBuyingStatuses
-async function loadLandBuyingStatuses(){
-  const { user } = store.getState();
-  const listLandBuyingStatuses = async () => await user.actor.listLandBuyingStatuses();
-  const landBuyingStatuses = (await listLandBuyingStatuses()).ok;
-  return landBuyingStatuses;
-};
-
-
 //read event
 async function readEvent(eventId) {
   const {user} = store.getState();
@@ -285,6 +238,8 @@ async function readEvent(eventId) {
   const event = (await func()).ok;
   return event;
 }
+
+
 
 
 
@@ -315,10 +270,5 @@ export {
   openInventory,
   getRemainingTime,
   payQuest,
-  createLandSlot,
-  loadLandTransferHistories,
-  buyLandSlot,
-  loadLandSlots,
-  updateLandBuyingStatus,
-  loadLandBuyingStatuses
+  readEvent
 }

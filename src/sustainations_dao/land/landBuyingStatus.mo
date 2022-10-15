@@ -8,7 +8,7 @@ module LandBuyingStatus {
     let newLandBuyingStatus : Types.LandBuyingStatus = {
       id = landBuyingStatus.id;
       currentZone = landBuyingStatus.currentZone;
-      currentIndex = landBuyingStatus.currentIndex;
+      currentLandIndex = landBuyingStatus.currentLandIndex;
       randomTimes = landBuyingStatus.randomTimes;
     };
     return newLandBuyingStatus;
