@@ -287,6 +287,12 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     Account.accountIdentifier(Principal.fromActor(this), Account.defaultSubaccount())
   };
 
+  public query func getSystemAddressAsText() : async Text {
+    Account.toText(
+      Account.accountIdentifier(Principal.fromActor(this), Account.defaultSubaccount())
+    );
+  };
+
   type DashboardAnalysis = {
     userAgreement : Nat;
     projects : {
