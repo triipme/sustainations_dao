@@ -16,6 +16,7 @@ const selectArea = 'metaverse/selectMap/select-area.png';
 const jungleLocationDetail = 'metaverse/selectMap/jungle_location_detail.png';
 const cataloniaLocationDetail = 'metaverse/selectMap/catalonia_location_detail.png';
 const lavaLocationDetail = 'metaverse/selectMap/lava_location_detail.png';
+const lakeLocationDetail = 'metaverse/selectMap/lake_location_detail.png'
 const btnBack = 'metaverse/selectItems/UI_back.png';
 const popupWindow = 'metaverse/selectMap/Jungle_popup.png';
 const popupClose = 'metaverse/selectMap/UI_ingame_close.png';
@@ -58,6 +59,7 @@ class selectMap extends BaseScene {
     this.load.image('jungleLocationDetail', jungleLocationDetail);
     this.load.image('cataloniaLocationDetail', cataloniaLocationDetail);
     this.load.image('lavaLocationDetail', lavaLocationDetail);
+    this.load.image('lakeLocationDetail', lakeLocationDetail);
     this.load.spritesheet('selectArea', selectArea, { frameWidth: 498, frameHeight: 800 });
     this.load.image("btnBack", btnBack);
     this.load.spritesheet('popupWindow', popupWindow, { frameWidth: 980, frameHeight: 799 });
@@ -76,6 +78,8 @@ class selectMap extends BaseScene {
     this.cataloniaLocationDetail = this.add.image(247, 167, 'cataloniaLocationDetail')
       .setVisible(false).setInteractive();
     this.lavaLocationDetail = this.add.image(247, 167, 'lavaLocationDetail')
+      .setVisible(false).setInteractive();
+    this.lakeLocationDetail = this.add.image(247, 167, 'lakeLocationDetail')
       .setVisible(false).setInteractive();
     this.btnBack = this.add.image(40, 25, 'btnBack')
       .setOrigin(0).setInteractive();
@@ -151,6 +155,27 @@ class selectMap extends BaseScene {
       else {
         resetCharacter();
         this.scene.start('selectItemScene', { map: 'lava' });
+      };
+    });
+
+    this.selectAreaLake = this.add.sprite(762, 408, 'selectArea')
+      .setScale(0.18)
+      .setInteractive();
+    this.selectAreaLake.on('pointerover', () => {
+      this.selectAreaLake.setFrame(1);
+      this.lakeLocationDetail.setVisible(true);
+      this.hoverSound.play();
+    });
+    this.selectAreaLake.on('pointerout', () => {
+      this.selectAreaLake.setFrame(0);
+      this.lakeLocationDetail.setVisible(false);
+    });
+    this.selectAreaLake.on('pointerdown', () => {
+      this.clickSound.play();
+      if (this.getRemainingTime != 0) this.scene.start('exhausted');
+      else {
+        resetCharacter();
+        this.scene.start('selectItemScene', { map: 'lake' });
       };
     });
 
