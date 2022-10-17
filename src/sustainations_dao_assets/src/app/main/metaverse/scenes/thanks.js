@@ -1,6 +1,12 @@
 import Phaser from 'phaser';
 import BaseScene from './BaseScene'
 
+import {
+  gainCharacterExp,
+  openInventory,
+  createInventory,
+} from '../GameApi';
+
 const bg = 'metaverse/UI_finish.png';
 
 class thanks extends BaseScene {
@@ -8,7 +14,7 @@ class thanks extends BaseScene {
     super('thanks');
   }
 
-  clearSceneCache(){
+  clearSceneCache() {
     this.textures.remove('bg');
   }
 
@@ -17,8 +23,8 @@ class thanks extends BaseScene {
     this.clearSceneCache();
     this.load.image('bg', bg);
   }
-  
-  create() {// add audios
+
+  async create() {// add audios
     this.clickSound = this.sound.add('clickSound');
     this.pregameSound = this.sound.add('pregameSound');
     this.pregameSound.play();
@@ -30,6 +36,9 @@ class thanks extends BaseScene {
         this.pregameSound.stop();
         this.scene.start('selectMap');
       });
+    createInventory(this.characterData.id);
+    gainCharacterExp(this.characterData);
+    this.inventory = await openInventory(this.characterData.id);
   }
 
 }
