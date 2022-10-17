@@ -2,7 +2,7 @@ import { useState } from "react";
 import { GeoJSON, useMap, useMapEvents, ImageOverlay } from "react-leaflet";
 import mapData from "./data/land_zone_20.json";
 import "./styles.css";
-
+import UIFarm from "./FarmUI"
 const inventory = { tomato: false, dig: false }
 const latlng = mapData.features.map(feature => {
     return feature.geometry.coordinates[0].map(item => {
@@ -42,24 +42,24 @@ const Farm = () => {
 
     const onEachLandSlot = (country, layer) => {
         layer.setStyle({
-            fillOpacity: "1",
-            color: "#000000"
+            fillOpacity: 1,
+            color: "#44cf64"
         })
         if (country.properties.hasLand) {
             layer.setStyle({
-                fillOpacity: "0",
+                fillOpacity: 0,
                 fillColor: "#FFFFFF"
             })
         } else {
+            console.log("green")
             layer.setStyle({
-                fillOpacity: "1",
+                fillOpacity: 1,
                 fillColor: "#44cf64",
             })
         }
         layer.on({
             click: function (e) {
                 checkTile(mapData, latlng, e.latlng.lat, e.latlng.lng)
-
             },
         });
     }
@@ -85,7 +85,9 @@ const Create = ({ latlng, pos }) => {
 function Navigation() {
     return (
         <>
-            <div
+            <UIFarm></UIFarm>
+
+            {/* <div
                 style={{
                     position: "fixed",
                     right: 0,
@@ -123,7 +125,7 @@ function Navigation() {
                     src="/metaverse/farm/Sustaination_farm/Farm object/PNG/shovel.png"
                     alt=""
                 />
-            </div>
+            </div> */}
         </>
     )
 }

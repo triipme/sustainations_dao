@@ -2,13 +2,23 @@ import { useState, useCallback, useEffect, useMemo } from "react";
 import { GeoJSON, MapContainer, useMap, useMapEvents, TileLayer, Rectangle, ImageOverlay } from "react-leaflet";
 import Back from "./Back";
 import Footer from "./footer";
-import mapData from "./data/land_zone_20.json";
+import mapData from "./data/land_size_100_400X400_zone_20.json";
 import "./styles.css";
 import Farm from "./Farm"
 import BigMap from "./map"
-// import DisplayPosition from "./GetCenter"
 
-const center = [0, -67.485111238625905]
+import {
+  buyLandSlot,
+  createLandSlot,
+  loadLandTransferHistories,
+  updateLandBuyingStatus,
+  loadLandBuyingStatus,
+  loadLandSlotsfromCenter,
+  getUserInfo,
+  getLandIndex
+} from '../LandApi'
+
+
 const zoom = 16
 
 let ownerId = 3
@@ -18,11 +28,19 @@ let availableLand = false
 let offBtn1 = false
 let offBtn2 = true
 
-const latlng = mapData.features.map(feature => {
-  return feature.geometry.coordinates[0].map(item => {
-    return [item[1], item[0]]
-  })
-});
+const lenghtRow = Math.sqrt(mapData.features.length)
+const arr1 = [lenghtRow, 1, -lenghtRow, -1]
+const arr2 = [lenghtRow, 1, -1]
+const arr3 = [1, -lenghtRow, -1]
+const arr4 = [lenghtRow, -lenghtRow, 1]
+const arr5 = [lenghtRow, -1, -lenghtRow]
+const arr6 = [lenghtRow, 1]
+const arr7 = [lenghtRow, -1]
+const arr8 = [-lenghtRow, +1]
+const arr9 = [-lenghtRow, -1]
+
+var center = [0.180442714404941, -67.309516258333005]
+var landData = loadLandSlotsfromCenter(200, 200, mapData);
 
 const Map = () => {
   const [showFirstBtn, setShowFirstBtn] = useState(false)
@@ -31,6 +49,7 @@ const Map = () => {
   const [purchased, setPurchased] = useState(false)
   const [render, setRender] = useState(true)
   const [mode, setMode] = useState('land')
+
   let listLand = []
   mapData.features.map(feature => {
     if (feature.properties.ownerId === ownerId) {
@@ -46,26 +65,58 @@ const Map = () => {
   }
   const [purchasedF, setPurchasedF] = useState(prch)
 
-  let cnt = 0
-  let flag = true
+
   const map = useMap()
+  const [position, setPosition] = useState(() => map.getCenter())
+
+  let index = getLandIndex(position, landData)
+  if (index != undefined) {
+    landData = loadLandSlotsfromCenter(index[0], index[1], mapData)
+  }
   map.on('click', function (e) {
     if (mode === "farm") {
       setRender(!render)
     }
   });
-
+  let cnt = 0
+  let flag = true
 
   const mapEvents = useMapEvents({
     zoomend: e => {
-      if (mapEvents.getZoom() > 15) {
+      if (mapEvents.getZoom() > 16) {
         setMode('farm')
-      } else if (mapEvents.getZoom() <= 15)
+      } else if (mapEvents.getZoom() <= 16)
         setMode('land')
     }
   });
 
+  const getIndexLandFromIJ = (country) => {
+    return country.properties.i * 400 + country.properties.j
+  }
+  const getRandomRange = (land) => {
+    if (land < lenghtRow - 1 && land != 0) {
+      return land + arr2[Math.floor(Math.random() * 3)];
+    } else if (land < lenghtRow ** 2 - 1 && land > lenghtRow ** 2 - lenghtRow) {
+      return land + arr3[Math.floor(Math.random() * 3)];
+    } else if (land % 400 === 0 && land !== 0) {
+      return land + arr4[Math.floor(Math.random() * 3)];
+    } else if ((land + 1) % 400 === 0 && land !== lenghtRow - 1) {
+      return land + arr5[Math.floor(Math.random() * 3)];
+    } else if (land === 0) {
+      return land + arr6[Math.floor(Math.random() * 2)];
+    } else if (land === lenghtRow - 1) {
+      return land + arr7[Math.floor(Math.random() * 2)];
+    } else if (land === lenghtRow ** 2 - 1) {
+      return land + arr9[Math.floor(Math.random() * 2)];
+    } else if (land === lenghtRow ** 2 - lenghtRow) {
+      return land + arr8[Math.floor(Math.random() * 2)];
+    } else {
+      return land + arr1[Math.floor(Math.random() * 4)];
+    }
+  }
   const onEachLandSlot = (country, layer) => {
+    cnt = getIndexLandFromIJ(country)
+
     if (mode === 'land') {
       layer.setStyle({
         color: "#002E5E",
@@ -76,10 +127,8 @@ const Map = () => {
         if (country.properties.ownerId) {
           layer.options.fillColor = "#FFFFFF";
           if (!purchasedF && !purchased) {
-            console.log('run');
-
             do {
-              var temp = Math.floor(Math.random() * 99)
+              var temp = Math.floor(Math.random() * (mapData.features.length - 1)) //99
               if (!mapData.features[temp].properties.ownerId && temp !== land) {
                 mapData.features[temp].properties.ownerId = ownerId
                 cr_land = temp
@@ -89,35 +138,7 @@ const Map = () => {
             while (flag)
           } else if (purchased && purchasedF) {
             do {
-              const arr1 = [10, 1, -10, -1]
-              const arr2 = [10, 1, -1]
-              const arr3 = [1, -10, -1]
-              const arr4 = [10, -10, 1]
-              const arr5 = [10, -1, -10]
-              const arr6 = [10, 1]
-              const arr7 = [10, -1]
-              const arr8 = [-10, +1]
-              const arr9 = [-10, -1]
-              let temp
-              if (land < 9 && land != 0) {
-                temp = land + arr2[Math.floor(Math.random() * 3)];
-              } else if (land < 100 && land > 90) {
-                temp = land + arr3[Math.floor(Math.random() * 3)];
-              } else if (land % 10 === 0 && land !== 0) {
-                temp = land + arr4[Math.floor(Math.random() * 3)];
-              } else if ((land + 1) % 10 === 0 && land !== 9) {
-                temp = land + arr5[Math.floor(Math.random() * 3)];
-              } else if (land === 0) {
-                temp = land + arr6[Math.floor(Math.random() * 2)];
-              } else if (land === 9) {
-                temp = land + arr7[Math.floor(Math.random() * 2)];
-              } else if (land === 99) {
-                temp = land + arr9[Math.floor(Math.random() * 2)];
-              } else if (land === 90) {
-                temp = land + arr8[Math.floor(Math.random() * 2)];
-              } else {
-                temp = land + arr1[Math.floor(Math.random() * 4)];
-              }
+              let temp = getRandomRange(land)
               if (!mapData.features[temp].properties.ownerId && temp !== land) {
                 if (purchased) {
                   mapData.features[temp].properties.ownerId = ownerId
@@ -130,7 +151,6 @@ const Map = () => {
           }
 
         } else if (!country.properties.ownerId) {
-
           if (purchased) {
             country.properties.ownerId = ownerId
             cr_land = land
@@ -149,24 +169,51 @@ const Map = () => {
       } else {
         layer.options.fillColor = "#002E5E";
       }
-      cnt++
     }
   }
 
-  const btnPurchaseRand = () => {
+
+  const onMove = useCallback(() => {
+    setPosition(map.getCenter())
+  }, [map])
+
+  useEffect(() => {
+    map.on('move', onMove)
+    return () => {
+      map.off('move', onMove)
+    }
+  }, [map, onMove])
+
+
+
+  const btnPurchaseRand = async () => {
     setShowFirstBtn(true)
     numRandom -= 1
     let landIdRand
     do {
-      landIdRand = Math.floor(Math.random() * 99);
+      landIdRand = Math.floor(Math.random() * (mapData.features.length - 1));
     } while (mapData.features[landIdRand].properties.ownerId && land !== landIdRand)
-    if (landIdRand !== land)
+    if (landIdRand !== land) {
       setLand(landIdRand)
-    else setRender(!render)
+    }
+    // else setRender(!render)
+
+    landData = loadLandSlotsfromCenter(
+      mapData.features[landIdRand].properties.i,
+      mapData.features[landIdRand].properties.j,
+      mapData
+    );
+    let centerLand = mapData.features[landIdRand].geometry.coordinates[0][0]
+    map.setView({ "lat": centerLand[1], "lng": centerLand[0], }, zoom)
+    await updateLandBuyingStatus(
+      mapData.features[landIdRand].properties.zone,
+      landIdRand,
+      numRandom
+    )
   }
 
 
-  const btnRand = () => {
+  const btnRand = async () => {
     setShowBtn(true)
     setPurchasedF(false)
     setPurchased(false)
@@ -178,149 +225,173 @@ const Map = () => {
       dem++
     })
     let temp = -1
-    let cs
     numRandom -= 1
-    const arr1 = [10, 1, -10, -1]
-    const arr2 = [10, 1, -1]
-    const arr3 = [1, -10, -1]
-    const arr4 = [10, -10, 1]
-    const arr5 = [10, -1, -10]
-    const arr6 = [10, 1]
-    const arr7 = [10, -1]
-    const arr8 = [-10, +1]
-    const arr9 = [-10, -1]
+
     let fl = true
     do {
-
       cr_land = listLand[Math.floor(Math.random() * listLand.length)]
 
-      if (cr_land < 9 && cr_land != 0) {
-        temp = cr_land + arr2[Math.floor(Math.random() * 3)];
-
-      } else if (cr_land < 100 && cr_land > 90) {
-        temp = cr_land + arr3[Math.floor(Math.random() * 3)];
-
-      } else if (cr_land % 10 === 0 && cr_land !== 0) {
-        temp = cr_land + arr4[Math.floor(Math.random() * 3)];
-
-      } else if ((cr_land + 1) % 10 === 0 && cr_land !== 9) {
-        temp = cr_land + arr5[Math.floor(Math.random() * 3)];
-
-      } else if (cr_land === 0) {
-        temp = cr_land + arr6[Math.floor(Math.random() * 2)];
-
-      } else if (cr_land === 9) {
-        temp = cr_land + arr7[Math.floor(Math.random() * 2)];
-
-      } else if (cr_land === 99) {
-        temp = cr_land + arr9[Math.floor(Math.random() * 2)];
-
-      } else if (cr_land === 90) {
-        temp = cr_land + arr8[Math.floor(Math.random() * 2)];
-
-      } else {
-        temp = cr_land + arr1[Math.floor(Math.random() * 4)];
-
-      }
+      temp = getRandomRange(cr_land)
       if (!mapData.features[temp].properties.ownerId && land !== temp) {
         fl = false
       }
     }
     while (fl)
     setLand(temp)
+    let centerLand = mapData.features[temp].geometry.coordinates[0][0]
+    map.setView({ "lat": centerLand[1], "lng": centerLand[0], }, zoom)
+
+    await updateLandBuyingStatus(
+      mapData.features[temp].properties.zone,
+      temp,
+      numRandom
+    )
+
   }
 
 
-  const handleFirstPurchase = () => {
+  const handleFirstPurchase = async () => {
     offBtn1 = true;
-    btnPurchaseRand()
+    let landBuyingStatus = await loadLandBuyingStatus()
+    if (landBuyingStatus != undefined) {
+      numRandom = parseInt(landBuyingStatus.randomTimes)
+      setLand(parseInt(landBuyingStatus.currentLandIndex))
+      setShowFirstBtn(true)
+      setRender(!render)
+    }
+    else {
+      btnPurchaseRand()
+      await buyLandSlot()
+    }
+
+    console.log("USER INFO:")
+    console.log(await getUserInfo())
+
   }
 
-  const handlePurchase = () => {
+  const handlePurchase = async () => {
     offBtn2 = true;
     btnRand()
+    await buyLandSlot()
+    console.log("USER INFO:")
+    console.log(await getUserInfo())
   }
 
-  const handleFirstAccept = () => {
+  const handleFirstAccept = async () => {
     setPurchasedF(true)
     setShowFirstBtn(false)
     offBtn1 = true
     offBtn2 = false
+    await createLandSlot(
+      mapData.features[land].properties.zone,
+      [mapData.features[land].properties.i, mapData.features[land].properties.j]
+    )
+    console.log("UPDATED TRANSFER HISOTY:")
+    console.log(await loadLandTransferHistories())
   }
 
-  const handleAccept = () => {
+  const handleAccept = async () => {
     setPurchased(true)
     setShowBtn(false)
     offBtn2 = false
+    await createLandSlot(
+      mapData.features[land].properties.zone,
+      [mapData.features[land].properties.i, mapData.features[land].properties.j]
+    )
+    console.log("UPDATED TRANSFER HISOTY:")
+    console.log(await loadLandTransferHistories())
+
   }
+
+
+
 
   return (
     <>
       {mode !== 'farm' && <Back />}
       {mode !== 'farm' && <Footer />}
-      <GeoJSON key={Math.floor(Math.random() * 9999)} data={mapData.features} onEachFeature={onEachLandSlot} />
+      <GeoJSON key={Math.floor(Math.random() * 9999)} data={landData} onEachFeature={onEachLandSlot} />
       {mode !== 'farm' && <div>
         <button className="button-85" onClick={handleFirstPurchase} style={{
           display: offBtn1 ? "none" : "block"
-        }}>Purchase</button>
+        }}>Buy your first LandSlot</button>
         <button className="button-85" style={{
           display: offBtn2 ? "none" : "block"
-        }} onClick={handlePurchase}>UserId random</button>
+        }} onClick={handlePurchase}>Buy a new LandSlot</button>
 
         <div className="containPopup">
           {/* Buy First */}
-          <img className="popupBoder"
-            style={{
-              display: showFirstBtn ? "block" : "none"
-            }}
-            src="metaverse/windownPopup/UI_ingame_popup_custom.png" />
+          <div className="popupBoder" style={{
+            display: showFirstBtn ? "block" : "none"
+          }}>
+            <img
+              src="metaverse/windownPopup/UI_ingame_popup_panel.png" />
+            <h1
+              style={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-166%, -100%)"
+              }}
+            >DO YOU WANT TO GET <br></br> THIS LANDSLOT?</h1>
+          </div>
 
-          <img className="popupAccept"
+          <h2 className="popupAccept"
             style={{
               display: showFirstBtn ? "block" : "none"
             }}
             onClick={() => {
               handleFirstAccept()
-              numRandom = 3
-            }}
-            src="metaverse/windownPopup/UI_ingame_popup_accept.png"></img>
+    setRender(!render)
 
-          <img className="popupClose"
+              numRandom = 3
+            }}>ACCEPT</h2>
+
+          <h2 className="popupTryAgain"
             style={{
-              display: showFirstBtn && numRandom > 0 ? "block" : "none"
+              display: showFirstBtn ? "block" : "none",
             }}
-            onClick={
-              btnPurchaseRand
+            onClick={() =>
+              numRandom > 0 ? btnPurchaseRand() : null
             }
-            src="metaverse/windownPopup/UI_ingame_close.png"></img>
+          >Try Again</h2>
 
           {/* Buy more */}
-          <img className="popupBoder"
-            style={{
-              display: showBtn ? "block" : "none"
-            }}
-            src="metaverse/windownPopup/UI_ingame_popup_custom.png"
-          />
-          <img className="popupAccept"
+          <div className="popupBoder" style={{
+            display: showBtn ? "block" : "none"
+          }}>
+            <img
+              src="metaverse/windownPopup/UI_ingame_popup_panel.png" />
+            <h1
+              style={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-166%, -100%)"
+              }}
+            >DO YOU WANT TO GET <br></br> THIS LANDSLOT?</h1>
+          </div>
+          <h2 className="popupAccept"
             style={{
               display: showBtn ? "block" : "none"
             }}
             onClick={() => {
               handleAccept()
               numRandom = 3
-            }}
-            src="metaverse/windownPopup/UI_ingame_popup_accept.png"></img>
-          <img className="popupClose"
+            }}>ACCEPT</h2>
+          <h2 className="popupTryAgain"
             style={{
-              display: showBtn && numRandom > 0 ? "block" : "none"
+              display: showBtn ? "block" : "none",
             }}
-            onClick={btnRand}
-            src="metaverse/windownPopup/UI_ingame_close.png"></img>
+            onClick={() =>
+              numRandom > 0 ? btnRand() : null
+            }
+          >Try Again</h2>
 
           <span style={{
             position: "absolute",
-            top: "7.5%",
-            left: "3%",
+            top: "82%",
+            left: "30%",
             display: (!offBtn2 && offBtn1) || (!offBtn1 && offBtn2) ? "none" : "block"
           }}>Number of Retry:
             {numRandom}</span>
@@ -329,7 +400,6 @@ const Map = () => {
 
       </div>}
       {mode === 'farm' && <Farm />}
-
       <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
       <link
         rel="stylesheet"
@@ -342,8 +412,10 @@ const Map = () => {
   )
 }
 
+
 function Land() {
   const [map, setMap] = useState(null)
+
   const displayMap = useMemo(
     () => (
       <MapContainer
@@ -351,6 +423,8 @@ function Land() {
         center={center}
         zoom={zoom}
         scrollWheelZoom={true}
+        doubleClickZoom={false}
+        zoomControl={false}
         ref={setMap}>
         <BigMap></BigMap>
         <Map />
@@ -358,11 +432,13 @@ function Land() {
     ),
     [],
   )
+
   return (
     <div style={{ height: "100%" }}>
-      {/* {map ? <DisplayPosition map={map} /> : null} */}
+      {/* {map ? < DisplayPosition map={map} />: null} */}
       {displayMap}
     </div>
+
   );
 }
 

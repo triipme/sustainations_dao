@@ -10,7 +10,6 @@ const BigMap = () => {
     const onEachLand = (country, layer) => {
         layer.setStyle({
             color: "#002E5E",
-            fillColor: "002E5E",
         })
 
     }

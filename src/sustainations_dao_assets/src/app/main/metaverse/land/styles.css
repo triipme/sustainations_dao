@@ -30,70 +30,25 @@ span {
 .button-85 {
   left: 50px;
   top: 100px;
+  width: 182px;
+  height: 50px;
   padding: 0.6em 2em;
   border: none;
   outline: none;
   color: rgb(255, 255, 255);
-  background: #111;
+  background: #ffa200;
+  /* transform: skew(-20deg); */
   cursor: pointer;
   position: absolute;
   z-index: 10000;
-  border-radius: 10px;
+  border-radius: 0px;
   user-select: none;
-  -webkit-user-select: none;
-  touch-action: manipulation;
+  opacity: 0.75;
+  box-shadow: 5px 5px 5px 5px #000000;
 }
 
-.button-85:before {
-  content: "";
-  background: linear-gradient(45deg,
-      #ff0000,
-      #ff7300,
-      #fffb00,
-      #48ff00,
-      #00ffd5,
-      #002bff,
-      #7a00ff,
-      #ff00c8,
-      #ff0000);
-  position: absolute;
-  top: -2px;
-  left: -2px;
-  background-size: 400%;
-  z-index: -1;
-  filter: blur(5px);
-  -webkit-filter: blur(5px);
-  width: calc(100% + 4px);
-  height: calc(100% + 4px);
-  animation: glowing-button-85 20s linear infinite;
-  transition: opacity 0.3s ease-in-out;
-  border-radius: 10px;
-}
-
-@keyframes glowing-button-85 {
-  0% {
-    background-position: 0 0;
-  }
-
-  50% {
-    background-position: 400% 0;
-  }
-
-  100% {
-    background-position: 0 0;
-  }
-}
-
-.button-85:after {
-  z-index: -1;
-  content: "";
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background: #222;
-  left: 0;
-  top: 0;
-  border-radius: 10px;
+.button-85:hover {
+  background: #e9af4a;
 }
 
 .containPopup {
@@ -112,10 +67,19 @@ span {
 .containPopup .popupAccept {
   cursor: pointer;
   position: absolute;
-  top: 62%;
-  left: 15%;
-  width: 20%;
-  height: 20%;
+  top: 66%;
+  left: 4%;
+  width: 16%;
+  height: 16%;
+}
+
+.containPopup .popupTryAgain {
+  cursor: pointer;
+  position: absolute;
+  top: 66%;
+  left: 28%;
+  width: 16%;
+  height: 16%;
 }
 
 .containPopup .popupClose {
@@ -125,4 +89,51 @@ span {
   right: 48%;
   width: 8%;
   height: 19%;
+}
+
+h2 {
+  font-family: open Arial;
+  color: #fff;
+  text-align: center;
+  line-height: 330%;
+  opacity: 1;
+}
+
+h2:after {
+  background: #ffa200;
+  position: absolute;
+  content: '';
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  -webkit-transform: skew(-9deg);
+  -moz-transform: skew(-9deg);
+  -o-transform: skew(-9deg);
+  z-index: -1;
+  opacity: 1;
+}
+
+.navBar > img{
+  position: fixed;
+  height: 50%;
+  right: 4%;
+  top: 60%;
+  z-index: 10000;
+  height: 30%;
+}
+
+.messengerBox > img {
+  position: fixed;
+  left: 4%;
+  top: 80%;
+  z-index: 10000;
+  height: 8%;
+}
+
+li {
+  /* position: absolute; */
+  display: inline-block;
+  margin: 0 2%;
+  width: 16vw;
 }

@@ -1,7 +1,6 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 
-const center = [0, -67.485111238625905]
-const zoom = 16
+var center
 
 function DisplayPosition({ map }) {
   const [position, setPosition] = useState(() => map.getCenter())
@@ -20,11 +19,9 @@ function DisplayPosition({ map }) {
       map.off('move', onMove)
     }
   }, [map, onMove])
-
   return (
     <p>
       latitude: {position.lat.toFixed(4)}, longitude: {position.lng.toFixed(4)}{' '}
-      <button onClick={onClick}>reset</button>
     </p>
   )
 }
