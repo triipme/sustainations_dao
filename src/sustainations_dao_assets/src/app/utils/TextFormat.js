@@ -16,3 +16,11 @@ export function stringToSlug(str) {
 
   return str;
 }
+
+export function walletAddressLink(address) {
+  return (
+    <a className="font-normal" target="_blank" style={{background: 'none', border: 'none'}} href={`https://dashboard.internetcomputer.org/account/${address}`}>
+      {address}
+    </a>
+  )
+}

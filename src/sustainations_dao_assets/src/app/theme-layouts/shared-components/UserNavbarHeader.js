@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux';
 import { selectUser } from 'app/store/userSlice';
 import QRCode from "react-qr-code";
 import { fICP } from '../../utils/NumberFormat';
+import { walletAddressLink } from '../../utils/TextFormat';
 
 const Root = styled('div')(({ theme }) => ({
   '& .username, & .email': {
@@ -43,7 +44,7 @@ function UserNavbarHeader(_props) {
         />
       </div>
       <Typography title={user.depositAddress} className="username text-14 text-center break-all font-medium flex-auto w-full">
-        {user.depositAddress}
+        {walletAddressLink(user.depositAddress)}
       </Typography>
       <Typography className="username text-14 truncate font-medium text-center w-full">
         {fICP(user.balance)}
