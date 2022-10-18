@@ -167,7 +167,7 @@ export default class lake_scene1 extends BaseScene {
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
-      text: "Mysterious Lake in spring is the most beautiful time of the year.\nIt's the right time to have fun.",
+      text: 'On the bench, there is a question. Find the correct answer to continue or else.\n\n“What is able to go up a chimney when down but unable to go down a chimney when up?”',
       origin: { x: 0.5, y: 0.5 },
       style: {
         font: 'bold 25px Arial',

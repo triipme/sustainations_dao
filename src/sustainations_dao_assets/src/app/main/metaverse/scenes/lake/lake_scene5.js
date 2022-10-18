@@ -167,7 +167,7 @@ export default class lake_scene5 extends BaseScene {
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
-      text: "It seems that the Mysterious Lake has many unexplored things",
+      text: "Are you ready ? \n\n“I have cities, but no houses. I have mountains, but no trees. I have water, but no fish. What am I? “ ",
       origin: { x: 0.5, y: 0.5 },
       style: {
         font: 'bold 25px Arial',
