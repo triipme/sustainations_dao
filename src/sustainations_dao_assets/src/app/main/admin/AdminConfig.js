@@ -1,6 +1,8 @@
 import { authRoles } from "../../auth";
 import { lazy } from "react";
 import { Navigate } from "react-router-dom";
+import { Query } from "matter";
+// import QuestEngine from "./questEngine/QuestEngine";
 
 const Admin = lazy(() => import("./Admin"));
 const BootCampLayout = lazy(() => import("./bootcamp/BootCampLayout"));
@@ -11,6 +13,7 @@ const RefillBrands = lazy(() => import("./refill-brands/RefillBrands"));
 const NewRefillBrand = lazy(() => import("./refill-brands/brand/NewRefillBrand"));
 const EditRefillBrand = lazy(() => import("./refill-brands/brand/EditRefillBrand"));
 const Settings = lazy(() => import("./settings/Settings"));
+const Transactions = lazy(() => import("./transactions/List"));
 
 const AdminConfig = {
   settings: {
@@ -65,6 +68,10 @@ const AdminConfig = {
               element: <EditRefillBrand />
             }
           ]
+        },
+        {
+          path: 'transactions',
+          element: <Transactions />
         },
         {
           path: 'settings',

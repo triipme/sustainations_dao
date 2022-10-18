@@ -14,6 +14,7 @@ import { useSelector } from "react-redux";
 import { selectUser } from 'app/store/userSlice';
 import QRCode from "react-qr-code";
 import { fICP } from '../../utils/NumberFormat';
+import { walletAddressLink } from '../../utils/TextFormat';
 
 const Profile = () => {
   const user = useSelector(selectUser);
@@ -76,7 +77,7 @@ const Profile = () => {
 
               <div className="flex items-center">
                 <FuseSvgIcon>account_balance_wallet_outlined</FuseSvgIcon>
-                <div className="ml-24 leading-6">{user.depositAddress}</div>
+                <div className="ml-24 leading-6">{walletAddressLink(user.depositAddress)}</div>
               </div>
 
               <div className="flex">

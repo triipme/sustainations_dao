@@ -163,6 +163,13 @@ const navigationConfig = [
         url: "admin/refill-brands"
       },
       {
+        id: "admin-transactions",
+        title: "Transactions",
+        type: "item",
+        icon: "swap_horizontal_circle_outlined",
+        url: "admin/transactions"
+      },
+      {
         id: "admin-settings",
         title: "Settings",
         type: "item",
