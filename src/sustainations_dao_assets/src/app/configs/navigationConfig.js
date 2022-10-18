@@ -142,6 +142,13 @@ const navigationConfig = [
         url: "admin/metaverse"
       },
       {
+        id: "admin.questEngine",
+        title: "Quest Engine",
+        type: "item",
+        icon: "public_outlined",
+        url: "admin/quest-engine"
+      },
+      {
         id: "admin.bootcamp",
         title: "Bootcamp",
         type: "item",
