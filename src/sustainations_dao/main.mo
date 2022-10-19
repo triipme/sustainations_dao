@@ -3901,6 +3901,40 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
     #ok((list));
   };
+
+  public type LandSlot = {
+    i : Nat;
+    j : Nat;
+  };
+
+  public type UTM = (Nat, Nat);
+
+  public shared({caller}) func generateNation(d : Nat, landslots : [LandSlot]) : async Response<[UTM]> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    var list : [UTM] = [];
+    for(value in landslots.vals()){
+      var point1 : UTM = (value.i * d, value.j * d);
+      var point2 : UTM = (value.i * d, (value.j + 1) * d);
+      var point3 : UTM = ((value.i + 1) * d, (value.j + 1)* d);
+      var point4 : UTM = ((value.i + 1)* d, value.j * d);
+      list := Array.append<UTM>(list, [point1, point2, point3, point4]);
+    };
+    var result : [UTM] = [];
+    for(i in Iter.range(0, list.size()-1)){
+      var duplicate = false;
+      for(j in Iter.range(i+1, list.size()-1)){
+        if(list[i] == list[j]){
+          duplicate := true;
+        };
+      };
+      if(duplicate == false){
+        result := Array.append<UTM>(result, [list[i]]);
+      };
+    };
+    #ok(result);
+  };
 };
 
 
