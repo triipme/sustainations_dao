@@ -142,6 +142,13 @@ const navigationConfig = [
         url: "admin/metaverse"
       },
       {
+        id: "admin.questEngine",
+        title: "Quest Engine",
+        type: "item",
+        icon: "code_blocks",
+        url: "admin/questEngine"
+      },
+      {
         id: "admin.bootcamp",
         title: "Bootcamp",
         type: "item",
@@ -154,6 +161,13 @@ const navigationConfig = [
         type: "item",
         icon: "room_preferences_outlined",
         url: "admin/refill-brands"
+      },
+      {
+        id: "admin-transactions",
+        title: "Transactions",
+        type: "item",
+        icon: "swap_horizontal_circle_outlined",
+        url: "admin/transactions"
       },
       {
         id: "admin-settings",

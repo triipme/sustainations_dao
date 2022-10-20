@@ -9,9 +9,10 @@ import {
 } from '../../GameApi';
 import { settings } from '../settings';
 import { func } from 'prop-types';
-import { readEvent } from '../../GameApi';
+import { readEvent, loadItemUrl } from '../../GameApi';
 
 const heroRunningSprite = 'metaverse/walkingsprite.png';
+// const heroRunningSprite = loadItemUrl('development/asset/walkingsprite.png');
 const ground = 'metaverse/transparent-ground.png';
 const bg1 = 'metaverse/scenes/catalonia/Scene1/PNG/back.png';
 const bg2 = 'metaverse/scenes/catalonia/Scene1/PNG/mid.png';

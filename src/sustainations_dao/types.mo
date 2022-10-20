@@ -289,8 +289,9 @@ module {
     ownerId : Principal;
     isPremium : Bool;
     isSelling : Bool;
-    zone : Int;
-    index : (Int,Int);
+    zone : Nat;
+    xIndex : Nat;
+    yIndex : Nat;
     price: Float; 
   };
 
@@ -307,10 +308,15 @@ module {
   public type LandBuyingStatus = {
     id : Principal;
     currentZone: Int;
-    currentLandIndex: Int;
-    //currentIndex : (Int,Int);
+    currentLandSlotId: Text;
     randomTimes : Int;
   };
+
+//------------------------------------------------------------//
+public type UserhasLandSLots = {
+  id : Principal;
+  landSlotIds : [Text];
+};
 
 
   // Error codes
@@ -372,6 +378,7 @@ module {
   public type MemoryCardEngineGame = MemoryCardEngineModel.Game;
   public type MemoryCardEngineStage = MemoryCardEngineModel.Stage;
   public type MemoryCardEngineCard = MemoryCardEngineModel.Card;
+  public type MemoryCardEngineGameProgress = MemoryCardEngineModel.GameProgress; // thay doi
   public type MemoryCardEnginePlayer = MemoryCardEngineModel.Player;
   public type MemoryCardEngineReward = MemoryCardEngineModel.Reward;
   public type MemoryCardEnginePatternItemGames = {

@@ -10,7 +10,8 @@ module LandSlot {
       isPremium = landSlot.isPremium;
       isSelling = landSlot.isSelling;
       zone = landSlot.zone;
-      index = landSlot.index;
+      xIndex = landSlot.xIndex;
+      yIndex = landSlot.yIndex;
       price = landSlot.price; 
     };
     return newLandSlot;

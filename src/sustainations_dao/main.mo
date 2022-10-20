@@ -12,6 +12,7 @@ import Nat "mo:base/Nat";
 import Option "mo:base/Option";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
+import Random "./utils/random";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
 import TrieMap "mo:base/TrieMap";
@@ -97,6 +98,9 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   private stable var gearSubstats : [(Text, Types.GearSubstat)] = [];
   private stable var materials : [(Text, Types.Material)] = [];
   private stable var inventories : [(Text, Types.Inventory)] = [];
+  private stable var landSlots : [(Text, Types.LandSlot)] = [];
+  private stable var landTransferHistories : [(Text, Types.LandTransferHistory)] = [];
+  private stable var landBuyingStatuses :  [(Text, Types.LandBuyingStatus)] = [];
 
   system func preupgrade() {
     Debug.print("Begin preupgrade");
@@ -141,6 +145,9 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     gearSubstats := Iter.toArray(state.gearSubstats.entries());
     materials := Iter.toArray(state.materials.entries());
     inventories := Iter.toArray(state.inventories.entries());
+    landSlots := Iter.toArray(state.landSlots.entries());
+    landTransferHistories := Iter.toArray(state.landTransferHistories.entries());
+    landBuyingStatuses := Iter.toArray(state.landBuyingStatuses.entries());
     Debug.print("End preupgrade");
   };
 
@@ -257,6 +264,15 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     for ((k, v) in Iter.fromArray(inventories)) {
       state.inventories.put(k, v);
     };
+    for ((k, v) in Iter.fromArray(landSlots)) {
+      state.landSlots.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(landTransferHistories)) {
+      state.landTransferHistories.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(landBuyingStatuses)) {
+      state.landBuyingStatuses.put(k, v);
+    };
     Debug.print("End postupgrade");
   };
 
@@ -287,6 +303,12 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
 
   public query func getSystemAddress() : async Blob {
     Account.accountIdentifier(Principal.fromActor(this), Account.defaultSubaccount())
+  };
+
+  public query func getSystemAddressAsText() : async Text {
+    Account.toText(
+      Account.accountIdentifier(Principal.fromActor(this), Account.defaultSubaccount())
+    );
   };
 
   type DashboardAnalysis = {
@@ -622,9 +644,9 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   public query({ caller }) func listProposals(
     proposalType : Types.ProposalType
   ) : async Response<[Types.Proposal]> {
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
-    };
+    // if (Principal.toText(caller) == "2vxsx-fae") {
+    //   return #err(#NotAuthorized);//isNotAuthorized
+    // };
     var list : [Types.Proposal] = [];
     for ((_uuid, proposal) in state.proposals.entries()) {
       if (proposal.status == #open) {
@@ -638,9 +660,9 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   };
 
   public query({caller}) func getProposal(uuid : Text) : async Response<Types.Proposal> {
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
-    };
+    // if (Principal.toText(caller) == "2vxsx-fae") {
+    //   return #err(#NotAuthorized);//isNotAuthorized
+    // };
     switch (state.proposals.get(uuid)) {
       case null { #err(#NotFound); };
       case (? proposal) { #ok(proposal); };
@@ -1954,38 +1976,73 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared({caller}) func memoryCardEngineSetPlayer({
-    turn : Nat;
-    gameId : Text;
-    timing : Float;
-    stageId : Text;
-    playerId : ?Text;
-    gameSlug : Text;
-  }) : async Response<()> {
+  private func duplicateAndShuffleEngineCards(stageId : Text) : async [?(Text, Types.MemoryCardEngineCard)] {
+    // duplicate MemoryCardEngineCards
+    var list : [?(Text, Types.MemoryCardEngineCard)] = [];
+    for((K, V) in state.memoryCardEngine.cards.entries()) {
+      if (V.stageId == stageId) {
+        if (not (Text.startsWith(V.data, #text "https://"))) {
+          var temp = Text.split(V.data, #text ":");
+          list := Array.append<?(Text, Types.MemoryCardEngineCard)>(list, [?(K, {
+            stageId = V.stageId;
+            cardType = V.cardType;
+            data = Option.get(temp.next(),V.data);
+          })]);
+          list := Array.append<?(Text, Types.MemoryCardEngineCard)>(list, [?(K, {
+            stageId = V.stageId;
+            cardType = V.cardType;
+            data = Option.get(temp.next(),V.data);
+          })]);
+        } else {
+          list := Array.append<?(Text, Types.MemoryCardEngineCard)>(list, [?(K, V)]);
+          list := Array.append<?(Text, Types.MemoryCardEngineCard)>(list, [?(K, V)]);
+        }
+      };
+    };
+
+    // shuffle MemoryCardEngineCards
+    var shuffleList : [var ?(Text, Types.MemoryCardEngineCard)] = Array.thaw(list);
+    let size = list.size();
+    let iter = Array.tabulate<?(Text, Types.MemoryCardEngineCard)>(size, func (n : Nat) : ?(Text, Types.MemoryCardEngineCard) {list[size - 1 - n];}).keys();
+    for (i in iter) {
+      let j : Nat = Int.abs(Float.toInt(await Random.randomNumber(0.0, Float.fromInt(i+1))));
+      let temp = shuffleList[i];
+      shuffleList[i] := shuffleList[j];
+      shuffleList[j] := temp;
+    };
+    Array.freeze(shuffleList);
+  };
+
+  public shared({caller}) func memoryCardEngineStartStage(gameId : Text, stageId : Text, playerId : ?Text, gameSlug : Text) : async Response<([?(Text, Types.MemoryCardEngineCard)], Text)> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       throw Error.reject("NotAuthorized");  //isNotAuthorized
     };
+
     var stagesSize : Nat = 0;
     for (V in state.memoryCardEngine.stages.vals()){
       if (V.gameId == gameId) stagesSize += 1;
     };
-    let accountId = Account.toText(Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(caller)));
+
+    let duplicateAndShuffleCards = await duplicateAndShuffleEngineCards(stageId);
     switch (playerId) {
       case null {
-        //first time - stage 1
+        let accountId = Account.toText(Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(caller)));
         let player : Types.MemoryCardEnginePlayer = {
           aId = accountId;
           gameId;
           gameSlug;
           history = [{
-            stageId;
-            turn;
-            timing;
+            stageId = stageId;
+            selected = []; // clear
+            turn = 0; // default
+            timing = 0; //default
           }];
           createdAt = Moment.now();
           updatedAt = Moment.now();
         };
-        state.memoryCardEngine.players.put(await createUUID(), player);
+        let newPlayerId = await createUUID();
+        state.memoryCardEngine.players.put(newPlayerId, player);
+        
         var completedCount = 0;
         if (Iter.size(Iter.fromArray(player.history)) == stagesSize) {
           completedCount := 1;
@@ -1996,34 +2053,32 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
           questPlayCount = gamePlayAnalytics.questPlayCount;
           questCompletedCount = gamePlayAnalytics.questCompletedCount;
         };
-        #ok();
+        return #ok((duplicateAndShuffleCards, newPlayerId));
       };
       case (?pid) {
         switch (await memoryCardEngineGetPlayer(caller, gameId, gameSlug)) {
           case (#err(error)) {
-            #err(error);
+            return #err(error);
           };
           case (#ok(K, oldData)) {
-            //stage 2,3
             let found = 
-              Array.find<{
-                stageId : Text;
-                turn : Nat;
-                timing : Float;
-              }>(oldData.history, func (h) : Bool {
+              Array.find<Types.MemoryCardEngineGameProgress>(oldData.history, func (h) : Bool {
               Text.equal(stageId, h.stageId);
             });
             switch (found) {
               case null {
+                let newValue : Types.MemoryCardEngineGameProgress = {
+                  stageId = stageId;
+                  selected = [];
+                  turn = 0;
+                  timing = 0;
+                }; 
+
                 let replacePlayer : Types.MemoryCardEnginePlayer = {
                   aId = oldData.aId;
-                  gameId;
-                  gameSlug;
-                  history = Array.append(oldData.history, [{
-                    stageId;
-                    turn;
-                    timing;
-                  }]);
+                  gameId = oldData.gameId;
+                  gameSlug = oldData.gameSlug;
+                  history = Array.append(oldData.history, [newValue]);
                   createdAt = oldData.createdAt;
                   updatedAt = Moment.now();
                 };
@@ -2036,15 +2091,175 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
                     questCompletedCount = gamePlayAnalytics.questCompletedCount;
                   };
                 };
-                #ok();
+                return #ok((duplicateAndShuffleCards, pid));
               };
               case (?V) {
-                #err(#AlreadyExisting);
-              }
-            }
-          }
-        }
-      }
+                var newHistory : [Types.MemoryCardEngineGameProgress] = [];
+
+                for (value in oldData.history.vals()) {
+                  // kiem tra neu GameProgress co stageId = stageId dau vao thi thay doi GameProgress do, roi dua do mang newHistory
+                  if (value.stageId == stageId) {
+                    let newValue : Types.MemoryCardEngineGameProgress = {
+                      stageId = value.stageId;
+                      selected = [];
+                      turn = value.turn;
+                      timing = value.timing;
+                    };
+                    newHistory := Array.append<Types.MemoryCardEngineGameProgress>(newHistory, [newValue]);
+                  } else {
+                    // neu khong phai thi dua GameProgress do mang newHIstory
+                    newHistory := Array.append<Types.MemoryCardEngineGameProgress>(newHistory, [value]);
+                  };
+                };
+                
+                let replacePlayer : Types.MemoryCardEnginePlayer = {
+                  aId = oldData.aId;
+                  gameId = oldData.gameId;
+                  gameSlug = oldData.gameSlug;
+                  history = newHistory;
+                  createdAt = oldData.createdAt;
+                  updatedAt = Moment.now();
+                };
+                let _ = state.memoryCardEngine.players.replace(pid, replacePlayer);
+                if (Iter.size(Iter.fromArray(replacePlayer.history)) == stagesSize) {
+                  gamePlayAnalytics := {
+                    miniGamePlayCount = gamePlayAnalytics.miniGamePlayCount;
+                    miniGameCompletedCount = gamePlayAnalytics.miniGameCompletedCount + 1;
+                    questPlayCount = gamePlayAnalytics.questPlayCount;
+                    questCompletedCount = gamePlayAnalytics.questCompletedCount;
+                  };
+                };
+                return #ok((duplicateAndShuffleCards, pid));
+              };
+            };
+          };
+        };
+      };
+    };
+  };
+
+  public shared({caller}) func memoryCardEngineCardPair(pairCard : (Text, Text, Float), gameId : Text, stageId : Text, playerId : Text, gameSlug : Text) : async Response<Bool> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      throw Error.reject("NotAuthorized");  //isNotAuthorized
+    };
+    switch (state.memoryCardEngine.players.get(playerId)){
+      case null { return #err(#NotFound); };
+      case (?player) {
+        let found = Array.find<Types.MemoryCardEngineGameProgress>(player.history, func (h) : Bool {
+          Text.equal(stageId, h.stageId);
+        });
+        switch (found) {
+          case null {
+            return #err(#NotFound);
+          };
+          case (?V) {
+            var newHistory : [Types.MemoryCardEngineGameProgress] = [];
+
+            for (value in player.history.vals()) {
+              // kiem tra neu GameProgress co stageId = stageId dau vao thi thay doi GameProgress do, roi dua do mang newHistory
+              if (value.stageId == stageId) {
+                
+                let newValue : Types.MemoryCardEngineGameProgress = {
+                  stageId = value.stageId;
+                  selected = Array.append(value.selected, [?pairCard]);
+                  turn = value.turn;
+                  timing = value.timing;
+                };
+                newHistory := Array.append<Types.MemoryCardEngineGameProgress>(newHistory, [newValue]);
+              } else {
+                // neu khong phai thi dua GameProgress do mang newHIstory
+                newHistory := Array.append<Types.MemoryCardEngineGameProgress>(newHistory, [value]);
+              };
+            };
+            let replacePlayer : Types.MemoryCardEnginePlayer = {
+              aId = player.aId;
+              gameId = player.gameId;
+              gameSlug = player.gameSlug;
+              history = newHistory;
+              createdAt = player.createdAt;
+              updatedAt = Moment.now();
+            };
+            let _ = state.memoryCardEngine.players.replace(playerId, replacePlayer);
+            return #ok(Text.equal(pairCard.0, pairCard.1));
+          };
+        };
+      };
+    };
+  };
+
+  public shared({caller}) func memoryCardEngineCompletedStage(selected : [?(Text, Text)], stageId : Text, playerId : Text) : async Response<()> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      throw Error.reject("NotAuthorized");  //isNotAuthorized
+    };
+
+    switch (state.memoryCardEngine.players.get(playerId)) {
+      case null { return #err(#NotFound); };
+      case (?player) {
+        let found = 
+          Array.find<Types.MemoryCardEngineGameProgress>(player.history, func (h) : Bool {
+          Text.equal(stageId, h.stageId);
+        });
+        switch (found) {
+          case null {
+            return #err(#NotFound);
+          };
+          case (?V) {
+            var newHistory : [Types.MemoryCardEngineGameProgress] = [];
+            for (value in player.history.vals()) {
+              if (value.stageId == stageId and 
+                Int.greater(value.selected.size(), 0) and
+                Nat.equal(value.turn, 0) and
+                Float.equal(value.timing, 0)
+              ) {
+                var temp : Float = 0;
+                var isCheating = false;
+                let oldSelected : [?(Text, Text)] = 
+                  Array.map(value.selected, func (s : ?(Text, Text, Float)) : ?(Text, Text) {
+                    switch (s) {
+                      case null { return null };
+                      case (? v) { 
+                        if (temp < v.2) {
+                          temp := v.2;
+                        } else {
+                          isCheating := true;
+                        };
+                        return ?(v.0, v.1);
+                      };
+                    }
+                  });
+                
+                if (selected == oldSelected and not(isCheating)) { //cheat
+                  let newValue : Types.MemoryCardEngineGameProgress = {
+                    stageId = value.stageId;
+                    selected = value.selected;
+                    turn = selected.size();
+                    timing = switch (value.selected[value.selected.size()-1]) {
+                      case null { 0 };
+                      case (? s) { s.2 }
+                    };
+                  };
+                  newHistory := Array.append<Types.MemoryCardEngineGameProgress>(newHistory, [newValue]);
+                } else {
+                  newHistory := Array.append<Types.MemoryCardEngineGameProgress>(newHistory, [value]);
+                }
+              } else {
+                newHistory := Array.append<Types.MemoryCardEngineGameProgress>(newHistory, [value]);
+              };
+            };
+            
+            let replacePlayer : Types.MemoryCardEnginePlayer = {
+              aId = player.aId;
+              gameId = player.gameId;
+              gameSlug = player.gameSlug;
+              history = newHistory;
+              createdAt = player.createdAt;
+              updatedAt = Moment.now();
+            };
+            let _ = state.memoryCardEngine.players.replace(playerId, replacePlayer);
+            return #ok(());
+          };
+        };
+      };
     };
   };
 
@@ -2064,7 +2279,18 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
         Text.equal(gameSlug, V.gameSlug) and
         Text.equal(gameId, V.gameId)
       ) {
-        listTop := Array.append(listTop, [?V]);
+        var temp = true;
+        for (value in V.history.vals()) {
+          if (
+            Nat.equal(value.turn, 0) and
+            Float.equal(value.timing, 0)
+          ) {
+            temp := false;
+          }
+        };
+        if (temp) {
+          listTop := Array.append(listTop, [?V]);
+        }
       }
     };
     #ok(listTop);
@@ -2086,7 +2312,18 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
         Text.equal(gameSlug, V.gameSlug) and
         Text.equal(gameId, V.gameId)
       ) {
-        listTop := Array.append(listTop, [?(K, V)]);
+        var temp = true;
+        for (value in V.history.vals()) {
+          if (
+            Nat.equal(value.turn, 0) and
+            Float.equal(value.timing, 0)
+          ) {
+            temp := false;
+          }
+        };
+        if (temp) {
+          listTop := Array.append(listTop, [?(K, V)]);
+        }
       }
     };
     #ok(listTop);
@@ -2100,7 +2337,18 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
       var listTop : [Types.MemoryCardEnginePlayer] = [];
       for(V in state.memoryCardEngine.players.vals()) {
         if(Text.equal(gameSlug, V.gameSlug) and Text.equal(gameId, V.gameId)) {
-          listTop := Array.append(listTop, [V]);
+         var temp = true;
+          for (value in V.history.vals()) {
+            if (
+              Nat.equal(value.turn, 0) and
+              Float.equal(value.timing, 0)
+            ) {
+              temp := false;
+            }
+          };
+          if (temp) {
+            listTop := Array.append(listTop, [V]);
+          }
         }
       };
       #ok(listTop);
@@ -3494,7 +3742,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
 
 
 
-  // Land
+// Land
   public shared({ caller }) func buyLandSlot() : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
@@ -3513,9 +3761,59 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
       };
     };
   };
+
+
+
+  public shared({caller}) func createLandSlot({id : Text;zone : Nat;i : Nat;j : Nat;}) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsLandSlot = state.landSlots.get(id);
+    switch (rsLandSlot) {
+      case (?V) { #err(#AlreadyExisting); };
+      case null {
+        let newlandSlot : Types.LandSlot = {
+          id = id;
+          ownerId = Principal.fromActor(this);
+          isPremium = false;
+          isSelling = false;
+          zone = zone;
+          xIndex = i;
+          yIndex = j;
+          price = 0.0; 
+        };
+        LandSlot.create(newlandSlot, state);
+        #ok("Success");
+      };
+    };
+  };
+
+
+  public shared({caller}) func createLandSlots(scrX : Nat, scrY : Nat, desX : Nat, desY : Nat, mapWidth : Nat) : async Response<Int> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let iterI = Iter.range(scrX,desX-1);   
+    var counter = 0;
+    for (i in iterI) {
+      let iterJ = Iter.range(scrY,desY-1);
+      for (j in iterJ) {
+        let landSlot = {
+          id = Nat.toText(i*mapWidth+j);
+          zone = 20;
+          i = i;
+          j = j;
+        };
+        let created = createLandSlot(landSlot);
+        counter:=counter+1;
+      };
+    };
+
+    #ok(counter);
+  };
   
 
-  public shared({caller}) func createLandSlot(zone : Int, index : (Int,Int)) : async Response<Text> {
+  public shared({caller}) func updateLandSlot(zone : Nat, index : (Nat,Nat)) : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
@@ -3539,7 +3837,8 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
       isPremium = false;
       isSelling = false;
       zone = zone;
-      index = index;
+      xIndex = index.0;
+      yIndex = index.1;
       price = 0.0;     
     };
     let created = state.landSlots.put(newLandSlot.id,newLandSlot);
@@ -3561,6 +3860,31 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     #ok((list));
   };
 
+
+  public shared query({caller}) func loadLandSlotsArea(beginX : Nat, beginY : Nat, endX : Nat, endY : Nat, mapWidth : Nat) : async Response<[Types.LandSlot]> {
+    var list : [Types.LandSlot] = [];
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    let iterI = Iter.range(beginX,endX);
+    for (i in iterI) {
+      let iterJ = Iter.range(beginY,endY);
+      for (j in iterJ) {  
+        let rsLandSlot=state.landSlots.get(Nat.toText(i*mapWidth+j));
+        switch (rsLandSlot) {
+          case (null) {
+            
+          };
+          case (?V) {
+            list := Array.append<Types.LandSlot>(list, [V]); 
+          };
+        };
+      };
+    };
+    #ok((list));
+  };
+
   public shared query({caller}) func listAllLandSlots() : async Response<[(Text, Types.LandSlot)]> {
     var list : [(Text, Types.LandSlot)] = [];
     if(Principal.toText(caller) == "2vxsx-fae") {
@@ -3572,6 +3896,17 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     #ok((list));
   };
 
+    public shared query({caller}) func landSlotsLength() : async Response<Int> {
+    var list : [(Text, Types.LandSlot)] = [];
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    for((key ,landSlot) in state.landSlots.entries()) {
+      list := Array.append<(Text, Types.LandSlot)>(list, [(key, landSlot)]);
+    };
+    #ok(list.size());
+  };
+
   // Land Transfer History
   public shared({caller}) func createLandTransferHistory(buyerId : Principal,landId : Text, price : Float) : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
@@ -3580,7 +3915,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     var uuid : Text = await createUUID();
     label whileLoop loop {
       while (true) {
-      let rsLandTransferHistory = state.landTransferHitories.get(uuid);
+      let rsLandTransferHistory = state.landTransferHistories.get(uuid);
       switch (rsLandTransferHistory) {
           case (?V) {
             uuid := await createUUID();
@@ -3599,7 +3934,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
       transferTime = Time.now();
       price = price;   
     };
-    let created = state.landTransferHitories.put(newLandTransferHistory.id,newLandTransferHistory);
+    let created = state.landTransferHistories.put(newLandTransferHistory.id,newLandTransferHistory);
     #ok("Success");
   };
 
@@ -3608,7 +3943,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
-    for((K,V) in state.landTransferHitories.entries()) {
+    for((K,V) in state.landTransferHistories.entries()) {
       list := Array.append<(Text, Types.LandTransferHistory)>(list, [(K, V)]);
     };
     #ok((list));
@@ -3616,7 +3951,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
 
 
   // Land Buying Status
-  public shared({caller}) func updateLandBuyingStatus(zone : Int, landIndex : Int,randomTimes : Int) : async Response<Text> {
+  public shared({caller}) func updateLandBuyingStatus(zone : Int, landSlotId : Text,randomTimes : Int) : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
@@ -3624,7 +3959,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     let newLandBuyingStatus : Types.LandBuyingStatus = {
       id = caller;
       currentZone = zone;
-      currentLandIndex = landIndex;
+      currentLandSlotId = landSlotId;
       randomTimes = randomTimes;
     };
     let principalId = Principal.toText(caller);

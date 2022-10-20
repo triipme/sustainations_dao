@@ -19,9 +19,9 @@ async function buyLandSlot() {
   return result;
 }
 
-async function createLandSlot(zone,index) {
+async function updateLandSlot(zone,index) {
   const { user } = store.getState();
-  const func = async () => await user.actor.createLandSlot(zone,index);
+  const func = async () => await user.actor.updateLandSlot(zone,index);
   const result = (await func()).ok;
   return result;
 };
@@ -44,7 +44,7 @@ async function loadLandTransferHistories(){
 // update LandBuyingStatus
 async function updateLandBuyingStatus(zone,landIndex,randomTimes) {
   const { user } = store.getState();
-  const func = async () => await user.actor.updateLandBuyingStatus(zone,landIndex,randomTimes);
+  const func = async () => await user.actor.updateLandBuyingStatus(zone,String(landIndex),randomTimes);
   const result = (await func()).ok;
   return result;
 };
@@ -57,15 +57,44 @@ async function loadLandBuyingStatus(){
   return landBuyingStatus;
 };
 
-function loadLandSlotsfromCenter(x,y,mapData){
+async function loadLandSlotsfromCenter(x,y,mapData){
+  var utmObj = require('utm-latlng');
+  var utm=new utmObj('Clarke 1866');
+  let d = 100;
+
+  const { user } = store.getState();
+  const loadLandSlotsArea = async () => await user.actor.loadLandSlotsArea(
+    Math.max(x-9,0),Math.max(y-18,0),Math.min(x+9,1600-1),Math.min(y+18,1600-1),1600
+  );
+  const landSlots = (await loadLandSlotsArea()).ok;
   var result = {
     features: []
   };
-  for (let i = Math.max(x-9,0); i <= Math.min(x+9,400-1); i++) {
-    for (let j = Math.max(y-18,0); j <= Math.min(y+18,400-1); j++) {
-      result.features.push(mapData.features[i*400+j]);
-    }
+
+  for (let i in landSlots)
+  {
+    let zone = Number(landSlots[i].zone)
+    let xIndex = Number(landSlots[i].xIndex)
+    let yIndex = Number(landSlots[i].yIndex)
+    let latlng1 = utm.convertUtmToLatLng(d*yIndex,d*xIndex,zone,'N');
+    let latlng2 = utm.convertUtmToLatLng(d*(yIndex+1),d*(xIndex+1),zone,'N');
+
+    let feature = {
+      type : "Feature",
+      properties: { "zone": zone, "i": xIndex, "j": yIndex }, 
+      geometry: { type: "Polygon", coordinates: [
+        [
+          [latlng1.lng,latlng1.lat],
+          [latlng2.lng,latlng1.lat],
+          [latlng2.lng,latlng2.lat],
+          [latlng1.lng,latlng2.lat],
+          [latlng1.lng,latlng1.lat]
+        ]
+      ]}
+    };
+    result.features.push(feature)
   }
+  console.log(result.features)
   return result.features
 }
 
@@ -87,7 +116,7 @@ function getLandIndex(latlng,landData) {
 
 export {
   getUserInfo,
-  createLandSlot,
+  updateLandSlot,
   loadLandTransferHistories,
   buyLandSlot,
   loadLandSlots,
