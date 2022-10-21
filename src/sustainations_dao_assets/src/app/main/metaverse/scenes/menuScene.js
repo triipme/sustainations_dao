@@ -3,7 +3,7 @@ import BaseScene from './BaseScene'
 import gameConfig from '../GameConfig';
 import history from "@history";
 
-import { createDefautCharacter } from "../GameApi";
+import { createDefautCharacter,buyLandSlot } from "../GameApi";
 const menu_bg = "metaverse/menu/background.png";
 const welcomeText = "metaverse/menu/welcome.png";
 const introduction_btn = "metaverse/menu/introduction.png";
