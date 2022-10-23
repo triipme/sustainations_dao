@@ -142,7 +142,6 @@ export default class catalonia_scene6 extends BaseScene {
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
-      // text: "Guardiola de Berguedà is a municipality in the comarca of the Berguedà in Catalonia.\nIt is an important local commercial centre, and for this reason has been less affected by depopulation than other municipalities in the Berguedà.",
       text: this.event.description,
       origin: { x: 0.5, y: 0.5 },
       style: {

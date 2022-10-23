@@ -195,7 +195,6 @@ export default class catalonia_scene7 extends BaseScene {
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
-      // text: "Bagà is a Spanish municipality located in the comarca of Berguedà, in Catalonia.\nTraditionally, Bagà is considered the capital of Alt Berguedà, the mountainous northern half of the comarca.",
       text: this.event.description,
       origin: { x: 0.5, y: 0.5 },
       style: {

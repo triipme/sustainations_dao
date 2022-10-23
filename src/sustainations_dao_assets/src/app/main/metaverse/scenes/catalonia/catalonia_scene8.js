@@ -167,7 +167,6 @@ export default class catalonia_scene8 extends BaseScene {
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
-      // text: "Bellver de Cerdanya is a town in the comarca of Cerdanya, province of Lleida, Catalonia, Spain.",
       text: this.event.description,
       origin: { x: 0.5, y: 0.5 },
       style: {

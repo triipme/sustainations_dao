@@ -167,7 +167,6 @@ export default class lake_scene3 extends BaseScene {
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
-      // text: 'Same bench, different season, different question. Find the correct answer to continue or else.\n\n“ This belongs to you, but everyone else uses it.” ',
       text: this.event.description,
       origin: { x: 0.5, y: 0.5 },
       style: {

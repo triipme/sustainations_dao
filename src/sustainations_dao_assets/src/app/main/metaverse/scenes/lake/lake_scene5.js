@@ -166,7 +166,6 @@ export default class lake_scene5 extends BaseScene {
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
-      // text: "Are you ready ? \n\n“I have cities, but no houses. I have mountains, but no trees. I have water, but no fish. What am I? “ ",
       text: this.event.description,
       origin: { x: 0.5, y: 0.5 },
       style: {

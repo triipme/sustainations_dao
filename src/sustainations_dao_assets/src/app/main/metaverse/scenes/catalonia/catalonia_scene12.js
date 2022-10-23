@@ -165,7 +165,6 @@ export default class catalonia_scene12 extends BaseScene {
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
-      // text: "Castellar de n'Hug is a municipality in the comarca of the Berguedà in Catalonia, Spain.\nIt is situated on the southern slopes of the pyrenean range of the Creueta.",
       text: this.event.description,
       origin: { x: 0.5, y: 0.5 },
       style: {

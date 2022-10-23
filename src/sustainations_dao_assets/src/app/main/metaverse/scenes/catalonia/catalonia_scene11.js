@@ -165,7 +165,6 @@ export default class catalonia_scene11 extends BaseScene {
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
-      // text: "The pharmacy of Llívia, one of the oldest in Europe, reveals this mystery. It was already in existence in 1415.",
       text: this.event.description,
       origin: { x: 0.5, y: 0.5 },
       style: {

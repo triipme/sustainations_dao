@@ -167,7 +167,6 @@ export default class catalonia_scene10 extends BaseScene {
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
-      // text: "Puigcerdà is the capital of the Catalan comarca of Cerdanya, in the province of Girona, Catalonia, northern Spain, near the Segre River and on the border with France",
       text: this.event.description,
       origin: { x: 0.5, y: 0.5 },
       style: {

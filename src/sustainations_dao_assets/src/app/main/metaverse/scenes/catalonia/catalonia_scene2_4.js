@@ -144,7 +144,6 @@ export default class catalonia_scene2_4 extends BaseScene {
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
-      // text: "Tuixent is a village in the municipality of Josa i Tuixén, in Catalonia, Spain, and an independent municipality until 1973, when it was merged with Josa de Cadí.",
       text: this.event.description,
       origin: { x: 0.5, y: 0.5 },
       style: {

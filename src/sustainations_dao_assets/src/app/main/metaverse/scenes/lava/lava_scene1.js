@@ -209,7 +209,6 @@ export default class lava_scene1 extends BaseScene {
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
-      // text: "A new land with many mysteries to be discovered",
       text: this.event.description,
       origin: { x: 0.5, y: 0.5 },
       style: {

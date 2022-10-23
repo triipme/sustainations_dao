@@ -144,7 +144,6 @@ export default class catalonia_scene2_2 extends BaseScene {
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
-      // text: "Adraén is a locality located in the municipality of La Vansa i Fórnols, in Province of Lleida province, Catalonia, Spain.",
       text: this.event.description,
       origin: { x: 0.5, y: 0.5 },
       style: {

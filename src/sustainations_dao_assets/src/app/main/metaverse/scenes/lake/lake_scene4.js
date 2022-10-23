@@ -166,7 +166,6 @@ export default class lake_scene4 extends BaseScene {
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
-      // text: 'What are the next three letters in this combination? \n\nOTTFFSS ',
       text: this.event.description,
       origin: { x: 0.5, y: 0.5 },
       style: {

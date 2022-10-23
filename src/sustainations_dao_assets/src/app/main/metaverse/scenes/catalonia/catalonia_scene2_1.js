@@ -149,7 +149,6 @@ export default class catalonia_scene2_1 extends BaseScene {
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
-      // text: "El Ges is a hamlet in Lleida and has about 14 residents. El Ges is situated nearby to la Clota, and close to la Creu.",
       text: this.event.description,
       origin: { x: 0.5, y: 0.5 },
       style: {

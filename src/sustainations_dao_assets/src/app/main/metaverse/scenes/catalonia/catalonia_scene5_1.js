@@ -141,7 +141,6 @@ export default class catalonia_scene5_1 extends BaseScene {
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
-      // text: "Pedraforca is a monumental piece of stand-alone rock in Catalonia and means “stone pitchfork”.\nIt´s also one of the most beautiful mountains in Spanish Pyrenees.",
       text: this.event.description,
       origin: { x: 0.5, y: 0.5 },
       style: {

@@ -192,7 +192,6 @@ export default class catalonia_scene3 extends BaseScene {
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
-      // text: "Gósol is a village and municipality located in the northwest of the comarca of Berguedà in Catalonia, in the Pyrenees.\nIt is within the confines of Cadí-Moixeró Natural Park, to the west of Pedraforca.",
       text: this.event.description,
       origin: { x: 0.5, y: 0.5 },
       style: {

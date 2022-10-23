@@ -167,7 +167,6 @@ export default class lake_scene2 extends BaseScene {
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
-      // text: 'On the bench, there is another question. Find the correct answer to continue or else.\n\n“First you eat me, then you get eaten. What am I?”',
       text: this.event.description,
       origin: { x: 0.5, y: 0.5 },
       style: {

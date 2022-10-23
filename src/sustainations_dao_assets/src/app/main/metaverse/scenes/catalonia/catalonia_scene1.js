@@ -168,7 +168,6 @@ export default class catalonia_scene1 extends BaseScene {
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
-      // text: "La Seu d'Urgell is a town located in the Catalan Pyrenees in Spain. \n\nLa Seu d'Urgell is also the capital of the comarca Alt Urgell.",
       text: this.event.description,
       origin: { x: 0.5, y: 0.5 },
       style: {

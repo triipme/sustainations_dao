@@ -166,7 +166,6 @@ export default class lake_scene1 extends BaseScene {
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
-      // text: 'On the bench, there is a question. Find the correct answer to continue or else.\n\n“What is able to go up a chimney when down but unable to go down a chimney when up?”',
       text: this.event.description,
       origin: { x: 0.5, y: 0.5 },
       style: {
