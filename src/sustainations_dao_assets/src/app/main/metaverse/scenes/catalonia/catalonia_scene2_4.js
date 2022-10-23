@@ -5,7 +5,8 @@ import {
   loadEventOptions,
   updateCharacterStats,
   listCharacterSelectsItems,
-  createCharacterCollectsMaterials
+  createCharacterCollectsMaterials,
+  readEvent
 } from '../../GameApi';
 import { settings } from '../settings';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
@@ -138,10 +139,13 @@ export default class catalonia_scene2_4 extends BaseScene {
       console.log("Hello World");
     });
 
+    this.event = await readEvent(this.eventId)
+
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
-      text: "Tuixent is a village in the municipality of Josa i Tuixén, in Catalonia, Spain, and an independent municipality until 1973, when it was merged with Josa de Cadí.",
+      // text: "Tuixent is a village in the municipality of Josa i Tuixén, in Catalonia, Spain, and an independent municipality until 1973, when it was merged with Josa de Cadí.",
+      text: this.event.description,
       origin: { x: 0.5, y: 0.5 },
       style: {
         font: 'bold 25px Arial',

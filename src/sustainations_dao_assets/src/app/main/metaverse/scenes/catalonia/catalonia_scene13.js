@@ -5,11 +5,11 @@ import {
   loadEventOptions,
   updateCharacterStats,
   listCharacterSelectsItems,
-  createCharacterCollectsMaterials
+  createCharacterCollectsMaterials,
+  readEvent
 } from '../../GameApi';
 import { settings } from '../settings';
 import { func } from 'prop-types';
-import { readEvent } from '../../GameApi';
 
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
@@ -158,13 +158,14 @@ export default class catalonia_scene13 extends BaseScene {
     });
 
     // load description of event
-    const event = await readEvent(this.eventId)
+    this.event = await readEvent(this.eventId)
 
 
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
-      text: "Ripoll is the capital of the comarca of Ripollès, in the province of Girona, Catalonia, Spain.\nIt is located on confluence of the Ter River and its tributary Freser, next to the Pyrenees near the French border.",
+      // text: "Ripoll is the capital of the comarca of Ripollès, in the province of Girona, Catalonia, Spain.\nIt is located on confluence of the Ter River and its tributary Freser, next to the Pyrenees near the French border.",
+      text: this.event.description,
       origin: { x: 0.5, y: 0.5 },
       style: {
         font: 'bold 25px Arial',

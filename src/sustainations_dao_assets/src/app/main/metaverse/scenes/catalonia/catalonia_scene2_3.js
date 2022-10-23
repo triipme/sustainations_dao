@@ -5,7 +5,8 @@ import {
   loadEventOptions,
   updateCharacterStats,
   listCharacterSelectsItems,
-  createCharacterCollectsMaterials
+  createCharacterCollectsMaterials,
+  readEvent
 } from '../../GameApi';
 import { settings } from '../settings';
 import { isThisSecond } from 'date-fns';
@@ -141,10 +142,13 @@ export default class catalonia_scene2_3 extends BaseScene {
       console.log("Hello World");
     });
 
+    this.event = await readEvent(this.eventId)
+
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
-      text: "Fórnols de Cadí or Fórnols is a hamlet located in the municipality of La Vansa i Fórnols, in Province of Lleida province, Catalonia, Spain.",
+      // text: "Fórnols de Cadí or Fórnols is a hamlet located in the municipality of La Vansa i Fórnols, in Province of Lleida province, Catalonia, Spain.",
+      text: this.event.description,
       origin: { x: 0.5, y: 0.5 },
       style: {
         font: 'bold 25px Arial',

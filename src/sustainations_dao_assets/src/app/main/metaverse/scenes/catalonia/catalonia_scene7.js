@@ -9,6 +9,7 @@ import {
   createCharacterCollectsMaterials,
   openInventory,
   createInventory,
+  readEvent
 } from '../../GameApi';
 import { settings } from '../settings';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
@@ -189,10 +190,13 @@ export default class catalonia_scene7 extends BaseScene {
       console.log("Hello World");
     });
 
+    this.event = await readEvent(this.eventId)
+
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
-      text: "Bagà is a Spanish municipality located in the comarca of Berguedà, in Catalonia.\nTraditionally, Bagà is considered the capital of Alt Berguedà, the mountainous northern half of the comarca.",
+      // text: "Bagà is a Spanish municipality located in the comarca of Berguedà, in Catalonia.\nTraditionally, Bagà is considered the capital of Alt Berguedà, the mountainous northern half of the comarca.",
+      text: this.event.description,
       origin: { x: 0.5, y: 0.5 },
       style: {
         font: 'bold 25px Arial',

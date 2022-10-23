@@ -59,7 +59,9 @@ module {
   public type Vote = { #no; #yes };
   public type VoteArgs = { vote : Vote; proposalId : Text };
   public type Voter = {
-    uid : Principal; vote : Vote; timestamp : Time.Time
+    uid : Principal;
+    vote : Vote;
+    timestamp : Time.Time;
   };
   public type ProposalType = {
     #project;
@@ -159,9 +161,9 @@ module {
 
   public type CharacterCollectsMaterials = {
     id : Text;
-    characterId: Text;
-    materialId: Text;
-    amount: Int;
+    characterId : Text;
+    materialId : Text;
+    amount : Int;
   };
 
   //--------------------- Quest ---------------------//
@@ -171,6 +173,16 @@ module {
     price : Nat64;
     description : Text;
     images : Text;
+  };
+
+  //--------------------- Scene ---------------------//
+  public type Scene = {
+    id : Text;
+    idEvent : Text;
+    front : Text;
+    mid : Text;
+    back : Text;
+    obstacle : Text;
   };
 
   //--------------------- Item ---------------------//
@@ -290,11 +302,11 @@ module {
     isPremium : Bool;
     isSelling : Bool;
     zone : Int;
-    index : (Int,Int);
-    price: Float; 
+    index : (Int, Int);
+    price : Float;
   };
 
-//--------------------- Land Transfer History ---------------------//
+  //--------------------- Land Transfer History ---------------------//
   public type LandTransferHistory = {
     id : Text;
     buyerId : Principal;
@@ -303,15 +315,14 @@ module {
     transferTime : Int;
     price : Float;
   };
-//--------------------- Land Buying Status ---------------------//
+  //--------------------- Land Buying Status ---------------------//
   public type LandBuyingStatus = {
     id : Principal;
-    currentZone: Int;
-    currentLandIndex: Int;
+    currentZone : Int;
+    currentLandIndex : Int;
     //currentIndex : (Int,Int);
     randomTimes : Int;
   };
-
 
   // Error codes
   public type Error = {
@@ -350,11 +361,15 @@ module {
   ];
 
   public let refillProductCategories = [
-    "Food", "Spices", "Body Care", "Household Goods"
+    "Food",
+    "Spices",
+    "Body Care",
+    "Household Goods"
   ];
 
   public let proposalFundingTypes = [
-    "100% Funded", "Partially Funded"
+    "100% Funded",
+    "Partially Funded"
   ];
 
   // Refill Stations

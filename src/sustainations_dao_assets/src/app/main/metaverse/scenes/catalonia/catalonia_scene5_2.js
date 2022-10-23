@@ -5,7 +5,8 @@ import {
   loadEventOptions,
   updateCharacterStats,
   listCharacterSelectsItems,
-  createCharacterCollectsMaterials
+  createCharacterCollectsMaterials,
+  readEvent
 } from '../../GameApi';
 import { settings } from '../settings';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
@@ -115,6 +116,38 @@ export default class catalonia_scene5_2 extends BaseScene {
     this.setValue(this.stamina, this.characterData.currentStamina / this.characterData.maxStamina * 100);
     this.setValue(this.mana, this.characterData.currentMana / this.characterData.maxMana * 100);
     this.setValue(this.morale, this.characterData.currentMorale / this.characterData.maxMorale * 100);
+
+    //popup
+    this.premiumPopupWindow = this.add.sprite(gameConfig.scale.width / 2, gameConfig.scale.height / 2, "popupWindo")
+      .setScale(0.5).setVisible(false).setScrollFactor(0);
+    this.premiumPopupCloseBtn = this.add.image(gameConfig.scale.width / 2 + 230, gameConfig.scale.height / 2 - 150, "popupClose")
+      .setInteractive().setScale(0.25).setVisible(false).setScrollFactor(0).setScale(0.25);
+
+    this.premiumPopupCloseBtn.on('pointerdown', () => {
+      console.log("Hello World");
+      this.clickSound.play();
+      this.isInteracted = true;
+      this.premiumPopupWindow.setVisible(false);
+      this.premiumPopupCloseBtn.setVisible(false);
+      this.des.setVisible(false);
+      this.triggerPause();
+      console.log("Hello World");
+    });
+
+    this.event = await readEvent(this.eventId)
+
+    this.des = this.make.text({
+      x: gameConfig.scale.width / 2,
+      y: gameConfig.scale.height / 2 - 10,
+      // text: "Pedraforca is a monumental piece of stand-alone rock in Catalonia and means “stone pitchfork”.\nIt´s also one of the most beautiful mountains in Spanish Pyrenees.",
+      text: this.event.description,
+      origin: { x: 0.5, y: 0.5 },
+      style: {
+        font: 'bold 25px Arial',
+        fill: 'gray',
+        wordWrap: { width: 400 }
+      }
+    }).setVisible(false).setScrollFactor(0);
 
     this.options = [];
     for (const idx in this.eventOptions) {
