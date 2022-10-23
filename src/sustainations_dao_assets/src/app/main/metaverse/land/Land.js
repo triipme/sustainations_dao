@@ -9,13 +9,15 @@ import BigMap from "./map"
 
 import {
   buyLandSlot,
-  updateLandSlot,
+  randomLandSlot,
+  completePurchaseSystemLandSlot,
   loadLandTransferHistories,
   updateLandBuyingStatus,
   loadLandBuyingStatus,
   loadLandSlotsfromCenter,
   getUserInfo,
-  getLandIndex
+  getLandIndex,
+  loadTileSlots
 } from '../LandApi'
 
 
@@ -46,6 +48,7 @@ var init = 0
 const loadLands = async (i,j) => {
   landData = await loadLandSlotsfromCenter(i, j, mapData);
 }
+
 
 const Map = () => {
   if (init==0) loadLands(0,0)
@@ -194,6 +197,7 @@ const Map = () => {
 
 
   const btnPurchaseRand = async () => {
+    console.log(await randomLandSlot());
     setShowFirstBtn(true)
     numRandom -= 1
     let landIdRand
@@ -284,21 +288,21 @@ const Map = () => {
     setShowFirstBtn(false)
     offBtn1 = true
     offBtn2 = false
-    await updateLandSlot(
+    await completePurchaseSystemLandSlot(
       mapData.features[land].properties.zone,
-      [mapData.features[land].properties.i, mapData.features[land].properties.j]
+      mapData.features[land].properties.i, mapData.features[land].properties.j
     )
     console.log("UPDATED TRANSFER HISOTY:")
     console.log(await loadLandTransferHistories())
   }
 
-  const handleAccept = async () => {
+  const completePurchaseSystemLandSlot = async () => {
     setPurchased(true)
     setShowBtn(false)
     offBtn2 = false
     await updateLandSlot(
       mapData.features[land].properties.zone,
-      [mapData.features[land].properties.i, mapData.features[land].properties.j]
+      mapData.features[land].properties.i, mapData.features[land].properties.j
     )
     console.log("UPDATED TRANSFER HISOTY:")
     console.log(await loadLandTransferHistories())

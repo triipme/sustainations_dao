@@ -283,6 +283,13 @@ module {
   };
 
   // Land
+  //--------------------- Land Config -------------------//
+  public type LandConfig = {
+    id : Text;
+    mapWidth : Nat;
+    mapHeight: Nat;
+  };
+
   //--------------------- Land Slot ---------------------//
   public type LandSlot = {
     id : Text;
@@ -304,6 +311,8 @@ module {
     transferTime : Int;
     price : Float;
   };
+
+
 //--------------------- Land Buying Status ---------------------//
   public type LandBuyingStatus = {
     id : Principal;
@@ -313,7 +322,7 @@ module {
   };
 
 //------------------------------------------------------------//
-public type UserhasLandSLots = {
+public type UserHasLandSLots = {
   id : Principal;
   landSlotIds : [Text];
 };

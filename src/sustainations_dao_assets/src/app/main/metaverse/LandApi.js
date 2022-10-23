@@ -1,5 +1,6 @@
 import store from 'app/store';
-
+var utmObj = require('utm-latlng');
+var utm=new utmObj('Clarke 1866');
 // call api
 
 // get user info
@@ -19,13 +20,22 @@ async function buyLandSlot() {
   return result;
 }
 
-async function updateLandSlot(zone,index) {
+async function randomLandSlot() {
   const { user } = store.getState();
-  const func = async () => await user.actor.updateLandSlot(zone,index);
+  const func = async () => await user.actor.randomLandSlot();
+  const result = (await func()).ok; 
+  return result;
+}
+
+// complete Purchase System LandSlot
+async function completePurchaseSystemLandSlot(zone,i,j) {
+  const { user } = store.getState();
+  const func = async () => await user.actor.completePurchaseSystemLandSlot(zone,i,j);
   const result = (await func()).ok;
   return result;
 };
 
+// load LandSlots
 async function loadLandSlots(){
   const { user } = store.getState();
   const listLandSlots = async () => await user.actor.listLandSlots();
@@ -57,14 +67,13 @@ async function loadLandBuyingStatus(){
   return landBuyingStatus;
 };
 
+// load LandSlots from Center
 async function loadLandSlotsfromCenter(x,y,mapData){
-  var utmObj = require('utm-latlng');
-  var utm=new utmObj('Clarke 1866');
   let d = 100;
 
   const { user } = store.getState();
   const loadLandSlotsArea = async () => await user.actor.loadLandSlotsArea(
-    Math.max(x-9,0),Math.max(y-18,0),Math.min(x+9,1600-1),Math.min(y+18,1600-1),1600
+    Math.max(x-9,0),Math.max(y-18,0),Math.min(x+9,1600-1),Math.min(y+18,1600-1),20
   );
   const landSlots = (await loadLandSlotsArea()).ok;
   var result = {
@@ -94,10 +103,10 @@ async function loadLandSlotsfromCenter(x,y,mapData){
     };
     result.features.push(feature)
   }
-  console.log(result.features)
   return result.features
 }
 
+// get Land Index
 function getLandIndex(latlng,landData) {
   for (let i in landData)
   {
@@ -113,10 +122,45 @@ function getLandIndex(latlng,landData) {
   }
 }
 
+// load TileSlots
+async function loadTileSlots(properties) {
+  var result = {
+    features: []
+  };
+  let d=10
+  let zone = properties.zone
+  let x = properties.x
+  let y = properties.y
+  for (let i=x;i<x+10;i++)
+  {
+    for (let j=y;j<y+10;j++)
+    {
+      let latlng1 = utm.convertUtmToLatLng(d*j,d*i,zone,'N');
+      let latlng2 = utm.convertUtmToLatLng(d*(j+1),d*(i+1),zone,'N');
+      let feature = {
+        type : "Feature",
+        properties: { "zone": zone, "i": i, "j": j }, 
+        geometry: { type: "Polygon", coordinates: [
+          [
+            [latlng1.lng,latlng1.lat],
+            [latlng2.lng,latlng1.lat],
+            [latlng2.lng,latlng2.lat],
+            [latlng1.lng,latlng2.lat],
+            [latlng1.lng,latlng1.lat]
+          ]
+        ]}
+      };
+      result.features.push(feature)
+    }
+  }
+  return result.features
+} 
+
 
 export {
   getUserInfo,
-  updateLandSlot,
+  randomLandSlot,
+  completePurchaseSystemLandSlot,
   loadLandTransferHistories,
   buyLandSlot,
   loadLandSlots,
@@ -124,4 +168,5 @@ export {
   loadLandBuyingStatus,
   loadLandSlotsfromCenter,
   getLandIndex,
+  loadTileSlots
 }
