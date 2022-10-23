@@ -209,6 +209,7 @@ const Metaverse = () => {
     });
   };
 
+
   const handleSubmit = async () => {
     setLoading(true);
     await createItem();
@@ -219,6 +220,7 @@ const Metaverse = () => {
     await createEvent();
     await createEventOption();
     await createCharacterClass();
+    console.log("DONE");
     setLoading(false);
   };
 
