@@ -3764,16 +3764,16 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
 
 
 
-  public shared({caller}) func createLandSlot({id : Text;zone : Nat;i : Nat;j : Nat;}) : async Response<Text> {
+  public shared({caller}) func createLandSlot({id : Nat;zone : Nat;i : Nat;j : Nat;}) : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
-    let rsLandSlot = state.landSlots.get(id);
+    let rsLandSlot = state.landSlots.get(Nat.toText(id));
     switch (rsLandSlot) {
       case (?V) { #err(#AlreadyExisting); };
       case null {
         let newlandSlot : Types.LandSlot = {
-          id = id;
+          id = Nat.toText(id);
           ownerId = Principal.fromActor(this);
           isPremium = false;
           isSelling = false;
@@ -3799,7 +3799,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
       let iterJ = Iter.range(scrY,desY-1);
       for (j in iterJ) {
         let landSlot = {
-          id = Nat.toText(i*mapWidth+j);
+          id = i*mapWidth+j;
           zone = 20;
           i = i;
           j = j;
