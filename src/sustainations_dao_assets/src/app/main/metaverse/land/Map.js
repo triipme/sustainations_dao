@@ -62,11 +62,26 @@ const Map = () => {
     });
 
     const onEachLandSlot = (country, layer) => {
+        
         layer.setStyle({
             color: "#002E5E",
             fillColor: "#002E5E",
             fillOpacity: ".75"
         })
+
+        // if (country.properties.i === i && country.properties.j === j && country.propertirs.zone === zone) {
+        //     layer.setStyle({
+        //         color: "#002E5E",
+        //         fillColor: "#48c3c8",
+        //         fillOpacity: ".75"
+        //     })
+        // } else {
+        //     layer.setStyle({
+        //         color: "#002E5E",
+        //         fillColor: "#002E5E",
+        //         fillOpacity: ".75"
+        //     })
+        // }
 
         layer.on({
             click: async (e) => {
@@ -74,9 +89,9 @@ const Map = () => {
                 setModeBtn(true)
                 setPurchaseBtn(false)
                 setFarmLocation(e.latlng)
-                e.target.setStyle({fillColor: "red"})
             }
         });
+        
 
     }
 
@@ -111,12 +126,12 @@ const Map = () => {
                     <div>
 
                         <button className="button-85" style={{
-                            display: purchaseBtn ? "block" : "none"
-                        }} onClick={handlePurchase}>Buy a new Land Slot</button>
+                            display: "none"
+                        }} onClick={handlePurchase}>Click a LandSLot to go to farmmode</button>
 
                         <button className="button-85" style={{
-                            display: modeBtn ? "block" : "none"
-                        }} onClick={handleChangeMode}>Go to farm mode { }</button>
+                            display: "block"
+                        }} onClick={handleChangeMode}>Click a LandSLot to Go to farm mode</button>
 
                         {!modeBtn && <div className="containPopup">
                             {/* Popup purchase */}

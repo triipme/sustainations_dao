@@ -18,9 +18,14 @@ const Farm = ({ mapFeatures }) => {
     var posL = [10, 20, 30, 40, 50, 60, 70, 80]
     var posR = [19, 29, 39, 49, 59, 69, 79, 89]
     var posC = [0, 9, 90, 99]
+    var posLand = []
+    for(let i = 0; i < 100; i++){
+        if(!posD.includes(i) || !posU.includes(i) || !posL.includes(i) || !posR.includes(i) ||!posC.includes(i) )
+            posLand.push(i)
+    }
     const onEachLandSlot = (country, layer) => {
         layer.setStyle({
-            color: "#000000",
+            color: "#FFFFFF",
             fillColor: "#FFFFFF",
             fillOpacity: "0.1"
         })
@@ -31,7 +36,7 @@ const Farm = ({ mapFeatures }) => {
             {mode === 'farm' && <>
 
                 <GeoJSON key={Math.floor(Math.random() * 9999)} data={mapFeatures} onEachFeature={onEachLandSlot} />
-                <CreateBound {...{ latlng, posD, posU, posL, posR, posC }}></CreateBound>
+                <CreateBound {...{ latlng, posD, posU, posL, posR, posC, posLand }}></CreateBound>
                 <UIFarm></UIFarm>
                 <button className="button-85" style={{top: "250px"}} onClick={()=>setMode('land')}>Go to map mode</button>
             </>}
@@ -44,9 +49,14 @@ const Farm = ({ mapFeatures }) => {
     )
 }
 
-const CreateBound = ({ latlng, posD, posU, posL, posR, posC }) => {
+const CreateBound = ({ latlng, posD, posU, posL, posR, posC, posLand }) => {
     return (
         <>
+            {posLand.map(tag => {
+                return (
+                    <ImageOverlay key={tag} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm Tiles-05.png'} bounds={[latlng[tag][1], latlng[tag][3]]} />
+                )
+            })}
             {posD.map(tag => {
                 return (
                     <ImageOverlay key={tag} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm Tiles-08.png'} bounds={[latlng[tag][1], latlng[tag][3]]} />

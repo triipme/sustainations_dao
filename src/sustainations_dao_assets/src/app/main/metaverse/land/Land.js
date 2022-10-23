@@ -5,7 +5,7 @@ import "./styles.css";
 import BigMap from "./bigmap"
 import Map from "./Map"
 
-const zoom = 1
+const zoom = 4
 var center = [0.0, -67.488694797721564]
 
 function Land() {
