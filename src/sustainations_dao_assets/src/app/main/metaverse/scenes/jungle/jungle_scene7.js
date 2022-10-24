@@ -7,7 +7,10 @@ import {
   loadCharacter,
   getCharacterStatus,
   canGetARItemPromise,
-  getUserInfo
+  getUserInfo,
+  openInventory,
+  createInventory,
+  gainCharacterExp
 } from '../../GameApi';
 import { settings } from '../settings';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
@@ -151,6 +154,7 @@ export default class jungle_scene7 extends BaseScene {
         };
       });
     };
+    updateCharacterStats
   }
 
   update() {

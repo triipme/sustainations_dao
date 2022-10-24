@@ -192,6 +192,7 @@ async function createInventory(characterId) {
     resolve(rs);
   })
   promise.then((data)=>{
+    console.log(data)
     return data;
   })
 };
