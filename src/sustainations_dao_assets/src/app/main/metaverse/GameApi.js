@@ -239,6 +239,14 @@ async function readEvent(eventId) {
   return event;
 }
 
+// list scene of quest
+async function listSceneQuests(idQuest) {
+  const { user } = store.getState();
+  const func = async () => await user.actor.listSceneQuests(idQuest);
+  const list_scene_quest = (await func()).ok;
+  return list_scene_quest;
+}
+
 
 
 export {
@@ -268,5 +276,6 @@ export {
   openInventory,
   getRemainingTime,
   payQuest,
-  readEvent
+  readEvent,
+  listSceneQuests
 }

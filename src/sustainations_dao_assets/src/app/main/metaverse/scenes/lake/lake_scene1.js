@@ -28,6 +28,7 @@ const item_potion = 'metaverse/scenes/item_ingame_HP.png'
 const popupWindo = 'metaverse/selectMap/Catalonia_popup.png';
 const popupClose = 'metaverse/selectMap/UI_ingame_close.png';
 
+
 export default class lake_scene1 extends BaseScene {
   constructor() {
     super('lake_scene1');
@@ -62,6 +63,8 @@ export default class lake_scene1 extends BaseScene {
     this.load.spritesheet('btnBlank', btnBlank, { frameWidth: 1102, frameHeight: 88 });
     this.load.image("obstacle", obstacle);
 
+
+
     //UI -- One time load
     this.load.image("BtnExit", BtnExit);
     this.load.spritesheet('UI_Utility_Sprite', UI_Utility_Sprite, { frameWidth: 192, frameHeight: 192 });
@@ -70,6 +73,9 @@ export default class lake_scene1 extends BaseScene {
     //Popup
     this.load.spritesheet('popupWindo', popupWindo, { frameWidth: 980, frameHeight: 799 });
     this.load.image("popupClose", popupClose);
+
+    //Rain
+    this.load.atlas('flares', flares, flaresJson);
 
   }
 
@@ -183,6 +189,7 @@ export default class lake_scene1 extends BaseScene {
     this.mask = new Phaser.Display.Masks.GeometryMask(this, this.graphics);
 
     this.des.setMask(this.mask);
+
 
     // //  The rectangle they can 'drag' within
     this.add.zone(150, 230, 900, 250).setOrigin(0).setInteractive().setVisible(true).setScrollFactor(0)
