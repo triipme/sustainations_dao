@@ -54,46 +54,46 @@ const CreateBound = ({ latlng, posD, posU, posL, posR, posC, posLand }) => {
         <>
             {posLand.map(tag => {
                 return (
-                    <ImageOverlay key={tag} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm Tiles-05.png'} bounds={[latlng[tag][1], latlng[tag][3]]} />
+                    <ImageOverlay key={tag} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm-Tiles-05.png'} bounds={[latlng[tag][1], latlng[tag][3]]} />
                 )
             })}
             {posD.map(tag => {
                 return (
-                    <ImageOverlay key={tag} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm Tiles-08.png'} bounds={[latlng[tag][1], latlng[tag][3]]} />
+                    <ImageOverlay key={tag} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm-Tiles-08.png'} bounds={[latlng[tag][1], latlng[tag][3]]} />
                 )
             })}
             {posU.map(tag => {
                 return (
-                    <ImageOverlay key={tag} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm Tiles-02.png'} bounds={[latlng[tag][1], latlng[tag][3]]} />
+                    <ImageOverlay key={tag} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm-Tiles-02.png'} bounds={[latlng[tag][1], latlng[tag][3]]} />
                 )
             })}
             {posL.map(tag => {
                 return (
-                    <ImageOverlay key={tag} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm Tiles-04.png'} bounds={[latlng[tag][1], latlng[tag][3]]} />
+                    <ImageOverlay key={tag} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm-Tiles-04.png'} bounds={[latlng[tag][1], latlng[tag][3]]} />
                 )
             })}
             {posR.map(tag => {
                 return (
-                    <ImageOverlay key={tag} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm Tiles-06.png'} bounds={[latlng[tag][1], latlng[tag][3]]} />
+                    <ImageOverlay key={tag} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm-Tiles-06.png'} bounds={[latlng[tag][1], latlng[tag][3]]} />
                 )
             })}
             {posC.map((tag, i) => {
                 switch (i) {
                     case 0:
                         return (
-                            <ImageOverlay key={tag} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm Tiles-07.png'} bounds={[latlng[tag][1], latlng[tag][3]]} />
+                            <ImageOverlay key={tag} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm-Tiles-07.png'} bounds={[latlng[tag][1], latlng[tag][3]]} />
                         )
                     case 1:
                         return (
-                            <ImageOverlay key={tag} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm Tiles-09.png'} bounds={[latlng[tag][1], latlng[tag][3]]} />
+                            <ImageOverlay key={tag} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm-Tiles-09.png'} bounds={[latlng[tag][1], latlng[tag][3]]} />
                         )
                     case 2:
                         return (
-                            <ImageOverlay key={tag} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm Tiles-01.png'} bounds={[latlng[tag][1], latlng[tag][3]]} />
+                            <ImageOverlay key={tag} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm-Tiles-01.png'} bounds={[latlng[tag][1], latlng[tag][3]]} />
                         )
                     case 3:
                         return (
-                            <ImageOverlay key={tag} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm Tiles-03.png'} bounds={[latlng[tag][1], latlng[tag][3]]} />
+                            <ImageOverlay key={tag} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm-Tiles-03.png'} bounds={[latlng[tag][1], latlng[tag][3]]} />
                         )
                     default:
                         console.log("error")
@@ -107,7 +107,7 @@ const Create = ({ latlng, pos }) => {
     return (
         pos.map(tag => {
             return (
-                <ImageOverlay key={tag} url={'metaverse/farm/Sustaination_farm/farm-object/PNG/farm object_4 ca chua 1.png'} bounds={[latlng[tag][1], latlng[tag][3]]} />
+                <ImageOverlay key={tag} url={'metaverse/farm/Sustaination_farm/farm-object/PNG/farmobject_4cachua1.png'} bounds={[latlng[tag][1], latlng[tag][3]]} />
             )
         })
     )
