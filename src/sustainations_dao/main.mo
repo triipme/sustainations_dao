@@ -3067,6 +3067,25 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
     };
   };
 
+  public shared ({caller}) func listSceneQuest(idQuest: Text) : async Response<[Text]> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    var list : [Text] = [];
+    let rsQuest = state.quests.get(idQuest);
+    switch (rsQuest) {
+      case (null) { #err(#NotFound) };
+      case (?rsQuest) {
+        for ((K, V) in state.events.entries()) {
+          if (V.questId == rsQuest.id){
+            list := Array.append<(Text)>(list, [K]);
+          }
+        };
+        #ok(list);
+      };
+    };
+  };
+
   // Item
   public shared ({ caller }) func createItem(item : Types.Item) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
