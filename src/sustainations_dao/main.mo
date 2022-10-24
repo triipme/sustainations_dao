@@ -3067,7 +3067,7 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
     };
   };
 
-  public shared ({caller}) func listSceneQuest(idQuest: Text) : async Response<[Text]> {
+  public shared ({caller}) func listSceneQuests(idQuest: Text) : async Response<[Text]> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };

@@ -12,13 +12,26 @@ import {
   listCharacterSelectsItems,
   characterCollectsMaterials,
   listCharacterCollectsMaterials,
-  getHpPotion
+  getHpPotion,
+  listSceneQuests
 } from '../GameApi';
+import { remove } from "lodash";
 
 class BaseScene extends Phaser.Scene {
   constructor(key) {
     super(key);
   }
+
+  initScene(idQuest) {
+    this.idQuest = idQuest;
+    this.load.rexAwait(function (successCallback, failureCallback) {
+        listSceneQuests(this.idQuest).then((result) => {
+            this.listScene = result;
+            console.log("event scene", this.listScene);
+            successCallback();
+        });
+    }, this);
+  };
 
   initialLoad(eventID) {
     this.eventId = eventID;
@@ -282,9 +295,14 @@ class BaseScene extends Phaser.Scene {
         fill: fill1
       }).setOrigin(0).setScrollFactor(0);
     }
-
   }
 
+  async listSceneQuests(idQuest) {
+    this.listSceneQuests = await listSceneQuests(idQuest);
+  }
+  // async listSceneQuests() {
+  //   this.listSceneQuests = await listSceneQuests("lake");
+  // };
 
 }
 export default BaseScene;

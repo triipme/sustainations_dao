@@ -5,7 +5,7 @@ import {
   loadEventOptions,
   updateCharacterStats,
   listCharacterSelectsItems,
-  createCharacterCollectsMaterials
+  createCharacterCollectsMaterials,
 } from '../../GameApi';
 import { settings } from '../settings';
 import { func } from 'prop-types';
@@ -44,6 +44,7 @@ export default class lake_scene1 extends BaseScene {
 
   preload() {
     this.addLoadingScreen();
+    this.initScene("lake");
     this.initialLoad("e36");
 
     //Preload
