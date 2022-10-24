@@ -1,6 +1,8 @@
 import Text "mo:base/Text";
 import TrieMap "mo:base/TrieMap";
 import Principal "mo:base/Principal";
+import Int "mo:base/Int";
+import Hash "mo:base/Hash";
 
 import Types "types";
 
@@ -50,7 +52,7 @@ module {
     materials : Map<Text, Types.Material>;
     inventories : Map<Text, Types.Inventory>;
     landSlots : Map<Text,Types.LandSlot>;
-    landTransferHitories : Map<Text,Types.LandTransferHistory>;
+    landTransferHistories : Map<Text,Types.LandTransferHistory>;
     landBuyingStatuses : Map<Text,Types.LandBuyingStatus>;
   };
 
@@ -98,7 +100,7 @@ module {
       materials = TrieMap.TrieMap<Text, Types.Material>(Text.equal, Text.hash);
       inventories = TrieMap.TrieMap<Text, Types.Inventory>(Text.equal, Text.hash);
       landSlots = TrieMap.TrieMap<Text,Types.LandSlot>(Text.equal,Text.hash);
-      landTransferHitories = TrieMap.TrieMap<Text,Types.LandTransferHistory>(Text.equal,Text.hash);
+      landTransferHistories = TrieMap.TrieMap<Text,Types.LandTransferHistory>(Text.equal,Text.hash);
       landBuyingStatuses = TrieMap.TrieMap<Text,Types.LandBuyingStatus>(Text.equal,Text.hash);
     };
   };

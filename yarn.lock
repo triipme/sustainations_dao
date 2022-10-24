@@ -12299,6 +12299,11 @@
   "resolved" "https://registry.npmjs.org/utils-merge/-/utils-merge-1.0.1.tgz"
   "version" "1.0.1"
 
+"utm-latlng@^1.0.7":
+  "integrity" "sha512-Ij1TCHzrThdHSwYM7SJh3yPNSOqUVnUNQPnF1Dpy1OfaK+ej4a0sDfymMvIrHBzJlERCS114VBW/94WKF++Big=="
+  "resolved" "https://registry.npmjs.org/utm-latlng/-/utm-latlng-1.0.7.tgz"
+  "version" "1.0.7"
+
 "uuid@^8.3.2":
   "integrity" "sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg=="
   "resolved" "https://registry.npmjs.org/uuid/-/uuid-8.3.2.tgz"
