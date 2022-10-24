@@ -28,6 +28,7 @@ dfx canister call ledger account_balance '(record { account = '$(python3 -c 'pri
 
 ## === INSTALL FRONTEND / BACKEND ==== 
 
+dfx deploy georust
 dfx deploy sustainations_dao --argument "(record{
   ledgerId = opt(\"$LEDGER_ID\"); 
   georustId = opt(\"$GEORUST_ID\")
