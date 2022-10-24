@@ -23,6 +23,7 @@ import Moment "./plugins/Moment";
 import Types "types";
 import State "state";
 import Ledger "./plugins/Ledger";
+import GeoRust "./plugins/GeoRust";
 import RS "./models/RefillStation";
 import CharacterClass "./game/characterClass";
 import Character "./game/character";
@@ -43,7 +44,7 @@ import LandSlot "./land/landSlot";
 import LandTransferHistory "./land/landTransferHistory";
 import LandBuyingStatus "./land/landBuyingStatus";
 
-shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
+shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georustId : ?Text}) = this {
   stable var transferFee : Nat64 = 10_000;
   stable var createProposalFee : Nat64 = 20_000;
   stable var voteFee : Nat64 = 20_000;
@@ -267,7 +268,8 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
 
   type Response<Ok> = Result.Result<Ok, Types.Error>;
   private let ledger : Ledger.Interface = actor(Option.get(ledgerId, "ryjl3-tyaaa-aaaaa-aaaba-cai"));
-
+  private let georust : GeoRust.Interface = actor(Option.get(georustId, "qoctq-giaaa-aaaaa-aaaea-cai"));
+  
   private func createUUID() : async Text {
     var ae = AsyncSource.Source();
     let id = await ae.new();
@@ -3906,6 +3908,11 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
     #ok((list));
   };
+
+  public shared func test() : async Response<()> {
+    await georust.greet();
+    #ok();
+  }
 };
 
 
