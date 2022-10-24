@@ -3935,6 +3935,39 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
     #ok(result);
   };
+
+  public shared({caller}) func extendNation(d : Nat, nation : [LandSlot], landslot : Landslot) : async Response<[UTM]> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    var currentUTMList : [UTM] = [];
+    for(value in nation.vals()){
+      var point1 : UTM = (value.i * d, value.j * d);
+      var point2 : UTM = (value.i * d, (value.j + 1) * d);
+      var point3 : UTM = ((value.i + 1) * d, (value.j + 1)* d);
+      var point4 : UTM = ((value.i + 1)* d, value.j * d);
+      currentUTMList := Array.append<UTM>(currentUTMList, [point1, point2, point3, point4]);
+    };
+
+    var point1 : UTM = (landslot.i * d, landslot.j * d);
+    var point2 : UTM = (landslot.i * d, (landslot.j + 1) * d);
+    var point3 : UTM = ((landslot.i + 1) * d, (landslot.j + 1)* d);
+    var point4 : UTM = ((landslot.i + 1)* d, landslot.j * d);
+
+    var result : [UTM] = [];
+    for(i in Iter.range(0, currentUTMList.size()-1)){
+      var duplicate = false;
+      for(j in Iter.range(i+1, currentUTMList.size()-1)){
+        if(currentUTMList[i] == currentUTMList[j]){
+          duplicate := true;
+        };
+      };
+      if(duplicate == false){
+        result := Array.append<UTM>(result, [currentUTMList[i]]);
+      };
+    };
+    #ok(result);
+  };
 };
 
 
