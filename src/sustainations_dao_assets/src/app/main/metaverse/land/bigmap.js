@@ -1,9 +1,5 @@
-import { useState } from "react";
-import { GeoJSON, MapContainer, useMap, useMapEvents, TileLayer, Rectangle, ImageOverlay } from "react-leaflet";
-import Back from "./Back";
-import mapData from "./data/pangea.json";
-import Footer from "./footer";
-import L, { CRS, LatLngBounds, Icon } from 'leaflet';
+import { GeoJSON} from "react-leaflet";
+import mapData from "./data/pangea-1.json";
 import "./styles.css";
 
 const BigMap = () => {

@@ -103,7 +103,7 @@ const Map = () => {
     }
 
     const handlePurchase = async () => {
-        setPurchaseBtn(false)
+        // setPurchaseBtn(false)
     }
 
 
@@ -126,12 +126,13 @@ const Map = () => {
                     <div>
 
                         <button className="button-85" style={{
-                            display: "none"
-                        }} onClick={handlePurchase}>Click a LandSLot to go to farmmode</button>
+                            display: purchaseBtn ? "block" : "none",
+                            background: "gray"
+                        }} onClick={handlePurchase}>Comming soon</button>
 
                         <button className="button-85" style={{
-                            display: "block"
-                        }} onClick={handleChangeMode}>Click a LandSLot to Go to farm mode</button>
+                            display: modeBtn ? "block" : "none"
+                        }} onClick={handleChangeMode}>Go to farm mode</button>
 
                         {!modeBtn && <div className="containPopup">
                             {/* Popup purchase */}
