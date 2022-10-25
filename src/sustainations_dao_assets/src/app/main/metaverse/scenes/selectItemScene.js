@@ -211,7 +211,7 @@ class selectItemScene extends BaseScene {
           this.scene.start('lava_scene1');
           break;
         case 'lake':
-          this.scene.start('lake_scene1', {listScene: ["e36", "e37","e38","e39","e40"]});
+          this.scene.start('BaseEngine', {listScene: ["e36", "e37","e38","e39","e40"]});
           break;
         default:
           console.log('invalid map name');
