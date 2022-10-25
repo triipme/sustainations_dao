@@ -5,7 +5,8 @@ import {
   loadEventOptions,
   updateCharacterStats,
   listCharacterSelectsItems,
-  createCharacterCollectsMaterials
+  createCharacterCollectsMaterials,
+  readEvent
 } from '../../GameApi';
 import { settings } from '../settings';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
@@ -136,10 +137,12 @@ export default class catalonia_scene6 extends BaseScene {
       console.log("Hello World");
     });
 
+    this.event = await readEvent(this.eventId)
+
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
-      text: "Guardiola de Berguedà is a municipality in the comarca of the Berguedà in Catalonia.\nIt is an important local commercial centre, and for this reason has been less affected by depopulation than other municipalities in the Berguedà.",
+      text: this.event.description,
       origin: { x: 0.5, y: 0.5 },
       style: {
         font: 'bold 25px Arial',

@@ -1,10 +1,10 @@
 import Phaser from 'phaser';
-import BaseScene from './BaseScene'
+import BaseScene from './BaseScene';
 
 import {
-  gainCharacterExp,
   openInventory,
   createInventory,
+  gainCharacterExp
 } from '../GameApi';
 
 const bg = 'metaverse/UI_finish.png';
@@ -19,6 +19,7 @@ class thanks extends BaseScene {
   }
 
   preload() {
+    this.initialLoad("");
     this.addLoadingScreen();
     this.clearSceneCache();
     this.load.image('bg', bg);
@@ -38,7 +39,7 @@ class thanks extends BaseScene {
       });
     createInventory(this.characterData.id);
     gainCharacterExp(this.characterData);
-    this.inventory = await openInventory(this.characterData.id);
+    this.inventory = openInventory(this.characterData.id);
   }
 
 }

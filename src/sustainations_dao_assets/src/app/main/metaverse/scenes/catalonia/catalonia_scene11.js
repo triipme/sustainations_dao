@@ -5,11 +5,11 @@ import {
   loadEventOptions,
   updateCharacterStats,
   listCharacterSelectsItems,
-  createCharacterCollectsMaterials
+  createCharacterCollectsMaterials,
+  readEvent
 } from '../../GameApi';
 import { settings } from '../settings';
 import { func } from 'prop-types';
-import { readEvent } from '../../GameApi';
 
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
@@ -159,13 +159,13 @@ export default class catalonia_scene11 extends BaseScene {
     });
 
     // load description of event
-    const event = await readEvent(this.eventId)
+    this.event = await readEvent(this.eventId)
 
 
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
-      text: "The pharmacy of Llívia, one of the oldest in Europe, reveals this mystery. It was already in existence in 1415.",
+      text: this.event.description,
       origin: { x: 0.5, y: 0.5 },
       style: {
         font: 'bold 25px Arial',

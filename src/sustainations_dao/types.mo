@@ -59,7 +59,9 @@ module {
   public type Vote = { #no; #yes };
   public type VoteArgs = { vote : Vote; proposalId : Text };
   public type Voter = {
-    uid : Principal; vote : Vote; timestamp : Time.Time
+    uid : Principal;
+    vote : Vote;
+    timestamp : Time.Time;
   };
   public type ProposalType = {
     #project;
@@ -159,9 +161,9 @@ module {
 
   public type CharacterCollectsMaterials = {
     id : Text;
-    characterId: Text;
-    materialId: Text;
-    amount: Int;
+    characterId : Text;
+    materialId : Text;
+    amount : Int;
   };
 
   //--------------------- Quest ---------------------//
@@ -171,6 +173,16 @@ module {
     price : Nat64;
     description : Text;
     images : Text;
+  };
+
+  //--------------------- Scene ---------------------//
+  public type Scene = {
+    id : Text;
+    idEvent : Text;
+    front : Text;
+    mid : Text;
+    back : Text;
+    obstacle : Text;
   };
 
   //--------------------- Item ---------------------//
@@ -289,13 +301,19 @@ module {
     ownerId : Principal;
     isPremium : Bool;
     isSelling : Bool;
+<<<<<<< HEAD
     zone : Nat;
     xIndex : Nat;
     yIndex : Nat;
     price: Float; 
+=======
+    zone : Int;
+    index : (Int, Int);
+    price : Float;
+>>>>>>> 0b8a96b449ec70c251173a9b434990ed9ce8d923
   };
 
-//--------------------- Land Transfer History ---------------------//
+  //--------------------- Land Transfer History ---------------------//
   public type LandTransferHistory = {
     id : Text;
     buyerId : Principal;
@@ -304,9 +322,10 @@ module {
     transferTime : Int;
     price : Float;
   };
-//--------------------- Land Buying Status ---------------------//
+  //--------------------- Land Buying Status ---------------------//
   public type LandBuyingStatus = {
     id : Principal;
+<<<<<<< HEAD
     currentZone: Int;
     currentLandSlotId: Text;
     randomTimes : Int;
@@ -319,6 +338,14 @@ public type UserhasLandSLots = {
 };
 
 
+=======
+    currentZone : Int;
+    currentLandIndex : Int;
+    //currentIndex : (Int,Int);
+    randomTimes : Int;
+  };
+
+>>>>>>> 0b8a96b449ec70c251173a9b434990ed9ce8d923
   // Error codes
   public type Error = {
     #BalanceLow;
@@ -356,11 +383,15 @@ public type UserhasLandSLots = {
   ];
 
   public let refillProductCategories = [
-    "Food", "Spices", "Body Care", "Household Goods"
+    "Food",
+    "Spices",
+    "Body Care",
+    "Household Goods"
   ];
 
   public let proposalFundingTypes = [
-    "100% Funded", "Partially Funded"
+    "100% Funded",
+    "Partially Funded"
   ];
 
   // Refill Stations

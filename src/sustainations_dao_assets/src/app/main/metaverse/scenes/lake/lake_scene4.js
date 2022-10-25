@@ -161,13 +161,12 @@ export default class lake_scene4 extends BaseScene {
     });
 
     // load description of event
-    const event = await readEvent(this.eventId)
-
+    this.event = await readEvent(this.eventId)
 
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
-      text: 'What are the next three letters in this combination? \n\nOTTFFSS ',
+      text: this.event.description,
       origin: { x: 0.5, y: 0.5 },
       style: {
         font: 'bold 25px Arial',

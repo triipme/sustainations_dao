@@ -28,6 +28,7 @@ const item_potion = 'metaverse/scenes/item_ingame_HP.png'
 const popupWindo = 'metaverse/selectMap/Catalonia_popup.png';
 const popupClose = 'metaverse/selectMap/UI_ingame_close.png';
 
+
 export default class lake_scene1 extends BaseScene {
   constructor() {
     super('lake_scene1');
@@ -40,6 +41,10 @@ export default class lake_scene1 extends BaseScene {
     for (const index in textures_list) {
       this.textures.remove(textures_list[index]);
     }
+  }
+
+  init(data) {
+    this.sum = data.sum;
   }
 
   preload() {
@@ -161,12 +166,12 @@ export default class lake_scene1 extends BaseScene {
     });
 
     // load description of event
-    const event = await readEvent(this.eventId)
+    this.event = await readEvent(this.eventId)
 
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
-      text: 'On the bench, there is a question. Find the correct answer to continue or else.\n\n“What is able to go up a chimney when down but unable to go down a chimney when up?”',
+      text: this.event.description,
       origin: { x: 0.5, y: 0.5 },
       style: {
         font: 'bold 25px Arial',
@@ -258,9 +263,12 @@ export default class lake_scene1 extends BaseScene {
     }
 
     if (this.player.x > 5100) {
+      console.log(this.sum)
       this.pregameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start("lake_scene2", { isUsedPotion: this.isUsedPotion });
+
+      if(this.sum==2)  this.scene.start("thanks", { isUsedPotion: this.isUsedPotion });
+      else this.scene.start("lake_scene1", { isUsedPotion: this.isUsedPotion, sum: this.sum + 1 });
     }
 
     if (this.player.x > 4200 && this.isInteracted == false) {

@@ -29,6 +29,7 @@ import Character "./game/character";
 import CharacterTakesOption "./game/characterTakesOption";
 import CharacterCollectsMaterials "./game/characterCollectsMaterials";
 import Quest "./game/quest";
+import Scene "./game/scene";
 import Item "./game/item";
 import QuestItem "./game/questItem";
 import Event "./game/event";
@@ -43,7 +44,7 @@ import LandSlot "./land/landSlot";
 import LandTransferHistory "./land/landTransferHistory";
 import LandBuyingStatus "./land/landBuyingStatus";
 
-shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
+shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = this {
   stable var transferFee : Nat64 = 10_000;
   stable var createProposalFee : Nat64 = 20_000;
   stable var voteFee : Nat64 = 20_000;
@@ -85,11 +86,17 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   private stable var characterSelectsItems : [(Text, Types.CharacterSelectsItems)] = [];
   private stable var characterCollectsMaterials : [(Text, Types.CharacterCollectsMaterials)] = [];
   private stable var quests : [(Text, Types.Quest)] = [];
+  private stable var questEngine = {
+    questEngines : [(Text, Types.Quest)] = [];
+    eventEngines : [(Text, Types.Event)] = [];
+    sceneEngines : [(Text, Types.Scene)] = [];
+    eventOptionEngines : [(Text, Types.EventOption)] = [];
+  };
   private stable var items : [(Text, Types.Item)] = [];
-  private stable var questItems: [(Text, Types.QuestItem)] = [];
-  private stable var usableItems: [(Text, Types.UsableItem)] = [];
-  private stable var eventItems: [(Text, Types.EventItem)] = [];
-  private stable var arItems: [(Text, Types.ARItem)] = [];
+  private stable var questItems : [(Text, Types.QuestItem)] = [];
+  private stable var usableItems : [(Text, Types.UsableItem)] = [];
+  private stable var eventItems : [(Text, Types.EventItem)] = [];
+  private stable var arItems : [(Text, Types.ARItem)] = [];
   private stable var events : [(Text, Types.Event)] = [];
   private stable var eventOptions : [(Text, Types.EventOption)] = [];
   private stable var gears : [(Text, Types.Gear)] = [];
@@ -125,6 +132,12 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
       cards = Iter.toArray(state.memoryCardEngine.cards.entries());
       players = Iter.toArray(state.memoryCardEngine.players.entries());
       rewards = Iter.toArray(state.memoryCardEngine.rewards.entries());
+    };
+    questEngine := {
+      questEngines = Iter.toArray(state.questEngine.questEngines.entries());
+      eventEngines = Iter.toArray(state.questEngine.eventEngines.entries());
+      sceneEngines = Iter.toArray(state.questEngine.sceneEngines.entries());
+      eventOptionEngines = Iter.toArray(state.questEngine.eventOptionEngines.entries());
     };
     characterClasses := Iter.toArray(state.characterClasses.entries());
     characters := Iter.toArray(state.characters.entries());
@@ -207,6 +220,18 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     for ((k, v) in Iter.fromArray(memoryCardEngine.rewards)) {
       state.memoryCardEngine.rewards.put(k, v);
     };
+    for ((k, v) in Iter.fromArray(questEngine.questEngines)) {
+      state.questEngine.questEngines.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(questEngine.eventEngines)) {
+      state.questEngine.eventEngines.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(questEngine.sceneEngines)) {
+      state.questEngine.sceneEngines.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(questEngine.eventOptionEngines)) {
+      state.questEngine.eventOptionEngines.put(k, v);
+    };
     for ((k, v) in Iter.fromArray(characterClasses)) {
       state.characterClasses.put(k, v);
     };
@@ -281,7 +306,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   };
 
   type Response<Ok> = Result.Result<Ok, Types.Error>;
-  private let ledger : Ledger.Interface = actor(Option.get(ledgerId, "ryjl3-tyaaa-aaaaa-aaaba-cai"));
+  private let ledger : Ledger.Interface = actor (Option.get(ledgerId, "ryjl3-tyaaa-aaaaa-aaaba-cai"));
 
   private func createUUID() : async Text {
     var ae = AsyncSource.Source();
@@ -289,9 +314,10 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     UUID.toText(id);
   };
 
-  public shared({ caller }) func getBalance() : async Ledger.ICP {
+  public shared ({ caller }) func getBalance() : async Ledger.ICP {
     let accountId = Account.accountIdentifier(
-      Principal.fromActor(this), Account.principalToSubaccount(caller)
+      Principal.fromActor(this),
+      Account.principalToSubaccount(caller)
     );
     await ledger.account_balance({ account = accountId });
   };
@@ -302,7 +328,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   };
 
   public query func getSystemAddress() : async Blob {
-    Account.accountIdentifier(Principal.fromActor(this), Account.defaultSubaccount())
+    Account.accountIdentifier(Principal.fromActor(this), Account.defaultSubaccount());
   };
 
   public query func getSystemAddressAsText() : async Text {
@@ -338,26 +364,26 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
           overdueProducts += 1;
         } else {
           overdueProjects += 1;
-        }
+        };
       } else {
         if (proposal.votesYes > 0) {
           if (proposal.proposalType == ?#product) {
             investedProducts += 1;
           } else {
             investedProjects += 1;
-          }
+          };
         };
         if (proposal.status == #open) {
           if (proposal.proposalType == ?#product) {
             openingProducts += 1;
           } else {
             openingProjects += 1;
-          }
+          };
         };
       };
     };
     let result = {
-      userAgreement= state.userAgreements.size();
+      userAgreement = state.userAgreements.size();
       projects = {
         overdue = overdueProjects;
         opening = openingProjects;
@@ -370,36 +396,39 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
       };
       gamePlayCount = gamePlayAnalytics;
     };
-    Debug.print(debug_show(result));
+    Debug.print(debug_show (result));
     #ok(result);
   };
 
-  public shared({ caller }) func submitAgreement() : async Response<Text> {
+  public shared ({ caller }) func submitAgreement() : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+      return #err(#NotAuthorized); //isNotAuthorized
     };
 
     let agreement = state.userAgreements.get(caller);
     switch (agreement) {
-      case null{
+      case null {
         let payload = {
           uid = Principal.toText(caller);
           timestamp = Time.now();
         };
         let result = state.userAgreements.put(caller, payload);
         let receipt = await rewardUserAgreement(caller);
-        let profile = state.profiles.put(caller, {
-          username = null;
-          avatar = null;
-          phone = null;
-          role = #user;
-        });
+        let profile = state.profiles.put(
+          caller,
+          {
+            username = null;
+            avatar = null;
+            phone = null;
+            role = #user;
+          }
+        );
         #ok("Success!");
       };
-      case (? _v) {
+      case (?_v) {
         #ok("Success!");
       };
-    }
+    };
   };
 
   type UserAgreementSerializer = {
@@ -410,7 +439,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     let caller = Principal.fromText(uid);
     switch (state.userAgreements.get(caller)) {
       case null { #err(#NotFound) };
-      case (? agreement) {
+      case (?agreement) {
         let response = {
           address = Account.toText(
             Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(caller))
@@ -423,9 +452,9 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   };
 
   // Withdraw ICP from user's subaccount
-  public shared({ caller }) func withdraw(amount: Nat64, address: Principal) : async Response<Nat64> {
+  public shared ({ caller }) func withdraw(amount : Nat64, address : Principal) : async Response<Nat64> {
     if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+      return #err(#NotAuthorized); //isNotAuthorized
     };
 
     let sourceAccount = Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(caller));
@@ -436,7 +465,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     // Transfer amount back to user
     let receipt = if (balance.e8s >= amount + transferFee) {
       await ledger.transfer({
-        memo: Nat64    = 0;
+        memo : Nat64 = 0;
         from_subaccount = ?Account.principalToSubaccount(caller);
         to = accountId;
         amount = { e8s = amount };
@@ -454,11 +483,11 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
       };
       case _ {};
     };
-    #ok(amount)
+    #ok(amount);
   };
 
   // Return the account ID specific to this user's subaccount
-  public query({ caller }) func getDepositAddress() : async Text {
+  public query ({ caller }) func getDepositAddress() : async Text {
     Account.toText(
       Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(caller))
     );
@@ -472,9 +501,9 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     brandId : ?Text;
     brandRole : ?RS.ManagerRole;
   };
-  public shared({ caller }) func getUserInfo() : async Response<UserInfo> {
+  public shared ({ caller }) func getUserInfo() : async Response<UserInfo> {
     if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let accountId = Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(caller));
     let balance = await ledger.account_balance({ account = accountId });
@@ -487,7 +516,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     var brandRole : ?RS.ManagerRole = null;
     switch (state.refillBrand.managers.get(caller)) {
       case (null) {};
-      case (?manager) { brandId := ?manager.brandId; brandRole := ?manager.role; };
+      case (?manager) { brandId := ?manager.brandId; brandRole := ?manager.role };
     };
     let userInfo = {
       depositAddress = Account.toText(
@@ -502,13 +531,13 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     #ok(userInfo);
   };
 
-  public shared({ caller }) func updateUserProfile(
+  public shared ({ caller }) func updateUserProfile(
     username : ?Text,
     phone : ?Text,
     avatar : ?Text
   ) : async Response<Types.Profile> {
     if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     switch (state.profiles.get(caller)) {
       case null {
@@ -543,19 +572,19 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     // Transfer to default subaccount
     let receipt = if (balance.e8s >= amount + transferFee) {
       await ledger.transfer({
-        memo: Nat64    = 0;
+        memo : Nat64 = 0;
         from_subaccount = ?Account.principalToSubaccount(caller);
         to = Account.accountIdentifier(Principal.fromActor(this), Account.defaultSubaccount());
         amount = { e8s = amount };
         fee = { e8s = transferFee };
         created_at_time = ?{ timestamp_nanos = Nat64.fromNat(Int.abs(Time.now())) };
-      })
+      });
     } else {
       return #err(#BalanceLow);
     };
 
     switch receipt {
-      case ( #Err _) {
+      case (#Err _) {
         #err(#TransferFailure);
       };
       case (#Ok(bIndex)) {
@@ -567,8 +596,10 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   private func recordTransaction(
     caller : Principal,
     amount : Nat64,
-    fromPrincipal : Principal, toPrincipal : Principal,
-    refType : Types.Operation, refId : ?Text,
+    fromPrincipal : Principal,
+    toPrincipal : Principal,
+    refType : Types.Operation,
+    refId : ?Text,
     blockIndex : Nat64
   ) : async () {
     let uuid : Text = await createUUID();
@@ -598,20 +629,21 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     let categories = if (proposalType == #product) {
       Types.refillProductCategories;
     } else {
-      Types.proposalCategories
+      Types.proposalCategories;
     };
     {
       categories;
       fundingTypes = Types.proposalFundingTypes;
-    }
+    };
   };
 
   // Submit Proposal
-  public shared({ caller }) func submitProposal(
-    payload : Types.ProposalPayload, proposalType : Types.ProposalType
+  public shared ({ caller }) func submitProposal(
+    payload : Types.ProposalPayload,
+    proposalType : Types.ProposalType
   ) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let amount = createProposalFee + transferFee;
     switch (await deposit(amount, caller)) {
@@ -622,15 +654,20 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
           timestamp = Time.now();
           proposer = caller;
           payload;
-          status = if (payload.dueDate <= Time.now()) {#rejected} else {#open};
+          status = if (payload.dueDate <= Time.now()) { #rejected } else { #open };
           votesYes = 0;
           voters = List.nil();
           proposalType = ?proposalType;
         };
         // record transaction
         await recordTransaction(
-          caller, amount, caller, Principal.fromActor(this),
-          #createProposal, ?uuid, bIndex
+          caller,
+          amount,
+          caller,
+          Principal.fromActor(this),
+          #createProposal,
+          ?uuid,
+          bIndex
         );
         state.proposals.put(uuid, proposal);
         #ok(uuid);
@@ -641,7 +678,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public query({ caller }) func listProposals(
+  public query ({ caller }) func listProposals(
     proposalType : Types.ProposalType
   ) : async Response<[Types.Proposal]> {
     // if (Principal.toText(caller) == "2vxsx-fae") {
@@ -659,38 +696,40 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     #ok(list);
   };
 
-  public query({caller}) func getProposal(uuid : Text) : async Response<Types.Proposal> {
+  public query ({ caller }) func getProposal(uuid : Text) : async Response<Types.Proposal> {
     // if (Principal.toText(caller) == "2vxsx-fae") {
     //   return #err(#NotAuthorized);//isNotAuthorized
     // };
     switch (state.proposals.get(uuid)) {
-      case null { #err(#NotFound); };
-      case (? proposal) { #ok(proposal); };
+      case null { #err(#NotFound) };
+      case (?proposal) { #ok(proposal) };
     };
   };
 
-  public shared({ caller }) func destroyProposal(uuid : Text) : async Response<Text> {
+  public shared ({ caller }) func destroyProposal(uuid : Text) : async Response<Text> {
     state.proposals.delete(uuid);
     #ok("Success");
   };
 
   // Votes Proposal
-  public shared({ caller }) func vote(args: Types.VoteArgs) : async Response<Types.ProposalState> {
+  public shared ({ caller }) func vote(args : Types.VoteArgs) : async Response<Types.ProposalState> {
     if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     switch (state.proposals.get(args.proposalId)) {
-      case null {#err(#NotFound)};
+      case null { #err(#NotFound) };
       case (?proposal) {
         var status = proposal.status;
         if (status != #open) {
           return #err(#ProposalIsNotOpened);
         };
-        if (List.some(proposal.voters, func (voter : Types.Voter) : Bool = voter.uid == caller)) {
+        if (List.some(proposal.voters, func(voter : Types.Voter) : Bool = voter.uid == caller)) {
           return #err(#AlreadyVoted);
         };
         let voter = {
-          uid = caller; vote = args.vote; timestamp = Time.now()
+          uid = caller;
+          vote = args.vote;
+          timestamp = Time.now();
         };
         var votesYes = proposal.votesYes;
         let voters = List.push(voter, proposal.voters);
@@ -701,8 +740,13 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
               votesYes += voteFee;
               // record transaction
               await recordTransaction(
-                caller, voteFee + transferFee, caller, Principal.fromActor(this),
-                #vote, ?proposal.uuid, bIndex
+                caller,
+                voteFee + transferFee,
+                caller,
+                Principal.fromActor(this),
+                #vote,
+                ?proposal.uuid,
+                bIndex
               );
               if (votesYes >= Nat64.fromNat(proposal.payload.fundingAmount)) {
                 status := #approved;
@@ -717,8 +761,13 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
                     status := #succeeded;
                     // record transaction
                     await recordTransaction(
-                      caller, refundAmount, Principal.fromActor(this), proposal.proposer,
-                      #executeApprovedProposal, ?proposal.uuid, bIndex
+                      caller,
+                      refundAmount,
+                      Principal.fromActor(this),
+                      proposal.proposer,
+                      #executeApprovedProposal,
+                      ?proposal.uuid,
+                      bIndex
                     );
                   };
                 };
@@ -740,7 +789,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
           payload = proposal.payload;
         };
         let updated = state.proposals.replace(proposal.uuid, updatedProposal);
-        #ok(status)
+        #ok(status);
       };
     };
   };
@@ -748,13 +797,13 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   func refund(amount : Nat64, toPrincipal : Principal) : async Ledger.TransferResult {
     let accountId = Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(toPrincipal));
     await ledger.transfer({
-      memo: Nat64    = 0;
+      memo : Nat64 = 0;
       from_subaccount = ?Account.defaultSubaccount();
       to = accountId;
       amount = { e8s = amount };
       fee = { e8s = transferFee };
       created_at_time = ?{ timestamp_nanos = Nat64.fromNat(Int.abs(Time.now())) };
-    })
+    });
   };
 
   func refundVoters(proposal : Types.Proposal) : async () {
@@ -767,8 +816,13 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
         case (#Ok(bIndex)) {
           // record transaction
           await recordTransaction(
-            Principal.fromActor(this), voteFee, Principal.fromActor(this), voter.uid,
-            #returnVoteFee, ?proposal.uuid, bIndex
+            Principal.fromActor(this),
+            voteFee,
+            Principal.fromActor(this),
+            voter.uid,
+            #returnVoteFee,
+            ?proposal.uuid,
+            bIndex
           );
         };
       };
@@ -785,17 +839,21 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
       case (#Ok(bIndex)) {
         // record transaction
         await recordTransaction(
-          Principal.fromActor(this), reward,
-          Principal.fromActor(this), uid,
-          #awardUserAgreement, ?Principal.toText(uid), bIndex
+          Principal.fromActor(this),
+          reward,
+          Principal.fromActor(this),
+          uid,
+          #awardUserAgreement,
+          ?Principal.toText(uid),
+          bIndex
         );
       };
     };
   };
 
-  public query({ caller }) func getTransactions() : async Response<[Types.TxRecord]> {
+  public query ({ caller }) func getTransactions() : async Response<[Types.TxRecord]> {
     if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     #ok(Iter.toArray(state.transactions.vals()));
   };
@@ -830,11 +888,11 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
 
   /* === Admin functions === */
   // admin set user's role
-  public shared({ caller })func setRole(principalText : Text, role : Types.Role) : async Response<Text>{
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);// isNotAuthorized
+  public shared ({ caller }) func setRole(principalText : Text, role : Types.Role) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); // isNotAuthorized
     };
-    if(isAdmin(caller)) {
+    if (isAdmin(caller)) {
       let principal = Principal.fromText(principalText);
       switch (state.profiles.get(principal)) {
         case (null) {
@@ -847,12 +905,15 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
           state.profiles.put(principal, profile);
         };
         case (?profile) {
-          let newProfile = state.profiles.replace(principal, {
-            username = profile.username;
-            avatar = profile.avatar;
-            phone = profile.phone;
-            role;
-          });
+          let newProfile = state.profiles.replace(
+            principal,
+            {
+              username = profile.username;
+              avatar = profile.avatar;
+              phone = profile.phone;
+              role;
+            }
+          );
         };
       };
       #ok("Success");
@@ -861,9 +922,9 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared({ caller }) func setCurrency(payload : Types.Currency) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func setCurrency(payload : Types.Currency) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
 
     if (isAdmin(caller) == false) {
@@ -871,8 +932,8 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
 
     switch (state.currencies.get(payload.code)) {
-      case (null) { state.currencies.put(payload.code, payload); };
-      case _ { let currency = state.currencies.replace(payload.code, payload); };
+      case (null) { state.currencies.put(payload.code, payload) };
+      case _ { let currency = state.currencies.replace(payload.code, payload) };
     };
     #ok(payload.code);
   };
@@ -881,11 +942,13 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     #ok(Iter.toArray(state.currencies.vals()));
   };
 
-  public shared({ caller }) func createRefillBrand(
-    payload : Types.RefillBrand, ownerPrincipal : Text, ownerName : Text
+  public shared ({ caller }) func createRefillBrand(
+    payload : Types.RefillBrand,
+    ownerPrincipal : Text,
+    ownerName : Text
   ) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
 
     if (isAdmin(caller) == false) {
@@ -910,36 +973,41 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
         let managers = state.refillBrand.managers.entries();
         label managerLabel loop {
           switch (managers.next()) {
-            case (? (principal, staff)) {
+            case (?(principal, staff)) {
               if (staff.brandId == uuid and staff.role == #owner) {
                 ownerPrincipal := Principal.toText(principal);
                 ownerName := staff.username;
                 break managerLabel;
-              }
+              };
             };
             case (null) break managerLabel;
-          }
+          };
         };
         #ok((ownerPrincipal, ownerName, brand));
       };
     };
   };
 
-  public shared({ caller }) func updateRefillBrand(
+  public shared ({ caller }) func updateRefillBrand(
     uuid : Text,
     payload : Types.RefillBrand,
-    ownerPrincipal : ?Text, ownerName : ?Text
+    ownerPrincipal : ?Text,
+    ownerName : ?Text
   ) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
 
     let result = switch (state.refillBrand.brands.get(uuid)) {
       case (null) { #err(#NotFound) };
-      case (? brand) {
-        let manager = Option.get(state.refillBrand.managers.get(caller), {
-          brandId = ""; role = "";
-        });
+      case (?brand) {
+        let manager = Option.get(
+          state.refillBrand.managers.get(caller),
+          {
+            brandId = "";
+            role = "";
+          }
+        );
         // required system admin role or brand's owner
         let isOwner = manager.brandId == uuid and manager.role == #owner;
         if (isAdmin(caller) == true or (isOwner)) {
@@ -952,14 +1020,14 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
                 let managers = state.refillBrand.managers.entries();
                 label managerLabel loop {
                   switch (managers.next()) {
-                    case (? (principal, staff)) {
+                    case (?(principal, staff)) {
                       if (staff.brandId == uuid and staff.role == #owner) {
                         brandOwner := principal;
                         break managerLabel;
-                      }
+                      };
                     };
                     case (null) break managerLabel;
-                  }
+                  };
                 };
               };
               // remove old owner role
@@ -991,12 +1059,12 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     let systemParams : SystemParams = {
       treasuryContribution;
     };
-    #ok(systemParams)
+    #ok(systemParams);
   };
 
-  public shared({ caller }) func updateSystemParams(treasuryContributionValue : Float) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func updateSystemParams(treasuryContributionValue : Float) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
 
     if (isAdmin(caller) == false) {
@@ -1012,19 +1080,20 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   };
 
   /* === For Refill Brand's Owner/Staff === */
-  public shared({ caller }) func setRBManager(principal : Text, username : Text) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func setRBManager(principal : Text, username : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let manager = Principal.fromText(principal);
     switch (state.refillBrand.managers.get(manager)) {
       case (null) {
         switch (state.refillBrand.managers.get(caller)) {
-          case (null) { #err(#OwnerRoleRequired); };
+          case (null) { #err(#OwnerRoleRequired) };
           case (?owner) {
             if (owner.role == #owner) {
               state.refillBrand.managers.put(
-                manager, {
+                manager,
+                {
                   brandId = owner.brandId;
                   role = #staff;
                   username;
@@ -1041,36 +1110,37 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public query({ caller }) func getRBManager(principal : Text) : async Response<Types.RBManager> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public query ({ caller }) func getRBManager(principal : Text) : async Response<Types.RBManager> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
 
     let staff = Principal.fromText(principal);
     switch (state.refillBrand.managers.get(staff)) {
-      case (null) { #err(#NotFound); };
+      case (null) { #err(#NotFound) };
       case (?manager) {
         #ok(manager);
       };
     };
   };
 
-  public shared({ caller }) func updateRBManager(principal : Text, username : Text) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func updateRBManager(principal : Text, username : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let manager = Principal.fromText(principal);
     switch (state.refillBrand.managers.get(manager)) {
       case null { #err(#NotFound) };
       case (?staff) {
         switch (state.refillBrand.managers.get(caller)) {
-          case (null) { #err(#OwnerRoleRequired); };
+          case (null) { #err(#OwnerRoleRequired) };
           case (?owner) {
             if (staff.brandId != owner.brandId) {
               #err(#NotFound);
             } else if (owner.role == #owner) {
               let replaced = state.refillBrand.managers.replace(
-                manager, {
+                manager,
+                {
                   brandId = staff.brandId;
                   role = #staff;
                   username;
@@ -1086,9 +1156,9 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared({ caller }) func deleteRBManager(principal : Text) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func deleteRBManager(principal : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
 
     switch (state.refillBrand.managers.get(caller)) {
@@ -1097,7 +1167,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
         if (owner.role == #owner) {
           let user = Principal.fromText(principal);
           switch (state.refillBrand.managers.get(user)) {
-            case (null) { #err(#NotFound); };
+            case (null) { #err(#NotFound) };
             case (?manager) {
               if (manager.brandId == owner.brandId) {
                 state.refillBrand.managers.delete(user);
@@ -1114,9 +1184,9 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public query({ caller }) func listRBManagers() : async Response<[(Text, Text, RS.ManagerRole)]> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public query ({ caller }) func listRBManagers() : async Response<[(Text, Text, RS.ManagerRole)]> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
 
     switch (state.refillBrand.managers.get(caller)) {
@@ -1127,7 +1197,8 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
           for ((principal, manager) in state.refillBrand.managers.entries()) {
             if (manager.brandId == owner.brandId and manager.role == #staff) {
               results := Array.append<(Text, Text, RS.ManagerRole)>(
-                results, [(Principal.toText(principal), manager.username, manager.role)]
+                results,
+                [(Principal.toText(principal), manager.username, manager.role)]
               );
             };
           };
@@ -1155,11 +1226,11 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     return id;
   };
 
-  public shared({ caller }) func createRBStation(
+  public shared ({ caller }) func createRBStation(
     payload : Types.RBStation
   ) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
 
     switch (state.refillBrand.managers.get(caller)) {
@@ -1171,24 +1242,24 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public query({ caller }) func getRBStation(stationId : Text) : async Response<Types.RBStation> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public query ({ caller }) func getRBStation(stationId : Text) : async Response<Types.RBStation> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
 
     switch (state.refillBrand.stations.get(stationId)) {
-      case (null) { #err(#NotFound); };
+      case (null) { #err(#NotFound) };
       case (?station) {
         #ok(station);
       };
     };
   };
 
-  public shared({ caller }) func importRBStations(
+  public shared ({ caller }) func importRBStations(
     payloads : [Types.RBStation]
   ) : async Response<[Text]> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
 
     switch (state.refillBrand.managers.get(caller)) {
@@ -1204,11 +1275,12 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared({ caller }) func updateRBStation(
-    uuid : Text, payload : Types.RBStation
+  public shared ({ caller }) func updateRBStation(
+    uuid : Text,
+    payload : Types.RBStation
   ) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
 
     switch (state.refillBrand.stations.get(uuid)) {
@@ -1246,9 +1318,9 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     return id;
   };
 
-  public shared({ caller }) func createRBCaregory(name : Text) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func createRBCaregory(name : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
 
     switch (state.refillBrand.managers.get(caller)) {
@@ -1260,22 +1332,22 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public query({ caller }) func getRBCategory(categoryId : Text) : async Response<Types.RBCategory> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public query ({ caller }) func getRBCategory(categoryId : Text) : async Response<Types.RBCategory> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
 
     switch (state.refillBrand.categories.get(categoryId)) {
-      case (null) { #err(#NotFound); };
+      case (null) { #err(#NotFound) };
       case (?category) {
         #ok(category);
       };
     };
   };
 
-  public shared({ caller }) func updateRBCategory(uuid : Text, name : Text) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func updateRBCategory(uuid : Text, name : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
 
     switch (state.refillBrand.categories.get(uuid)) {
@@ -1296,9 +1368,9 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared({ caller }) func deleteRBCategory(uuid : Text) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func deleteRBCategory(uuid : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
 
     switch (state.refillBrand.categories.get(uuid)) {
@@ -1336,9 +1408,9 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     return id;
   };
 
-  public shared({ caller }) func createRBTag(name : Text) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func createRBTag(name : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
 
     switch (state.refillBrand.managers.get(caller)) {
@@ -1350,22 +1422,22 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public query({ caller }) func getRBTag(tagId : Text) : async Response<Types.RBTag> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public query ({ caller }) func getRBTag(tagId : Text) : async Response<Types.RBTag> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
 
     switch (state.refillBrand.tags.get(tagId)) {
-      case (null) { #err(#NotFound); };
+      case (null) { #err(#NotFound) };
       case (?tag) {
         #ok(tag);
       };
     };
   };
 
-  public shared({ caller }) func updateRBTag(uuid : Text, name : Text) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func updateRBTag(uuid : Text, name : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
 
     switch (state.refillBrand.tags.get(uuid)) {
@@ -1386,9 +1458,9 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared({ caller }) func deleteRBTag(uuid : Text) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func deleteRBTag(uuid : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
 
     switch (state.refillBrand.tags.get(uuid)) {
@@ -1426,9 +1498,9 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     return id;
   };
 
-  public shared({ caller }) func createRBProductUnit(name : Text) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func createRBProductUnit(name : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
 
     switch (state.refillBrand.managers.get(caller)) {
@@ -1440,22 +1512,22 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public query({ caller }) func getRBProductUnit(puId : Text) : async Response<Types.RBProductUnit> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public query ({ caller }) func getRBProductUnit(puId : Text) : async Response<Types.RBProductUnit> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
 
     switch (state.refillBrand.productUnits.get(puId)) {
-      case (null) { #err(#NotFound); };
+      case (null) { #err(#NotFound) };
       case (?pu) {
         #ok(pu);
       };
     };
   };
 
-  public shared({ caller }) func updateRBProductUnit(uuid : Text, name : Text) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func updateRBProductUnit(uuid : Text, name : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
 
     switch (state.refillBrand.productUnits.get(uuid)) {
@@ -1476,9 +1548,9 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared({ caller }) func deleteRBProductUnit(uuid : Text) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func deleteRBProductUnit(uuid : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
 
     switch (state.refillBrand.productUnits.get(uuid)) {
@@ -1528,9 +1600,9 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     return id;
   };
 
-  public shared({ caller }) func createRBProduct(payload : Types.RBProduct) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func createRBProduct(payload : Types.RBProduct) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
 
     switch (state.refillBrand.managers.get(caller)) {
@@ -1542,24 +1614,25 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public query({ caller }) func getRBProduct(prodId : Text) : async Response<Types.RBProduct> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public query ({ caller }) func getRBProduct(prodId : Text) : async Response<Types.RBProduct> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
 
     switch (state.refillBrand.products.get(prodId)) {
-      case (null) { #err(#NotFound); };
+      case (null) { #err(#NotFound) };
       case (?product) {
         #ok(product);
       };
     };
   };
 
-  public shared({ caller }) func updateRBProduct(
-    uuid : Text, payload : Types.RBProduct
+  public shared ({ caller }) func updateRBProduct(
+    uuid : Text,
+    payload : Types.RBProduct
   ) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
 
     switch (state.refillBrand.products.get(uuid)) {
@@ -1580,9 +1653,9 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared({ caller }) func deleteRBProduct(uuid : Text) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func deleteRBProduct(uuid : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
 
     switch (state.refillBrand.products.get(uuid)) {
@@ -1618,9 +1691,13 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     quantity : Nat;
   };
   func setRBOrder(
-    brandId : Text, stationId : Text,
-    products : [RS.OrderProduct], totalAmount : Float, note : ?Text,
-    history: [RS.OrderStatusHistory], uuid : ?Text
+    brandId : Text,
+    stationId : Text,
+    products : [RS.OrderProduct],
+    totalAmount : Float,
+    note : ?Text,
+    history : [RS.OrderStatusHistory],
+    uuid : ?Text
   ) : async Text {
     let payload = {
       brandId;
@@ -1635,14 +1712,14 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     return id;
   };
 
-  public shared({ caller }) func createRBOrder(
+  public shared ({ caller }) func createRBOrder(
     stationId : Text,
     productIds : [(Text, Float)],
     note : ?Text,
     status : RS.OrderStatus
   ) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
 
     switch (state.refillBrand.managers.get(caller)) {
@@ -1661,7 +1738,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
               var products : [RS.OrderProduct] = [];
               var totalAmount : Float = 0.0;
               var totalAmountICP : Float = 0.0;
-              for((productId, quantity) in Iter.fromArray(productIds)) {
+              for ((productId, quantity) in Iter.fromArray(productIds)) {
                 switch (state.refillBrand.products.get(productId)) {
                   case null {};
                   case (?product) {
@@ -1673,7 +1750,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
                           let productAmount = price * quantity;
                           totalAmount += productAmount;
                           totalAmountICP += productAmount / currency.exchangeRate;
-                          Debug.print(debug_show(productAmount, totalAmount, totalAmountICP));
+                          Debug.print(debug_show (productAmount, totalAmount, totalAmountICP));
                         };
                       };
                       let item : RS.OrderProduct = {
@@ -1696,8 +1773,13 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
                   case (#ok(bIndex)) {
                     // record transaction
                     await recordTransaction(
-                      caller, amount, caller, Principal.fromActor(this),
-                      #collectTreasuryContribution, ?uuid, bIndex
+                      caller,
+                      amount,
+                      caller,
+                      Principal.fromActor(this),
+                      #collectTreasuryContribution,
+                      ?uuid,
+                      bIndex
                     );
                   };
                   case (#err(error)) {
@@ -1706,7 +1788,13 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
                 };
               };
               let id = await setRBOrder(
-                manager.brandId, stationId, products, totalAmount, note, [history], ?uuid
+                manager.brandId,
+                stationId,
+                products,
+                totalAmount,
+                note,
+                [history],
+                ?uuid
               );
               #ok(id);
             };
@@ -1716,25 +1804,26 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public query({ caller }) func getRBOrder(orderId : Text) : async Response<Types.RBOrder> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public query ({ caller }) func getRBOrder(orderId : Text) : async Response<Types.RBOrder> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
 
     switch (state.refillBrand.orders.get(orderId)) {
-      case (null) { #err(#NotFound); };
+      case (null) { #err(#NotFound) };
       case (?order) {
         #ok(order);
       };
     };
   };
 
-  public shared({ caller }) func updateRBOrder(
-    uuid : Text, note : ?Text,
+  public shared ({ caller }) func updateRBOrder(
+    uuid : Text,
+    note : ?Text,
     status : RS.OrderStatus
   ) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
 
     switch (state.refillBrand.orders.get(uuid)) {
@@ -1749,8 +1838,13 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
                 timestamp = Moment.now();
               };
               let id = await setRBOrder(
-                manager.brandId, order.stationId, order.products, order.totalAmount, note,
-                Array.append<RS.OrderStatusHistory>(order.history, [history]), ?uuid
+                manager.brandId,
+                order.stationId,
+                order.products,
+                order.totalAmount,
+                note,
+                Array.append<RS.OrderStatusHistory>(order.history, [history]),
+                ?uuid
               );
               #ok(id);
             } else {
@@ -1762,7 +1856,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public query({ caller }) func listRBOrders() : async Response<[(Text, Types.RBOrder)]> {
+  public query ({ caller }) func listRBOrders() : async Response<[(Text, Types.RBOrder)]> {
     switch (state.refillBrand.managers.get(caller)) {
       case (null) { #err(#AdminRoleRequired) };
       case (?manager) {
@@ -1779,12 +1873,12 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   /* === End Refill Brand === */
 
   /* MemoryCard */
-  public shared({caller}) func memoryCardEngineImportExcel(
-    games : [Types.MemoryCardEnginePatternItemGames], 
-    stages : [Types.MemoryCardEnginePatternItemStages], 
+  public shared ({ caller }) func memoryCardEngineImportExcel(
+    games : [Types.MemoryCardEnginePatternItemGames],
+    stages : [Types.MemoryCardEnginePatternItemStages],
     cards : [Types.MemoryCardEnginePatternItemCards]
-  ) : async Response<()>{
-    if(isAdmin(caller)) {
+  ) : async Response<()> {
+    if (isAdmin(caller)) {
       for (V in Iter.fromArray(games)) {
         switch (state.memoryCardEngine.games.get(V.gameId)) {
           case null {
@@ -1829,30 +1923,30 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
       #ok();
     } else {
       #err(#AdminRoleRequired);
-    }
+    };
   };
 
-  public shared({caller}) func memoryCardEngineAllGames() : async Response<[(Text, Types.MemoryCardEngineGame)]>{
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);// isNotAuthorized
+  public shared ({ caller }) func memoryCardEngineAllGames() : async Response<[(Text, Types.MemoryCardEngineGame)]> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); // isNotAuthorized
     };
-    if(isAdmin(caller)) {
+    if (isAdmin(caller)) {
       #ok(Iter.toArray(state.memoryCardEngine.games.entries()));
     } else {
       #err(#AdminRoleRequired);
-    }
+    };
   };
 
-  public shared({caller}) func memoryCardEngineGameChangeStatus(gameId : Text, newStatus : Bool) : async Response<()> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);// isNotAuthorized
+  public shared ({ caller }) func memoryCardEngineGameChangeStatus(gameId : Text, newStatus : Bool) : async Response<()> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); // isNotAuthorized
     };
-    if(isAdmin(caller)) {
+    if (isAdmin(caller)) {
       switch (state.memoryCardEngine.games.get(gameId)) {
         case null #err(#NotFound);
-        case (? prev) {
+        case (?prev) {
           let gameUpdate : Types.MemoryCardEngineGame = {
-            slug = prev.slug;  //unique
+            slug = prev.slug; //unique
             name = prev.name;
             image = prev.image;
             description = prev.description;
@@ -1864,111 +1958,108 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
       };
     } else {
       #err(#AdminRoleRequired);
-    }
+    };
   };
 
-  public shared({caller}) func memoryCardEngineStageDelete(stageId : Text) : async Response<()> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);// isNotAuthorized
+  public shared ({ caller }) func memoryCardEngineStageDelete(stageId : Text) : async Response<()> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); // isNotAuthorized
     };
-    if(isAdmin(caller)) {
+    if (isAdmin(caller)) {
       state.memoryCardEngine.stages.delete(stageId);
       for ((K, V) in state.memoryCardEngine.cards.entries()) {
         if (Text.equal(V.stageId, stageId)) {
           state.memoryCardEngine.cards.delete(K);
-        }
+        };
       };
       #ok();
     } else {
       #err(#AdminRoleRequired);
-    }
+    };
   };
 
-  public shared({caller}) func memoryCardEngineAllStages() : async Response<[(Text, Types.MemoryCardEngineStage)]>{
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);// isNotAuthorized
+  public shared ({ caller }) func memoryCardEngineAllStages() : async Response<[(Text, Types.MemoryCardEngineStage)]> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); // isNotAuthorized
     };
-    if(isAdmin(caller)) {
+    if (isAdmin(caller)) {
       #ok(Iter.toArray(state.memoryCardEngine.stages.entries()));
     } else {
       #err(#AdminRoleRequired);
-    }
+    };
   };
 
-  public shared({caller}) func memoryCardEngineAllCards() : async Response<[(Text, Types.MemoryCardEngineCard)]>{
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);// isNotAuthorized
+  public shared ({ caller }) func memoryCardEngineAllCards() : async Response<[(Text, Types.MemoryCardEngineCard)]> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); // isNotAuthorized
     };
-    if(isAdmin(caller)) {
+    if (isAdmin(caller)) {
       #ok(Iter.toArray(state.memoryCardEngine.cards.entries()));
     } else {
       #err(#AdminRoleRequired);
-    }
+    };
   };
 
   /* Client query data memoryCardEngine */
-  public query({caller}) func memoryCardEngineSlugEnabled() : async Response<[(Text, Types.MemoryCardEngineGame)]> {
+  public query ({ caller }) func memoryCardEngineSlugEnabled() : async Response<[(Text, Types.MemoryCardEngineGame)]> {
     if (Principal.toText(caller) == "2vxsx-fae") {
-      throw Error.reject("NotAuthorized");  //isNotAuthorized
+      throw Error.reject("NotAuthorized"); //isNotAuthorized
     };
     var result : [(Text, Types.MemoryCardEngineGame)] = [];
     let games = state.memoryCardEngine.games.entries();
     for ((K, V) in state.memoryCardEngine.games.entries()) {
       if ((V.status == true)) {
         result := Array.append(result, [(K, V)]);
-      }
+      };
     };
     #ok(result);
   };
 
-  public query({caller}) func memoryCardEngineStages(gameId : Text) : async Response<[?(Text, Types.MemoryCardEngineStage)]> {
+  public query ({ caller }) func memoryCardEngineStages(gameId : Text) : async Response<[?(Text, Types.MemoryCardEngineStage)]> {
     if (Principal.toText(caller) == "2vxsx-fae") {
-      throw Error.reject("NotAuthorized");  //isNotAuthorized
+      throw Error.reject("NotAuthorized"); //isNotAuthorized
     };
     var stages : [?(Text, Types.MemoryCardEngineStage)] = [];
     for ((K, V) in state.memoryCardEngine.stages.entries()) {
       if (V.gameId == gameId) {
         stages := Array.append(stages, [?(K, V)]);
-      }
+      };
     };
     #ok(stages);
   };
 
-  public query({caller}) func memoryCardEngineCards(stageId : Text) : async Response<[?(Text, Types.MemoryCardEngineCard)]> {
+  public query ({ caller }) func memoryCardEngineCards(stageId : Text) : async Response<[?(Text, Types.MemoryCardEngineCard)]> {
     if (Principal.toText(caller) == "2vxsx-fae") {
-      throw Error.reject("NotAuthorized");  //isNotAuthorized
+      throw Error.reject("NotAuthorized"); //isNotAuthorized
     };
     var cards : [?(Text, Types.MemoryCardEngineCard)] = [];
     for ((K, V) in state.memoryCardEngine.cards.entries()) {
       if (V.stageId == stageId) {
         cards := Array.append(cards, [?(K, V)]);
-      }
+      };
     };
     #ok(cards);
   };
 
   public query func memoryCardEngineGetPlayer(caller : Principal, gameId : Text, gameSlug : Text) : async Response<(Text, Types.MemoryCardEnginePlayer)> {
     if (Principal.toText(caller) == "2vxsx-fae") {
-      throw Error.reject("NotAuthorized");  //isNotAuthorized
+      throw Error.reject("NotAuthorized"); //isNotAuthorized
     };
     let accountId = Account.toText(Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(caller)));
     var player : ?(Text, Types.MemoryCardEnginePlayer) = null;
     let players = state.memoryCardEngine.players.entries();
     label playerLabel loop {
       switch (players.next()) {
-        case (? (K, V)) {
-          if (  
-            Int.greater(Moment.diff(?V.createdAt), 0) and
-            Text.equal(V.aId, accountId) and
-            Text.equal(V.gameId, gameId) and
-            Text.equal(V.gameSlug, gameSlug)
+        case (?(K, V)) {
+          if (
+            Int.greater(Moment.diff(?V.createdAt), 0) and Text.equal(V.aId, accountId) and Text.equal(V.gameId, gameId) and Text.equal(V.gameSlug, gameSlug)
           ) {
             player := ?(K, V);
             break playerLabel;
-          }
+          };
         };
         case (null) break playerLabel;
-      }
+      };
     };
     switch (player) {
       case null #err(#NotFound);
@@ -1979,33 +2070,49 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   private func duplicateAndShuffleEngineCards(stageId : Text) : async [?(Text, Types.MemoryCardEngineCard)] {
     // duplicate MemoryCardEngineCards
     var list : [?(Text, Types.MemoryCardEngineCard)] = [];
-    for((K, V) in state.memoryCardEngine.cards.entries()) {
+    for ((K, V) in state.memoryCardEngine.cards.entries()) {
       if (V.stageId == stageId) {
         if (not (Text.startsWith(V.data, #text "https://"))) {
           var temp = Text.split(V.data, #text ":");
-          list := Array.append<?(Text, Types.MemoryCardEngineCard)>(list, [?(K, {
-            stageId = V.stageId;
-            cardType = V.cardType;
-            data = Option.get(temp.next(),V.data);
-          })]);
-          list := Array.append<?(Text, Types.MemoryCardEngineCard)>(list, [?(K, {
-            stageId = V.stageId;
-            cardType = V.cardType;
-            data = Option.get(temp.next(),V.data);
-          })]);
+          list := Array.append<?(Text, Types.MemoryCardEngineCard)>(
+            list,
+            [
+              ?(
+                K,
+                {
+                  stageId = V.stageId;
+                  cardType = V.cardType;
+                  data = Option.get(temp.next(), V.data);
+                }
+              )
+            ]
+          );
+          list := Array.append<?(Text, Types.MemoryCardEngineCard)>(
+            list,
+            [
+              ?(
+                K,
+                {
+                  stageId = V.stageId;
+                  cardType = V.cardType;
+                  data = Option.get(temp.next(), V.data);
+                }
+              )
+            ]
+          );
         } else {
           list := Array.append<?(Text, Types.MemoryCardEngineCard)>(list, [?(K, V)]);
           list := Array.append<?(Text, Types.MemoryCardEngineCard)>(list, [?(K, V)]);
-        }
+        };
       };
     };
 
     // shuffle MemoryCardEngineCards
     var shuffleList : [var ?(Text, Types.MemoryCardEngineCard)] = Array.thaw(list);
     let size = list.size();
-    let iter = Array.tabulate<?(Text, Types.MemoryCardEngineCard)>(size, func (n : Nat) : ?(Text, Types.MemoryCardEngineCard) {list[size - 1 - n];}).keys();
+    let iter = Array.tabulate<?(Text, Types.MemoryCardEngineCard)>(size, func(n : Nat) : ?(Text, Types.MemoryCardEngineCard) { list[size - 1 - n] }).keys();
     for (i in iter) {
-      let j : Nat = Int.abs(Float.toInt(await Random.randomNumber(0.0, Float.fromInt(i+1))));
+      let j : Nat = Int.abs(Float.toInt(await Random.randomNumber(0.0, Float.fromInt(i +1))));
       let temp = shuffleList[i];
       shuffleList[i] := shuffleList[j];
       shuffleList[j] := temp;
@@ -2013,13 +2120,13 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     Array.freeze(shuffleList);
   };
 
-  public shared({caller}) func memoryCardEngineStartStage(gameId : Text, stageId : Text, playerId : ?Text, gameSlug : Text) : async Response<([?(Text, Types.MemoryCardEngineCard)], Text)> {
+  public shared ({ caller }) func memoryCardEngineStartStage(gameId : Text, stageId : Text, playerId : ?Text, gameSlug : Text) : async Response<([?(Text, Types.MemoryCardEngineCard)], Text)> {
     if (Principal.toText(caller) == "2vxsx-fae") {
-      throw Error.reject("NotAuthorized");  //isNotAuthorized
+      throw Error.reject("NotAuthorized"); //isNotAuthorized
     };
 
     var stagesSize : Nat = 0;
-    for (V in state.memoryCardEngine.stages.vals()){
+    for (V in state.memoryCardEngine.stages.vals()) {
       if (V.gameId == gameId) stagesSize += 1;
     };
 
@@ -2042,7 +2149,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
         };
         let newPlayerId = await createUUID();
         state.memoryCardEngine.players.put(newPlayerId, player);
-        
+
         var completedCount = 0;
         if (Iter.size(Iter.fromArray(player.history)) == stagesSize) {
           completedCount := 1;
@@ -2061,10 +2168,12 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
             return #err(error);
           };
           case (#ok(K, oldData)) {
-            let found = 
-              Array.find<Types.MemoryCardEngineGameProgress>(oldData.history, func (h) : Bool {
-              Text.equal(stageId, h.stageId);
-            });
+            let found = Array.find<Types.MemoryCardEngineGameProgress>(
+              oldData.history,
+              func(h) : Bool {
+                Text.equal(stageId, h.stageId);
+              }
+            );
             switch (found) {
               case null {
                 let newValue : Types.MemoryCardEngineGameProgress = {
@@ -2072,7 +2181,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
                   selected = [];
                   turn = 0;
                   timing = 0;
-                }; 
+                };
 
                 let replacePlayer : Types.MemoryCardEnginePlayer = {
                   aId = oldData.aId;
@@ -2111,7 +2220,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
                     newHistory := Array.append<Types.MemoryCardEngineGameProgress>(newHistory, [value]);
                   };
                 };
-                
+
                 let replacePlayer : Types.MemoryCardEnginePlayer = {
                   aId = oldData.aId;
                   gameId = oldData.gameId;
@@ -2138,16 +2247,19 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared({caller}) func memoryCardEngineCardPair(pairCard : (Text, Text, Float), gameId : Text, stageId : Text, playerId : Text, gameSlug : Text) : async Response<Bool> {
+  public shared ({ caller }) func memoryCardEngineCardPair(pairCard : (Text, Text, Float), gameId : Text, stageId : Text, playerId : Text, gameSlug : Text) : async Response<Bool> {
     if (Principal.toText(caller) == "2vxsx-fae") {
-      throw Error.reject("NotAuthorized");  //isNotAuthorized
+      throw Error.reject("NotAuthorized"); //isNotAuthorized
     };
-    switch (state.memoryCardEngine.players.get(playerId)){
-      case null { return #err(#NotFound); };
+    switch (state.memoryCardEngine.players.get(playerId)) {
+      case null { return #err(#NotFound) };
       case (?player) {
-        let found = Array.find<Types.MemoryCardEngineGameProgress>(player.history, func (h) : Bool {
-          Text.equal(stageId, h.stageId);
-        });
+        let found = Array.find<Types.MemoryCardEngineGameProgress>(
+          player.history,
+          func(h) : Bool {
+            Text.equal(stageId, h.stageId);
+          }
+        );
         switch (found) {
           case null {
             return #err(#NotFound);
@@ -2158,7 +2270,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
             for (value in player.history.vals()) {
               // kiem tra neu GameProgress co stageId = stageId dau vao thi thay doi GameProgress do, roi dua do mang newHistory
               if (value.stageId == stageId) {
-                
+
                 let newValue : Types.MemoryCardEngineGameProgress = {
                   stageId = value.stageId;
                   selected = Array.append(value.selected, [?pairCard]);
@@ -2187,18 +2299,20 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared({caller}) func memoryCardEngineCompletedStage(selected : [?(Text, Text)], stageId : Text, playerId : Text) : async Response<()> {
+  public shared ({ caller }) func memoryCardEngineCompletedStage(selected : [?(Text, Text)], stageId : Text, playerId : Text) : async Response<()> {
     if (Principal.toText(caller) == "2vxsx-fae") {
-      throw Error.reject("NotAuthorized");  //isNotAuthorized
+      throw Error.reject("NotAuthorized"); //isNotAuthorized
     };
 
     switch (state.memoryCardEngine.players.get(playerId)) {
-      case null { return #err(#NotFound); };
+      case null { return #err(#NotFound) };
       case (?player) {
-        let found = 
-          Array.find<Types.MemoryCardEngineGameProgress>(player.history, func (h) : Bool {
-          Text.equal(stageId, h.stageId);
-        });
+        let found = Array.find<Types.MemoryCardEngineGameProgress>(
+          player.history,
+          func(h) : Bool {
+            Text.equal(stageId, h.stageId);
+          }
+        );
         switch (found) {
           case null {
             return #err(#NotFound);
@@ -2206,18 +2320,17 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
           case (?V) {
             var newHistory : [Types.MemoryCardEngineGameProgress] = [];
             for (value in player.history.vals()) {
-              if (value.stageId == stageId and 
-                Int.greater(value.selected.size(), 0) and
-                Nat.equal(value.turn, 0) and
-                Float.equal(value.timing, 0)
+              if (
+                value.stageId == stageId and Int.greater(value.selected.size(), 0) and Nat.equal(value.turn, 0) and Float.equal(value.timing, 0)
               ) {
                 var temp : Float = 0;
                 var isCheating = false;
-                let oldSelected : [?(Text, Text)] = 
-                  Array.map(value.selected, func (s : ?(Text, Text, Float)) : ?(Text, Text) {
+                let oldSelected : [?(Text, Text)] = Array.map(
+                  value.selected,
+                  func(s : ?(Text, Text, Float)) : ?(Text, Text) {
                     switch (s) {
                       case null { return null };
-                      case (? v) { 
+                      case (?v) {
                         if (temp < v.2) {
                           temp := v.2;
                         } else {
@@ -2225,28 +2338,30 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
                         };
                         return ?(v.0, v.1);
                       };
-                    }
-                  });
-                
-                if (selected == oldSelected and not(isCheating)) { //cheat
+                    };
+                  }
+                );
+
+                if (selected == oldSelected and not (isCheating)) {
+                  //cheat
                   let newValue : Types.MemoryCardEngineGameProgress = {
                     stageId = value.stageId;
                     selected = value.selected;
                     turn = selected.size();
-                    timing = switch (value.selected[value.selected.size()-1]) {
+                    timing = switch (value.selected[value.selected.size() -1]) {
                       case null { 0 };
-                      case (? s) { s.2 }
+                      case (?s) { s.2 };
                     };
                   };
                   newHistory := Array.append<Types.MemoryCardEngineGameProgress>(newHistory, [newValue]);
                 } else {
                   newHistory := Array.append<Types.MemoryCardEngineGameProgress>(newHistory, [value]);
-                }
+                };
               } else {
                 newHistory := Array.append<Types.MemoryCardEngineGameProgress>(newHistory, [value]);
               };
             };
-            
+
             let replacePlayer : Types.MemoryCardEnginePlayer = {
               aId = player.aId;
               gameId = player.gameId;
@@ -2263,120 +2378,111 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public query({caller}) func memoryCardEngineListOfDay(gameId : Text, gameSlug : Text) : async Response<[?Types.MemoryCardEnginePlayer]>{
+  public query ({ caller }) func memoryCardEngineListOfDay(gameId : Text, gameSlug : Text) : async Response<[?Types.MemoryCardEnginePlayer]> {
     if (Principal.toText(caller) == "2vxsx-fae") {
-      throw Error.reject("NotAuthorized");  //isNotAuthorized
+      throw Error.reject("NotAuthorized"); //isNotAuthorized
     };
     var listTop : [?Types.MemoryCardEnginePlayer] = [];
     var stagesSize : Int = 0;
-    for (V in state.memoryCardEngine.stages.vals()){
+    for (V in state.memoryCardEngine.stages.vals()) {
       if (V.gameId == gameId) stagesSize += 1;
     };
-    for((K, V) in state.memoryCardEngine.players.entries()) {
-      if(
-        Int.greater(Moment.diff(?V.createdAt), 0) and
-        Iter.size(Iter.fromArray(V.history)) == stagesSize and
-        Text.equal(gameSlug, V.gameSlug) and
-        Text.equal(gameId, V.gameId)
+    for ((K, V) in state.memoryCardEngine.players.entries()) {
+      if (
+        Int.greater(Moment.diff(?V.createdAt), 0) and Iter.size(Iter.fromArray(V.history)) == stagesSize and Text.equal(gameSlug, V.gameSlug) and Text.equal(gameId, V.gameId)
       ) {
         var temp = true;
         for (value in V.history.vals()) {
           if (
-            Nat.equal(value.turn, 0) and
-            Float.equal(value.timing, 0)
+            Nat.equal(value.turn, 0) and Float.equal(value.timing, 0)
           ) {
             temp := false;
-          }
+          };
         };
         if (temp) {
           listTop := Array.append(listTop, [?V]);
-        }
-      }
+        };
+      };
     };
     #ok(listTop);
   };
 
-  public query({caller}) func memoryCardEngineListOfYesterday(gameId : Text, gameSlug : Text) : async Response<[?(Text, Types.MemoryCardEnginePlayer)]>{
+  public query ({ caller }) func memoryCardEngineListOfYesterday(gameId : Text, gameSlug : Text) : async Response<[?(Text, Types.MemoryCardEnginePlayer)]> {
     if (Principal.toText(caller) == "2vxsx-fae") {
-      throw Error.reject("NotAuthorized");  //isNotAuthorized
+      throw Error.reject("NotAuthorized"); //isNotAuthorized
     };
-    var listTop : [?(Text,Types.MemoryCardEnginePlayer)] = [];
+    var listTop : [?(Text, Types.MemoryCardEnginePlayer)] = [];
     var stagesSize : Int = 0;
-    for (V in state.memoryCardEngine.stages.vals()){
+    for (V in state.memoryCardEngine.stages.vals()) {
       if (V.gameId == gameId) stagesSize += 1;
     };
-    for((K, V) in state.memoryCardEngine.players.entries()) {
-      if(
-        Moment.yesterday(V.createdAt) and
-        Iter.size(Iter.fromArray(V.history)) == stagesSize and
-        Text.equal(gameSlug, V.gameSlug) and
-        Text.equal(gameId, V.gameId)
+    for ((K, V) in state.memoryCardEngine.players.entries()) {
+      if (
+        Moment.yesterday(V.createdAt) and Iter.size(Iter.fromArray(V.history)) == stagesSize and Text.equal(gameSlug, V.gameSlug) and Text.equal(gameId, V.gameId)
       ) {
         var temp = true;
         for (value in V.history.vals()) {
           if (
-            Nat.equal(value.turn, 0) and
-            Float.equal(value.timing, 0)
+            Nat.equal(value.turn, 0) and Float.equal(value.timing, 0)
           ) {
             temp := false;
-          }
+          };
         };
         if (temp) {
           listTop := Array.append(listTop, [?(K, V)]);
-        }
-      }
+        };
+      };
     };
     #ok(listTop);
   };
 
-  public shared({caller}) func memoryCardEngineListAll(gameId : Text, gameSlug : Text) : async Response<[Types.MemoryCardEnginePlayer]>{
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);// isNotAuthorized
+  public shared ({ caller }) func memoryCardEngineListAll(gameId : Text, gameSlug : Text) : async Response<[Types.MemoryCardEnginePlayer]> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); // isNotAuthorized
     };
-    if(isAdmin(caller)) {
+    if (isAdmin(caller)) {
       var listTop : [Types.MemoryCardEnginePlayer] = [];
-      for(V in state.memoryCardEngine.players.vals()) {
-        if(Text.equal(gameSlug, V.gameSlug) and Text.equal(gameId, V.gameId)) {
-         var temp = true;
+      for (V in state.memoryCardEngine.players.vals()) {
+        if (Text.equal(gameSlug, V.gameSlug) and Text.equal(gameId, V.gameId)) {
+          var temp = true;
           for (value in V.history.vals()) {
             if (
-              Nat.equal(value.turn, 0) and
-              Float.equal(value.timing, 0)
+              Nat.equal(value.turn, 0) and Float.equal(value.timing, 0)
             ) {
               temp := false;
-            }
+            };
           };
           if (temp) {
             listTop := Array.append(listTop, [V]);
-          }
-        }
+          };
+        };
       };
       #ok(listTop);
     } else {
       #err(#AdminRoleRequired);
-    }
+    };
   };
 
-  public shared({caller}) func memoryCardEngineCheckReward(id : Text) : async Response<?Types.MemoryCardEngineReward>{
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);// isNotAuthorized
+  public shared ({ caller }) func memoryCardEngineCheckReward(id : Text) : async Response<?Types.MemoryCardEngineReward> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); // isNotAuthorized
     };
-    if(isAdmin(caller)) {
+    if (isAdmin(caller)) {
       #ok(state.memoryCardEngine.rewards.get(id));
     } else {
       #err(#AdminRoleRequired);
-    }
+    };
   };
 
-  public shared({caller}) func memoryCardEngineReward(
-    playerId : Text, 
-    reward : Float, 
+  public shared ({ caller }) func memoryCardEngineReward(
+    playerId : Text,
+    reward : Float,
     uid : Principal
-  ) : async Response<()>{
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);// isNotAuthorized
+  ) : async Response<()> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); // isNotAuthorized
     };
-    if(isAdmin(caller)) {
+    if (isAdmin(caller)) {
       let rewardAmount : Nat64 = Int64.toNat64(Float.toInt64(reward * (10 ** 8)));
       switch (await refund(rewardAmount, uid)) {
         case (#Err(error)) {
@@ -2393,12 +2499,12 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
           };
           // record transaction
           await recordTransaction(
-            Principal.fromActor(this), 
-            rewardAmount, 
-            Principal.fromActor(this), 
+            Principal.fromActor(this),
+            rewardAmount,
+            Principal.fromActor(this),
             uid,
-            #rewardTop, 
-            ?uuid, 
+            #rewardTop,
+            ?uuid,
             bIndex
           );
           state.memoryCardEngine.rewards.put(uuid, recordReward); //put to state rewards
@@ -2407,22 +2513,27 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
       };
     } else {
       #err(#AdminRoleRequired);
-    }
+    };
   };
 
   // Game
-  public shared({ caller }) func payQuest(questId : Text) : async Response<Text> {
+  public shared ({ caller }) func payQuest(questId : Text) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     switch (state.quests.get(questId)) {
-      case null { #err(#NotFound); };
+      case null { #err(#NotFound) };
       case (?quest) {
         switch (await deposit(quest.price, caller)) {
-          case(#ok(bIndex)) {
+          case (#ok(bIndex)) {
             await recordTransaction(
-              caller, quest.price, caller, Principal.fromActor(this),
-              #payQuest, ?questId, bIndex
+              caller,
+              quest.price,
+              caller,
+              Principal.fromActor(this),
+              #payQuest,
+              ?questId,
+              bIndex
             );
             #ok("Success");
           };
@@ -2435,13 +2546,13 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   };
 
   // Character Class
-  public shared({caller}) func createCharacterClass(characterClass : Types.CharacterClass) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func createCharacterClass(characterClass : Types.CharacterClass) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
-    let rsCharacterClass = state.characterClasses.get(characterClass.id); 
+    let rsCharacterClass = state.characterClasses.get(characterClass.id);
     switch (rsCharacterClass) {
-      case (?V) { #err(#AlreadyExisting); };
+      case (?V) { #err(#AlreadyExisting) };
       case null {
         CharacterClass.create(characterClass, state);
         #ok("Success");
@@ -2449,32 +2560,32 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared query({caller}) func readCharacterClass(id : Text) : async Response<(Types.CharacterClass)>{
+  public shared query ({ caller }) func readCharacterClass(id : Text) : async Response<(Types.CharacterClass)> {
     if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let rsCharacterClass = state.characterClasses.get(id);
     return Result.fromOption(rsCharacterClass, #NotFound);
   };
 
-  public shared query({caller}) func listCharacterClasses() : async Response<[(Text, Types.CharacterClass)]> {
+  public shared query ({ caller }) func listCharacterClasses() : async Response<[(Text, Types.CharacterClass)]> {
     var list : [(Text, Types.CharacterClass)] = [];
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
-    for((K,V) in state.characterClasses.entries()) {
+    for ((K, V) in state.characterClasses.entries()) {
       list := Array.append<(Text, Types.CharacterClass)>(list, [(K, V)]);
     };
     #ok((list));
   };
 
-  public shared({caller}) func updateCharacterClass(characterClass : Types.CharacterClass) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func updateCharacterClass(characterClass : Types.CharacterClass) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
-    let rsCharacterClass = state.characterClasses.get(characterClass.id); 
+    let rsCharacterClass = state.characterClasses.get(characterClass.id);
     switch (rsCharacterClass) {
-      case null { #err(#NotFound); };
+      case null { #err(#NotFound) };
       case (?V) {
         CharacterClass.update(characterClass, state);
         #ok("Success");
@@ -2482,13 +2593,13 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared({caller}) func deleteCharacterClass(id : Text) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func deleteCharacterClass(id : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let rsCharacterClass = state.characterClasses.get(id);
     switch (rsCharacterClass) {
-      case null { #err(#NotFound); };
+      case null { #err(#NotFound) };
       case (?V) {
         let deletedCharacterClass = state.characterClasses.delete(id);
         #ok("Success");
@@ -2497,96 +2608,96 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   };
 
   // Character
-  public shared({caller}) func createCharacter(characterClassId : Text) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func createCharacter(characterClassId : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let uuid : Text = await createUUID();
     var canCreate = true;
     let rsCharacterClass = state.characterClasses.get(characterClassId);
     let godUser = "gx3fa-rkdjs-vrshs-qqjts-aaklc-z7jvl-pc2zb-3zu6m-4hixl-5wswb-gqe";
-    if(Principal.toText(caller) == godUser) {
-      for((K, character) in state.characters.entries()){
-        if(character.userId == Principal.fromText(godUser)) {
+    if (Principal.toText(caller) == godUser) {
+      for ((K, character) in state.characters.entries()) {
+        if (character.userId == Principal.fromText(godUser)) {
           state.characters.delete(character.id);
         };
       };
     };
     switch (rsCharacterClass) {
       case (?characterClass) {
-        for((K, character) in state.characters.entries()){
-          if(character.userId == caller){
+        for ((K, character) in state.characters.entries()) {
+          if (character.userId == caller) {
             canCreate := false;
           };
         };
-        if(canCreate == true){
+        if (canCreate == true) {
           Character.create(caller, uuid, characterClass, state);
         };
         #ok("Success");
-      };  
+      };
       case null {
-        #err(#NotFound); 
+        #err(#NotFound);
       };
     };
   };
 
-  public shared query({caller}) func getCharacterStatus() : async Response<Text>{
+  public shared query ({ caller }) func getCharacterStatus() : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     var rs : Text = "";
-    for((K,character) in state.characters.entries()){
-      if(character.userId == caller){
+    for ((K, character) in state.characters.entries()) {
+      if (character.userId == caller) {
         rs := character.status;
       };
     };
     #ok(rs);
   };
 
-  public shared query({caller}) func readCharacter() : async Response<(Text, Types.Character)>{
+  public shared query ({ caller }) func readCharacter() : async Response<(Text, Types.Character)> {
     if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     var result : [(Text, Types.Character)] = [];
-    for((key ,character) in state.characters.entries()) {
-      if(character.userId == caller){
+    for ((key, character) in state.characters.entries()) {
+      if (character.userId == caller) {
         result := Array.append<(Text, Types.Character)>(result, [(key, character)]);
       };
     };
     #ok(result[0]);
   };
 
-  public shared query({caller}) func listCharacters() : async Response<[(Text, Types.Character)]> {
+  public shared query ({ caller }) func listCharacters() : async Response<[(Text, Types.Character)]> {
     var list : [(Text, Types.Character)] = [];
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
-    for((key ,character) in state.characters.entries()) {
-      if(character.userId == caller){
+    for ((key, character) in state.characters.entries()) {
+      if (character.userId == caller) {
         list := Array.append<(Text, Types.Character)>(list, [(key, character)]);
-      }
+      };
     };
     #ok((list));
   };
 
-  public shared query({caller}) func listAllCharacters() : async Response<[(Text, Types.Character)]> {
+  public shared query ({ caller }) func listAllCharacters() : async Response<[(Text, Types.Character)]> {
     var list : [(Text, Types.Character)] = [];
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
-    for((key ,character) in state.characters.entries()) {
+    for ((key, character) in state.characters.entries()) {
       list := Array.append<(Text, Types.Character)>(list, [(key, character)]);
     };
     #ok((list));
   };
 
-  public shared({caller}) func updateCharacter(character : Types.Character) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func updateCharacter(character : Types.Character) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let rsCharacter = state.characters.get(character.id);
     switch (rsCharacter) {
-      case (null) { #err(#NotFound); };
+      case (null) { #err(#NotFound) };
       case (?V) {
         Character.update(character, state);
         #ok("Success");
@@ -2594,13 +2705,13 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared({caller}) func deleteCharacter(id : Text) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func deleteCharacter(id : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let rsCharacter = state.characters.get(id);
     switch (rsCharacter) {
-      case (null) { #err(#NotFound); };
+      case (null) { #err(#NotFound) };
       case (?V) {
         let deletedCharacter = state.characters.delete(id);
         #ok("Success");
@@ -2608,15 +2719,15 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared({caller}) func resetCharacterStat() : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func resetCharacterStat() : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     // let uuid : Text = await createUUID();
-    for((K,character) in state.characters.entries()){
-      if(character.userId == caller){
-        for((K,characterClass) in state.characterClasses.entries()){
-          if(character.classId == characterClass.id){
+    for ((K, character) in state.characters.entries()) {
+      if (character.userId == caller) {
+        for ((K, characterClass) in state.characterClasses.entries()) {
+          if (character.classId == characterClass.id) {
             Character.resetStat(caller, character.id, characterClass, state);
           };
         };
@@ -2625,18 +2736,18 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     #ok("Success");
   };
 
-  public shared({caller}) func takeOption(eventId : Text) : async Response<[Types.Character]> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func takeOption(eventId : Text) : async Response<[Types.Character]> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     var result : [Types.Character] = [];
-    for((K,character) in state.characters.entries()){
-      if(character.userId == caller){
-        for((K, eventOption) in state.eventOptions.entries()){
-          if(eventOption.eventId == eventId){
+    for ((K, character) in state.characters.entries()) {
+      if (character.userId == caller) {
+        for ((K, eventOption) in state.eventOptions.entries()) {
+          if (eventOption.eventId == eventId) {
             var strengthRequire : Float = 0;
-            for(item in state.items.vals()){
-              if(item.id == eventOption.requireItemId){
+            for (item in state.items.vals()) {
+              if (item.id == eventOption.requireItemId) {
                 strengthRequire := item.strengthRequire;
               };
             };
@@ -2648,13 +2759,13 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     #ok(result);
   };
 
-  public shared({caller}) func gainCharacterExp(character : Types.Character) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func gainCharacterExp(character : Types.Character) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let rsCharacter = state.characters.get(character.id);
     switch (rsCharacter) {
-      case (null) { #err(#NotFound); };
+      case (null) { #err(#NotFound) };
       case (?V) {
         Character.gainCharacterExp(character, state);
         gamePlayAnalytics := {
@@ -2668,20 +2779,20 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared({caller}) func useHpPotion(characterId : Text) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func useHpPotion(characterId : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let userId = Principal.toText(caller);
     let rsCharacter = state.characters.get(characterId);
     switch (rsCharacter) {
-      case (null) { #err(#NotFound); };
+      case (null) { #err(#NotFound) };
       case (?character) {
         switch (state.eventItems.get(userId)) {
-          case (null) { #err(#NotFound); };
+          case (null) { #err(#NotFound) };
           case (?eventItem) {
-            for((_, usableItem) in state.usableItems.entries()){
-              if(eventItem.itemId == usableItem.id){
+            for ((_, usableItem) in state.usableItems.entries()) {
+              if (eventItem.itemId == usableItem.id) {
                 let deleted = state.eventItems.delete(userId);
               };
             };
@@ -2692,27 +2803,27 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared query({caller}) func getRemainingTime(waitingTime : Int, character : Types.Character) : async Response<Int> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared query ({ caller }) func getRemainingTime(waitingTime : Int, character : Types.Character) : async Response<Int> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let rsCharacter = state.characters.get(character.id);
     switch (rsCharacter) {
-      case (null) { #err(#NotFound); };
+      case (null) { #err(#NotFound) };
       case (?V) {
         return #ok(Character.getRemainingTime(waitingTime, character));
       };
     };
   };
 
-  public shared({caller}) func createCharacterTakesOption(id : Text, characterId : Text, eventOptionId : Text) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func createCharacterTakesOption(id : Text, characterId : Text, eventOptionId : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     // let uuid : Text = await createUUID();
     let rsCharacter = state.characters.get(characterId);
     switch (rsCharacter) {
-      case null { #err(#NotFound); };
+      case null { #err(#NotFound) };
       case (?character) {
         CharacterTakesOption.create(id, character, eventOptionId, state);
         #ok("Success");
@@ -2721,24 +2832,27 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   };
 
   // Character Takes Items
-  public shared({caller}) func createCharacterSelectsItems(characterId : Text, itemIds : [Text]) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func createCharacterSelectsItems(characterId : Text, itemIds : [Text]) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let uuid : Text = await createUUID();
-    
+
     let rsCharacter = state.characters.get(characterId);
     switch (rsCharacter) {
       case (?character) {
-        for((K, characterSelectsItem) in state.characterSelectsItems.entries()){
-          if(characterSelectsItem.characterId == characterId){
+        for ((K, characterSelectsItem) in state.characterSelectsItems.entries()) {
+          if (characterSelectsItem.characterId == characterId) {
             state.characterSelectsItems.delete(K);
           };
         };
-        let rs = state.characterSelectsItems.put(uuid, {
-          characterId = characterId;
-          itemIds = itemIds;
-        });
+        let rs = state.characterSelectsItems.put(
+          uuid,
+          {
+            characterId = characterId;
+            itemIds = itemIds;
+          }
+        );
         gamePlayAnalytics := {
           miniGamePlayCount = gamePlayAnalytics.miniGamePlayCount;
           miniGameCompletedCount = gamePlayAnalytics.miniGameCompletedCount;
@@ -2746,99 +2860,96 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
           questCompletedCount = gamePlayAnalytics.questCompletedCount;
         };
         #ok("Success");
-      };  
+      };
       case null {
-        #err(#NotFound); 
+        #err(#NotFound);
       };
     };
   };
 
-  public shared query({caller}) func listCharacterSelectsItems(characterId : Text) : async Response<[Text]> {
+  public shared query ({ caller }) func listCharacterSelectsItems(characterId : Text) : async Response<[Text]> {
     var list : [Text] = [];
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
-    for((_, characterSelectsItems) in state.characterSelectsItems.entries()) {
-      if(characterSelectsItems.characterId == characterId){
+    for ((_, characterSelectsItems) in state.characterSelectsItems.entries()) {
+      if (characterSelectsItems.characterId == characterId) {
         list := characterSelectsItems.itemIds;
-      }
+      };
     };
     #ok((list));
   };
 
-  public shared query({caller}) func listAllCharacterSelectsItems() : async Response<[Types.CharacterSelectsItems]> {
+  public shared query ({ caller }) func listAllCharacterSelectsItems() : async Response<[Types.CharacterSelectsItems]> {
     var list : [Types.CharacterSelectsItems] = [];
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
-    for((_, characterSelectsItems) in state.characterSelectsItems.entries()) {
+    for ((_, characterSelectsItems) in state.characterSelectsItems.entries()) {
       list := Array.append<Types.CharacterSelectsItems>(list, [characterSelectsItems]);
     };
     #ok((list));
   };
 
   // Character Collects Materials
-  public shared({caller}) func collectsMaterials(eventId : Text) : async Response<[Types.CharacterCollectsMaterials]> {
-  if(Principal.toText(caller) == "2vxsx-fae") {
-    return #err(#NotAuthorized);//isNotAuthorized
-  };
-  var result : [Types.CharacterCollectsMaterials] = [];
-  for((K,character) in state.characters.entries()){
-    if(character.userId == caller){
-      for((K, eventOption) in state.eventOptions.entries()){
-        if(eventOption.eventId == eventId){
-          let characterCollectMaterial = await CharacterCollectsMaterials.collectsMaterials(character.id, eventOption, state);
-          result := Array.append<Types.CharacterCollectsMaterials>(result, [characterCollectMaterial]);
+  public shared ({ caller }) func collectsMaterials(eventId : Text) : async Response<[Types.CharacterCollectsMaterials]> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    var result : [Types.CharacterCollectsMaterials] = [];
+    for ((K, character) in state.characters.entries()) {
+      if (character.userId == caller) {
+        for ((K, eventOption) in state.eventOptions.entries()) {
+          if (eventOption.eventId == eventId) {
+            let characterCollectMaterial = await CharacterCollectsMaterials.collectsMaterials(character.id, eventOption, state);
+            result := Array.append<Types.CharacterCollectsMaterials>(result, [characterCollectMaterial]);
+          };
         };
       };
     };
-  };
-  #ok(result);
+    #ok(result);
   };
 
-  public shared({caller}) func createCharacterCollectsMaterials(characterCollectMaterial: Types.CharacterCollectsMaterials) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func createCharacterCollectsMaterials(characterCollectMaterial : Types.CharacterCollectsMaterials) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     if (characterCollectMaterial.materialId != "") {
       let rsCharacterCollectsMaterials = state.characterCollectsMaterials.get(characterCollectMaterial.id);
       switch (rsCharacterCollectsMaterials) {
-        case (?V) { 
-          let updated = CharacterCollectsMaterials.update(characterCollectMaterial,state);
+        case (?V) {
+          let updated = CharacterCollectsMaterials.update(characterCollectMaterial, state);
         };
         case null {
-          let created = CharacterCollectsMaterials.create(characterCollectMaterial,state);
+          let created = CharacterCollectsMaterials.create(characterCollectMaterial, state);
         };
       };
     };
     #ok("Success");
   };
 
-  public shared({caller}) func resetCharacterCollectsMaterials(characterId : Text) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func resetCharacterCollectsMaterials(characterId : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
-    for ((K,characterCollectMaterial) in state.characterCollectsMaterials.entries()) {
+    for ((K, characterCollectMaterial) in state.characterCollectsMaterials.entries()) {
       if (characterCollectMaterial.characterId == characterId) {
         let updated = state.characterCollectsMaterials.remove(characterCollectMaterial.id);
-      };   
+      };
     };
     #ok("Success");
   };
 
-  public shared query({caller}) func listCharacterCollectsMaterials(characterId : Text) : async Response<[{materialName : Text; amount : Int}]> {
-    var list : [{materialName : Text; amount : Int}] = [];
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared query ({ caller }) func listCharacterCollectsMaterials(characterId : Text) : async Response<[{ materialName : Text; amount : Int }]> {
+    var list : [{ materialName : Text; amount : Int }] = [];
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
-    for((key , characterCollectMaterial) in state.characterCollectsMaterials.entries()) {
+    for ((key, characterCollectMaterial) in state.characterCollectsMaterials.entries()) {
       if (characterCollectMaterial.characterId == characterId) {
-        for((K,V) in state.materials.entries()) {
-          if(characterCollectMaterial.materialId == K) {
-            list := Array.append<{materialName : Text; amount : Int}>(list, [{
-              materialName = V.name;
-              amount = characterCollectMaterial.amount;
-            }]);
+        for ((K, V) in state.materials.entries()) {
+          if (characterCollectMaterial.materialId == K) {
+            list := Array.append<{ materialName : Text; amount : Int }>(list, [{ materialName = V.name; amount = characterCollectMaterial.amount }]);
           };
         };
       };
@@ -2847,14 +2958,14 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   };
 
   // Quest
-  public shared({caller}) func createQuest(quest: Types.Quest) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func createQuest(quest : Types.Quest) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     // let uuid : Text = await createUUID();
     let rsQuest = state.quests.get(quest.id);
     switch (rsQuest) {
-      case (?V) { #err(#AlreadyExisting); };
+      case (?V) { #err(#AlreadyExisting) };
       case null {
         Quest.create(quest, state);
         #ok("Success");
@@ -2862,32 +2973,32 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared query({caller}) func readQuest(id : Text) : async Response<(Types.Quest)>{
+  public shared query ({ caller }) func readQuest(id : Text) : async Response<(Types.Quest)> {
     if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let rsQuest = state.quests.get(id);
     return Result.fromOption(rsQuest, #NotFound);
   };
 
-  public shared query({caller}) func listQuests() : async Response<[(Text, Types.Quest)]> {
+  public shared query ({ caller }) func listQuests() : async Response<[(Text, Types.Quest)]> {
     var list : [(Text, Types.Quest)] = [];
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
-    for((K,V) in state.quests.entries()) {
+    for ((K, V) in state.quests.entries()) {
       list := Array.append<(Text, Types.Quest)>(list, [(K, V)]);
     };
     #ok((list));
   };
 
-  public shared({caller}) func updateQuest(quest: Types.Quest) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func updateQuest(quest : Types.Quest) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let rsQuest = state.quests.get(quest.id);
     switch (rsQuest) {
-      case null { #err(#NotFound); };
+      case null { #err(#NotFound) };
       case (?V) {
         Quest.update(quest, state);
         #ok("Success");
@@ -2895,13 +3006,13 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared({caller}) func deleteQuest(id : Text) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func deleteQuest(id : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let rsQuest = state.quests.get(id);
     switch (rsQuest) {
-      case (null) { #err(#NotFound); };
+      case (null) { #err(#NotFound) };
       case (?V) {
         let deletedQuest = state.quests.delete(id);
         #ok("Success");
@@ -2909,15 +3020,96 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
+  // Quest Engine
+  public shared ({ caller }) func createScene(scene : Types.Scene) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsScene = state.questEngine.sceneEngines.get(scene.id);
+    switch (rsScene) {
+      case (?V) { #err(#AlreadyExisting) };
+      case null {
+        Scene.create(scene, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared query ({ caller }) func readScene(id : Text) : async Response<(Types.Scene)> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsScene = state.questEngine.sceneEngines.get(id);
+    return Result.fromOption(rsScene, #NotFound);
+  };
+
+  public shared query ({ caller }) func listScenes() : async Response<[(Text, Types.Scene)]> {
+    var list : [(Text, Types.Scene)] = [];
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    for ((K, V) in state.questEngine.sceneEngines.entries()) {
+      list := Array.append<(Text, Types.Scene)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+
+  public shared ({ caller }) func updateScene(quest : Types.Scene) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsScene = state.questEngine.sceneEngines.get(quest.id);
+    switch (rsScene) {
+      case null { #err(#NotFound) };
+      case (?V) {
+        Scene.update(quest, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared ({ caller }) func deleteScene(id : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsScene = state.questEngine.sceneEngines.get(id);
+    switch (rsScene) {
+      case (null) { #err(#NotFound) };
+      case (?V) {
+        let deletedScene = state.questEngine.sceneEngines.delete(id);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared ({caller}) func listSceneQuest(idQuest: Text) : async Response<[Text]> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    var list : [Text] = [];
+    let rsQuest = state.quests.get(idQuest);
+    switch (rsQuest) {
+      case (null) { #err(#NotFound) };
+      case (?rsQuest) {
+        for ((K, V) in state.events.entries()) {
+          if (V.questId == rsQuest.id){
+            list := Array.append<(Text)>(list, [K]);
+          }
+        };
+        #ok(list);
+      };
+    };
+  };
+
   // Item
-  public shared({caller}) func createItem(item: Types.Item) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func createItem(item : Types.Item) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     // let uuid : Text = await createUUID();
     let rsItem = state.items.get(item.id);
     switch (rsItem) {
-      case (?V) { #err(#AlreadyExisting); };
+      case (?V) { #err(#AlreadyExisting) };
       case null {
         Item.create(item, state);
         #ok("Success");
@@ -2925,32 +3117,32 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared query({caller}) func readItem(id : Text) : async Response<(Types.Item)>{
+  public shared query ({ caller }) func readItem(id : Text) : async Response<(Types.Item)> {
     if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let rsItem = state.items.get(id);
     return Result.fromOption(rsItem, #NotFound);
   };
 
-  public shared query({caller}) func listItems() : async Response<[(Text, Types.Item)]> {
+  public shared query ({ caller }) func listItems() : async Response<[(Text, Types.Item)]> {
     var list : [(Text, Types.Item)] = [];
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
-    for((K,V) in state.items.entries()) {
+    for ((K, V) in state.items.entries()) {
       list := Array.append<(Text, Types.Item)>(list, [(K, V)]);
     };
     #ok((list));
   };
 
-  public shared({caller}) func updateItem(item: Types.Item) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func updateItem(item : Types.Item) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let rsItem = state.items.get(item.id);
     switch (rsItem) {
-      case null { #err(#NotFound); };
+      case null { #err(#NotFound) };
       case (?V) {
         Item.update(item, state);
         #ok("Success");
@@ -2958,13 +3150,13 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared({caller}) func deleteItem(id : Text) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func deleteItem(id : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let rsItem = state.items.get(id);
     switch (rsItem) {
-      case (null) { #err(#NotFound); };
+      case (null) { #err(#NotFound) };
       case (?V) {
         let deletedItem = state.items.delete(id);
         #ok("Success");
@@ -2973,36 +3165,39 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   };
 
   // Usable Item
-  public shared({caller}) func createUsableItem(usableItem: Types.UsableItem) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func createUsableItem(usableItem : Types.UsableItem) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     // let uuid : Text = await createUUID();
     let rsUsableItem = state.usableItems.get(usableItem.id);
     switch (rsUsableItem) {
-      case (?V) { #err(#AlreadyExisting); };
+      case (?V) { #err(#AlreadyExisting) };
       case null {
-        state.usableItems.put(usableItem.id, {
-          id = usableItem.id;
-          name = usableItem.name;
-          image = usableItem.image;
-          increaseStat = usableItem.increaseStat;
-        });
+        state.usableItems.put(
+          usableItem.id,
+          {
+            id = usableItem.id;
+            name = usableItem.name;
+            image = usableItem.image;
+            increaseStat = usableItem.increaseStat;
+          }
+        );
         #ok("Success");
       };
     };
   };
 
-  public shared query({caller}) func getHpPotion() : async Response<Types.UsableItem>{
+  public shared query ({ caller }) func getHpPotion() : async Response<Types.UsableItem> {
     if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     var rs : [Types.UsableItem] = [];
     switch (state.eventItems.get(Principal.toText(caller))) {
-      case null { #err(#NotFound); };
+      case null { #err(#NotFound) };
       case (?eventItem) {
-        for((K,V) in state.usableItems.entries()) {
-          if(V.id == eventItem.itemId) {
+        for ((K, V) in state.usableItems.entries()) {
+          if (V.id == eventItem.itemId) {
             rs := Array.append<Types.UsableItem>(rs, [V]);
           };
         };
@@ -3012,159 +3207,180 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   };
 
   // Event Item
-  public shared({caller}) func canGetARItem(eventItemId : Text) : async Response<Bool> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func canGetARItem(eventItemId : Text) : async Response<Bool> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let userId = Principal.toText(caller);
     // let uuid : Text = await createUUID();
     var canAR : Bool = false;
     let rsARItem = state.arItems.get(userId);
     switch (state.usableItems.get(eventItemId)) {
-      case null { #err(#NotFound); };
+      case null { #err(#NotFound) };
       case (?item) {
-        if(isAdmin(caller)) {
+        if (isAdmin(caller)) {
           switch (rsARItem) {
-            case (?V) { 
-              let updatedARItem = state.arItems.replace(userId, {
-                userId = caller;
-                itemId = eventItemId;
-              });
-              let updatedEventItem = state.eventItems.replace(userId, {
-                userId = caller;
-                itemId = eventItemId;
-              });
+            case (?V) {
+              let updatedARItem = state.arItems.replace(
+                userId,
+                {
+                  userId = caller;
+                  itemId = eventItemId;
+                }
+              );
+              let updatedEventItem = state.eventItems.replace(
+                userId,
+                {
+                  userId = caller;
+                  itemId = eventItemId;
+                }
+              );
               canAR := true;
               #ok(canAR);
             };
             case null {
-              state.arItems.put(userId, {
-                userId = caller;
-                itemId = eventItemId;
-              });
-              state.eventItems.put(userId, {
-                userId = caller;
-                itemId = eventItemId;
-              });
+              state.arItems.put(
+                userId,
+                {
+                  userId = caller;
+                  itemId = eventItemId;
+                }
+              );
+              state.eventItems.put(
+                userId,
+                {
+                  userId = caller;
+                  itemId = eventItemId;
+                }
+              );
               canAR := true;
               #ok(canAR);
             };
           };
         } else {
-            switch (rsARItem) {
-              case (?V) { #ok(canAR); };
-              case null {
-                state.arItems.put(userId, {
+          switch (rsARItem) {
+            case (?V) { #ok(canAR) };
+            case null {
+              state.arItems.put(
+                userId,
+                {
                   userId = caller;
                   itemId = eventItemId;
-                });
-                state.eventItems.put(userId, {
+                }
+              );
+              state.eventItems.put(
+                userId,
+                {
                   userId = caller;
                   itemId = eventItemId;
-                });
-                canAR := true;
-                #ok(canAR);
-              };
+                }
+              );
+              canAR := true;
+              #ok(canAR);
             };
           };
+        };
       };
     };
   };
 
-  public shared query({caller}) func listARItems() : async Response<[Types.ARItem]>{
+  public shared query ({ caller }) func listARItems() : async Response<[Types.ARItem]> {
     if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     var list : [Types.ARItem] = [];
-    for((_,V) in state.arItems.entries()){
+    for ((_, V) in state.arItems.entries()) {
       list := Array.append<Types.ARItem>(list, [V]);
     };
     #ok(list);
   };
 
-  public shared({caller}) func deleteARItem(userId : Text) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func deleteARItem(userId : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     switch (state.arItems.get(userId)) {
-      case null { #err(#NotFound); };
-      case (?V) { 
+      case null { #err(#NotFound) };
+      case (?V) {
         state.arItems.delete(userId);
         #ok("Success");
       };
     };
   };
 
-  public shared({caller}) func createEventItem(userId : Text) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func createEventItem(userId : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     switch (state.eventItems.get(userId)) {
-      case null { 
-        state.eventItems.put(userId, {
-          itemId = "ui1";
-          userId = Principal.fromText(userId);
-        });
+      case null {
+        state.eventItems.put(
+          userId,
+          {
+            itemId = "ui1";
+            userId = Principal.fromText(userId);
+          }
+        );
         #ok("Success");
       };
-      case (?V) { 
+      case (?V) {
         #err(#AlreadyExisting);
       };
     };
   };
 
-  public shared query({caller}) func loadEventItem() : async Response<Types.EventItem>{
+  public shared query ({ caller }) func loadEventItem() : async Response<Types.EventItem> {
     if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let userId = Principal.toText(caller);
     let rsEventItem = state.eventItems.get(userId);
     return Result.fromOption(rsEventItem, #NotFound);
   };
 
-  public shared({caller}) func deleteEventItem() : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func deleteEventItem() : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     switch (state.eventItems.get(Principal.toText(caller))) {
-      case null { #err(#NotFound); };
-      case (?V) { 
+      case null { #err(#NotFound) };
+      case (?V) {
         state.eventItems.delete(Principal.toText(caller));
         #ok("Success");
       };
     };
   };
 
-  public shared({caller}) func deleteAllEventItems() : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func deleteAllEventItems() : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
-    for((K,V) in state.eventItems.entries()){
+    for ((K, V) in state.eventItems.entries()) {
       state.eventItems.delete(K);
     };
     #ok("Success");
   };
 
-  public shared query({caller}) func listAllEventItems() : async Response<[Types.EventItem]>{
+  public shared query ({ caller }) func listAllEventItems() : async Response<[Types.EventItem]> {
     if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     var list : [Types.EventItem] = [];
-    for((_,V) in state.eventItems.entries()){
+    for ((_, V) in state.eventItems.entries()) {
       list := Array.append<Types.EventItem>(list, [V]);
     };
     #ok(list);
   };
 
-  // Quest Item 
-  public shared({caller}) func createQuestItem(questItem: Types.QuestItem) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  // Quest Item
+  public shared ({ caller }) func createQuestItem(questItem : Types.QuestItem) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     // let uuid : Text = await createUUID();
     let rsquestItem = state.questItems.get(questItem.id);
     switch (rsquestItem) {
-      case (?V) { #err(#AlreadyExisting); };
+      case (?V) { #err(#AlreadyExisting) };
       case null {
         QuestItem.create(questItem, state);
         #ok("Success");
@@ -3172,17 +3388,17 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared query({caller}) func listQuestItems(questId : Text) : async Response<[Types.Item]> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared query ({ caller }) func listQuestItems(questId : Text) : async Response<[Types.Item]> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     var list : [Types.Item] = [];
-    for((_,questItem) in state.questItems.entries()) {
-      if(questItem.questId == questId){
+    for ((_, questItem) in state.questItems.entries()) {
+      if (questItem.questId == questId) {
         let rsItem = state.items.get(questItem.itemId);
         switch (rsItem) {
           case null { () };
-          case (?item){
+          case (?item) {
             list := Array.append<Types.Item>(list, [item]);
           };
         };
@@ -3191,13 +3407,13 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     #ok((list));
   };
 
-  public shared({caller}) func updateQuestItem(questItem: Types.QuestItem) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func updateQuestItem(questItem : Types.QuestItem) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let rsquestItem = state.questItems.get(questItem.id);
     switch (rsquestItem) {
-      case null { #err(#NotFound); };
+      case null { #err(#NotFound) };
       case (?V) {
         QuestItem.update(questItem, state);
         #ok("Success");
@@ -3205,13 +3421,13 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared({caller}) func deleteQuestItem(id : Text) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func deleteQuestItem(id : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let rsquestItem = state.questItems.get(id);
     switch (rsquestItem) {
-      case (null) { #err(#NotFound); };
+      case (null) { #err(#NotFound) };
       case (?V) {
         let deletedquestItem = state.questItems.delete(id);
         #ok("Success");
@@ -3220,18 +3436,18 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   };
 
   // Event
-  public shared({caller}) func createEvent(event: Types.Event) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func createEvent(event : Types.Event) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     // let uuid : Text = await createUUID();
     let rsQuest = state.quests.get(event.questId);
     let rsEvent = state.events.get(event.id);
     switch (rsQuest) {
-      case null { #err(#NotFound); };
+      case null { #err(#NotFound) };
       case (?quest) {
         switch (rsEvent) {
-          case (?event) { #err(#AlreadyExisting); };
+          case (?event) { #err(#AlreadyExisting) };
           case null {
             Event.create(event, state);
             #ok("Success");
@@ -3241,32 +3457,32 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared query({caller}) func readEvent(id : Text) : async Response<(Types.Event)>{
+  public shared query ({ caller }) func readEvent(id : Text) : async Response<(Types.Event)> {
     if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let rsEvent = state.events.get(id);
     return Result.fromOption(rsEvent, #NotFound);
   };
 
-  public shared query({caller}) func listEvents() : async Response<[(Text, Types.Event)]> {
+  public shared query ({ caller }) func listEvents() : async Response<[(Text, Types.Event)]> {
     var list : [(Text, Types.Event)] = [];
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
-    for((K,V) in state.events.entries()) {
+    for ((K, V) in state.events.entries()) {
       list := Array.append<(Text, Types.Event)>(list, [(K, V)]);
     };
     #ok((list));
   };
-  
-  public shared({caller}) func updateEvent(event: Types.Event) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+
+  public shared ({ caller }) func updateEvent(event : Types.Event) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let rsEvent = state.events.get(event.id);
     switch (rsEvent) {
-      case null { #err(#NotFound); };
+      case null { #err(#NotFound) };
       case (?V) {
         Event.update(event, state);
         #ok("Success");
@@ -3274,13 +3490,13 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared({caller}) func deleteEvent(id : Text) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func deleteEvent(id : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let rsEvent = state.events.get(id);
     switch (rsEvent) {
-      case (null) { #err(#NotFound); };
+      case (null) { #err(#NotFound) };
       case (?V) {
         let deletedEvent = state.events.delete(id);
         #ok("Success");
@@ -3289,18 +3505,18 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   };
 
   // Event Option
-  public shared({caller}) func createEventOption(eventOption: Types.EventOption) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func createEventOption(eventOption : Types.EventOption) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     // let uuid : Text = await createUUID();
     let rsEvent = state.events.get(eventOption.eventId);
     let rsEventOption = state.eventOptions.get(eventOption.id);
     switch (rsEvent) {
-      case null { #err(#NotFound); };
+      case null { #err(#NotFound) };
       case (?event) {
-        switch(rsEventOption){
-          case (?eventOption) { #err(#AlreadyExisting); };
+        switch (rsEventOption) {
+          case (?eventOption) { #err(#AlreadyExisting) };
           case null {
             EventOption.create(eventOption, state);
             #ok("Success");
@@ -3310,41 +3526,41 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared query({caller}) func readEventOption(id : Text) : async Response<(Types.EventOption)>{
+  public shared query ({ caller }) func readEventOption(id : Text) : async Response<(Types.EventOption)> {
     if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let rsEventOption = state.eventOptions.get(id);
     return Result.fromOption(rsEventOption, #NotFound);
   };
 
-  public shared query({caller}) func listAllEventOptions() : async Response<[(Text, Types.EventOption)]> {
+  public shared query ({ caller }) func listAllEventOptions() : async Response<[(Text, Types.EventOption)]> {
     var list : [(Text, Types.EventOption)] = [];
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
-    for((K,V) in state.eventOptions.entries()) {
+    for ((K, V) in state.eventOptions.entries()) {
       list := Array.append<(Text, Types.EventOption)>(list, [(K, V)]);
     };
     #ok((list));
   };
 
-  public shared query({caller}) func listEventOptions(eventId : Text, selectedItemIds : [Text]) : async Response<[(Bool, Types.EventOption)]> {
+  public shared query ({ caller }) func listEventOptions(eventId : Text, selectedItemIds : [Text]) : async Response<[(Bool, Types.EventOption)]> {
     var list : [(Bool, Types.EventOption)] = [];
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
-    for((K,eventOption) in state.eventOptions.entries()) {
+    for ((K, eventOption) in state.eventOptions.entries()) {
       var canTakeOption : Bool = false;
-      if(eventOption.eventId == eventId){
-        if(eventOption.requireItemId == "null") {
+      if (eventOption.eventId == eventId) {
+        if (eventOption.requireItemId == "null") {
           canTakeOption := true;
         } else {
-          for(itemId in selectedItemIds.vals()){
-            if(itemId == "null"){
+          for (itemId in selectedItemIds.vals()) {
+            if (itemId == "null") {
               canTakeOption := false;
             };
-            if(itemId == eventOption.requireItemId) {
+            if (itemId == eventOption.requireItemId) {
               canTakeOption := true;
             };
           };
@@ -3354,14 +3570,14 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
     #ok((list));
   };
-  
-  public shared({caller}) func updateEventOption(eventOption: Types.EventOption) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+
+  public shared ({ caller }) func updateEventOption(eventOption : Types.EventOption) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let rsEventOption = state.eventOptions.get(eventOption.id);
     switch (rsEventOption) {
-      case null { #err(#NotFound); };
+      case null { #err(#NotFound) };
       case (?V) {
         EventOption.update(eventOption, state);
         #ok("Success");
@@ -3369,13 +3585,13 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared({caller}) func deleteEventOption(id : Text) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func deleteEventOption(id : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let rsEventOption = state.eventOptions.get(id);
     switch (rsEventOption) {
-      case (null) { #err(#NotFound); };
+      case (null) { #err(#NotFound) };
       case (?V) {
         let deletedEventOption = state.eventOptions.delete(id);
         #ok("Success");
@@ -3384,18 +3600,18 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   };
 
   // Gear
-  public shared({caller}) func createGear(gearClassId : Text, gear: Types.Gear) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func createGear(gearClassId : Text, gear : Types.Gear) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     // let uuid : Text = await createUUID();
     let rsGearClass = state.gearClasses.get(gearClassId);
     switch (rsGearClass) {
-      case null { #err(#NotFound); };
-      case (?V){
+      case null { #err(#NotFound) };
+      case (?V) {
         let rsGear = state.gears.get(gear.id);
         switch (rsGear) {
-          case (?V) { #err(#AlreadyExisting); };
+          case (?V) { #err(#AlreadyExisting) };
           case null {
             Gear.create(gear, state);
             #ok("Success");
@@ -3406,32 +3622,32 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
 
   };
 
-  public shared query({caller}) func readGear(id : Text) : async Response<(Types.Gear)>{
+  public shared query ({ caller }) func readGear(id : Text) : async Response<(Types.Gear)> {
     if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let rsGear = state.gears.get(id);
     return Result.fromOption(rsGear, #NotFound);
   };
 
-  public shared query({caller}) func listGears() : async Response<[(Text, Types.Gear)]> {
+  public shared query ({ caller }) func listGears() : async Response<[(Text, Types.Gear)]> {
     var list : [(Text, Types.Gear)] = [];
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
-    for((K,V) in state.gears.entries()) {
+    for ((K, V) in state.gears.entries()) {
       list := Array.append<(Text, Types.Gear)>(list, [(K, V)]);
     };
     #ok((list));
   };
-  
-  public shared({caller}) func updateGear(gear: Types.Gear) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+
+  public shared ({ caller }) func updateGear(gear : Types.Gear) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let rsGear = state.gears.get(gear.id);
     switch (rsGear) {
-      case null { #err(#NotFound); };
+      case null { #err(#NotFound) };
       case (?V) {
         Gear.update(gear, state);
         #ok("Success");
@@ -3439,13 +3655,13 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared({caller}) func deleteGear(id : Text) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func deleteGear(id : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let rsGear = state.gears.get(id);
     switch (rsGear) {
-      case (null) { #err(#NotFound); };
+      case (null) { #err(#NotFound) };
       case (?V) {
         let deletedGear = state.gears.delete(id);
         #ok("Success");
@@ -3454,14 +3670,14 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   };
 
   // Gear Class
-  public shared({caller}) func createGearClass(gearClass: Types.GearClass) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func createGearClass(gearClass : Types.GearClass) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     // let uuid : Text = await createUUID();
     let rsGearClass = state.gearClasses.get(gearClass.id);
     switch (rsGearClass) {
-      case (?V) { #err(#AlreadyExisting); };
+      case (?V) { #err(#AlreadyExisting) };
       case null {
         GearClass.create(gearClass, state);
         #ok("Success");
@@ -3469,32 +3685,32 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared query({caller}) func readGearClass(id : Text) : async Response<(Types.GearClass)>{
+  public shared query ({ caller }) func readGearClass(id : Text) : async Response<(Types.GearClass)> {
     if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let rsGearClass = state.gearClasses.get(id);
     return Result.fromOption(rsGearClass, #NotFound);
   };
 
-  public shared query({caller}) func listGearClasses() : async Response<[(Text, Types.GearClass)]> {
+  public shared query ({ caller }) func listGearClasses() : async Response<[(Text, Types.GearClass)]> {
     var list : [(Text, Types.GearClass)] = [];
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
-    for((K,V) in state.gearClasses.entries()) {
+    for ((K, V) in state.gearClasses.entries()) {
       list := Array.append<(Text, Types.GearClass)>(list, [(K, V)]);
     };
     #ok((list));
   };
-  
-  public shared({caller}) func updateGearClass(gearClass: Types.GearClass) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+
+  public shared ({ caller }) func updateGearClass(gearClass : Types.GearClass) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let rsGearClass = state.gearClasses.get(gearClass.id);
     switch (rsGearClass) {
-      case null { #err(#NotFound); };
+      case null { #err(#NotFound) };
       case (?V) {
         GearClass.update(gearClass, state);
         #ok("Success");
@@ -3502,13 +3718,13 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared({caller}) func deleteGearClass(id : Text) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func deleteGearClass(id : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let rsGearClass = state.gearClasses.get(id);
     switch (rsGearClass) {
-      case (null) { #err(#NotFound); };
+      case (null) { #err(#NotFound) };
       case (?V) {
         let deletedGearClass = state.gearClasses.delete(id);
         #ok("Success");
@@ -3517,14 +3733,14 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   };
 
   // Gear Rarity
-  public shared({caller}) func createGearRarity(gearRarity: Types.GearRarity) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func createGearRarity(gearRarity : Types.GearRarity) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     // let uuid : Text = await createUUID();
     let rsGearRarity = state.gearRarities.get(gearRarity.id);
     switch (rsGearRarity) {
-      case (?V) { #err(#AlreadyExisting); };
+      case (?V) { #err(#AlreadyExisting) };
       case null {
         GearRarity.create(gearRarity, state);
         #ok("Success");
@@ -3532,32 +3748,32 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared query({caller}) func readGearRarity(id : Text) : async Response<(Types.GearRarity)>{
+  public shared query ({ caller }) func readGearRarity(id : Text) : async Response<(Types.GearRarity)> {
     if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let rsGearRarity = state.gearRarities.get(id);
     return Result.fromOption(rsGearRarity, #NotFound);
   };
 
-  public shared query({caller}) func listGearRarities() : async Response<[(Text, Types.GearRarity)]> {
+  public shared query ({ caller }) func listGearRarities() : async Response<[(Text, Types.GearRarity)]> {
     var list : [(Text, Types.GearRarity)] = [];
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
-    for((K,V) in state.gearRarities.entries()) {
+    for ((K, V) in state.gearRarities.entries()) {
       list := Array.append<(Text, Types.GearRarity)>(list, [(K, V)]);
     };
     #ok((list));
   };
-  
-  public shared({caller}) func updateGearRarity(gearRarity: Types.GearRarity) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+
+  public shared ({ caller }) func updateGearRarity(gearRarity : Types.GearRarity) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let rsGearRarity = state.gearRarities.get(gearRarity.id);
     switch (rsGearRarity) {
-      case null { #err(#NotFound); };
+      case null { #err(#NotFound) };
       case (?V) {
         GearRarity.update(gearRarity, state);
         #ok("Success");
@@ -3565,13 +3781,13 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared({caller}) func deleteGearRarity(id : Text) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func deleteGearRarity(id : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let rsGearRarity = state.gearRarities.get(id);
     switch (rsGearRarity) {
-      case (null) { #err(#NotFound); };
+      case (null) { #err(#NotFound) };
       case (?V) {
         let deletedGearRarity = state.gearRarities.delete(id);
         #ok("Success");
@@ -3580,14 +3796,14 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   };
 
   // Gear Substat
-  public shared({caller}) func createGearSubstat(gearSubstat: Types.GearSubstat) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func createGearSubstat(gearSubstat : Types.GearSubstat) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     // let uuid : Text = await createUUID();
     let rsGearSubstat = state.gearSubstats.get(gearSubstat.id);
     switch (rsGearSubstat) {
-      case (?V) { #err(#AlreadyExisting); };
+      case (?V) { #err(#AlreadyExisting) };
       case null {
         GearSubstat.create(gearSubstat, state);
         #ok("Success");
@@ -3595,32 +3811,32 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared query({caller}) func readGearSubstat(id : Text) : async Response<(Types.GearSubstat)>{
+  public shared query ({ caller }) func readGearSubstat(id : Text) : async Response<(Types.GearSubstat)> {
     if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let rsGearSubstat = state.gearSubstats.get(id);
     return Result.fromOption(rsGearSubstat, #NotFound);
   };
 
-  public shared query({caller}) func listgearSubstats() : async Response<[(Text, Types.GearSubstat)]> {
+  public shared query ({ caller }) func listgearSubstats() : async Response<[(Text, Types.GearSubstat)]> {
     var list : [(Text, Types.GearSubstat)] = [];
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
-    for((K,V) in state.gearSubstats.entries()) {
+    for ((K, V) in state.gearSubstats.entries()) {
       list := Array.append<(Text, Types.GearSubstat)>(list, [(K, V)]);
     };
     #ok((list));
   };
-  
-  public shared({caller}) func updateGearSubstat(gearSubstat: Types.GearSubstat) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+
+  public shared ({ caller }) func updateGearSubstat(gearSubstat : Types.GearSubstat) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let rsGearSubstat = state.gearSubstats.get(gearSubstat.id);
     switch (rsGearSubstat) {
-      case null { #err(#NotFound); };
+      case null { #err(#NotFound) };
       case (?V) {
         GearSubstat.update(gearSubstat, state);
         #ok("Success");
@@ -3628,13 +3844,13 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared({caller}) func deleteGearSubstat(id : Text) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func deleteGearSubstat(id : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let rsGearSubstat = state.gearSubstats.get(id);
     switch (rsGearSubstat) {
-      case (null) { #err(#NotFound); };
+      case (null) { #err(#NotFound) };
       case (?V) {
         let deletedGearSubstat = state.gearSubstats.delete(id);
         #ok("Success");
@@ -3643,14 +3859,14 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   };
 
   // Material
-  public shared({caller}) func createMaterial(material: Types.Material) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func createMaterial(material : Types.Material) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     // let uuid : Text = await createUUID();
     let rsMaterial = state.materials.get(material.id);
     switch (rsMaterial) {
-      case (?V) { #err(#AlreadyExisting); };
+      case (?V) { #err(#AlreadyExisting) };
       case null {
         Material.create(material, state);
         #ok("Success");
@@ -3658,32 +3874,32 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared query({caller}) func readMaterial(id : Text) : async Response<(Types.Material)>{
+  public shared query ({ caller }) func readMaterial(id : Text) : async Response<(Types.Material)> {
     if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let rsMaterial = state.materials.get(id);
     return Result.fromOption(rsMaterial, #NotFound);
   };
 
-  public shared query({caller}) func listMaterials() : async Response<[(Text, Types.Material)]> {
+  public shared query ({ caller }) func listMaterials() : async Response<[(Text, Types.Material)]> {
     var list : [(Text, Types.Material)] = [];
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
-    for((K,V) in state.materials.entries()) {
+    for ((K, V) in state.materials.entries()) {
       list := Array.append<(Text, Types.Material)>(list, [(K, V)]);
     };
     #ok((list));
   };
-  
-  public shared({caller}) func updateMaterial(material: Types.Material) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+
+  public shared ({ caller }) func updateMaterial(material : Types.Material) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let rsMaterial = state.materials.get(material.id);
     switch (rsMaterial) {
-      case null { #err(#NotFound); };
+      case null { #err(#NotFound) };
       case (?V) {
         Material.update(material, state);
         #ok("Success");
@@ -3691,13 +3907,13 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-  public shared({caller}) func deleteMaterial(id : Text) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func deleteMaterial(id : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let rsMaterial = state.materials.get(id);
     switch (rsMaterial) {
-      case (null) { #err(#NotFound); };
+      case (null) { #err(#NotFound) };
       case (?V) {
         let deletedMaterial = state.materials.delete(id);
         #ok("Success");
@@ -3706,20 +3922,20 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   };
 
   // Inventory
-  public shared({caller}) func createInventory(characterId : Text) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func createInventory(characterId : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
-    for ((K,characterCollectMaterial) in state.characterCollectsMaterials.entries()) {
+    for ((K, characterCollectMaterial) in state.characterCollectsMaterials.entries()) {
       if (characterCollectMaterial.amount != 0 and characterCollectMaterial.characterId == characterId) {
-        let newInventory = await Inventory.storeMaterials(characterCollectMaterial,state);
+        let newInventory = await Inventory.storeMaterials(characterCollectMaterial, state);
         let rsInventory = state.inventories.get(newInventory.id);
         switch (rsInventory) {
           case (?V) {
-            let updated = Inventory.update(newInventory,state);
+            let updated = Inventory.update(newInventory, state);
           };
           case null {
-            let created = Inventory.create(newInventory,state);
+            let created = Inventory.create(newInventory, state);
           };
         };
       };
@@ -3727,32 +3943,42 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     #ok("Success");
   };
 
-  public shared query({caller}) func openInventory(characterId : Text) : async Response<[Types.Inventory]> {
+  public shared query ({ caller }) func openInventory(characterId : Text) : async Response<[Types.Inventory]> {
     var list : [Types.Inventory] = [];
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
-    for((_, inventory) in state.inventories.entries()) {
-      if(inventory.characterId == characterId){
+    for ((_, inventory) in state.inventories.entries()) {
+      if (inventory.characterId == characterId) {
         list := Array.append<Types.Inventory>(list, [inventory]);
       };
     };
     #ok((list));
   };
 
+<<<<<<< HEAD
 
 
 // Land
   public shared({ caller }) func buyLandSlot() : async Response<Text> {
+=======
+  // Land
+  public shared ({ caller }) func buyLandSlot() : async Response<Text> {
+>>>>>>> 0b8a96b449ec70c251173a9b434990ed9ce8d923
     if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+      return #err(#NotAuthorized); //isNotAuthorized
     };
 
     switch (await deposit(10000, caller)) {
-      case(#ok(bIndex)) {
+      case (#ok(bIndex)) {
         await recordTransaction(
-          caller, 10000, caller, Principal.fromActor(this),
-          #buyLandSlot, null, bIndex
+          caller,
+          10000,
+          caller,
+          Principal.fromActor(this),
+          #buyLandSlot,
+          null,
+          bIndex
         );
         #ok("Success");
       };
@@ -3761,6 +3987,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
       };
     };
   };
+<<<<<<< HEAD
 
 
 
@@ -3816,12 +4043,18 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   public shared({caller}) func updateLandSlot(zone : Nat, index : (Nat,Nat)) : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
+=======
+
+  public shared ({ caller }) func createLandSlot(zone : Int, index : (Int, Int)) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+>>>>>>> 0b8a96b449ec70c251173a9b434990ed9ce8d923
     };
     var uuid : Text = await createUUID();
     label whileLoop loop {
       while (true) {
-      let rsLandSlot = state.landSlots.get(uuid);
-      switch (rsLandSlot) {
+        let rsLandSlot = state.landSlots.get(uuid);
+        switch (rsLandSlot) {
           case (?V) {
             uuid := await createUUID();
           };
@@ -3837,29 +4070,35 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
       isPremium = false;
       isSelling = false;
       zone = zone;
+<<<<<<< HEAD
       xIndex = index.0;
       yIndex = index.1;
       price = 0.0;     
+=======
+      index = index;
+      price = 0.0;
+>>>>>>> 0b8a96b449ec70c251173a9b434990ed9ce8d923
     };
-    let created = state.landSlots.put(newLandSlot.id,newLandSlot);
-    ignore await createLandTransferHistory(newLandSlot.ownerId,newLandSlot.id,0.0001);
+    let created = state.landSlots.put(newLandSlot.id, newLandSlot);
+    ignore await createLandTransferHistory(newLandSlot.ownerId, newLandSlot.id, 0.0001);
     ignore await deleteLandBuyingStatus(Principal.toText(newLandSlot.ownerId));
     #ok("Success");
   };
 
-  public shared query({caller}) func listLandSlots() : async Response<[(Text, Types.LandSlot)]> {
+  public shared query ({ caller }) func listLandSlots() : async Response<[(Text, Types.LandSlot)]> {
     var list : [(Text, Types.LandSlot)] = [];
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
-    for((key ,landSlot) in state.landSlots.entries()) {
-      if(landSlot.ownerId == caller){
+    for ((key, landSlot) in state.landSlots.entries()) {
+      if (landSlot.ownerId == caller) {
         list := Array.append<(Text, Types.LandSlot)>(list, [(key, landSlot)]);
-      }
+      };
     };
     #ok((list));
   };
 
+<<<<<<< HEAD
 
   public shared query({caller}) func loadLandSlotsArea(beginX : Nat, beginY : Nat, endX : Nat, endY : Nat, mapWidth : Nat) : async Response<[Types.LandSlot]> {
     var list : [Types.LandSlot] = [];
@@ -3886,11 +4125,14 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   };
 
   public shared query({caller}) func listAllLandSlots() : async Response<[(Text, Types.LandSlot)]> {
+=======
+  public shared query ({ caller }) func listAllLandSlots() : async Response<[(Text, Types.LandSlot)]> {
+>>>>>>> 0b8a96b449ec70c251173a9b434990ed9ce8d923
     var list : [(Text, Types.LandSlot)] = [];
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
-    for((key ,landSlot) in state.landSlots.entries()) {
+    for ((key, landSlot) in state.landSlots.entries()) {
       list := Array.append<(Text, Types.LandSlot)>(list, [(key, landSlot)]);
     };
     #ok((list));
@@ -3908,15 +4150,20 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   };
 
   // Land Transfer History
-  public shared({caller}) func createLandTransferHistory(buyerId : Principal,landId : Text, price : Float) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func createLandTransferHistory(buyerId : Principal, landId : Text, price : Float) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     var uuid : Text = await createUUID();
     label whileLoop loop {
       while (true) {
+<<<<<<< HEAD
       let rsLandTransferHistory = state.landTransferHistories.get(uuid);
       switch (rsLandTransferHistory) {
+=======
+        let rsLandTransferHistory = state.landTransferHitories.get(uuid);
+        switch (rsLandTransferHistory) {
+>>>>>>> 0b8a96b449ec70c251173a9b434990ed9ce8d923
           case (?V) {
             uuid := await createUUID();
           };
@@ -3932,30 +4179,43 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
       ownerId = Principal.fromActor(this);
       landId = landId;
       transferTime = Time.now();
-      price = price;   
+      price = price;
     };
+<<<<<<< HEAD
     let created = state.landTransferHistories.put(newLandTransferHistory.id,newLandTransferHistory);
+=======
+    let created = state.landTransferHitories.put(newLandTransferHistory.id, newLandTransferHistory);
+>>>>>>> 0b8a96b449ec70c251173a9b434990ed9ce8d923
     #ok("Success");
   };
 
-  public shared query({caller}) func listLandTransferHistories() : async Response<[(Text, Types.LandTransferHistory)]> {
+  public shared query ({ caller }) func listLandTransferHistories() : async Response<[(Text, Types.LandTransferHistory)]> {
     var list : [(Text, Types.LandTransferHistory)] = [];
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
+<<<<<<< HEAD
     for((K,V) in state.landTransferHistories.entries()) {
+=======
+    for ((K, V) in state.landTransferHitories.entries()) {
+>>>>>>> 0b8a96b449ec70c251173a9b434990ed9ce8d923
       list := Array.append<(Text, Types.LandTransferHistory)>(list, [(K, V)]);
     };
     #ok((list));
   };
 
-
   // Land Buying Status
+<<<<<<< HEAD
   public shared({caller}) func updateLandBuyingStatus(zone : Int, landSlotId : Text,randomTimes : Int) : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
+=======
+  public shared ({ caller }) func updateLandBuyingStatus(zone : Int, landIndex : Int, randomTimes : Int) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+>>>>>>> 0b8a96b449ec70c251173a9b434990ed9ce8d923
     };
-    
+
     let newLandBuyingStatus : Types.LandBuyingStatus = {
       id = caller;
       currentZone = zone;
@@ -3965,32 +4225,32 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     let principalId = Principal.toText(caller);
     let rsLandBuyingStatus = state.landBuyingStatuses.get(principalId);
     switch (rsLandBuyingStatus) {
-        case (?V) {
-          let updated = LandBuyingStatus.update(newLandBuyingStatus,state);
-        };
-        case null {
-          let created = LandBuyingStatus.create(newLandBuyingStatus,state); 
-        };
+      case (?V) {
+        let updated = LandBuyingStatus.update(newLandBuyingStatus, state);
       };
+      case null {
+        let created = LandBuyingStatus.create(newLandBuyingStatus, state);
+      };
+    };
     #ok("Success");
   };
 
-  public shared query({caller}) func readLandBuyingStatus() : async Response<(Types.LandBuyingStatus)>{
+  public shared query ({ caller }) func readLandBuyingStatus() : async Response<(Types.LandBuyingStatus)> {
     if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let id = Principal.toText(caller);
     let rsLandBuyingStatus = state.landBuyingStatuses.get(id);
     return Result.fromOption(rsLandBuyingStatus, #NotFound);
   };
 
-  public shared({caller}) func deleteLandBuyingStatus(id : Text) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+  public shared ({ caller }) func deleteLandBuyingStatus(id : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
     let rsLandBuyingStatus = state.landBuyingStatuses.get(id);
     switch (rsLandBuyingStatus) {
-      case (null) { #err(#NotFound); };
+      case (null) { #err(#NotFound) };
       case (?V) {
         let deleted = state.landBuyingStatuses.delete(id);
         #ok("Success");
@@ -3998,19 +4258,14 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-
-
-  public shared query({caller}) func listLandBuyingStatuses() : async Response<[(Text, Types.LandBuyingStatus)]> {
+  public shared query ({ caller }) func listLandBuyingStatuses() : async Response<[(Text, Types.LandBuyingStatus)]> {
     var list : [(Text, Types.LandBuyingStatus)] = [];
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
     };
-    for((K,V) in state.landBuyingStatuses.entries()) {
+    for ((K, V) in state.landBuyingStatuses.entries()) {
       list := Array.append<(Text, Types.LandBuyingStatus)>(list, [(K, V)]);
     };
     #ok((list));
   };
 };
-
-
-

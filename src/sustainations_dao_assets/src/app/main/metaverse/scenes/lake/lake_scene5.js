@@ -5,7 +5,7 @@ import {
   loadEventOptions,
   updateCharacterStats,
   listCharacterSelectsItems,
-  createCharacterCollectsMaterials
+  createCharacterCollectsMaterials,
 } from '../../GameApi';
 import { settings } from '../settings';
 import { func } from 'prop-types';
@@ -161,13 +161,12 @@ export default class lake_scene5 extends BaseScene {
     });
 
     // load description of event
-    const event = await readEvent(this.eventId)
-
+    this.event = await readEvent(this.eventId)
 
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
-      text: "Are you ready ? \n\n“I have cities, but no houses. I have mountains, but no trees. I have water, but no fish. What am I? “ ",
+      text: this.event.description,
       origin: { x: 0.5, y: 0.5 },
       style: {
         font: 'bold 25px Arial',
@@ -176,25 +175,25 @@ export default class lake_scene5 extends BaseScene {
       }
     }).setVisible(false).setScrollFactor(0);
 
-     //scrolling
-     this.graphics = this.make.graphics();
+    //scrolling
+    this.graphics = this.make.graphics();
 
-     this.graphics.fillRect(152, 230, 900, 250).setScrollFactor(0);
- 
-     this.mask = new Phaser.Display.Masks.GeometryMask(this, this.graphics);
- 
-     this.des.setMask(this.mask);
- 
-     // //  The rectangle they can 'drag' within
-     this.add.zone(150, 230, 900, 250).setOrigin(0).setInteractive().setVisible(true).setScrollFactor(0)
-       .on('pointermove', (pointer) => {
-         if (pointer.isDown) {
-           this.des.y += (pointer.velocity.y / 10);
- 
-           this.des.y = Phaser.Math.Clamp(this.des.y, -400, 720);
-         }
- 
-       })
+    this.graphics.fillRect(152, 230, 900, 250).setScrollFactor(0);
+
+    this.mask = new Phaser.Display.Masks.GeometryMask(this, this.graphics);
+
+    this.des.setMask(this.mask);
+
+    // //  The rectangle they can 'drag' within
+    this.add.zone(150, 230, 900, 250).setOrigin(0).setInteractive().setVisible(true).setScrollFactor(0)
+      .on('pointermove', (pointer) => {
+        if (pointer.isDown) {
+          this.des.y += (pointer.velocity.y / 10);
+
+          this.des.y = Phaser.Math.Clamp(this.des.y, -400, 720);
+        }
+
+      })
 
 
     for (const idx in this.eventOptions) {

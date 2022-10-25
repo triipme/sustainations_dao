@@ -12,7 +12,8 @@ import {
   listCharacterSelectsItems,
   characterCollectsMaterials,
   listCharacterCollectsMaterials,
-  getHpPotion
+  getHpPotion,
+  listSceneQuest
 } from '../GameApi';
 
 class BaseScene extends Phaser.Scene {
@@ -79,7 +80,6 @@ class BaseScene extends Phaser.Scene {
 
     //player
     this.player = this.physics.add.sprite(-50, 500, "hero-running").setScale(0.67);
-    // this.player = this.physics.add.sprite(-50, 500, "hero-running").setScale(0.67);
 
     this.anims.create({
       key: "running-anims",

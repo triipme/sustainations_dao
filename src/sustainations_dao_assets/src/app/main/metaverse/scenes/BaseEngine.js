@@ -5,7 +5,8 @@ import {
   loadEventOptions,
   updateCharacterStats,
   listCharacterSelectsItems,
-  createCharacterCollectsMaterials
+  createCharacterCollectsMaterials,
+  listSceneQuests
 } from '../../GameApi';
 import { settings } from '../settings';
 import { func } from 'prop-types';
@@ -13,10 +14,10 @@ import { readEvent } from '../../GameApi';
 
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
-const bg1 = 'metaverse/scenes/lava/Scene2/PNG/back.png';
-const bg2 = 'metaverse/scenes/lava/Scene2/PNG/mid.png';
-const bg3 = 'metaverse/scenes/lava/Scene2/PNG/front.png';
-const obstacle = 'metaverse/scenes/lava/Scene2/PNG/obstacle.png';
+const bg1 = 'metaverse/scenes/lake/Scene1/PNG/back.png';
+const bg2 = 'metaverse/scenes/lake/Scene1/PNG/mid.png';
+const bg3 = 'metaverse/scenes/lake/Scene1/PNG/front.png';
+const obstacle = 'metaverse/scenes/lake/Scene1/PNG/obstacle.png';
 const selectAction = 'metaverse/scenes/background_menu.png';
 const btnBlank = 'metaverse/scenes/selection.png';
 
@@ -28,9 +29,9 @@ const item_potion = 'metaverse/scenes/item_ingame_HP.png'
 const popupWindo = 'metaverse/selectMap/Catalonia_popup.png';
 const popupClose = 'metaverse/selectMap/UI_ingame_close.png';
 
-export default class lava_scene2 extends BaseScene {
+export default class BaseEngine extends BaseEngine {
   constructor() {
-    super('lava_scene2');
+    super('BaseEngine');
   }
 
   clearSceneCache() {
@@ -44,7 +45,7 @@ export default class lava_scene2 extends BaseScene {
 
   preload() {
     this.addLoadingScreen();
-    this.initialLoad("e32");
+    this.initialLoad("e36");
 
     //Preload
     this.clearSceneCache();
@@ -113,54 +114,12 @@ export default class lava_scene2 extends BaseScene {
       this.sfx_char_footstep.play();
     }
 
-    // this.createSceneLayers();
-    //background
-    this.bg_1 = this.add.tileSprite(0, 0, gameConfig.scale.width, gameConfig.scale.height, "background1");
-    this.bg_1.setOrigin(0, 0);
-    this.bg_1.setScrollFactor(0);
-
-    this.bg_2 = this.add.tileSprite(0, 0, gameConfig.scale.width, gameConfig.scale.height, "background2");
-    this.bg_2.setOrigin(0, 0);
-    this.bg_2.setScrollFactor(0);
-
-    if (this.textures.exists("obstacle")) {
-      this.obstacle = this.add.tileSprite(0, 0, gameConfig.scale.width, gameConfig.scale.height, "obstacle")
-        .setOrigin(0, 0)
-        .setScrollFactor(0);
-    } else {
-      console.log('Obstacle not found');
-    }
-
-    //player
-    this.player = this.physics.add.sprite(-50, 200, "hero-running").setScale(0.67);
-
-    this.anims.create({
-      key: "running-anims",
-      frames: this.anims.generateFrameNumbers("hero-running", { start: 1, end: 8 }),
-      frameRate: 8,
-      repeat: -1
-    });
-
-    this.anims.create({
-      key: "idle-anims",
-      frames: this.anims.generateFrameNumbers("hero-running", { start: 0, end: 0 }),
-      frameRate: 1,
-      repeat: -1
-    });
-    this.player.play('running-anims');
-
-    //frontlayer
-    this.bg_3 = this.add.tileSprite(0, 0, gameConfig.scale.width, gameConfig.scale.height, "background3");
-    this.bg_3.setOrigin(0, 0);
-    this.bg_3.setScrollFactor(0);
-
+    this.createSceneLayers();
     // platforms
     const platforms = this.physics.add.staticGroup();
     for (let x = -50; x < gameConfig.scale.width * 4; x += 4) {
-      platforms.create(x, 550, "ground").refreshBody();
+      platforms.create(x, 635, "ground").refreshBody();
     }
-
-
     this.physics.add.collider(this.player, platforms);
 
     this.createUIElements();
@@ -203,13 +162,12 @@ export default class lava_scene2 extends BaseScene {
     });
 
     // load description of event
-    this.event = await readEvent(this.eventId)
-
+    const event = await readEvent(this.eventId)
 
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
-      text: this.event.description,
+      text: 'On the bench, there is a question. Find the correct answer to continue or else.\n\n“What is able to go up a chimney when down but unable to go down a chimney when up?”',
       origin: { x: 0.5, y: 0.5 },
       style: {
         font: 'bold 25px Arial',
@@ -218,6 +176,25 @@ export default class lava_scene2 extends BaseScene {
       }
     }).setVisible(false).setScrollFactor(0);
 
+    //scrolling
+    this.graphics = this.make.graphics();
+
+    this.graphics.fillRect(152, 230, 900, 250).setScrollFactor(0);
+
+    this.mask = new Phaser.Display.Masks.GeometryMask(this, this.graphics);
+
+    this.des.setMask(this.mask);
+
+    // //  The rectangle they can 'drag' within
+    this.add.zone(150, 230, 900, 250).setOrigin(0).setInteractive().setVisible(true).setScrollFactor(0)
+      .on('pointermove', (pointer) => {
+        if (pointer.isDown) {
+          this.des.y += (pointer.velocity.y / 10);
+
+          this.des.y = Phaser.Math.Clamp(this.des.y, -400, 720);
+        }
+
+      })
 
     for (const idx in this.eventOptions) {
 
@@ -284,10 +261,10 @@ export default class lava_scene2 extends BaseScene {
     if (this.player.x > 5100) {
       this.pregameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start("lava_scene3", { isUsedPotion: this.isUsedPotion });
+      this.scene.start("BaseEngine", { isUsedPotion: this.isUsedPotion});
     }
 
-    if (this.player.x > 4450 && this.isInteracted == false) {
+    if (this.player.x > 4200 && this.isInteracted == false) {
 
       this.premiumPopupWindow.setVisible(true);
       this.premiumPopupCloseBtn.setVisible(true);
