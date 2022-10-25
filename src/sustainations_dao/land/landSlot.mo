@@ -9,10 +9,13 @@ module LandSlot {
       ownerId = landSlot.ownerId;
       isPremium = landSlot.isPremium;
       isSelling = landSlot.isSelling;
-      zone = landSlot.zone;
-      xIndex = landSlot.xIndex;
-      yIndex = landSlot.yIndex;
-      price = landSlot.price; 
+      indexRow = landSlot.indexRow;
+      indexColumn = landSlot.indexColumn;
+      zoneNumber = landSlot.zoneNumber;
+      zoneLetter = landSlot.zoneLetter;
+      easting = landSlot.easting;
+      northing = landSlot.northing;
+      price = landSlot.price;
     };
     return newLandSlot;
   };
@@ -24,5 +27,4 @@ module LandSlot {
   public func update(landSlot : Types.LandSlot, state : State.State) {
     state.landSlots.put(landSlot.id, getData(landSlot));
   };
-
 }
