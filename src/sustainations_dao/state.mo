@@ -55,7 +55,7 @@ module {
     landTransferHistories : Map<Text,Types.LandTransferHistory>;
     landBuyingStatuses : Map<Text,Types.LandBuyingStatus>;
     landConfigs : Map<Text,Types.LandConfig>;
-    userHasLandSlots : Map<Text,Types.UserHasLandSLots>;
+    nations : Map<Text,Types.Nation>;
   };
 
   public func empty() : State {
@@ -105,7 +105,7 @@ module {
       landTransferHistories = TrieMap.TrieMap<Text,Types.LandTransferHistory>(Text.equal,Text.hash);
       landBuyingStatuses = TrieMap.TrieMap<Text,Types.LandBuyingStatus>(Text.equal,Text.hash);
       landConfigs = TrieMap.TrieMap<Text,Types.LandConfig>(Text.equal,Text.hash);
-      userHasLandSlots = TrieMap.TrieMap<Text, Types.UserHasLandSLots>(Text.equal,Text.hash);
+      nations = TrieMap.TrieMap<Text, Types.Nation>(Text.equal,Text.hash);
     };
   };
 };

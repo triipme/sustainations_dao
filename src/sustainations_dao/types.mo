@@ -286,8 +286,8 @@ module {
   //--------------------- Land Config -------------------//
   public type LandConfig = {
     id : Text;
-    mapWidth : Nat;
-    mapHeight: Nat;
+    mapWidth : Int;
+    mapHeight: Int;
   };
 
   //--------------------- Land Slot ---------------------//
@@ -296,9 +296,12 @@ module {
     ownerId : Principal;
     isPremium : Bool;
     isSelling : Bool;
-    zone : Nat;
-    xIndex : Nat;
-    yIndex : Nat;
+    indexRow : Nat;
+    indexColumn : Nat;
+    zoneNumber : Nat;
+    zoneLetter : Text;
+    easting : Nat;
+    northing : Nat;
     price: Float; 
   };
 
@@ -316,15 +319,20 @@ module {
 //--------------------- Land Buying Status ---------------------//
   public type LandBuyingStatus = {
     id : Principal;
-    currentZone: Int;
-    currentLandSlotId: Text;
-    randomTimes : Int;
+    currentZoneNumber: Nat;
+    currentZoneLetter: Text;
+    currentIndexRow: Nat;
+    currentIndexColumn: Nat;
+    randomTimes : Nat;
   };
 
 //------------------------------------------------------------//
-public type UserHasLandSLots = {
+public type Nation = {
   id : Principal;
   landSlotIds : [Text];
+  // indexRow : Nat;
+  // indexColumn : Nat;
+  // utms : [{x:Int;y:Int}];
 };
 
 
