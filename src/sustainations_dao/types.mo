@@ -175,6 +175,16 @@ module {
     images : Text;
   };
 
+  //--------------------- Quest Engine---------------------//
+  public type QuestEngine = {
+    id : Text;
+    name : Text;
+    price : Nat64;
+    description : Text;
+    images : Text;
+    dateCreate: Time.Time;
+  };
+
   //--------------------- Scene ---------------------//
   public type Scene = {
     id : Text;

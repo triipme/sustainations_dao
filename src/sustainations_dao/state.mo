@@ -31,10 +31,10 @@ module {
       rewards : Map<Text, Types.MemoryCardEngineReward>;
     };
     questEngine : {
-      questEngines : TrieMap.TrieMap<Text, Types.Quest>;
-      eventEngines : TrieMap.TrieMap<Text, Types.Event>;
-      sceneEngines : TrieMap.TrieMap<Text, Types.Scene>;
-      eventOptionEngines : TrieMap.TrieMap<Text, Types.EventOption>;
+      quests : TrieMap.TrieMap<Text, Types.QuestEngine>;
+      events : TrieMap.TrieMap<Text, Types.Event>;
+      scenes : TrieMap.TrieMap<Text, Types.Scene>;
+      eventOptions : TrieMap.TrieMap<Text, Types.EventOption>;
     };
     characterClasses : Map<Text, Types.CharacterClass>;
     characters : Map<Text, Types.Character>;
@@ -85,10 +85,10 @@ module {
         rewards = TrieMap.TrieMap<Text, Types.MemoryCardEngineReward>(Text.equal, Text.hash);
       };
       questEngine = {
-        questEngines = TrieMap.TrieMap<Text, Types.Quest>(Text.equal, Text.hash);
-        eventEngines = TrieMap.TrieMap<Text, Types.Event>(Text.equal, Text.hash);
-        sceneEngines = TrieMap.TrieMap<Text, Types.Scene>(Text.equal, Text.hash);
-        eventOptionEngines = TrieMap.TrieMap<Text, Types.EventOption>(Text.equal, Text.hash);
+        quests = TrieMap.TrieMap<Text, Types.QuestEngine>(Text.equal, Text.hash);
+        events = TrieMap.TrieMap<Text, Types.Event>(Text.equal, Text.hash);
+        scenes = TrieMap.TrieMap<Text, Types.Scene>(Text.equal, Text.hash);
+        eventOptions = TrieMap.TrieMap<Text, Types.EventOption>(Text.equal, Text.hash);
       };
       characterClasses = TrieMap.TrieMap<Text, Types.CharacterClass>(Text.equal, Text.hash);
       characters = TrieMap.TrieMap<Text, Types.Character>(Text.equal, Text.hash);
