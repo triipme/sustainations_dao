@@ -4059,6 +4059,3 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     #ok(result);
   };
 };
-
-
-
