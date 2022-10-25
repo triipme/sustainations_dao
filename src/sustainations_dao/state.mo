@@ -1,6 +1,8 @@
 import Text "mo:base/Text";
 import TrieMap "mo:base/TrieMap";
 import Principal "mo:base/Principal";
+import Int "mo:base/Int";
+import Hash "mo:base/Hash";
 
 import Types "types";
 
@@ -55,9 +57,15 @@ module {
     gearSubstats : Map<Text, Types.GearSubstat>;
     materials : Map<Text, Types.Material>;
     inventories : Map<Text, Types.Inventory>;
+<<<<<<< HEAD
+    landSlots : Map<Text,Types.LandSlot>;
+    landTransferHistories : Map<Text,Types.LandTransferHistory>;
+    landBuyingStatuses : Map<Text,Types.LandBuyingStatus>;
+=======
     landSlots : Map<Text, Types.LandSlot>;
     landTransferHitories : Map<Text, Types.LandTransferHistory>;
     landBuyingStatuses : Map<Text, Types.LandBuyingStatus>;
+>>>>>>> 0b8a96b449ec70c251173a9b434990ed9ce8d923
   };
 
   public func empty() : State {
@@ -109,9 +117,15 @@ module {
       gearSubstats = TrieMap.TrieMap<Text, Types.GearSubstat>(Text.equal, Text.hash);
       materials = TrieMap.TrieMap<Text, Types.Material>(Text.equal, Text.hash);
       inventories = TrieMap.TrieMap<Text, Types.Inventory>(Text.equal, Text.hash);
+<<<<<<< HEAD
+      landSlots = TrieMap.TrieMap<Text,Types.LandSlot>(Text.equal,Text.hash);
+      landTransferHistories = TrieMap.TrieMap<Text,Types.LandTransferHistory>(Text.equal,Text.hash);
+      landBuyingStatuses = TrieMap.TrieMap<Text,Types.LandBuyingStatus>(Text.equal,Text.hash);
+=======
       landSlots = TrieMap.TrieMap<Text, Types.LandSlot>(Text.equal, Text.hash);
       landTransferHitories = TrieMap.TrieMap<Text, Types.LandTransferHistory>(Text.equal, Text.hash);
       landBuyingStatuses = TrieMap.TrieMap<Text, Types.LandBuyingStatus>(Text.equal, Text.hash);
+>>>>>>> 0b8a96b449ec70c251173a9b434990ed9ce8d923
     };
   };
 };

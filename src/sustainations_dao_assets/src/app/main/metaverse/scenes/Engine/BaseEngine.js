@@ -29,9 +29,9 @@ const popupWindo = 'metaverse/selectMap/Catalonia_popup.png';
 const popupClose = 'metaverse/selectMap/UI_ingame_close.png';
 
 
-export default class lake_scene1 extends BaseScene {
+export default class BaseEngine extends BaseScene {
   constructor() {
-    super('lake_scene1');
+    super('BaseEngine');
   }
 
   clearSceneCache() {
@@ -270,7 +270,7 @@ export default class lake_scene1 extends BaseScene {
       this.sfx_char_footstep.stop();
 
       if(this.listScene.length===0)  this.scene.start("thanks", { isUsedPotion: this.isUsedPotion });
-      else this.scene.start("lake_scene1", { isUsedPotion: this.isUsedPotion, listScene: this.listScene });
+      else this.scene.start("BaseEngine", { isUsedPotion: this.isUsedPotion, listScene: this.listScene });
       
     }
 

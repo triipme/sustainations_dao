@@ -16,11 +16,11 @@ module LandSlotHistory {
   };
 
   public func create(landTransferHistory : Types.LandTransferHistory, state : State.State) {
-    state.landTransferHitories.put(landTransferHistory.id, getData(landTransferHistory));
+    state.landTransferHistories.put(landTransferHistory.id, getData(landTransferHistory));
   };
 
   public func update(landTransferHistory : Types.LandTransferHistory, state : State.State) {
-    state.landTransferHitories.put(landTransferHistory.id, getData(landTransferHistory));
+    state.landTransferHistories.put(landTransferHistory.id, getData(landTransferHistory));
   };
 
 }

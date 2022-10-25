@@ -106,6 +106,9 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
   private stable var gearSubstats : [(Text, Types.GearSubstat)] = [];
   private stable var materials : [(Text, Types.Material)] = [];
   private stable var inventories : [(Text, Types.Inventory)] = [];
+  private stable var landSlots : [(Text, Types.LandSlot)] = [];
+  private stable var landTransferHistories : [(Text, Types.LandTransferHistory)] = [];
+  private stable var landBuyingStatuses :  [(Text, Types.LandBuyingStatus)] = [];
 
   system func preupgrade() {
     Debug.print("Begin preupgrade");
@@ -156,6 +159,9 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
     gearSubstats := Iter.toArray(state.gearSubstats.entries());
     materials := Iter.toArray(state.materials.entries());
     inventories := Iter.toArray(state.inventories.entries());
+    landSlots := Iter.toArray(state.landSlots.entries());
+    landTransferHistories := Iter.toArray(state.landTransferHistories.entries());
+    landBuyingStatuses := Iter.toArray(state.landBuyingStatuses.entries());
     Debug.print("End preupgrade");
   };
 
@@ -283,6 +289,15 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
     };
     for ((k, v) in Iter.fromArray(inventories)) {
       state.inventories.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(landSlots)) {
+      state.landSlots.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(landTransferHistories)) {
+      state.landTransferHistories.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(landBuyingStatuses)) {
+      state.landBuyingStatuses.put(k, v);
     };
     Debug.print("End postupgrade");
   };
@@ -4005,8 +4020,15 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
     #ok((list));
   };
 
+<<<<<<< HEAD
+
+
+// Land
+  public shared({ caller }) func buyLandSlot() : async Response<Text> {
+=======
   // Land
   public shared ({ caller }) func buyLandSlot() : async Response<Text> {
+>>>>>>> 0b8a96b449ec70c251173a9b434990ed9ce8d923
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
@@ -4029,10 +4051,68 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
       };
     };
   };
+<<<<<<< HEAD
+
+
+
+  public shared({caller}) func createLandSlot({id : Text;zone : Nat;i : Nat;j : Nat;}) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsLandSlot = state.landSlots.get(id);
+    switch (rsLandSlot) {
+      case (?V) { #err(#AlreadyExisting); };
+      case null {
+        let newlandSlot : Types.LandSlot = {
+          id = id;
+          ownerId = Principal.fromActor(this);
+          isPremium = false;
+          isSelling = false;
+          zone = zone;
+          xIndex = i;
+          yIndex = j;
+          price = 0.0; 
+        };
+        LandSlot.create(newlandSlot, state);
+        #ok("Success");
+      };
+    };
+  };
+
+
+  public shared({caller}) func createLandSlots(scrX : Nat, scrY : Nat, desX : Nat, desY : Nat, mapWidth : Nat) : async Response<Int> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let iterI = Iter.range(scrX,desX-1);   
+    var counter = 0;
+    for (i in iterI) {
+      let iterJ = Iter.range(scrY,desY-1);
+      for (j in iterJ) {
+        let landSlot = {
+          id = Nat.toText(i*mapWidth+j);
+          zone = 20;
+          i = i;
+          j = j;
+        };
+        let created = createLandSlot(landSlot);
+        counter:=counter+1;
+      };
+    };
+
+    #ok(counter);
+  };
+  
+
+  public shared({caller}) func updateLandSlot(zone : Nat, index : (Nat,Nat)) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+=======
 
   public shared ({ caller }) func createLandSlot(zone : Int, index : (Int, Int)) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
+>>>>>>> 0b8a96b449ec70c251173a9b434990ed9ce8d923
     };
     var uuid : Text = await createUUID();
     label whileLoop loop {
@@ -4054,8 +4134,14 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
       isPremium = false;
       isSelling = false;
       zone = zone;
+<<<<<<< HEAD
+      xIndex = index.0;
+      yIndex = index.1;
+      price = 0.0;     
+=======
       index = index;
       price = 0.0;
+>>>>>>> 0b8a96b449ec70c251173a9b434990ed9ce8d923
     };
     let created = state.landSlots.put(newLandSlot.id, newLandSlot);
     ignore await createLandTransferHistory(newLandSlot.ownerId, newLandSlot.id, 0.0001);
@@ -4076,7 +4162,36 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
     #ok((list));
   };
 
+<<<<<<< HEAD
+
+  public shared query({caller}) func loadLandSlotsArea(beginX : Nat, beginY : Nat, endX : Nat, endY : Nat, mapWidth : Nat) : async Response<[Types.LandSlot]> {
+    var list : [Types.LandSlot] = [];
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    let iterI = Iter.range(beginX,endX);
+    for (i in iterI) {
+      let iterJ = Iter.range(beginY,endY);
+      for (j in iterJ) {  
+        let rsLandSlot=state.landSlots.get(Nat.toText(i*mapWidth+j));
+        switch (rsLandSlot) {
+          case (null) {
+            
+          };
+          case (?V) {
+            list := Array.append<Types.LandSlot>(list, [V]); 
+          };
+        };
+      };
+    };
+    #ok((list));
+  };
+
+  public shared query({caller}) func listAllLandSlots() : async Response<[(Text, Types.LandSlot)]> {
+=======
   public shared query ({ caller }) func listAllLandSlots() : async Response<[(Text, Types.LandSlot)]> {
+>>>>>>> 0b8a96b449ec70c251173a9b434990ed9ce8d923
     var list : [(Text, Types.LandSlot)] = [];
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
@@ -4087,6 +4202,17 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
     #ok((list));
   };
 
+    public shared query({caller}) func landSlotsLength() : async Response<Int> {
+    var list : [(Text, Types.LandSlot)] = [];
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    for((key ,landSlot) in state.landSlots.entries()) {
+      list := Array.append<(Text, Types.LandSlot)>(list, [(key, landSlot)]);
+    };
+    #ok(list.size());
+  };
+
   // Land Transfer History
   public shared ({ caller }) func createLandTransferHistory(buyerId : Principal, landId : Text, price : Float) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
@@ -4095,8 +4221,13 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
     var uuid : Text = await createUUID();
     label whileLoop loop {
       while (true) {
+<<<<<<< HEAD
+      let rsLandTransferHistory = state.landTransferHistories.get(uuid);
+      switch (rsLandTransferHistory) {
+=======
         let rsLandTransferHistory = state.landTransferHitories.get(uuid);
         switch (rsLandTransferHistory) {
+>>>>>>> 0b8a96b449ec70c251173a9b434990ed9ce8d923
           case (?V) {
             uuid := await createUUID();
           };
@@ -4114,7 +4245,11 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
       transferTime = Time.now();
       price = price;
     };
+<<<<<<< HEAD
+    let created = state.landTransferHistories.put(newLandTransferHistory.id,newLandTransferHistory);
+=======
     let created = state.landTransferHitories.put(newLandTransferHistory.id, newLandTransferHistory);
+>>>>>>> 0b8a96b449ec70c251173a9b434990ed9ce8d923
     #ok("Success");
   };
 
@@ -4123,22 +4258,32 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
+<<<<<<< HEAD
+    for((K,V) in state.landTransferHistories.entries()) {
+=======
     for ((K, V) in state.landTransferHitories.entries()) {
+>>>>>>> 0b8a96b449ec70c251173a9b434990ed9ce8d923
       list := Array.append<(Text, Types.LandTransferHistory)>(list, [(K, V)]);
     };
     #ok((list));
   };
 
   // Land Buying Status
+<<<<<<< HEAD
+  public shared({caller}) func updateLandBuyingStatus(zone : Int, landSlotId : Text,randomTimes : Int) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+=======
   public shared ({ caller }) func updateLandBuyingStatus(zone : Int, landIndex : Int, randomTimes : Int) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
+>>>>>>> 0b8a96b449ec70c251173a9b434990ed9ce8d923
     };
 
     let newLandBuyingStatus : Types.LandBuyingStatus = {
       id = caller;
       currentZone = zone;
-      currentLandIndex = landIndex;
+      currentLandSlotId = landSlotId;
       randomTimes = randomTimes;
     };
     let principalId = Principal.toText(caller);

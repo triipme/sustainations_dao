@@ -311,9 +311,16 @@ module {
     ownerId : Principal;
     isPremium : Bool;
     isSelling : Bool;
+<<<<<<< HEAD
+    zone : Nat;
+    xIndex : Nat;
+    yIndex : Nat;
+    price: Float; 
+=======
     zone : Int;
     index : (Int, Int);
     price : Float;
+>>>>>>> 0b8a96b449ec70c251173a9b434990ed9ce8d923
   };
 
   //--------------------- Land Transfer History ---------------------//
@@ -328,12 +335,27 @@ module {
   //--------------------- Land Buying Status ---------------------//
   public type LandBuyingStatus = {
     id : Principal;
+<<<<<<< HEAD
+    currentZone: Int;
+    currentLandSlotId: Text;
+    randomTimes : Int;
+  };
+
+//------------------------------------------------------------//
+public type UserhasLandSLots = {
+  id : Principal;
+  landSlotIds : [Text];
+};
+
+
+=======
     currentZone : Int;
     currentLandIndex : Int;
     //currentIndex : (Int,Int);
     randomTimes : Int;
   };
 
+>>>>>>> 0b8a96b449ec70c251173a9b434990ed9ce8d923
   // Error codes
   public type Error = {
     #BalanceLow;

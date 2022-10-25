@@ -8,7 +8,8 @@ import {
   loadItemUrl,
   resetCharacter,
   loadCharacterAwait,
-  resetCharacterCollectsMaterials
+  resetCharacterCollectsMaterials,
+  listSceneQuests
 } from '../GameApi';
 import { throws } from 'assert';
 
@@ -27,6 +28,8 @@ const UI_Stamina = 'metaverse/selectItems/UI_id_stamina.png';
 const UI_NameCard = 'metaverse/selectItems/UI_id_name.png';
 const player = 'metaverse/selectItems/UI_player.png';
 const pickItemText = 'metaverse/selectItems/UI_pick_item.png';
+
+const sum = 1;
 
 class selectItemScene extends BaseScene {
   constructor() {
@@ -190,7 +193,11 @@ class selectItemScene extends BaseScene {
     });
     this.btnGo.on('pointerout', () => {
       this.btnGo.setFrame(0);
+    this.initScene("lake"); //for quest Engine
     });
+
+    // this.initScene("lake"); //for quest Engine
+
     this.btnGo.on('pointerdown', () => {
       this.clickSound.play();
       switch (data.map) {
@@ -204,7 +211,7 @@ class selectItemScene extends BaseScene {
           this.scene.start('lava_scene1');
           break;
         case 'lake':
-          this.scene.start('lake_scene1');
+          this.scene.start('BaseEngine', {listScene: ["e36", "e37","e38","e39","e40"]});
           break;
         default:
           console.log('invalid map name');
