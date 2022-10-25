@@ -1,5 +1,7 @@
 import Option "mo:base/Option";
 import Principal "mo:base/Principal";
+import Array "mo:base/Array";
+import Iter "mo:base/Iter";
 import Types "../types";
 import State "../state";
 
@@ -8,6 +10,7 @@ module Nation {
     let newLandConfig : Types.Nation = {
       id = nation.id;
       landSlotIds = nation.landSlotIds;
+      utms = nation.utms;
     };
     return newLandConfig;
   };
@@ -20,6 +23,10 @@ module Nation {
     state.nations.put(Principal.toText(nation.id), getData(nation));
   };  
 
+  public type LandSlot = {
+    i : Nat;
+    j : Nat;
+  };
   public type UTM = (Nat, Nat);
 
   public func convertLandslotijToUTM(d : Nat, landslot : LandSlot) : [UTM] {

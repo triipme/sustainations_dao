@@ -330,9 +330,10 @@ module {
 public type Nation = {
   id : Principal;
   landSlotIds : [Text];
+  utms : [(Nat,Nat)];
   // indexRow : Nat;
   // indexColumn : Nat;
-  // utms : [{x:Int;y:Int}];
+ 
 };
 
 

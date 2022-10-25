@@ -3849,21 +3849,21 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
           case (null) {
             return #err(#NotFound);
           };
-          case (?V) {
-            var i = await Random.randomIndex(0,V.mapHeight-1);
-            var j = await Random.randomIndex(0,V.mapWidth-1);
+          case (?landConfig) {
+            var i = await Random.randomIndex(0, landConfig.mapHeight - 1);
+            var j = await Random.randomIndex(0, landConfig.mapWidth - 1);
             // check to see if random function return already-exist landSlot, if yes run random function again
             label whileloop loop {
               while (true) {
-                let rsLandSlot = state.landSlots.get(Int.toText(i)#"-"#Int.toText(j));
+                let rsLandSlot = state.landSlots.get(Int.toText(i) # "-" # Int.toText(j));
                 
                 switch (rsLandSlot) {
                   case null {
                     break whileloop;
                   };
-                  case  (?X) {
-                    i := await Random.randomIndex(0,V.mapHeight-1);
-                    j := await Random.randomIndex(0,V.mapWidth-1);
+                  case  (?landSlot) {
+                    i := await Random.randomIndex(0, landConfig.mapHeight - 1);
+                    j := await Random.randomIndex(0, landConfig.mapWidth - 1);
                   };
                 };
               };
@@ -3872,14 +3872,14 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
           };
         };
       };
-      case (?L) {
+      case (?nation) {
         let rsLandConfig = state.landConfigs.get(Principal.toText(Principal.fromActor(this)));
         switch (rsLandConfig) {
           case (null) {
             return #err(#NotFound);
           };
-          case (?V) {
-            let adjacentLandSlots= await getAdjacentLandSlots(L.landSlotIds,V);
+          case (?LandConfig) {
+            let adjacentLandSlots= await getAdjacentLandSlots(nation.landSlotIds,LandConfig);
             let randomIndex = await Random.randomIndex(0,adjacentLandSlots.size()-1);
             #ok(adjacentLandSlots[Int.abs(randomIndex)]);
           };
@@ -3896,9 +3896,9 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
         switch (rsLandSlot) {
           case null {
           };
-          case (?S) {
-            let indexRow : Int = S.indexRow;
-            let indexColumn : Int = S.indexColumn;
+          case (?landSlot) {
+            let indexRow : Int = landSlot.indexRow;
+            let indexColumn : Int = landSlot.indexColumn;
             let upLandSlot = state.landSlots.get(Int.toText(indexRow-1)#"-"#Int.toText(indexColumn));
             let downLandSlot = state.landSlots.get(Int.toText(indexRow+1)#"-"#Int.toText(indexColumn));
             let leftLandSlot = state.landSlots.get(Int.toText(indexRow)#"-"#Int.toText(indexColumn-1));
@@ -3970,6 +3970,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
         let newNation = {
           id = ownerId;
           landSlotIds = [landId];
+          utms = await extendNation(1000,[],landId);
         };
         let created = Nation.create(newNation,state);
         #ok("Success");
@@ -3981,6 +3982,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
         let updateNation = {
           id = ownerId;
           landSlotIds = newLandSlotIds;
+          utms = await extendNation(1000,V.utms,landId);
         };
         let updated = Nation.update(updateNation,state);
         #ok("Success");
@@ -3988,6 +3990,32 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     }
   }; 
 
+  public shared({caller}) func extendNation(d : Nat, utms : [Nation.UTM], newLandSlotId : Text) : async [Nation.UTM] {
+    let rsNewLandSlot = state.landSlots.get(newLandSlotId);
+    switch (rsNewLandSlot) {
+      case null {
+        return [];  
+      };
+      case (?newLandSlot) {
+        let convertedLandslot : [Nation.UTM] = Nation.convertLandslotijToUTM(d, {
+          i=newLandSlot.indexRow;
+          j=newLandSlot.indexColumn
+        });
+        var currentUTMList : [Nation.UTM] = utms;
+        var result = Nation.removeDuplicatePoints(
+          Array.append<Nation.UTM>(currentUTMList, convertedLandslot)
+        );
+        for(i in Iter.range(0, currentUTMList.size() - 1)){
+          for(j in Iter.range(0, convertedLandslot.size() - 1)){
+            if(currentUTMList[i] == convertedLandslot[j]){
+              result := Array.filter<Nation.UTM>(result, func(val: Nation.UTM) : Bool { val != currentUTMList[i] });
+            };
+          };
+        };
+        return result;
+      };
+    }; 
+  };
 
   public shared query({caller}) func listNations() : async Response<[(Text, Types.Nation)]> {
     var list : [(Text, Types.Nation)] = [];
