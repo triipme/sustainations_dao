@@ -6,7 +6,6 @@ import {
   updateCharacterStats,
   listCharacterSelectsItems,
   createCharacterCollectsMaterials,
-  listSceneQuests
 } from '../../GameApi';
 import { settings } from '../settings';
 import { func } from 'prop-types';
@@ -29,7 +28,8 @@ const item_potion = 'metaverse/scenes/item_ingame_HP.png'
 const popupWindo = 'metaverse/selectMap/Catalonia_popup.png';
 const popupClose = 'metaverse/selectMap/UI_ingame_close.png';
 
-export default class BaseEngine extends BaseEngine {
+
+export default class BaseEngine extends BaseScene {
   constructor() {
     super('BaseEngine');
   }
@@ -43,9 +43,15 @@ export default class BaseEngine extends BaseEngine {
     }
   }
 
+  init(data) {
+    this.listScene = data.listScene;
+    console.log(this.listScene);
+  }
+
   preload() {
     this.addLoadingScreen();
-    this.initialLoad("e36");
+    this.initialLoad(this.listScene[0]);
+    console.log(this.listScene.shift())
 
     //Preload
     this.clearSceneCache();
@@ -162,12 +168,12 @@ export default class BaseEngine extends BaseEngine {
     });
 
     // load description of event
-    const event = await readEvent(this.eventId)
+    this.event = await readEvent(this.eventId)
 
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
-      text: 'On the bench, there is a question. Find the correct answer to continue or else.\n\n“What is able to go up a chimney when down but unable to go down a chimney when up?”',
+      text: this.event.description,
       origin: { x: 0.5, y: 0.5 },
       style: {
         font: 'bold 25px Arial',
@@ -259,9 +265,13 @@ export default class BaseEngine extends BaseEngine {
     }
 
     if (this.player.x > 5100) {
+      console.log(this.sum)
       this.pregameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start("BaseEngine", { isUsedPotion: this.isUsedPotion});
+
+      if(this.listScene.length===0)  this.scene.start("thanks", { isUsedPotion: this.isUsedPotion });
+      else this.scene.start("BaseEngine", { isUsedPotion: this.isUsedPotion, listScene: this.listScene });
+      
     }
 
     if (this.player.x > 4200 && this.isInteracted == false) {

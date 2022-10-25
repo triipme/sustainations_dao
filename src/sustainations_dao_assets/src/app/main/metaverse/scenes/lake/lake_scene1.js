@@ -44,13 +44,14 @@ export default class lake_scene1 extends BaseScene {
   }
 
   init(data) {
-    this.sum = data.sum;
+    this.listScene = data.listScene;
+    console.log(this.listScene);
   }
 
   preload() {
     this.addLoadingScreen();
-    this.initScene("lake");
-    this.initialLoad("e36");
+    this.initialLoad(this.listScene[0]);
+    console.log(this.listScene.shift())
 
     //Preload
     this.clearSceneCache();
@@ -268,8 +269,9 @@ export default class lake_scene1 extends BaseScene {
       this.pregameSound.stop();
       this.sfx_char_footstep.stop();
 
-      if(this.sum==2)  this.scene.start("thanks", { isUsedPotion: this.isUsedPotion });
-      else this.scene.start("lake_scene1", { isUsedPotion: this.isUsedPotion, sum: this.sum + 1 });
+      if(this.listScene.length===0)  this.scene.start("thanks", { isUsedPotion: this.isUsedPotion });
+      else this.scene.start("lake_scene1", { isUsedPotion: this.isUsedPotion, listScene: this.listScene });
+      
     }
 
     if (this.player.x > 4200 && this.isInteracted == false) {
