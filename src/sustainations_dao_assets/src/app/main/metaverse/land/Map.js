@@ -128,7 +128,7 @@ const Map = () => {
                         <button className="button-85" style={{
                             display: purchaseBtn ? "block" : "none",
                             background: "gray"
-                        }} onClick={handlePurchase}>Comming soon</button>
+                        }} onClick={handlePurchase}>Coming soon</button>
 
                         <button className="button-85" style={{
                             display: modeBtn ? "block" : "none"
