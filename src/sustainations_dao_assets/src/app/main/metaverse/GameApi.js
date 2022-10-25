@@ -243,14 +243,10 @@ async function readEvent(eventId) {
 // list scene of quest
 async function listSceneQuests(idQuest) {
   const { user } = store.getState();
-  const func = async () => await user.actor.listSceneQuests();
+  const func = async () => await user.actor.listSceneQuests(idQuest);
   const list_scene_quest = (await func()).ok;
   return list_scene_quest;
 }
-
-
-
-
 
 export {
   getUserInfo,
