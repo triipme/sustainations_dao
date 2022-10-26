@@ -22,17 +22,6 @@ class BaseScene extends Phaser.Scene {
     super(key);
   }
 
-  initScene(idQuest) {
-    this.idQuest = idQuest;
-    this.load.rexAwait(function (successCallback, failureCallback) {
-        listSceneQuests(this.idQuest).then((result) => {
-            this.listScene = result;
-            console.log("event scene", this.listScene);
-            successCallback();
-        });
-    }, this);
-  };
-
   initialLoad(eventID) {
     this.eventId = eventID;
     this.load.rexAwait(function (successCallback, failureCallback) {
@@ -296,9 +285,10 @@ class BaseScene extends Phaser.Scene {
     }
   }
 
-  async listSceneQuests(idQuest) {
-    this.listSceneQuests = await listSceneQuests(idQuest);
-  }
+  async listScenes(idQuest) {
+    // this.listSceneQuests = await listSceneQuests(idQuest);
+    return await listSceneQuests(idQuest).then((data) => {return data}).catch((e) => {return e});
+  };
   // async listSceneQuests() {
   //   this.listSceneQuests = await listSceneQuests("lake");
   // };

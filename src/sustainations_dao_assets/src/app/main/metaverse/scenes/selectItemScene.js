@@ -76,7 +76,7 @@ class selectItemScene extends BaseScene {
         };
         successCallback();
       });
-    }, this);
+    }, this)
 
     //preload
     this.clearCache();
@@ -193,12 +193,10 @@ class selectItemScene extends BaseScene {
     });
     this.btnGo.on('pointerout', () => {
       this.btnGo.setFrame(0);
-    this.initScene("lake"); //for quest Engine
+
     });
 
-    // this.initScene("lake"); //for quest Engine
-
-    this.btnGo.on('pointerdown', () => {
+    this.btnGo.on('pointerdown', async () => {
       this.clickSound.play();
       switch (data.map) {
         case 'catalonia1':
@@ -211,7 +209,7 @@ class selectItemScene extends BaseScene {
           this.scene.start('lava_scene1');
           break;
         case 'lake':
-          this.scene.start('BaseEngine', {listScene: ["e36", "e37","e38","e39","e40"]});
+          this.scene.start('BaseEngine', { listScene: await listSceneQuests("lake") });
           break;
         default:
           console.log('invalid map name');
