@@ -10,4 +10,15 @@ module RandomMethod {
     let x = await Random.blob();
     return Float.fromInt(((Random.rangeFrom(8,x)%(99 - 0+1))+0))*0.01;
   };
+  public func randomIndex(from : Int, to : Int) : async Int {
+    let n = to - from + 1;
+    let remainder = 32767 % n;
+    let blob = await Random.blob();
+    var x =Random.rangeFrom(8,blob);
+    while (x >= 32767-remainder )
+    {
+        x := Random.rangeFrom(8,blob);
+    };
+    return from + x % n;
+  };
 };

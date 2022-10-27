@@ -209,9 +209,28 @@ const Metaverse = () => {
     });
   };
 
+  const createLandSlots = () => {
+    return new Promise(resolve => {
+      const landSlots = data[8];
+      landSlots.forEach(async landSlot => {
+        try {
+          if (!!actor?.createLandSlot) {
+            const rs = await actor.createLandSlot(landSlot);
+            console.log("Create LandSlot");
+            console.log(rs);
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      });
+      resolve();
+    });
+  };
+
 
   const handleSubmit = async () => {
     setLoading(true);
+    await createLandSlots();
     await createItem();
     await createQuest();
     await createQuestItem();

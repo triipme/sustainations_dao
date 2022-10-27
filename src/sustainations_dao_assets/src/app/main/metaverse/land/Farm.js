@@ -6,7 +6,7 @@ import Map from "./Map"
 const inventory = { tomato: false, dig: false }
 const Farm = ({ mapFeatures }) => {
     const [mode, setMode] = useState('farm')
-    console.log("Mode:", mode)
+    // console.log("Mode:", mode)
     const latlng = mapFeatures.map(feature => {
         return feature.geometry.coordinates[0].map(item => {
             return [item[1], item[0]]
@@ -30,7 +30,7 @@ const Farm = ({ mapFeatures }) => {
             fillOpacity: "0.1"
         })
     }
-    console.log(posD, posU, posL, posR, posC)
+    // console.log(posD, posU, posL, posR, posC)
     return (
         <>
             {mode === 'farm' && <>
