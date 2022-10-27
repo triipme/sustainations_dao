@@ -4,6 +4,7 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import DfinityAgentService from '../../auth/services/dfinityAgentService';
+import { canisterId } from '../../../../../declarations/sustainations_dao';
 
 function SignInPage() {
   const [authClient, setAuthClient] = useState(undefined);
@@ -26,6 +27,39 @@ function SignInPage() {
         console.log(error);
       }
     });
+  };
+
+  const verifyInfinityWalletConnection = async () => {
+    const connected = await window.ic.infinityWallet.isConnected();
+    if (connected) {
+      return true;
+    } else {
+      try {
+        await window.ic.infinityWallet.requestConnect({
+          whitelist: [canisterId],
+          host: 'https://testnet.infinityswap.one'
+        });
+        return true;
+      } catch (_e) {
+        console.log(_e);
+        return false;
+      }
+    }
+  };
+
+  const handleConnectInfinityWallet = async () => {
+    if (window?.ic?.infinityWallet) {
+      verifyInfinityWalletConnection().then(async (connected) => {
+        if (connected) {
+          // login
+          DfinityAgentService.login();
+        } else {
+          console.log('The agent creation was rejected.')
+        }
+      })
+    } else {
+      console.log('You need to install InfinityWallet first.')
+    }
   };
 
   function redirectUrl(url) {
@@ -64,6 +98,27 @@ function SignInPage() {
               onClick={() => handleLogin()}
             >
               Sign in
+            </Button>
+          </div>
+          <div className="flex items-center mt-16">
+            <div className="flex-auto mt-px border-t" />
+            <Typography className="mx-8" color="text.secondary">
+              Or
+            </Typography>
+            <div className="flex-auto mt-px border-t" />
+          </div>
+          <div className="flex items-center">
+            <Button
+              variant="contained"
+              color="secondary"
+              className="w-full mt-16 flex-auto"
+              style={{color: '#ffffff'}}
+              aria-label="Use Infinity Wallet"
+              type="button"
+              size="large"
+              onClick={() => handleConnectInfinityWallet()}
+            >
+              Use Infinity Wallet
             </Button>
           </div>
         </div>

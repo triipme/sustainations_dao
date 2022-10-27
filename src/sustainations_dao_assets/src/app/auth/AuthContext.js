@@ -9,7 +9,7 @@ import { getS3Object } from '../hooks';
 import DfinityAgentService from './services/dfinityAgentService';
 
 import { AuthClient } from '@dfinity/auth-client';
-import { canisterId, createActor } from '../../../../declarations/sustainations_dao';
+import { canisterId, createActor, idlFactory } from '../../../../declarations/sustainations_dao';
 
 const AuthContext = React.createContext();
 
@@ -22,10 +22,12 @@ function AuthProvider({ children }) {
     const initAuthClient = async () => {
       const client = await AuthClient.create();
       const authenticated = await client.isAuthenticated();
-      setIsAuthenticated(authenticated); //check isAuthorized first time
       let actor;
+      const infinityWalletConnected = await window?.ic?.infinityWallet?.isConnected();
       if (authenticated) {
+        setIsAuthenticated(authenticated); //check isAuthorized first time
         const identity = client.getIdentity();
+        console.log('aaa', identity);
         actor = createActor(canisterId, {
           agentOptions: {
             identity
@@ -59,6 +61,48 @@ function AuthProvider({ children }) {
           depositAddress: result?.ok?.depositAddress,
           balance: result?.ok?.balance,
           principal,
+          brandId: result?.ok?.brandId[0],
+          profile,
+          avatar
+        };
+
+        dispatch(setUser(userState));
+        setWaitAuthCheck(false);
+      } else if (infinityWalletConnected) {
+        actor = await window.ic.infinityWallet.createActor({
+          canisterId,
+          interfaceFactory: idlFactory,
+        });
+        console.log(actor);
+
+        const principal = await window.ic.infinityWallet.getPrincipal();
+        const result = await actor.getUserInfo();
+        let brandRole = [];
+        const brandRoles = _.keys(result?.ok?.brandRole[0]);
+        if (_.includes(brandRoles, 'owner')) {
+          brandRole = ['brandOwner'];
+        }
+        if (_.includes(brandRoles, 'staff')) {
+          brandRole = ['brandStaff'];
+        }
+        const profile = result?.ok?.profile[0];
+        let avatar = '';
+        if (profile?.avatar[0]) {
+          async function getFile(path) {
+            if (path) {
+              const file = await getS3Object(path);
+              return file;
+            }
+          };
+          avatar = await getFile(profile?.avatar[0]);
+        }
+        const profileRole = _.isEmpty(profile?.role) ? ['user'] : _.keys(profile?.role);
+        const userState = {
+          role: result?.ok?.agreement ? _.union(profileRole, brandRole) : ['needAgreement'],
+          actor,
+          depositAddress: result?.ok?.depositAddress,
+          balance: result?.ok?.balance,
+          principal: principal.toText(),
           brandId: result?.ok?.brandId[0],
           profile,
           avatar
