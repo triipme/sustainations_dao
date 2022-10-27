@@ -49,6 +49,7 @@ export default class BaseEngine extends BaseScene {
   }
   
   preload() {
+    this.addLoadingScreen();
     console.log("data: ", this.listScene);
     this.initialLoad(this.listScene[0]);
     console.log(this.listScene.shift())
@@ -269,8 +270,8 @@ export default class BaseEngine extends BaseScene {
       this.pregameSound.stop();
       this.sfx_char_footstep.stop();
 
-      if (this.listScene.length === 0) this.scene.start("thanks", { isUsedPotion: this.isUsedPotion });
-      else this.scene.start("BaseEngine", { isUsedPotion: this.isUsedPotion, listScene: this.listScene });
+      // if (this.listScene.length === 0) this.scene.start("thanks", { isUsedPotion: this.isUsedPotion });
+      // else this.scene.start("BaseEngine", { isUsedPotion: this.isUsedPotion, listScene: this.listScene });
 
     }
 
@@ -292,5 +293,7 @@ export default class BaseEngine extends BaseScene {
     this.bg_2.tilePositionX = this.myCam.scrollX * 1;
     this.obstacle.tilePositionX = this.myCam.scrollX * 1;
     this.bg_3.tilePositionX = this.myCam.scrollX * 1;
+    if (this.listScene.length === 0) this.scene.start("thanks", { isUsedPotion: this.isUsedPotion });
+      else this.scene.start("BaseEngine", { isUsedPotion: this.isUsedPotion, listScene: this.listScene });
   }
 }
