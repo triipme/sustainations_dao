@@ -19,7 +19,7 @@ function getUserInfo() {
   });
 };
 
-// LandSlot
+// buy LandSlot
 async function buyLandSlot() {
   const { user } = store.getState();
   const func = async () => await user.actor.buyLandSlot();
@@ -27,6 +27,7 @@ async function buyLandSlot() {
   return result;
 }
 
+// random LandSlot
 async function randomLandSlot() {
   const { user } = store.getState();
   const func = async () => await user.actor.randomLandSlot();
@@ -64,31 +65,36 @@ async function createLandSlot(i,j) {
   return result;
 };
 
-// load LandTransferHistories
-async function loadLandTransferHistories() {
-  const { user } = store.getState();
-  const listLandTransferHistories = async () => await user.actor.listLandTransferHistories();
-  const landTransferHistories = (await listLandTransferHistories()).ok;
-  return landTransferHistories;
-};
 
-// update LandBuyingStatus
-async function updateLandBuyingStatus(indexRow,indexColumn,randomTimes) {
+async function loadNationsfromCenter(x, y) {
   const { user } = store.getState();
-  const func = async () => await user.actor.updateLandBuyingStatus(parseInt(indexRow),parseInt(indexColumn),20,"N",randomTimes);
-  const result = (await func()).ok;
-  return result;
-  
-};
+  const func = async () => await user.actor.loadNationsArea(
+    x-20,y-20,x+20,y+20
+  );
+  const nations = (await func()).ok;
+  let zone = 20
+  var result = {
+    features: []
+  };
+  for (let i of nations) {
+    var coordinates = []
+    for (let j of i.utms) {
+      let coord = utm2lonlat(Number(j[1]),Number(j[0]))
+      coordinates.push(coord)
+    }
+    let feature = {
+      type: "Feature",
+      properties: { "zone": zone, "i": i.indexRow, "j": i.indexColumn },
+      geometry: {
+        type: "Polygon", coordinates: coordinates
+      }
+    }
+    result.features.push(feature)
+  }
+  return result.features
+}
 
-// load LandBuyingStatuses
-async function loadLandBuyingStatus() {
-  const { user } = store.getState();
-  const readLandBuyingStatus = async () => await user.actor.readLandBuyingStatus();
-  const landBuyingStatus = (await readLandBuyingStatus()).ok;
-  return landBuyingStatus;
-};
-
+// load LandSLot from Center
 async function loadLandSlotsfromCenter(x, y) {
   let d = 1000
   let zone = 20
@@ -123,6 +129,7 @@ async function loadLandSlotsfromCenter(x, y) {
   return result.features
 }
 
+// get LandIndex based on long and lat value of center point on the screen
 function getLandIndex(latlng, landData) {
   for (let i in landData) {
     let coordinates = landData[i].geometry.coordinates[0]
@@ -135,6 +142,33 @@ function getLandIndex(latlng, landData) {
     }
   }
 }
+
+// load LandTransferHistories
+async function loadLandTransferHistories() {
+  const { user } = store.getState();
+  const listLandTransferHistories = async () => await user.actor.listLandTransferHistories();
+  const landTransferHistories = (await listLandTransferHistories()).ok;
+  return landTransferHistories;
+};
+
+// update LandBuyingStatus
+async function updateLandBuyingStatus(indexRow,indexColumn,randomTimes) {
+  const { user } = store.getState();
+  const func = async () => await user.actor.updateLandBuyingStatus(parseInt(indexRow),parseInt(indexColumn),20,"N",randomTimes);
+  const result = (await func()).ok;
+  return result;
+  
+};
+
+// load LandBuyingStatuses
+async function loadLandBuyingStatus() {
+  const { user } = store.getState();
+  const readLandBuyingStatus = async () => await user.actor.readLandBuyingStatus();
+  const landBuyingStatus = (await readLandBuyingStatus()).ok;
+  return landBuyingStatus;
+};
+
+
 
 // load TileSlots
 async function loadTileSlots(properties) {
@@ -178,6 +212,7 @@ export {
   buyLandSlot,
   updateLandBuyingStatus,
   loadLandBuyingStatus,
+  loadNationsfromCenter,
   loadLandSlotsfromCenter,
   getLandIndex,
   loadTileSlots

@@ -1,6 +1,5 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { GeoJSON, MapContainer, useMap, useMapEvents, TileLayer, Rectangle, ImageOverlay } from "react-leaflet";
-// import mapData from "./data/land_size_100_400X400_zone_20.json";
 import "./styles.css";
 import BigMap from "./bigmap"
 import Map from "./Map"

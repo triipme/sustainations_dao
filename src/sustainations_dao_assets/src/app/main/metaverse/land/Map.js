@@ -10,15 +10,17 @@ import {
   randomLandSlot,
   createLandSlot,
   loadLandBuyingStatus,
+  loadNationsfromCenter,
   loadLandSlotsfromCenter,
   loadTileSlots,
   getLandIndex,
   getUserInfo,
-  updateLandBuyingStatus
+  updateLandBuyingStatus,
 } from '../LandApi'
 
 var numRandom = 3
 var landData = []
+var nationData = []
 var init = 0
 var mapFeature = null
 
@@ -27,6 +29,9 @@ const Map = () => {
 
   const loadLands = async (i, j) => {
     landData = await loadLandSlotsfromCenter(i, j);
+  }
+  const loadNations = async (i,j) => {
+    nationData = await loadNationsfromCenter(i,j);
   }
   const map = useMap()
   const [mode, setMode] = useState('land')
@@ -98,7 +103,7 @@ const Map = () => {
     }
     else {
       numRandom-=1
-      await buyLandSlot()
+      console.log(await buyLandSlot())
       let landSlot = await randomLandSlot()
       console.log(landSlot)
       console.log(await updateLandBuyingStatus(landSlot.properties.i,landSlot.properties.j,numRandom))
@@ -106,7 +111,6 @@ const Map = () => {
     setRender(!render)
     console.log("USER INFO:")
     console.log(await getUserInfo())
-    
   }
 
   const handleAccept = async () => {
