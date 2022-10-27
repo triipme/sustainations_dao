@@ -49,6 +49,7 @@ export default class BaseEngine extends BaseScene {
   }
   
   preload() {
+    this.addLoadingScreen();
     console.log("data: ", this.listScene);
     this.initialLoad(this.listScene[0]);
     console.log(this.listScene.shift())
