@@ -74,8 +74,6 @@ export default class lake_scene1 extends BaseScene {
     this.load.spritesheet('popupWindo', popupWindo, { frameWidth: 980, frameHeight: 799 });
     this.load.image("popupClose", popupClose);
 
-    //Rain
-    this.load.atlas('flares', flares, flaresJson);
 
   }
 
