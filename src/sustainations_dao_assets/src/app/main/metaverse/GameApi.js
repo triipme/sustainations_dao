@@ -247,6 +247,16 @@ async function listSceneQuests(idQuest) {
   const list_scene_quest = (await func()).ok;
   return list_scene_quest;
 }
+// function listSceneQuests(idQuest) {
+//   const promise = new Promise((resolve, reject) => {
+//     const { user } = store.getState();
+//     const rs = user.actor.listSceneQuests(idQuest);
+//     resolve(rs);
+//   })
+//   promise.then((data) => {
+//     return data;
+//   })
+// };
 
 export {
   getUserInfo,
