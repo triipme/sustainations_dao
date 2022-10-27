@@ -292,7 +292,5 @@ export default class BaseEngine extends BaseScene {
     this.bg_2.tilePositionX = this.myCam.scrollX * 1;
     this.obstacle.tilePositionX = this.myCam.scrollX * 1;
     this.bg_3.tilePositionX = this.myCam.scrollX * 1;
-    if (this.listScene.length === 0) this.scene.start("thanks", { isUsedPotion: this.isUsedPotion });
-      else this.scene.start("BaseEngine", { isUsedPotion: this.isUsedPotion, listScene: this.listScene });
   }
 }

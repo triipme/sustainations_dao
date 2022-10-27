@@ -285,13 +285,5 @@ class BaseScene extends Phaser.Scene {
     }
   }
 
-  // async listScenes(idQuest) {
-  //   // this.listSceneQuests = await listSceneQuests(idQuest);
-  //   return await listSceneQuests(idQuest).then((data) => {return data}).catch((e) => {return e});
-  // };
-  // // async listSceneQuests() {
-  // //   this.listSceneQuests = await listSceneQuests("lake");
-  // // };
-
 }
 export default BaseScene;
