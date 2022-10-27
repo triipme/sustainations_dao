@@ -29,8 +29,6 @@ const UI_NameCard = 'metaverse/selectItems/UI_id_name.png';
 const player = 'metaverse/selectItems/UI_player.png';
 const pickItemText = 'metaverse/selectItems/UI_pick_item.png';
 
-const sum = 1;
-
 class selectItemScene extends BaseScene {
   constructor() {
     super('selectItemScene');
@@ -208,8 +206,14 @@ class selectItemScene extends BaseScene {
         case 'lava':
           this.scene.start('lava_scene1');
           break;
+        // case 'lake':
+        //   this.scene.start('lake_scene1');
+        //   break;
+        // case 'lake':
+        //   this.scene.start('BaseEngine', { listScene: await listSceneQuests("lake") });
+        //   break;
         case 'lake':
-          this.scene.start('BaseEngine', { listScene: await listSceneQuests("lake") });
+          this.scene.start('BaseEngine', { listScene: ["e36", "e37","e38","e39","e40"] });
           break;
         default:
           console.log('invalid map name');

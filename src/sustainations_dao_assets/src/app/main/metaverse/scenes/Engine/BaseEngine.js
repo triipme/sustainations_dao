@@ -270,9 +270,8 @@ export default class BaseEngine extends BaseScene {
       this.pregameSound.stop();
       this.sfx_char_footstep.stop();
 
-      // if (this.listScene.length === 0) this.scene.start("thanks", { isUsedPotion: this.isUsedPotion });
-      // else this.scene.start("BaseEngine", { isUsedPotion: this.isUsedPotion, listScene: this.listScene });
-
+      if (this.listScene.length === 0) this.scene.start("thanks", { isUsedPotion: this.isUsedPotion });
+      else this.scene.start("BaseEngine", { isUsedPotion: this.isUsedPotion, listScene: this.listScene });
     }
 
     if (this.player.x > 4200 && this.isInteracted == false) {
