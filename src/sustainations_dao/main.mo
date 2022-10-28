@@ -3751,6 +3751,69 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     #ok(Iter.toArray(state.inventories.entries()));
   };
 
+  // Land Config
+  public shared({ caller }) func createLandConfig(mapWidth: Int, mapHeight: Int) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let id = Principal.toText(Principal.fromActor(this));
+    let rsLandConfig = state.landConfigs.get(id);
+    switch (rsLandConfig) {
+      case (?V) { #err(#AlreadyExisting); };
+      case null {
+        let newLandConfig : Types.LandConfig = {
+          id = id;
+          mapWidth = mapWidth;
+          mapHeight = mapHeight; 
+        };
+        LandConfig.create(newLandConfig, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  // Land Slot
+  public shared({caller}) func createLandSlot(indexRow : Nat,indexColumn : Nat,zoneNumber : Nat,zoneLetter : Text, d : Nat) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    // var uuid : Text = await createUUID();
+    // label whileLoop loop {
+    //   while (true) {
+    //   let rsLandSlot = state.landSlots.get(uuid);
+    //   switch (rsLandSlot) {
+    //       case (?V) {
+    //         uuid := await createUUID();
+    //       };
+    //       case null {
+    //         break whileLoop;
+    //       };
+    //     };
+    //   };
+    // };
+    let newLandSlot : Types.LandSlot = {
+      id = Nat.toText(indexRow)#"-"#Nat.toText(indexColumn);
+      ownerId = caller;
+      isPremium = false;
+      isSelling = false;
+      indexRow = indexRow;
+      indexColumn = indexColumn;
+      zoneNumber = zoneNumber;
+      zoneLetter = zoneLetter;
+      easting = indexColumn*d;
+      northing = indexRow*d;
+      price = 1;
+    };
+    let created = state.landSlots.put(newLandSlot.id,newLandSlot);
+    // save land transter history
+    ignore await createLandTransferHistory(newLandSlot.ownerId,newLandSlot.id,0.0001);
+    // delete user's current buying status 
+    ignore await deleteLandBuyingStatus(newLandSlot.ownerId);
+    // update user nation
+    ignore await createNation(newLandSlot.ownerId,newLandSlot.id);
+    #ok("Success");
+  };
+
   // Land
   public shared({ caller }) func buyLandSlot() : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
