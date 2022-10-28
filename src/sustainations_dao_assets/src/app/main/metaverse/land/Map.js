@@ -17,7 +17,7 @@ import {
   getLandIndex,
   getUserInfo,
   updateLandBuyingStatus,
-
+  loadNation
 } from '../LandApi'
 
 var numRandom = 3
@@ -35,16 +35,6 @@ const Map = () => {
   }
   const loadNations = async (i, j) => {
     nationData = await loadNationsfromCenter(i, j);
-    // console.log("NATION DATA BEFORE: ", nationData[0].geometry)
-    // let c = findCenter(nationData[0].geometry.coordinates[0])
-    // findAngles(c, nationData[0].geometry.coordinates[0])
-    // nationData[0].geometry.coordinates[0].sort(function (a, b) {
-    //   if (a.angle > b.angle && (a[0] === b[0]) || (a[1] === b[1])) return 1;
-    //   else if (a.angle < b.angle) return -1;
-    //   return 0;
-    // });
-
-    // console.log("NATION DATA AFTER: ", nationData)
   }
   const map = useMap()
   const [purchaseBtn, setPurchaseBtn] = useState(true)
@@ -70,15 +60,31 @@ const Map = () => {
   mapZoom = map.getZoom()
   // position is value coord center screen
   // console.log(position)
-  if (init == 0) { loadLands(0, 0), loadNations(0, 0) }
-  init = 1
+  const initial = async () => {
+    if (init == 0) {
+      let country = await loadNation();
+      console.log("COUNTRY: ", country)
+      if (country !== undefined) {
+        loadLands(0, 0);
+        loadNations(0, 0)
+      } else {
+        loadLands(country.indexRow, country.indexColumn);
+        loadNations(country.indexRow, country.indexColumn)
+       console.log([Number(country.geometry.coordinates[0][0][1]),Number(country.geometry.coordinates[0][0][0])])
+        
+      }
+    }
+    init = 1
+  }
+
+  initial()
 
   let index = getLandIndex(position, landData)
   if (index != undefined) {
     loadLands(index[0], index[1]);
     loadNations(index[0], index[1])
   }
-  // console.log(index)
+  console.log(index)
   map.on('click', function (e) {
     if (mode === "farm") {
       setRender(!render)
@@ -89,7 +95,7 @@ const Map = () => {
     layer.setStyle({
       color: "#FFFFFF",
       fillColor: "#48c3c8",
-      fillOpacity: ".75"
+      fillOpacity: "1"
     })
     layer.on({
       click: async (e) => {
@@ -125,8 +131,10 @@ const Map = () => {
     let landBuyingStatus = await loadLandBuyingStatus()
     // console.log(landBuyingStatus)
     if (landBuyingStatus != undefined) {
-      numRandom = Number(landBuyingStatus.randomTimes)
-      // set current random landslot in landBuyingStatus
+      let landBuyingStatus = await loadLandBuyingStatus()
+      numRandom = Number(landBuyingStatus.properties.randomTimes)
+      map.setView([Number(landBuyingStatus.geometry.coordinates[0][0][1]), Number(landBuyingStatus.geometry.coordinates[0][0][0])], 13)
+      landSlotRand = landBuyingStatus
     }
     else {
       // if having enough ICP
@@ -151,8 +159,9 @@ const Map = () => {
   const handleAccept = async () => {
     setLoading("accept")
     let landBuyingStatus = await loadLandBuyingStatus()
-    console.log(await createLandSlot(landBuyingStatus.currentIndexRow, landBuyingStatus.currentIndexColumn))
+    console.log(await createLandSlot(landBuyingStatus.properties.i, landBuyingStatus.properties.j))
     numRandom = 3
+    landSlotRand = []
     setLoading("none")
     setPurchaseBtn(true)
 
@@ -162,6 +171,7 @@ const Map = () => {
     setLoading("try")
     landSlotRand = await randomLandSlot()
     console.log(await updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom))
+    console.log("LANDSLOTRAND: ", landSlotRand)
     map.setView([landSlotRand.geometry.coordinates[0][0][1], landSlotRand.geometry.coordinates[0][0][0]], 13)
     setLoading("none")
     numRandom -= 1
@@ -173,8 +183,8 @@ const Map = () => {
         <>
           <Back />
           <Footer />
-          <GeoJSON key={Math.floor(Math.random() * 9999)} data={nationData} onEachFeature={onEachLandSlot} />
-          <GeoJSON key={Math.floor(Math.random() * 9999)} data={landSlotRand} onEachFeature={onEachRandomLandSlot} />
+          <GeoJSON key={Math.floor(Math.random() * 99999)} data={nationData} onEachFeature={onEachLandSlot} />
+          <GeoJSON key={Math.floor(Math.random() * 99999)} data={landSlotRand} onEachFeature={onEachRandomLandSlot} />
           <div>
 
             {/* <button className="button-85" style={{
@@ -195,7 +205,7 @@ const Map = () => {
               display: modeBtn ? "block" : "none"
             }} onClick={handleChangeMode}>Go to farm mode { }</button>
 
-            {!modeBtn && <div className="containPopup" style={{ left: !alert ? "2%" : "32%" }}>
+            {!modeBtn && <div className="containPopup" style={{ left: "32%" }}>
               {/* Popup purchase */}
               <div className="popupBoder" style={{
                 display: purchaseBtn ? "none" : "block"
