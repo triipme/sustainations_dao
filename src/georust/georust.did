@@ -1,0 +1,4 @@
+service : {
+    "greet": () -> () query;
+    proj: (float64, float64, int32, text) -> (float64, float64) query;
+}

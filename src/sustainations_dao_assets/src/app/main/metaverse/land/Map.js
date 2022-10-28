@@ -98,7 +98,7 @@ const Map = () => {
     let landBuyingStatus = await loadLandBuyingStatus()
     if (landBuyingStatus != undefined) {
         let landBuyingStatus = await loadLandBuyingStatus()
-        numRandom=Number(landBuyingStatus.randomTimes)
+        numRandom=Number(landBuyingStatus.properties.randomTimes)
         // set current random landslot in landBuyingStatus
     }
     else {
@@ -115,7 +115,7 @@ const Map = () => {
 
   const handleAccept = async () => {
     let landBuyingStatus = await loadLandBuyingStatus()
-    console.log(await createLandSlot(landBuyingStatus.currentIndexRow,landBuyingStatus.currentIndexColumn))
+    console.log(await createLandSlot(landBuyingStatus.properties.i,landBuyingStatus.properties.j))
   }
 
   const handleTryAgain = async () => {
