@@ -1,12 +1,14 @@
 import store from 'app/store';
+import { result } from 'lodash';
 import proj4Src from 'proj4';
+import { func } from 'prop-types';
 
 // call api
 // convert utm to lonlat
-function utm2lonlat(utmX,utmY) {
-  let zoneNumber=20
-  var firstProj="+proj=utm +ellps=clrk66 +zone=" + zoneNumber.toString() + " +units=m"
-  var secondProj="+proj=longlat +ellps=WGS84 +datum=WGS84"
+function utm2lonlat(utmX, utmY) {
+  let zoneNumber = 20
+  var firstProj = "+proj=utm +ellps=clrk66 +zone=" + zoneNumber.toString() + " +units=m"
+  var secondProj = "+proj=longlat +ellps=WGS84 +datum=WGS84"
   let result = proj4Src(firstProj, secondProj, [utmX, utmY])
   return result
 }
@@ -19,7 +21,7 @@ function getUserInfo() {
   });
 };
 
-// LandSlot
+// buy LandSlot
 async function buyLandSlot() {
   const { user } = store.getState();
   const func = async () => await user.actor.buyLandSlot();
@@ -27,16 +29,17 @@ async function buyLandSlot() {
   return result;
 }
 
+// random LandSlot
 async function randomLandSlot() {
   const { user } = store.getState();
-  const func = async () => await user.actor.randomLandSlot();
-  const result = (await func()).ok; 
+  // const func = async () => await user.actor.randomLandSlot();
+  const result = (await user.actor.randomLandSlot()).ok;
   let zone = 20
   let d = 1000
   let xIndex = Number(result.i)
   let yIndex = Number(result.j)
-  let latlng1 = utm2lonlat(d*yIndex, d*xIndex);
-  let latlng2 = utm2lonlat(d*(yIndex + 1), d*(xIndex + 1));
+  let latlng1 = utm2lonlat(d * yIndex, d * xIndex);
+  let latlng2 = utm2lonlat(d * (yIndex + 1), d * (xIndex + 1));
   let feature = {
     type: "Feature",
     properties: { "zone": zone, "i": xIndex, "j": yIndex },
@@ -57,51 +60,57 @@ async function randomLandSlot() {
 }
 
 // create LandSlot
-async function createLandSlot(i,j) {
+async function createLandSlot(i, j) {
   const { user } = store.getState();
-  const func = async () => await user.actor.createLandSlot(parseInt(i),parseInt(j),20,"N",1000);
+  const func = async () => await user.actor.createLandSlot(parseInt(i), parseInt(j), 20, "N", 1000);
   const result = (await func()).ok;
   return result;
 };
 
-// load LandTransferHistories
-async function loadLandTransferHistories() {
-  const { user } = store.getState();
-  const listLandTransferHistories = async () => await user.actor.listLandTransferHistories();
-  const landTransferHistories = (await listLandTransferHistories()).ok;
-  return landTransferHistories;
-};
 
-// update LandBuyingStatus
-async function updateLandBuyingStatus(indexRow,indexColumn,randomTimes) {
+async function loadNationsfromCenter(x, y) {
   const { user } = store.getState();
-  const func = async () => await user.actor.updateLandBuyingStatus(parseInt(indexRow),parseInt(indexColumn),20,"N",randomTimes);
-  const result = (await func()).ok;
-  return result;
-  
-};
+  const func = async () => await user.actor.loadNationsArea(
+    x - 20, y - 20, x + 20, y + 20
+  );
+  const nations = (await func()).ok;
+  let zone = 20
+  var result = {
+    features: []
+  };
+  for (let i of nations) {
+    var coordinates = []
+    for (let j of i.utms) {
+      let coord = utm2lonlat(Number(j[1]), Number(j[0]))
+      coordinates.push(coord)
+    }
+    let feature = {
+      type: "Feature",
+      properties: { "zone": zone, "i": i.indexRow, "j": i.indexColumn },
+      geometry: {
+        type: "Polygon", coordinates: [coordinates]
+      }
+    }
+    result.features.push(feature)
+  }
+  console.log(result.features)
+  return result.features
+}
 
-// load LandBuyingStatuses
-async function loadLandBuyingStatus() {
-  const { user } = store.getState();
-  const readLandBuyingStatus = async () => await user.actor.readLandBuyingStatus();
-  const landBuyingStatus = (await readLandBuyingStatus()).ok;
-  return landBuyingStatus;
-};
-
+// load LandSLot from Center
 async function loadLandSlotsfromCenter(x, y) {
   let d = 1000
   let zone = 20
   var result = {
     features: []
   };
-  for (let i = Math.max(x-9,0); i <= Math.min(x+9,1500-1); i++) {
-    for (let j = Math.max(y-18,0); j <= Math.min(y+18,1500-1); j++) {
-      
+  for (let i = Math.max(x - 50, 0); i <= Math.min(x + 50, 1500 - 1); i++) {
+    for (let j = Math.max(y - 50, 0); j <= Math.min(y + 50, 1500 - 1); j++) {
+
       let xIndex = Number(i)
       let yIndex = Number(j)
-      let latlng1 = utm2lonlat(d*yIndex, d*xIndex);
-      let latlng2 = utm2lonlat(d*(yIndex + 1), d*(xIndex + 1));
+      let latlng1 = utm2lonlat(d * yIndex, d * xIndex);
+      let latlng2 = utm2lonlat(d * (yIndex + 1), d * (xIndex + 1));
       let feature = {
         type: "Feature",
         properties: { "zone": zone, "i": xIndex, "j": yIndex },
@@ -123,6 +132,7 @@ async function loadLandSlotsfromCenter(x, y) {
   return result.features
 }
 
+// get LandIndex based on long and lat value of center point on the screen
 function getLandIndex(latlng, landData) {
   for (let i in landData) {
     let coordinates = landData[i].geometry.coordinates[0]
@@ -136,33 +146,60 @@ function getLandIndex(latlng, landData) {
   }
 }
 
+// load LandTransferHistories
+async function loadLandTransferHistories() {
+  const { user } = store.getState();
+  const listLandTransferHistories = async () => await user.actor.listLandTransferHistories();
+  const landTransferHistories = (await listLandTransferHistories()).ok;
+  return landTransferHistories;
+};
+
+// update LandBuyingStatus
+async function updateLandBuyingStatus(indexRow, indexColumn, randomTimes) {
+  const { user } = store.getState();
+  const func = async () => await user.actor.updateLandBuyingStatus(parseInt(indexRow), parseInt(indexColumn), 20, "N", randomTimes);
+  const result = (await func()).ok;
+  return result;
+
+};
+
+// load LandBuyingStatuses
+async function loadLandBuyingStatus() {
+  const { user } = store.getState();
+  const readLandBuyingStatus = async () => await user.actor.readLandBuyingStatus();
+  const landBuyingStatus = (await readLandBuyingStatus()).ok;
+  return landBuyingStatus;
+};
+
+
+
 // load TileSlots
 async function loadTileSlots(properties) {
   var result = {
     features: []
   };
-  let d=100
+  let d = 100
   let zone = properties.zone
-  let x = properties.i*10
-  let y = properties.j*10
-  for (let i=x;i<x+10;i++)
-  {
-    for (let j=y;j<y+10;j++)
-    {
-      let latlng1 = utm2lonlat(d*j,d*i);
-      let latlng2 = utm2lonlat(d*(j+1),d*(i+1));
+  let x = properties.i * 10
+  let y = properties.j * 10
+  for (let i = x; i < x + 10; i++) {
+    for (let j = y; j < y + 10; j++) {
+      let latlng1 = utm2lonlat(d * j, d * i);
+      let latlng2 = utm2lonlat(d * (j + 1), d * (i + 1));
       let feature = {
-        type : "Feature",
-        properties: { "zone": zone, "i": i, "j": j }, 
-        geometry: { type: "Polygon", coordinates: [
-          [
-            [latlng1[0], latlng1[1]],
-            [latlng2[0], latlng1[1]],
-            [latlng2[0], latlng2[1]],
-            [latlng1[0], latlng2[1]],
-            [latlng1[0], latlng1[1]]
+        type: "Feature",
+        properties: { "zone": zone, "i": i, "j": j },
+        geometry: {
+          type: "Polygon", coordinates: [
+            [
+              [latlng1[0], latlng1[1]],
+              [latlng2[0], latlng1[1]],
+              [latlng2[0], latlng2[1]],
+              [latlng1[0], latlng2[1]],
+              [latlng1[0], latlng1[1]]
+            ]
           ]
-        ]}
+        }
       };
       result.features.push(feature)
     }
@@ -171,29 +208,6 @@ async function loadTileSlots(properties) {
 }
 
 // Draw polygon 
-function findCenter(points) {
-
-  var x = 0, y = 0, i, len = points.length;
-
-  for (i = 0; i < len; i++) {
-    x += points[i].x;
-    y += points[i].y;
-  }
-  return {x: x / len, y: y / len};   // return average position
-}
-
-function findAngles(c, points) {
-
-  var i, len = points.length, p, dx, dy;
-
-  for (i = 0; i < len; i++) {
-    p = points[i];
-    dx = p.x - c.x;
-    dy = p.y - c.y;
-    p.angle = Math.atan2(dy, dx);
-  }
-}
-
 
 
 export {
@@ -204,7 +218,9 @@ export {
   buyLandSlot,
   updateLandBuyingStatus,
   loadLandBuyingStatus,
+  loadNationsfromCenter,
   loadLandSlotsfromCenter,
   getLandIndex,
-  loadTileSlots
+  loadTileSlots,
+
 }
