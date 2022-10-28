@@ -2,22 +2,19 @@ import Phaser from 'phaser';
 import BaseScene from '../BaseScene'
 import gameConfig from '../../GameConfig';
 import {
-  loadEventOptions,
+  loadEventOptionEngines,
   updateCharacterStats,
   listCharacterSelectsItems,
   createCharacterCollectsMaterials,
-  listSceneQuests
+  readScene,
+  loadItemUrl
 } from '../../GameApi';
 import { settings } from '../settings';
 import { func } from 'prop-types';
-import { readEvent } from '../../GameApi';
+import { readEventEngine } from '../../GameApi';
 
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
-const bg1 = 'metaverse/scenes/lake/Scene1/PNG/back.png';
-const bg2 = 'metaverse/scenes/lake/Scene1/PNG/mid.png';
-const bg3 = 'metaverse/scenes/lake/Scene1/PNG/front.png';
-const obstacle = 'metaverse/scenes/lake/Scene1/PNG/obstacle.png';
 const selectAction = 'metaverse/scenes/background_menu.png';
 const btnBlank = 'metaverse/scenes/selection.png';
 
@@ -28,7 +25,6 @@ const item_potion = 'metaverse/scenes/item_ingame_HP.png'
 
 const popupWindo = 'metaverse/selectMap/Catalonia_popup.png';
 const popupClose = 'metaverse/selectMap/UI_ingame_close.png';
-
 
 export default class BaseEngine extends BaseScene {
   constructor() {
@@ -47,12 +43,14 @@ export default class BaseEngine extends BaseScene {
   init(data) {
     this.listScene = data.listScene;
   }
-  
-  preload() {
+
+  async preload() {
     this.addLoadingScreen();
     console.log("data: ", this.listScene);
     this.initialLoad(this.listScene[0]);
-    console.log(this.listScene.shift())
+    this.sceneEvent = await readScene(this.listScene[0])
+    console.log(this.sceneEvent);
+
 
     //Preload
     this.clearSceneCache();
@@ -63,12 +61,12 @@ export default class BaseEngine extends BaseScene {
       frameHeight: 337
     });
     this.load.image("ground", ground);
-    this.load.image("background1", bg1);
-    this.load.image("background2", bg2);
-    this.load.image("background3", bg3);
+    this.load.image("background1", loadItemUrl(this.sceneEvent.back));
+    this.load.image("background2", loadItemUrl(this.sceneEvent.mid));
+    this.load.image("background3", loadItemUrl(this.sceneEvent.front));
     this.load.image("selectAction", selectAction);
     this.load.spritesheet('btnBlank', btnBlank, { frameWidth: 1102, frameHeight: 88 });
-    this.load.image("obstacle", obstacle);
+    this.load.image("obstacle", loadItemUrl(this.sceneEvent.obstacle));
 
     //UI -- One time load
     this.load.image("BtnExit", BtnExit);
@@ -107,6 +105,7 @@ export default class BaseEngine extends BaseScene {
   }
 
   async create() {
+    console.log(this.listScene.shift())
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
@@ -139,7 +138,7 @@ export default class BaseEngine extends BaseScene {
 
 
     // load event options
-    this.eventOptions = await loadEventOptions(this.eventId, this.selectedItemsIds);
+    this.eventOptions = await loadEventOptionEngines(this.eventId, this.selectedItemsIds);
 
     // stats before choose option
     this.setValue(this.hp, this.characterData.currentHP / this.characterData.maxHP * 100);
@@ -169,7 +168,7 @@ export default class BaseEngine extends BaseScene {
     });
 
     // load description of event
-    this.event = await readEvent(this.eventId)
+    this.event = await readEventEngine(this.eventId)
 
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
@@ -254,7 +253,6 @@ export default class BaseEngine extends BaseScene {
           createCharacterCollectsMaterials(this.characterCollectMaterials[idx]);
         }
       });
-
     };
 
   }

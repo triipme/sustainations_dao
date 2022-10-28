@@ -3058,7 +3058,7 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
     #ok((list));
   };
 
-  public shared ({ caller }) func updateQuestEngine(questEngine : Types.Quest) : async Response<Text> {
+  public shared ({ caller }) func updateQuestEngine(questEngine : Types.QuestEngine) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
@@ -3100,6 +3100,17 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
         switch (rsEvent) {
           case (?event) { #err(#AlreadyExisting) };
           case null {
+            let updateQuest : Types.QuestEngine = {
+              id = quest.id;
+              name = quest.name;
+              price = quest.price;
+              description = quest.description;
+              images = quest.images;
+              isActive = quest.isActive;
+              dateCreate = quest.dateCreate;
+              listScene = Array.append<Text>(quest.listScene, [event.id]);
+            };
+            let rsUpdate = updateQuestEngine(updateQuest);
             EventEngine.create(event, state);
             #ok("Success");
           };
@@ -3255,22 +3266,42 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
-    let rsScene = state.questEngine.scenes.get(scene.id);
-    switch (rsScene) {
-      case (?V) { #err(#AlreadyExisting) };
+    let rsEvent = state.questEngine.events.get(scene.idEvent);
+    switch (rsEvent) {
+      case (?event) {
+        let rsScene = state.questEngine.scenes.get(scene.id);
+        switch (rsScene) {
+          case (?V) { #err(#AlreadyExisting) };
+          case null {
+            Scene.create(scene, state);
+            #ok("Success");
+          };
+        };
+      };
       case null {
-        Scene.create(scene, state);
-        #ok("Success");
+        #err(#NotFound);
       };
     };
   };
 
-  public shared query ({ caller }) func readScene(id : Text) : async Response<(Types.Scene)> {
+  public shared query ({ caller }) func readScene(idEvent : Text) : async Response<(Types.Scene)> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
-    let rsScene = state.questEngine.scenes.get(id);
-    return Result.fromOption(rsScene, #NotFound);
+    let rsEvent = state.questEngine.events.get(idEvent);
+    switch (rsEvent){
+      case null {
+        #err(#NotFound);
+      };
+      case (?event){
+        for (V in state.questEngine.scenes.vals()){
+          if (event.id == V.idEvent){
+            return #ok(V);
+          };
+        };
+        return #err(#NotFound);
+      }
+    };
   };
 
   public shared query ({ caller }) func listScenes() : async Response<[(Text, Types.Scene)]> {
@@ -3317,15 +3348,11 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
       return #err(#NotAuthorized); //isNotAuthorized
     };
     var list : [Text] = [];
-    let rsQuest = state.quests.get(idQuest);
+    let rsQuest = state.questEngine.quests.get(idQuest);
     switch (rsQuest) {
       case (null) { #err(#NotFound) };
       case (?rsQuest) {
-        for ((K, V) in state.events.entries()) {
-          if (V.questId == rsQuest.id) {
-            list := Array.append<(Text)>(list, [K]);
-          };
-        };
+        list := rsQuest.listScene;
         #ok(list);
       };
     };

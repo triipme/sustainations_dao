@@ -182,7 +182,9 @@ module {
     price : Nat64;
     description : Text;
     images : Text;
+    isActive: Bool;
     dateCreate: Time.Time;
+    listScene: [Text];
   };
 
   //--------------------- Scene ---------------------//

@@ -4,7 +4,8 @@ import BaseScene from './BaseScene';
 import {
   openInventory,
   createInventory,
-  gainCharacterExp
+  gainCharacterExp,
+  loadCharacter
 } from '../GameApi';
 
 const bg = 'metaverse/UI_finish.png';
@@ -19,10 +20,17 @@ class thanks extends BaseScene {
   }
 
   preload() {
-    this.initialLoad("");
     this.addLoadingScreen();
     this.clearSceneCache();
     this.load.image('bg', bg);
+
+    this.load.rexAwait(function (successCallback, failureCallback) {
+      loadCharacter().then((result) => {
+        this.characterData = result.ok[1];
+        console.log(this.characterData);
+        successCallback();
+      });
+    }, this);
   }
 
   async create() {// add audios
@@ -37,10 +45,10 @@ class thanks extends BaseScene {
         this.pregameSound.stop();
         this.scene.start('selectMap');
       });
+
     createInventory(this.characterData.id);
     gainCharacterExp(this.characterData);
     this.inventory = openInventory(this.characterData.id);
   }
-
 }
 export default thanks;
