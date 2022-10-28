@@ -28,6 +28,9 @@ const item_potion = 'metaverse/scenes/item_ingame_HP.png'
 const popupWindo = 'metaverse/selectMap/Catalonia_popup.png';
 const popupClose = 'metaverse/selectMap/UI_ingame_close.png';
 
+const flares = 'metaverse/flares.png';
+const flaresJson = 'metaverse/flares.json';
+
 export default class lake_scene4 extends BaseScene {
   constructor() {
     super('lake_scene4');
@@ -70,6 +73,9 @@ export default class lake_scene4 extends BaseScene {
     //Popup
     this.load.spritesheet('popupWindo', popupWindo, { frameWidth: 980, frameHeight: 799 });
     this.load.image("popupClose", popupClose);
+
+    //Rain 
+    this.load.atlas('flares', flares, flaresJson);
 
   }
 
@@ -176,25 +182,39 @@ export default class lake_scene4 extends BaseScene {
       }
     }).setVisible(false).setScrollFactor(0);
 
-     //scrolling
-     this.graphics = this.make.graphics();
+    //scrolling
+    this.graphics = this.make.graphics();
 
-     this.graphics.fillRect(152, 230, 900, 250).setScrollFactor(0);
- 
-     this.mask = new Phaser.Display.Masks.GeometryMask(this, this.graphics);
- 
-     this.des.setMask(this.mask);
- 
-     // //  The rectangle they can 'drag' within
-     this.add.zone(150, 230, 900, 250).setOrigin(0).setInteractive().setVisible(true).setScrollFactor(0)
-       .on('pointermove', (pointer) => {
-         if (pointer.isDown) {
-           this.des.y += (pointer.velocity.y / 10);
- 
-           this.des.y = Phaser.Math.Clamp(this.des.y, -400, 720);
-         }
- 
-       })
+    this.graphics.fillRect(152, 230, 900, 250).setScrollFactor(0);
+
+    this.mask = new Phaser.Display.Masks.GeometryMask(this, this.graphics);
+
+    this.des.setMask(this.mask);
+
+    // //  The rectangle they can 'drag' within
+    this.add.zone(150, 230, 900, 250).setOrigin(0).setInteractive().setVisible(true).setScrollFactor(0)
+      .on('pointermove', (pointer) => {
+        if (pointer.isDown) {
+          this.des.y += (pointer.velocity.y / 10);
+
+          this.des.y = Phaser.Math.Clamp(this.des.y, -400, 720);
+        }
+
+      })
+
+    //Rain 
+    const particles = this.add.particles('flares');
+
+    particles.createEmitter({
+      frame: 'blue',
+      y: 0,
+      x: { min: 0, max: 1500 },
+      lifespan: 2000,
+      speedY: { min: 200, max: 400 },
+      scale: { start: 0.2, end: 0 },
+      quantity: 3,
+      blendMode: 'ADD'
+    }).setScrollFactor(0);
 
 
     for (const idx in this.eventOptions) {

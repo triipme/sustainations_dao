@@ -53,6 +53,8 @@ span {
 
 .containPopup {
   position: absolute;
+  text-transform: uppercase;
+  text-align: center;
   left: 2%;
   top: 20%;
   z-index: 1000;
@@ -95,8 +97,10 @@ h2 {
   font-family: open Arial;
   color: #fff;
   text-align: center;
-  line-height: 330%;
+  padding: 2%;
   opacity: 1;
+  font-size: 152%;
+  
 }
 
 h2:after {
