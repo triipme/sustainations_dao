@@ -10,6 +10,8 @@ module Nation {
     let newLandConfig : Types.Nation = {
       id = nation.id;
       landSlotIds = nation.landSlotIds;
+      indexRow = nation.indexRow;
+      indexColumn = nation.indexColumn;
       utms = nation.utms;
     };
     return newLandConfig;
@@ -54,4 +56,4 @@ module Nation {
     };
     return result;
   };
-}
+};

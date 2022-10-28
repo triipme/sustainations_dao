@@ -5,6 +5,7 @@ import {
   gainCharacterExp,
   openInventory,
   createInventory,
+  loadCharacter
 } from '../GameApi';
 
 const bg = 'metaverse/UI_finish.png';
@@ -22,6 +23,13 @@ class thanks extends BaseScene {
     this.addLoadingScreen();
     this.clearSceneCache();
     this.load.image('bg', bg);
+    this.load.rexAwait(function (successCallback, failureCallback) {
+      loadCharacter().then((result) => {
+        this.characterData = result.ok[1];
+        console.log(this.characterData);
+        successCallback();
+      });
+    }, this);
   }
 
   async create() {// add audios

@@ -6,13 +6,13 @@ const BigMap = () => {
   const onEachLand = (country, layer) => {
     layer.setStyle({
       color: "#002E5E",
-      fillColor: "#FFFFFF",
-      fillOpacity: "0"
+      fillColor: "#9ed6ad",
+      fillOpacity: "1"
     })
 
   }
   return (
-    <div style={{ height: "100%" }}>
+    <div style={{ height: "100%", backgroundColor: "#8ab4f8" }}>
 
       <GeoJSON data={mapData.features} onEachFeature={onEachLand} />
 

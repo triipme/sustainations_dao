@@ -2516,7 +2516,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     let uuid : Text = await createUUID();
     var canCreate = true;
     let rsCharacterClass = state.characterClasses.get(characterClassId);
-    let godUser = "gx3fa-rkdjs-vrshs-qqjts-aaklc-z7jvl-pc2zb-3zu6m-4hixl-5wswb-gqe";
+    let godUser = "eoaxc-owf3f-kl22c-6a7xx-me7xi-idp7u-6mkef-3ek3w-vkyrf-deavj-pqe";
     if(Principal.toText(caller) == godUser) {
       for((K, character) in state.characters.entries()){
         if(character.userId == Principal.fromText(godUser)) {
@@ -2664,17 +2664,19 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
+    gamePlayAnalytics := {
+      miniGamePlayCount = gamePlayAnalytics.miniGamePlayCount;
+      miniGameCompletedCount = gamePlayAnalytics.miniGameCompletedCount;
+      questPlayCount = gamePlayAnalytics.questPlayCount;
+      questCompletedCount = gamePlayAnalytics.questCompletedCount + 1;
+    };
+
+    Debug.print(debug_show(gamePlayAnalytics));
     let rsCharacter = state.characters.get(character.id);
     switch (rsCharacter) {
       case (null) { #err(#NotFound); };
       case (?V) {
         Character.gainCharacterExp(character, state);
-        gamePlayAnalytics := {
-          miniGamePlayCount = gamePlayAnalytics.miniGamePlayCount;
-          miniGameCompletedCount = gamePlayAnalytics.miniGameCompletedCount;
-          questPlayCount = gamePlayAnalytics.questPlayCount;
-          questCompletedCount = gamePlayAnalytics.questCompletedCount + 1;
-        };
         #ok("Success");
       };
     };
@@ -3009,18 +3011,8 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
-    var rs : [Types.UsableItem] = [];
-    switch (state.eventItems.get(Principal.toText(caller))) {
-      case null { #err(#NotFound); };
-      case (?eventItem) {
-        for((K,V) in state.usableItems.entries()) {
-          if(V.id == eventItem.itemId) {
-            rs := Array.append<Types.UsableItem>(rs, [V]);
-          };
-        };
-        #ok(rs[0]);
-      };
-    };
+    let rs = state.usableItems.get("ui1");
+    return Result.fromOption(rs, #NotFound);
   };
 
   // Event Item
@@ -3752,8 +3744,14 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     #ok((list));
   };
 
+  public shared query({caller}) func listAllInventories() : async Response<[(Text, Types.Inventory)]> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    #ok(Iter.toArray(state.inventories.entries()));
+  };
 
-// Land Config
+  // Land Config
   public shared({ caller }) func createLandConfig(mapWidth: Int, mapHeight: Int) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
@@ -3774,9 +3772,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-
-
-// Land Slot
+  // Land Slot
   public shared({caller}) func createLandSlot(indexRow : Nat,indexColumn : Nat,zoneNumber : Nat,zoneLetter : Text, d : Nat) : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
@@ -3818,6 +3814,7 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     #ok("Success");
   };
 
+  // Land
   public shared({ caller }) func buyLandSlot() : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
@@ -3934,30 +3931,54 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   };
 
 
-  // public shared query({caller}) func loadLandSlotsArea(beginX : Nat, beginY : Nat, endX : Nat, endY : Nat) : async Response<[Types.LandSlot]> {
-  //   var list : [Types.LandSlot] = [];
-  //   if(Principal.toText(caller) == "2vxsx-fae") {
-  //     return #err(#NotAuthorized);//isNotAuthorized
-  //   };
-
-  //   let iterI = Iter.range(beginX,endX);
-  //   for (i in iterI) {
-  //     let iterJ = Iter.range(beginY,endY);
-  //     for (j in iterJ) {  
-  //       let id = Nat.toText(i)#"-"#Nat.toText(j);
-  //       let rsLandSlot=state.landSlots.get(id);
-  //       switch (rsLandSlot) {
-  //         case (null) {
-            
-  //         };
-  //         case (?V) {
-  //           list := Array.append<Types.LandSlot>(list, [V]); 
-  //         };
-  //       };
-  //     };
-  //   };
-  //   #ok((list));
-  // };
+  public shared query({caller}) func loadNationsArea(beginX : Int, beginY : Int, endX : Int, endY : Int) : async Response<[Types.Nation]> {
+    var list : [Types.Nation] = [];
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let id = Principal.toText(Principal.fromActor(this));
+    let rsLandConfig = state.landConfigs.get(id);
+    switch (rsLandConfig) {
+      case null {
+        return #err(#NotFound);
+      };
+      case (?landConfig) {
+        let iterI = Iter.range(
+          Int.abs(Int.max(beginX,0)),
+          Int.abs(Int.min(endX,landConfig.mapHeight-1))
+        );
+        for (i in iterI) {
+          let iterJ = Iter.range(
+            Int.abs(Int.max(beginY,0)),
+            Int.abs(Int.min(endY,landConfig.mapWidth-1))
+          );
+          for (j in iterJ) {  
+            let id = Nat.toText(i)#"-"#Nat.toText(j);
+            let rsLandSlot=state.landSlots.get(id);
+            switch (rsLandSlot) {
+              case (null) {  
+              };
+              case (?landSlot) {
+                let rsNation = state.nations.get(Principal.toText(landSlot.ownerId));
+                switch (rsNation) {
+                  case null {
+                  };
+                  case (?nation) {
+                    if (Array.find<Types.Nation>(list,func(val: Types.Nation):Bool{
+                      list == val
+                    }) == null) {
+                      list := Array.append<Types.Nation>(list,[nation]);
+                    };
+                  };
+                };
+              };
+            };
+          };
+        };
+        return #ok((list));
+      };
+    };
+  };
 
   // Nation
   public shared({caller}) func createNation(ownerId : Principal, landId : Text) : async Response<Text> {
@@ -3967,9 +3988,12 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     let rsNation = state.nations.get(Principal.toText(ownerId));
     switch (rsNation) {
       case (null) {
+        let nationIndex = await getNationIndex([landId]);
         let newNation = {
           id = ownerId;
           landSlotIds = [landId];
+          indexRow = nationIndex.i;
+          indexColumn = nationIndex.j;
           utms = await extendNation(1000,[],landId);
         };
         let created = Nation.create(newNation,state);
@@ -3979,9 +4003,12 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
         var newLandSlotIds : [Text] = [];
         newLandSlotIds := Array.append<Text>(newLandSlotIds,V.landSlotIds); 
         newLandSlotIds := Array.append<Text>(newLandSlotIds,[landId]); 
+        let nationIndex = await getNationIndex(newLandSlotIds);
         let updateNation = {
           id = ownerId;
           landSlotIds = newLandSlotIds;
+          indexRow = nationIndex.i;
+          indexColumn = nationIndex.j;
           utms = await extendNation(1000,V.utms,landId);
         };
         let updated = Nation.update(updateNation,state);
@@ -4015,6 +4042,23 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
         return result;
       };
     }; 
+  };
+  public shared({caller}) func getNationIndex(landSlotIds : [Text]) : async {i:Nat;j:Nat} {
+    var sumRow : Nat = 0;
+    var sumColumn : Nat = 0;
+    for (id in landSlotIds.vals()) {
+      let rsLandSlot = state.landSlots.get(id);
+      switch (rsLandSlot) {
+        case null {
+        };
+        case (?landSlot) {
+          sumRow+=landSlot.indexRow;
+          sumColumn+=landSlot.indexColumn;
+        };
+      }
+    };
+    return {i=(sumRow/landSlotIds.size());j=(sumColumn/landSlotIds.size())};
+
   };
 
   public shared query({caller}) func listNations() : async Response<[(Text, Types.Nation)]> {
@@ -4122,8 +4166,6 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     };
   };
 
-
-
   public shared query({caller}) func listLandBuyingStatuses() : async Response<[(Text, Types.LandBuyingStatus)]> {
     var list : [(Text, Types.LandBuyingStatus)] = [];
     if(Principal.toText(caller) == "2vxsx-fae") {
@@ -4135,6 +4177,3 @@ shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
     #ok((list));
   };
 };
-
-
-
