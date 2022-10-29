@@ -2518,7 +2518,7 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
     let uuid : Text = await createUUID();
     var canCreate = true;
     let rsCharacterClass = state.characterClasses.get(characterClassId);
-    let godUser = "gx3fa-rkdjs-vrshs-qqjts-aaklc-z7jvl-pc2zb-3zu6m-4hixl-5wswb-gqe";
+    let godUser = "eoaxc-owf3f-kl22c-6a7xx-me7xi-idp7u-6mkef-3ek3w-vkyrf-deavj-pqe";
     if(Principal.toText(caller) == godUser) {
       for((K, character) in state.characters.entries()){
         if(character.userId == Principal.fromText(godUser)) {
@@ -2666,17 +2666,19 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
+    gamePlayAnalytics := {
+      miniGamePlayCount = gamePlayAnalytics.miniGamePlayCount;
+      miniGameCompletedCount = gamePlayAnalytics.miniGameCompletedCount;
+      questPlayCount = gamePlayAnalytics.questPlayCount;
+      questCompletedCount = gamePlayAnalytics.questCompletedCount + 1;
+    };
+
+    Debug.print(debug_show(gamePlayAnalytics));
     let rsCharacter = state.characters.get(character.id);
     switch (rsCharacter) {
       case (null) { #err(#NotFound); };
       case (?V) {
         Character.gainCharacterExp(character, state);
-        gamePlayAnalytics := {
-          miniGamePlayCount = gamePlayAnalytics.miniGamePlayCount;
-          miniGameCompletedCount = gamePlayAnalytics.miniGameCompletedCount;
-          questPlayCount = gamePlayAnalytics.questPlayCount;
-          questCompletedCount = gamePlayAnalytics.questCompletedCount + 1;
-        };
         #ok("Success");
       };
     };
@@ -3011,18 +3013,8 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
-    var rs : [Types.UsableItem] = [];
-    switch (state.eventItems.get(Principal.toText(caller))) {
-      case null { #err(#NotFound); };
-      case (?eventItem) {
-        for((K,V) in state.usableItems.entries()) {
-          if(V.id == eventItem.itemId) {
-            rs := Array.append<Types.UsableItem>(rs, [V]);
-          };
-        };
-        #ok(rs[0]);
-      };
-    };
+    let rs = state.usableItems.get("ui1");
+    return Result.fromOption(rs, #NotFound);
   };
 
   // Event Item
@@ -3754,6 +3746,7 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
     #ok((list));
   };
 
+<<<<<<< HEAD
 // convert utm2lonlat
   public shared func utm2lonlat(easting: Float, northing: Float, zoneNum: Int32, zoneLetter: Text) : async (Float, Float) {
 		let result = await georust.proj(easting, northing, zoneNum, zoneLetter);
@@ -3788,8 +3781,16 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
     };
     return geometry;
 	};
+=======
+  public shared query({caller}) func listAllInventories() : async Response<[(Text, Types.Inventory)]> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    #ok(Iter.toArray(state.inventories.entries()));
+  };
+>>>>>>> 2e0052468df1d8bab8e375caadc5a31a88fe0ebb
 
-// Land Config
+  // Land Config
   public shared({ caller }) func createLandConfig(mapWidth: Int, mapHeight: Int) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
@@ -3810,10 +3811,15 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
     };
   };
 
+<<<<<<< HEAD
 
 
 // Land Slot
   public shared({caller}) func createLandSlot(indexRow : Nat,indexColumn : Nat,nationUTMS: [[Nat]],zoneNumber : Nat,zoneLetter : Text, d : Nat) : async Response<Text> {
+=======
+  // Land Slot
+  public shared({caller}) func createLandSlot(indexRow : Nat,indexColumn : Nat,zoneNumber : Nat,zoneLetter : Text, d : Nat) : async Response<Text> {
+>>>>>>> 2e0052468df1d8bab8e375caadc5a31a88fe0ebb
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
@@ -3841,6 +3847,7 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
     #ok("Success");
   };
 
+  // Land
   public shared({ caller }) func buyLandSlot() : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
@@ -4276,6 +4283,3 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
     #ok((list));
   };
 };
-
-
-

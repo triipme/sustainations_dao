@@ -41,6 +41,7 @@ module Nation {
   //   return result;
   // };
 
+<<<<<<< HEAD
   // public func removeDuplicatePoints(list : [UTM]) : [UTM] {
   //   var result : [UTM] = [];
   //   for(i in Iter.range(0, list.size()-1)){
@@ -57,3 +58,21 @@ module Nation {
   //   return result;
   // };
 }
+=======
+  public func removeDuplicatePoints(list : [UTM]) : [UTM] {
+    var result : [UTM] = [];
+    for(i in Iter.range(0, list.size()-1)){
+      var duplicate = false;
+      for(j in Iter.range(i+1, list.size()-1)){
+        if(list[i] == list[j]){
+          duplicate := true;
+        };
+      };
+      if(duplicate == false){
+        result := Array.append<UTM>(result, [list[i]]);
+      };
+    };
+    return result;
+  };
+};
+>>>>>>> 2e0052468df1d8bab8e375caadc5a31a88fe0ebb
