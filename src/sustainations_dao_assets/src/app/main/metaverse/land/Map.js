@@ -64,7 +64,7 @@ const Map = () => {
       if (country === undefined) {
         loadLands(0, 0);
         loadNations(0, 0)
-        console.log("Nation: ", nationData)
+        setLoading("none")
       } else {
         loadLands(Number(country.indexRow), Number(country.indexColumn));
         loadNations(Number(country.indexRow), Number(country.indexColumn));
@@ -156,7 +156,7 @@ const Map = () => {
         console.log(await updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom))
         map.setView([landSlotRand.geometry.coordinates[0][0][1], landSlotRand.geometry.coordinates[0][0][0]], 13)
       } else {
-        // if not having enough ICP
+        //if not having enough ICP
         setAlert(true)
         console.log("OUT OF MONEY")
       }
@@ -168,12 +168,31 @@ const Map = () => {
   const handleAccept = async () => {
     setLoading("accept")
     let landBuyingStatus = await loadLandBuyingStatus()
-    console.log(await createLandSlot(landBuyingStatus.properties.i, landBuyingStatus.properties.j))
+    let country = await loadNation()
+    let utms = undefined
+    if (country !== undefined) {
+      utms = country.utms.map(e => {
+        return e.map( i => {
+            return Number(i)
+        })
+      });
+    }
+    console.log(utms)
+
+    let nationUTMS = unionLandSlots(
+      utms===undefined? [] : [utms],
+      [[
+        [Number(landBuyingStatus.properties.i)*1000, Number(landBuyingStatus.properties.j)*1000],
+        [Number(landBuyingStatus.properties.i)*1000, (Number(landBuyingStatus.properties.j)+1)*1000],
+        [(Number(landBuyingStatus.properties.i)+1)*1000, (Number(landBuyingStatus.properties.j)+1)*1000],
+        [(Number(landBuyingStatus.properties.i)+1)*1000, Number(landBuyingStatus.properties.j)*1000],
+      ]]
+    )
+    console.log(await createLandSlot(landBuyingStatus.properties.i, landBuyingStatus.properties.j,nationUTMS[0][0]))
     numRandom = 3
     landSlotRand = []
     setLoading("none")
-    loadNations(landBuyingStatus.properties.i, landBuyingStatus.properties.j)
-    console.log("Nation: ", nationData)
+    loadNations(Number(landBuyingStatus.properties.i), Number(landBuyingStatus.properties.j))
 
     map.setView([Number(landBuyingStatus.geometry.coordinates[0][0][1]), Number(landBuyingStatus.geometry.coordinates[0][0][0])], 13)
     setPurchaseBtn(true)

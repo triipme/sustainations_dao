@@ -337,7 +337,7 @@ module {
     landSlotIds : [Text];
     indexRow : Nat;
     indexColumn : Nat;
-    utms : [(Nat,Nat)]; 
+    utms : [[Nat]]; 
   };
 //-------------------------Geometry------------------------------//
 

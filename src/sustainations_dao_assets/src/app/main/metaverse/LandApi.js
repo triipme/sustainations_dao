@@ -1,7 +1,5 @@
 import store from 'app/store';
-import { result } from 'lodash';
 import proj4Src from 'proj4';
-import { func } from 'prop-types';
 import polygonClipping from 'polygon-clipping';
 // call api
 // use func union in polygon-clipping
@@ -44,9 +42,9 @@ async function randomLandSlot() {
 }
 
 // create LandSlot
-async function createLandSlot(i, j) {
+async function createLandSlot(i, j,nationUTMS) {
   const { user } = store.getState();
-  const func = async () => await user.actor.createLandSlot(parseInt(i), parseInt(j), 20, "N", 1000);
+  const func = async () => await user.actor.createLandSlot(parseInt(i), parseInt(j), nationUTMS,20, "N", 1000);
   const result = (await func()).ok;
   return result;
 };
