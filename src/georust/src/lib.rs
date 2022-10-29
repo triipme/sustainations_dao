@@ -3,6 +3,8 @@ use geo::Centroid;
 use geo::ConvexHull;
 use geo::{line_string, polygon};
 use geomorph::*;
+use ran::{set_seeds, Rnum};
+use ic_cdk::api::time;
 // use utm::wsg84_utm_to_lat_lon;
 // use utm::Utm;
 // use std::path::Path;
@@ -42,6 +44,14 @@ fn greet() -> () {
 //     ic_cdk::print(format!("{:?}", num));
 //     return num;
 // }
+#[ic_cdk_macros::query]
+fn randomnumber(begin : f64, end: f64, d: u64) -> u64 {
+    let start = time()*d;
+    set_seeds(start as u64);
+    let ru = Rnum::newu64();
+    let num = ru.rannum_in(begin, end).getu64();
+    return num.unwrap();
+}
 
 
 #[ic_cdk_macros::query]

@@ -27,7 +27,7 @@ async function buyLandSlot() {
 async function randomLandSlot() {
   const { user } = store.getState();
   const func = async () => await user.actor.randomLandSlot();
-  const result = (await func()).ok;
+  const result = (await func()).ok; 
   let feature = {
     type: "Feature",
     properties: { "zoneNumber": result.zoneNumber, "zoneLetter": result.zoneLetter, "i": result.i, "j": result.j },
@@ -36,9 +36,6 @@ async function randomLandSlot() {
       coordinates: result.coordinates,
     }
   };
-  console.log("==random==")
-  console.log(feature)
-  console.log("=========")
   return feature;
 }
 
@@ -75,6 +72,7 @@ async function loadNationsfromCenter(x, y) {
   return result.features
 }
 
+
 // load LandSLot from Center
 async function loadLandSlotsfromCenter(x, y) {
   let d = 1000
@@ -89,8 +87,8 @@ async function loadLandSlotsfromCenter(x, y) {
     let result = proj4Src(firstProj, secondProj, [utmX, utmY])
     return result
   };
-  for (let i = Math.max(x - 100, 0); i <= Math.min(x + 100, 1500 - 1); i++) {
-    for (let j = Math.max(y - 100, 0); j <= Math.min(y + 100, 1500 - 1); j++) {
+  for (let i = Math.max(x - 25, 0); i <= Math.min(x + 25, 1500 - 1); i++) {
+    for (let j = Math.max(y - 25, 0); j <= Math.min(y + 25, 1500 - 1); j++) {
 
       let xIndex = Number(i)
       let yIndex = Number(j)
