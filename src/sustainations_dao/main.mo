@@ -3905,8 +3905,8 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
           };
           case (?LandConfig) {
             let adjacentLandSlots= await getAdjacentLandSlots(nation.landSlotIds,LandConfig);
-            let randomIndex = await Random.randomIndex(0,adjacentLandSlots.size()-1);
-            let result = adjacentLandSlots[Int.abs(randomIndex)];
+            let index = await randomIndex(0.0,Float.fromInt(adjacentLandSlots.size()-1),1);
+            let result = adjacentLandSlots[Int.abs(index)];
             return #ok(
               await landSlotToGeometry(Int.abs(result.i), Int.abs(result.j))
             );
