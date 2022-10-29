@@ -74,21 +74,21 @@ async function loadNationsfromCenter(x, y) {
   return result.features
 }
 
-
+function utm2lonlat(utmX, utmY) {
+  let zoneNumber = 20
+  var firstProj = "+proj=utm +ellps=WGS84 +zone=" + zoneNumber.toString() + " +units=m"
+  var secondProj = "+proj=longlat +ellps=WGS84 +datum=WGS84"
+  let result = proj4Src(firstProj, secondProj, [utmX, utmY])
+  return result
+};
 // load LandSLot from Center
 async function loadLandSlotsfromCenter(x, y) {
   let d = 1000
   let zone = 20
-  var result = {
+  let result = {
     features: []
   };
-  function utm2lonlat(utmX, utmY) {
-    let zoneNumber = 20
-    var firstProj = "+proj=utm +ellps=WGS84 +zone=" + zoneNumber.toString() + " +units=m"
-    var secondProj = "+proj=longlat +ellps=WGS84 +datum=WGS84"
-    let result = proj4Src(firstProj, secondProj, [utmX, utmY])
-    return result
-  };
+  
   for (let i = Math.max(x - 25, 0); i <= Math.min(x + 25, 1500 - 1); i++) {
     for (let j = Math.max(y - 25, 0); j <= Math.min(y + 25, 1500 - 1); j++) {
 
@@ -181,9 +181,9 @@ async function loadTileSlots(properties) {
     features: []
   };
   let d = 100
-  let zone = properties.zone
-  let x = properties.i * 10
-  let y = properties.j * 10
+  let zone = Number(properties.zone)
+  let x = Number(properties.i) * 10
+  let y = Number(properties.j) * 10
   for (let i = x; i < x + 10; i++) {
     for (let j = y; j < y + 10; j++) {
       let latlng1 = utm2lonlat(d * j, d * i);

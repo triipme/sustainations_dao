@@ -25,7 +25,7 @@ const Footer = () => {
           <div
             className='item'
             style={{
-              backgroundColor: '#002E5E'
+              backgroundColor: '#9ed6ad'
             }}></div>
           <span
             style={{
@@ -81,7 +81,7 @@ const Footer = () => {
           <div
             className='item'
             style={{
-              backgroundColor: '#fff'
+              backgroundColor: '#002E5E'
             }}></div>
           <span
             style={{

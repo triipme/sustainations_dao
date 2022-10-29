@@ -54,8 +54,9 @@ span {
   position: absolute;
   text-transform: uppercase;
   text-align: center;
-  left: 2%;
   top: 20%;
+  min-width: 875px;
+  min-height: 342px;
   z-index: 1000;
 }
 
@@ -70,7 +71,7 @@ span {
   position: absolute;
   top: 66%;
   left: 4%;
-  width: 16%;
+  width: 18%;
   height: 16%;
 }
 
@@ -79,7 +80,7 @@ span {
   position: absolute;
   top: 66%;
   left: 28%;
-  width: 16%;
+  width: 18%;
   height: 16%;
 }
 
