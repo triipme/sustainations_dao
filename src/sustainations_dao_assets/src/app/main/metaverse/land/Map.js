@@ -19,8 +19,8 @@ import {
   getLandIndex,
   getUserInfo,
   updateLandBuyingStatus,
-  unionLandSlots,
-  loadNation
+  loadNation,
+  unionLandSlots
 } from '../LandApi'
 
 var country = null
@@ -86,6 +86,7 @@ const Map = () => {
       loadNations(index[0], index[1])
     }
   }, [map])
+  console.log(index)
 
   useEffect(() => {
     map.on('move', onMove)
@@ -151,7 +152,7 @@ const Map = () => {
         console.log(await updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom))
         map.setView([landSlotRand.geometry.coordinates[0][0][1], landSlotRand.geometry.coordinates[0][0][0]], 13)
       } else {
-        //if not having enough ICP
+        // if not having enough ICP
         setAlert(true)
       }
     }
