@@ -3,8 +3,9 @@ import { GeoJSON, MapContainer, useMap, useMapEvents, TileLayer, Rectangle, Imag
 import "./styles.css";
 import BigMap from "./bigmap"
 import Map from "./Map"
+import mapZoom from "./Map"
 
-const zoom = 1
+let zoom = 3
 var center = [0.0, -67.488694797721564]
 
 function Land() {
@@ -14,10 +15,13 @@ function Land() {
       <MapContainer
         style={{ height: "100%" }}
         center={center}
+        minZoom={2}
         zoom={zoom}
         scrollWheelZoom={true}
         doubleClickZoom={false}
         zoomControl={false}
+        dragging={mapZoom == 2 ? false : true}
+        // bounds={}
         ref={setMap}>
         <BigMap></BigMap>
         <Map />

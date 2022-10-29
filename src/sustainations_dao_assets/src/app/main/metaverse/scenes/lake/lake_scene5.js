@@ -176,6 +176,26 @@ export default class lake_scene5 extends BaseScene {
       }
     }).setVisible(false).setScrollFactor(0);
 
+     //scrolling
+     this.graphics = this.make.graphics();
+
+     this.graphics.fillRect(152, 230, 900, 250).setScrollFactor(0);
+ 
+     this.mask = new Phaser.Display.Masks.GeometryMask(this, this.graphics);
+ 
+     this.des.setMask(this.mask);
+ 
+     // //  The rectangle they can 'drag' within
+     this.add.zone(150, 230, 900, 250).setOrigin(0).setInteractive().setVisible(true).setScrollFactor(0)
+       .on('pointermove', (pointer) => {
+         if (pointer.isDown) {
+           this.des.y += (pointer.velocity.y / 10);
+ 
+           this.des.y = Phaser.Math.Clamp(this.des.y, -400, 720);
+         }
+ 
+       })
+
 
     for (const idx in this.eventOptions) {
 

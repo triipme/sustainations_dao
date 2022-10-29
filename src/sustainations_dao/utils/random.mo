@@ -13,5 +13,4 @@ module RandomMethod {
     return Float.fromInt(((Random.rangeFrom(8,x)%(99 - 0+1))+0))*0.01;
   };
 
-
 };
