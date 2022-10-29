@@ -4109,6 +4109,7 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
           j=newLandSlot.indexColumn
         });
         var currentUTMList : [Nation.UTM] = utms;
+
         var result = Nation.removeDuplicatePoints(
           Array.append<Nation.UTM>(currentUTMList, convertedLandslot)
         );
@@ -4123,6 +4124,7 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
       };
     }; 
   };
+  
   public shared({caller}) func getNationIndex(landSlotIds : [Text]) : async {i:Nat;j:Nat} {
     var sumRow : Nat = 0;
     var sumColumn : Nat = 0;

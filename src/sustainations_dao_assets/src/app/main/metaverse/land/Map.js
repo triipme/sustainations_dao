@@ -16,6 +16,7 @@ import {
   getLandIndex,
   getUserInfo,
   updateLandBuyingStatus,
+  unionLandSlots
 } from '../LandApi'
 
 var numRandom = 3
@@ -26,7 +27,6 @@ var mapFeature = null
 
 
 const Map = () => {
-
   const loadLands = async (i, j) => {
     landData = await loadLandSlotsfromCenter(i, j);
   }
@@ -66,6 +66,7 @@ const Map = () => {
       setRender(!render)
     }
   });
+  console.log(index)
 
   const onEachLandSlot = (country, layer) => {
     layer.setStyle({

@@ -1,8 +1,12 @@
 import store from 'app/store';
 import proj4Src from 'proj4';
-
+import polygonClipping from 'polygon-clipping';
 // call api
-
+// use func union in polygon-clipping
+function unionLandSlots(utm1,utm2) {
+  const rs = polygonClipping.union(utm1, utm2);
+  return rs;
+};
 
 // get user info
 function getUserInfo() {
@@ -222,5 +226,7 @@ export {
   loadNationsfromCenter,
   loadLandSlotsfromCenter,
   getLandIndex,
-  loadTileSlots
+  loadTileSlots,
+
+  unionLandSlots
 }
