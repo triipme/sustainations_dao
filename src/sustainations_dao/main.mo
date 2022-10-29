@@ -3759,6 +3759,12 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
 		let result = await georust.proj(easting, northing, zoneNum, zoneLetter);
 		return result;
 	};
+  public shared func randomIndex(begin: Float, end: Float, d: Nat64) : async Int {
+		let result = await georust.randomnumber(begin,end,d);
+		return Nat64.toNat(result);
+	};
+
+
 
 // convert i,j to geometry with lat,lng
   public shared func landSlotToGeometry(i : Nat,j : Nat) : async Types.Geometry {
@@ -3867,8 +3873,8 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
             return #err(#NotFound);
           };
           case (?landConfig) {
-            var i = await Random.randomIndex(0,landConfig.mapHeight-1);
-            var j = await Random.randomIndex(0,landConfig.mapWidth-1);
+            var i = await randomIndex(0,Float.fromInt(landConfig.mapHeight-1),1);
+            var j = await randomIndex(0,Float.fromInt(landConfig.mapWidth-1),2);
             // check to see if random function return already-exist landSlot, if yes run random function again
             label whileloop loop {
               while (true) {
@@ -3879,8 +3885,8 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
                     break whileloop;
                   };
                   case  (?landSlot) {
-                    i := await Random.randomIndex(0,landConfig.mapHeight-1);
-                    j := await Random.randomIndex(0,landConfig.mapWidth-1);
+                    i := await randomIndex(0,Float.fromInt(landConfig.mapHeight-1),1);
+                    j := await randomIndex(0,Float.fromInt(landConfig.mapWidth-1),2);
                   };
                 };
               };
