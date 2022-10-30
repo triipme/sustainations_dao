@@ -61,12 +61,12 @@ const Map = () => {
     if (init == 0) {
       country = await loadNation();
       if (country === undefined) {
-        loadLands(0, 0);
-        loadNations(0, 0)
+        await loadLands(0, 0);
+        await loadNations(0, 0)
         setLoading("none")
       } else {
-        loadLands(Number(country.indexRow), Number(country.indexColumn));
-        loadNations(Number(country.indexRow), Number(country.indexColumn));
+        await loadLands(Number(country.indexRow), Number(country.indexColumn));
+        await loadNations(Number(country.indexRow), Number(country.indexColumn));
         map.setView([Number(nationData[0].geometry.coordinates[0][0][1]), Number(nationData[0].geometry.coordinates[0][0][0])], 13)
         setLoading("none")
       }
@@ -79,14 +79,14 @@ const Map = () => {
   let index = getLandIndex(position, landData)
 
 
-  const onMove = useCallback(() => {
+  const onMove = useCallback(async () => {
     setPosition(map.getCenter())
     if (index != undefined) {
-      loadLands(index[0], index[1]);
-      loadNations(index[0], index[1])
+      await loadLands(index[0], index[1]);
+      await loadNations(index[0], index[1])
     }
   }, [map])
-  console.log(index)
+  // console.log(index)
 
   useEffect(() => {
     map.on('move', onMove)
@@ -129,7 +129,6 @@ const Map = () => {
   const handleChangeMode = () => {
     map.setView(farmLocation, 18)
     isFarmMode = true
-
     setMode("farm")
   }
 
@@ -166,26 +165,26 @@ const Map = () => {
     let utms = undefined
     if (country !== undefined) {
       utms = country.utms.map(e => {
-        return e.map( i => {
-            return Number(i)
+        return e.map(i => {
+          return Number(i)
         })
       });
     }
-    console.log(utms)
+    // console.log(utms)
 
     let nationUTMS = unionLandSlots(
-      utms===undefined? [] : [utms],
+      utms === undefined ? [] : [utms],
       [[
-        [Number(landBuyingStatus.properties.i)*1000, Number(landBuyingStatus.properties.j)*1000],
-        [Number(landBuyingStatus.properties.i)*1000, (Number(landBuyingStatus.properties.j)+1)*1000],
-        [(Number(landBuyingStatus.properties.i)+1)*1000, (Number(landBuyingStatus.properties.j)+1)*1000],
-        [(Number(landBuyingStatus.properties.i)+1)*1000, Number(landBuyingStatus.properties.j)*1000],
+        [Number(landBuyingStatus.properties.i) * 1000, Number(landBuyingStatus.properties.j) * 1000],
+        [Number(landBuyingStatus.properties.i) * 1000, (Number(landBuyingStatus.properties.j) + 1) * 1000],
+        [(Number(landBuyingStatus.properties.i) + 1) * 1000, (Number(landBuyingStatus.properties.j) + 1) * 1000],
+        [(Number(landBuyingStatus.properties.i) + 1) * 1000, Number(landBuyingStatus.properties.j) * 1000],
       ]]
     )
-    console.log(await createLandSlot(landBuyingStatus.properties.i, landBuyingStatus.properties.j,nationUTMS[0][0]))
+    console.log(await createLandSlot(landBuyingStatus.properties.i, landBuyingStatus.properties.j, nationUTMS[0][0]))
     numRandom = 3
     landSlotRand = []
-    loadNations(Number(landBuyingStatus.properties.i), Number(landBuyingStatus.properties.j))
+    await loadNations(Number(landBuyingStatus.properties.i), Number(landBuyingStatus.properties.j))
     map.setView([Number(landBuyingStatus.geometry.coordinates[0][0][1]), Number(landBuyingStatus.geometry.coordinates[0][0][0])], 13)
     setLoading("none")
     setPurchaseBtn(true)
@@ -194,10 +193,10 @@ const Map = () => {
   const handleTryAgain = async () => {
     setLoading("try")
     landSlotRand = await randomLandSlot()
-    setLoading("none")
+    map.setView([landSlotRand.geometry.coordinates[0][0][1], landSlotRand.geometry.coordinates[0][0][0]], 13)
     numRandom -= 1
     console.log(await updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom))
-    map.setView([landSlotRand.geometry.coordinates[0][0][1], landSlotRand.geometry.coordinates[0][0][0]], 13)
+    setLoading("none")
   }
 
   const BigMap = () => {
@@ -231,7 +230,7 @@ const Map = () => {
               <div>
                 <div>
                   {loading == "purchased" ? <button className="buttonload" style={{
-                    display: purchaseBtn ? "block" : "none"
+                    display: purchaseBtn && loading !== "loadingmap" ? "block" : "none"
                   }}
                   ><i className="fa fa-spinner fa-spin"></i> LOADING</button> :
                     <button className="buttonload" style={{
@@ -256,8 +255,9 @@ const Map = () => {
                         position: "absolute",
                         top: "50%",
                         left: "50%",
-                        transform: "translate(-100%, -80%)",
-                        fontSize: "136%"
+                        transform: "translate(-108%, -80%)",
+                        fontSize: "136%",
+                        margin: "2%"
                       }}
                     >{!alert ? "Do you want to receive this land slot with 0.0002 icp ?" : "You do not have enough ICP to make this transaction !"}</h1>
                   </div>
