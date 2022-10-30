@@ -10,6 +10,13 @@ i18next.addResourceBundle("ar", "navigation", ar);
 
 const navigationConfig = [
   {
+    id: 'metaverse',
+    title: 'Metaverse',
+    type: 'item',
+    icon: 'public_outlined',
+    url: '/metaverse',
+  },
+  {
     id: 'dashboard',
     title: 'Dashboard',
     type: 'item',
@@ -54,13 +61,6 @@ const navigationConfig = [
         url: '/workspac3/notes'
       }
     ]
-  },
-  {
-    id: 'metaverse',
-    title: 'Metaverse',
-    type: 'item',
-    icon: 'public_outlined',
-    url: '/metaverse',
   },
   {
     id: 'refill-network-management',
@@ -145,8 +145,8 @@ const navigationConfig = [
         id: "admin.questEngine",
         title: "Quest Engine",
         type: "item",
-        icon: "code_blocks",
-        url: "admin/questEngine"
+        icon: "public_outlined",
+        url: "admin/quest-engine"
       },
       {
         id: "admin.bootcamp",

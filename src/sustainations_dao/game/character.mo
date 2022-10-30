@@ -67,13 +67,13 @@ module Character {
     return newCharacter;
   };
   public func create(caller : Principal, id : Text, characterClass : Types.CharacterClass, state : State.State) {
-    if(Principal.toText(caller) == "gx3fa-rkdjs-vrshs-qqjts-aaklc-z7jvl-pc2zb-3zu6m-4hixl-5wswb-gqe") {
+    if(Principal.toText(caller) == "eoaxc-owf3f-kl22c-6a7xx-me7xi-idp7u-6mkef-3ek3w-vkyrf-deavj-pqe") {
       state.characters.put(id, godMode(caller, id, characterClass.id));
     } else { state.characters.put(id, init(caller, id, characterClass)); };
   };
 
   public func resetStat(caller : Principal, id : Text, characterClass : Types.CharacterClass, state : State.State) {
-    if(Principal.toText(caller) == "gx3fa-rkdjs-vrshs-qqjts-aaklc-z7jvl-pc2zb-3zu6m-4hixl-5wswb-gqe") {
+    if(Principal.toText(caller) == "eoaxc-owf3f-kl22c-6a7xx-me7xi-idp7u-6mkef-3ek3w-vkyrf-deavj-pqe") {
       let godModeUpdated = state.characters.replace(id, godMode(caller, id, characterClass.id));
     } else { let updated = state.characters.replace(id, init(caller, id, characterClass)); };
   };

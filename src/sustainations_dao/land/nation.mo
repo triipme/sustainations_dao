@@ -56,4 +56,4 @@ module Nation {
     };
     return result;
   };
-}
+};
