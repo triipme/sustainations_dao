@@ -61,12 +61,12 @@ const Map = () => {
     if (init == 0) {
       country = await loadNation();
       if (country === undefined) {
-        loadLands(0, 0);
-        loadNations(0, 0)
+        await loadLands(0, 0);
+        await loadNations(0, 0)
         setLoading("none")
       } else {
-        loadLands(Number(country.indexRow), Number(country.indexColumn));
-        loadNations(Number(country.indexRow), Number(country.indexColumn));
+        await loadLands(Number(country.indexRow), Number(country.indexColumn));
+        await loadNations(Number(country.indexRow), Number(country.indexColumn));
         map.setView([Number(nationData[0].geometry.coordinates[0][0][1]), Number(nationData[0].geometry.coordinates[0][0][0])], 13)
         setLoading("none")
       }
