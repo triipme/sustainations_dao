@@ -305,13 +305,6 @@ module {
     price: Float; 
   };
 
-  public type Geometry = {
-    zoneNumber : Nat;
-    zoneLetter : Text;
-    i : Nat;
-    j : Nat;
-    coordinates: [[[Float]]];
-  };
 
 //--------------------- Land Transfer History ---------------------//
   public type LandTransferHistory = {
@@ -327,7 +320,10 @@ module {
 //--------------------- Land Buying Status ---------------------//
   public type LandBuyingStatus = {
     id : Principal;
-    geometry : Geometry;
+    zoneNumber : Nat;
+    zoneLetter : Text;
+    currentIndexRow : Nat;
+    currentIndexColumn : Nat;
     randomTimes : Nat;
   };
 

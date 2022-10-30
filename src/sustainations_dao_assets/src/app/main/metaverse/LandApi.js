@@ -2,6 +2,15 @@ import store from 'app/store';
 import proj4Src from 'proj4';
 import polygonClipping from 'polygon-clipping';
 // call api
+// convert utm2lonlat
+function utm2lonlat(utmX, utmY) {
+  let zoneNumber = 20
+  var firstProj = "+proj=utm +ellps=WGS84 +zone=" + zoneNumber.toString() + " +units=m"
+  var secondProj = "+proj=longlat +ellps=WGS84 +datum=WGS84"
+  let result = proj4Src(firstProj, secondProj, [utmX, utmY])
+  return result
+};
+
 // use func union in polygon-clipping
 function unionLandSlots(utm1,utm2) {
   const rs = polygonClipping.union(utm1, utm2);
@@ -28,16 +37,30 @@ async function buyLandSlot() {
 // random LandSlot
 async function randomLandSlot() {
   const { user } = store.getState();
-  const func = async () => await user.actor.randomLandSlot();
-  const result = (await func()).ok; 
+  // const func = async () => await user.actor.randomLandSlot();
+  const result = (await user.actor.randomLandSlot()).ok;
+  let zone = 20
+  let d = 1000
+  let xIndex = Number(result.i)
+  let yIndex = Number(result.j)
+  let latlng1 = utm2lonlat(d * yIndex, d * xIndex);
+  let latlng2 = utm2lonlat(d * (yIndex + 1), d * (xIndex + 1));
   let feature = {
     type: "Feature",
-    properties: { "zoneNumber": result.zoneNumber, "zoneLetter": result.zoneLetter, "i": result.i, "j": result.j },
+    properties: { "zone": zone, "i": xIndex, "j": yIndex },
     geometry: {
-      type: "Polygon",
-      coordinates: result.coordinates,
+      type: "Polygon", coordinates: [
+        [
+          [latlng1[0], latlng1[1]],
+          [latlng2[0], latlng1[1]],
+          [latlng2[0], latlng2[1]],
+          [latlng1[0], latlng2[1]],
+          [latlng1[0], latlng1[1]]
+        ]
+      ]
     }
   };
+
   return feature;
 }
 
@@ -53,19 +76,24 @@ async function createLandSlot(i, j,nationUTMS) {
 async function loadNationsfromCenter(x, y) {
   const { user } = store.getState();
   const func = async () => await user.actor.loadNationsArea(
-    x - 100, y - 100, x + 100, y + 100
+    x - 20, y - 20, x + 20, y + 20
   );
   const nations = (await func()).ok;
-  // let zone = 20
+  let zone = 20
   var result = {
     features: []
   };
-  for (let nation of nations) {
+  for (let i of nations) {
+    var coordinates = []
+    for (let j of i.utms) {
+      let coord = utm2lonlat(Number(j[1]), Number(j[0]))
+      coordinates.push(coord)
+    }
     let feature = {
       type: "Feature",
-      properties: { "zoneNumber": nation.zoneNumber, "zoneLetter": nation.zoneLetter, "i": nation.i, "j": nation.j },
+      properties: { "zone": zone, "i": i.indexRow, "j": i.indexColumn },
       geometry: {
-        type: "Polygon", coordinates: nation.coordinates,
+        type: "Polygon", coordinates: [coordinates]
       }
     }
     result.features.push(feature)
@@ -74,13 +102,7 @@ async function loadNationsfromCenter(x, y) {
   return result.features
 }
 
-function utm2lonlat(utmX, utmY) {
-  let zoneNumber = 20
-  var firstProj = "+proj=utm +ellps=WGS84 +zone=" + zoneNumber.toString() + " +units=m"
-  var secondProj = "+proj=longlat +ellps=WGS84 +datum=WGS84"
-  let result = proj4Src(firstProj, secondProj, [utmX, utmY])
-  return result
-};
+
 // load LandSLot from Center
 async function loadLandSlotsfromCenter(x, y) {
   let d = 1000
@@ -154,21 +176,29 @@ async function loadLandBuyingStatus() {
   const readLandBuyingStatus = async () => await user.actor.readLandBuyingStatus();
   const landBuyingStatus = (await readLandBuyingStatus()).ok;
   var feature = undefined
+  console.log(landBuyingStatus)
   if (landBuyingStatus != undefined) {
+    let zone = Number(landBuyingStatus.zoneNumber)
+    let d = 1000
+    let xIndex = Number(landBuyingStatus.currentIndexRow)
+    let yIndex = Number(landBuyingStatus.currentIndexColumn)
+    let latlng1 = utm2lonlat(d * yIndex, d * xIndex);
+    let latlng2 = utm2lonlat(d * (yIndex + 1), d * (xIndex + 1));
     feature = {
       type: "Feature",
-      properties: {
-        "zoneNumber": landBuyingStatus.geometry.zoneNumber,
-        "zoneLetter": landBuyingStatus.geometry.zoneLetter,
-        "i": landBuyingStatus.geometry.i,
-        "j": landBuyingStatus.geometry.j,
-        "randomTimes": landBuyingStatus.randomTimes
-      },
+      properties: { "zone": zone, "i": xIndex, "j": yIndex , "randomTimes" : Number(landBuyingStatus.randomTimes)},
       geometry: {
-        type: "Polygon",
-        coordinates: landBuyingStatus.geometry.coordinates,
+        type: "Polygon", coordinates: [
+          [
+            [latlng1[0], latlng1[1]],
+            [latlng2[0], latlng1[1]],
+            [latlng2[0], latlng2[1]],
+            [latlng1[0], latlng2[1]],
+            [latlng1[0], latlng1[1]]
+          ]
+        ]
       }
-    }
+    };
   };
   return feature;
 };

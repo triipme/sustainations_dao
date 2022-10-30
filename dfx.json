@@ -10,15 +10,9 @@
       "type": "motoko",
       "dependencies": ["ledger"]
     },
-    "georust":{
-      "candid": "src/georust/georust.did",
-      "package": "georust",
-      "type": "rust"
-    },
     "frontend": {
       "dependencies": [
-        "sustainations_dao",
-        "georust"
+        "sustainations_dao"
       ],
       "frontend": {
         "entrypoint": "src/sustainations_dao_assets/src/index.html"

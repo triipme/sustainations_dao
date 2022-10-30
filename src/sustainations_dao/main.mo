@@ -23,7 +23,6 @@ import Moment "./plugins/Moment";
 import Types "types";
 import State "state";
 import Ledger "./plugins/Ledger";
-import GeoRust "./plugins/GeoRust";
 import RS "./models/RefillStation";
 import CharacterClass "./game/characterClass";
 import Character "./game/character";
@@ -46,7 +45,7 @@ import Nation "./land/nation";
 import LandTransferHistory "./land/landTransferHistory";
 import LandBuyingStatus "./land/landBuyingStatus";
 
-shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georustId : ?Text}) = this {
+shared({caller = owner}) actor class SustainationsDAO(ledgerId : ?Text) = this {
   stable var transferFee : Nat64 = 10_000;
   stable var createProposalFee : Nat64 = 20_000;
   stable var voteFee : Nat64 = 20_000;
@@ -295,7 +294,6 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
 
   type Response<Ok> = Result.Result<Ok, Types.Error>;
   private let ledger : Ledger.Interface = actor(Option.get(ledgerId, "ryjl3-tyaaa-aaaaa-aaaba-cai"));
-  private let georust : GeoRust.Interface = actor(Option.get(georustId, "qoctq-giaaa-aaaaa-aaaea-cai"));
 
   private func createUUID() : async Text {
     var ae = AsyncSource.Source();
@@ -3746,40 +3744,7 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
     #ok((list));
   };
 
-// convert utm2lonlat
-  public shared func utm2lonlat(easting: Float, northing: Float, zoneNum: Int32, zoneLetter: Text) : async (Float, Float) {
-		let result = await georust.proj(easting, northing, zoneNum, zoneLetter);
-		return result;
-	};
-  public shared func randomIndex(begin: Float, end: Float, d: Nat64) : async Int {
-		let result = await georust.randomnumber(begin,end,d);
-		return Nat64.toNat(result);
-	};
 
-
-
-// convert i,j to geometry with lat,lng
-  public shared func landSlotToGeometry(i : Nat,j : Nat) : async Types.Geometry {
-		let latlng1 = await utm2lonlat(Float.fromInt(1000*j), Float.fromInt(1000*i), 20, "N");
-    let latlng2 = await utm2lonlat(Float.fromInt(1000*(j + 1)), Float.fromInt(1000*(i + 1)), 20, "N");
-    let coordinates = [
-      [
-        [latlng1.0, latlng1.1],
-        [latlng2.0, latlng1.1],
-        [latlng2.0, latlng2.1],
-        [latlng1.0, latlng2.1],
-        [latlng1.0, latlng1.1]
-      ]
-    ];
-    let geometry : Types.Geometry = {
-      i = i;
-      j = j;
-      zoneNumber = 20;
-      zoneLetter = "N";
-      coordinates = coordinates;
-    };
-    return geometry;
-	};
 
   // Land Config
   public shared({ caller }) func createLandConfig(mapWidth: Int, mapHeight: Int) : async Response<Text> {
@@ -3853,7 +3818,7 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
     };
   };
 
-  public shared({caller}) func randomLandSlot(): async Response<Types.Geometry> {
+  public shared({caller}) func randomLandSlot(): async Response<{i:Int;j:Int}> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
@@ -3866,8 +3831,8 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
             return #err(#NotFound);
           };
           case (?landConfig) {
-            var i = await randomIndex(0,Float.fromInt(landConfig.mapHeight-1),1);
-            var j = await randomIndex(0,Float.fromInt(landConfig.mapWidth-1),2);
+            var i = await Random.randomIndex(0,landConfig.mapHeight-1);
+            var j = await Random.randomIndex(0,landConfig.mapWidth-1);
             // check to see if random function return already-exist landSlot, if yes run random function again
             label whileloop loop {
               while (true) {
@@ -3878,14 +3843,14 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
                     break whileloop;
                   };
                   case  (?landSlot) {
-                    i := await randomIndex(0,Float.fromInt(landConfig.mapHeight-1),1);
-                    j := await randomIndex(0,Float.fromInt(landConfig.mapWidth-1),2);
+                    i := await Random.randomIndex(0,landConfig.mapHeight-1);
+                    j := await Random.randomIndex(0,landConfig.mapWidth-1);
                   };
                 };
               };
             };
             return #ok(
-              await landSlotToGeometry(Int.abs(i),Int.abs(j))
+              {i=i;j=j;}
             );
           };
         };
@@ -3898,10 +3863,10 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
           };
           case (?LandConfig) {
             let adjacentLandSlots= await getAdjacentLandSlots(nation.landSlotIds,LandConfig);
-            let index = await randomIndex(0.0,Float.fromInt(adjacentLandSlots.size()-1),1);
+            let index = await Random.randomIndex(0,adjacentLandSlots.size()-1);
             let result = adjacentLandSlots[Int.abs(index)];
             return #ok(
-              await landSlotToGeometry(Int.abs(result.i), Int.abs(result.j))
+              result
             );
           };
         };
@@ -3986,7 +3951,7 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
   //   };
   // };
 
-  public shared({caller}) func loadNationsArea(beginX : Int, beginY : Int, endX : Int, endY : Int) : async Response<[Types.Geometry]> {
+  public shared({caller}) func loadNationsArea(beginX : Int, beginY : Int, endX : Int, endY : Int) : async Response<[Types.Nation]> {
     var list : [Types.Nation] = [];
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
@@ -4030,25 +3995,7 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
             };
           };
         };
-
-        var geometries : [Types.Geometry] = [];
-        for (value in list.vals()) {
-          var coordinates : [[Float]] = [];
-          for (utm in value.utms.vals()) {
-            let lonlat = await utm2lonlat(Float.fromInt(utm[1]), Float.fromInt(utm[0]), 20, "N");
-            coordinates := Array.append(coordinates, [[lonlat.0,lonlat.1]]);
-          };
-          let newGeometry : Types.Geometry = {
-            zoneLetter = "N";
-            zoneNumber = 20;
-            i = value.indexRow;
-            j = value.indexColumn;
-            coordinates = [coordinates];
-          };
-          geometries := Array.append(geometries, [newGeometry]);
-        };
-
-        return #ok((geometries));
+        return #ok((list));
       };
     };
   };
@@ -4210,11 +4157,12 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
       return #err(#NotAuthorized);//isNotAuthorized
     };
 
-    let newGeometry = await landSlotToGeometry(indexRow, indexColumn);
-
     let newLandBuyingStatus : Types.LandBuyingStatus = {
       id = caller;
-      geometry = newGeometry;
+      zoneNumber = 20;
+      zoneLetter = "N";
+      currentIndexRow = indexRow;
+      currentIndexColumn = indexColumn;
       randomTimes = randomTimes;
     };
     let principalId = Principal.toText(caller);

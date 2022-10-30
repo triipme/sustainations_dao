@@ -67,6 +67,7 @@ const Map = () => {
       } else {
         loadLands(Number(country.indexRow), Number(country.indexColumn));
         loadNations(Number(country.indexRow), Number(country.indexColumn));
+        console.log(nationData[0])
         map.setView([Number(nationData[0].geometry.coordinates[0][0][1]), Number(nationData[0].geometry.coordinates[0][0][0])], 13)
         setLoading("none")
       }
@@ -148,8 +149,8 @@ const Map = () => {
       if (isBuy !== undefined) {
         numRandom -= 1
         landSlotRand = await randomLandSlot()
-
         console.log(await updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom))
+        console.log(landSlotRand)
         map.setView([landSlotRand.geometry.coordinates[0][0][1], landSlotRand.geometry.coordinates[0][0][0]], 13)
       } else {
         // if not having enough ICP
