@@ -3746,7 +3746,6 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
     #ok((list));
   };
 
-<<<<<<< HEAD
 // convert utm2lonlat
   public shared func utm2lonlat(easting: Float, northing: Float, zoneNum: Int32, zoneLetter: Text) : async (Float, Float) {
 		let result = await georust.proj(easting, northing, zoneNum, zoneLetter);
@@ -3781,14 +3780,6 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
     };
     return geometry;
 	};
-=======
-  public shared query({caller}) func listAllInventories() : async Response<[(Text, Types.Inventory)]> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
-    };
-    #ok(Iter.toArray(state.inventories.entries()));
-  };
->>>>>>> 2e0052468df1d8bab8e375caadc5a31a88fe0ebb
 
   // Land Config
   public shared({ caller }) func createLandConfig(mapWidth: Int, mapHeight: Int) : async Response<Text> {
@@ -3811,15 +3802,10 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
     };
   };
 
-<<<<<<< HEAD
 
 
 // Land Slot
   public shared({caller}) func createLandSlot(indexRow : Nat,indexColumn : Nat,nationUTMS: [[Nat]],zoneNumber : Nat,zoneLetter : Text, d : Nat) : async Response<Text> {
-=======
-  // Land Slot
-  public shared({caller}) func createLandSlot(indexRow : Nat,indexColumn : Nat,zoneNumber : Nat,zoneLetter : Text, d : Nat) : async Response<Text> {
->>>>>>> 2e0052468df1d8bab8e375caadc5a31a88fe0ebb
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
