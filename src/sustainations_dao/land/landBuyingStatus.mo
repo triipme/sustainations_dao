@@ -7,10 +7,7 @@ module LandBuyingStatus {
   public func getData(landBuyingStatus : Types.LandBuyingStatus) : Types.LandBuyingStatus {
     let newLandBuyingStatus : Types.LandBuyingStatus = {
       id = landBuyingStatus.id;
-      currentZoneNumber = landBuyingStatus.currentZoneNumber;
-      currentZoneLetter = landBuyingStatus.currentZoneLetter;
-      currentIndexRow = landBuyingStatus.currentIndexRow;
-      currentIndexColumn = landBuyingStatus.currentIndexColumn;
+      geometry = landBuyingStatus.geometry;
       randomTimes = landBuyingStatus.randomTimes;
     };
     return newLandBuyingStatus;
