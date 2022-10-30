@@ -15,19 +15,19 @@ ic-cdk-macros = "0.4"
 
 #Primitives
 geo = "0.23.0"
-robust = "0.2.3"
+#robust = "0.2.3"
 # proj = "0.27.0" 
 # geos = "8.1.0"
 
 #Handling GIS data formats
 # gdal = "0.13.0"
-geojson = "0.24.0"
+# geojson = "0.24.0"
 
 #Utilities
-geohash = "0.12.0"
-geozero = "0.9.5"
+# geohash = "0.12.0"
+# geozero = "0.9.5"
 # geocoding = "0.4.0" # Loi khac
-polyline = "0.9.0"
+# polyline = "0.9.0"
 utm = "0.1.5"
 geomorph = "1.1.0"
 ran = "1.0.5"

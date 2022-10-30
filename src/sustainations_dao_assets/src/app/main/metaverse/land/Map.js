@@ -19,7 +19,8 @@ import {
   getLandIndex,
   getUserInfo,
   updateLandBuyingStatus,
-  loadNation
+  loadNation,
+  unionLandSlots
 } from '../LandApi'
 
 var country = null
@@ -85,6 +86,7 @@ const Map = () => {
       loadNations(index[0], index[1])
     }
   }, [map])
+  console.log(index)
 
   useEffect(() => {
     map.on('move', onMove)
@@ -160,10 +162,30 @@ const Map = () => {
   const handleAccept = async () => {
     setLoading("accept")
     let landBuyingStatus = await loadLandBuyingStatus()
-    console.log(await createLandSlot(landBuyingStatus.properties.i, landBuyingStatus.properties.j))
+    let country = await loadNation()
+    let utms = undefined
+    if (country !== undefined) {
+      utms = country.utms.map(e => {
+        return e.map( i => {
+            return Number(i)
+        })
+      });
+    }
+    console.log(utms)
+
+    let nationUTMS = unionLandSlots(
+      utms===undefined? [] : [utms],
+      [[
+        [Number(landBuyingStatus.properties.i)*1000, Number(landBuyingStatus.properties.j)*1000],
+        [Number(landBuyingStatus.properties.i)*1000, (Number(landBuyingStatus.properties.j)+1)*1000],
+        [(Number(landBuyingStatus.properties.i)+1)*1000, (Number(landBuyingStatus.properties.j)+1)*1000],
+        [(Number(landBuyingStatus.properties.i)+1)*1000, Number(landBuyingStatus.properties.j)*1000],
+      ]]
+    )
+    console.log(await createLandSlot(landBuyingStatus.properties.i, landBuyingStatus.properties.j,nationUTMS[0][0]))
     numRandom = 3
     landSlotRand = []
-    loadNations(landBuyingStatus.properties.i, landBuyingStatus.properties.j)
+    loadNations(Number(landBuyingStatus.properties.i), Number(landBuyingStatus.properties.j))
     map.setView([Number(landBuyingStatus.geometry.coordinates[0][0][1]), Number(landBuyingStatus.geometry.coordinates[0][0][0])], 13)
     setLoading("none")
     setPurchaseBtn(true)

@@ -3802,8 +3802,10 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
     };
   };
 
-  // Land Slot
-  public shared({caller}) func createLandSlot(indexRow : Nat,indexColumn : Nat,zoneNumber : Nat,zoneLetter : Text, d : Nat) : async Response<Text> {
+
+
+// Land Slot
+  public shared({caller}) func createLandSlot(indexRow : Nat,indexColumn : Nat,nationUTMS: [[Nat]],zoneNumber : Nat,zoneLetter : Text, d : Nat) : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
@@ -3827,7 +3829,7 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
     // delete user's current buying status 
     ignore await deleteLandBuyingStatus(newLandSlot.ownerId);
     // update user nation
-    ignore await createNation(newLandSlot.ownerId,newLandSlot.id);
+    ignore await createNation(newLandSlot.ownerId,newLandSlot.id,nationUTMS);
     #ok("Success");
   };
 
@@ -4033,7 +4035,7 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
         for (value in list.vals()) {
           var coordinates : [[Float]] = [];
           for (utm in value.utms.vals()) {
-            let lonlat = await utm2lonlat(Float.fromInt(utm.1), Float.fromInt(utm.0), 20, "N");
+            let lonlat = await utm2lonlat(Float.fromInt(utm[1]), Float.fromInt(utm[0]), 20, "N");
             coordinates := Array.append(coordinates, [[lonlat.0,lonlat.1]]);
           };
           let newGeometry : Types.Geometry = {
@@ -4052,7 +4054,7 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
   };
 
   // Nation
-  public shared({caller}) func createNation(ownerId : Principal, landId : Text) : async Response<Text> {
+  public shared({caller}) func createNation(ownerId : Principal, landId : Text,nationUTMS : [[Nat]]) : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
@@ -4065,7 +4067,7 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
           landSlotIds = [landId];
           indexRow = nationIndex.i;
           indexColumn = nationIndex.j;
-          utms = await extendNation(1000,[],landId);
+          utms = nationUTMS;
         };
         let created = Nation.create(newNation,state);
         #ok("Success");
@@ -4080,7 +4082,7 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
           landSlotIds = newLandSlotIds;
           indexRow = nationIndex.i;
           indexColumn = nationIndex.j;
-          utms = await extendNation(1000,V.utms,landId);
+          utms = nationUTMS;
         };
         let updated = Nation.update(updateNation,state);
         #ok("Success");
@@ -4088,32 +4090,34 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
     }
   }; 
 
-  public shared({caller}) func extendNation(d : Nat, utms : [Nation.UTM], newLandSlotId : Text) : async [Nation.UTM] {
-    let rsNewLandSlot = state.landSlots.get(newLandSlotId);
-    switch (rsNewLandSlot) {
-      case null {
-        return [];  
-      };
-      case (?newLandSlot) {
-        let convertedLandslot : [Nation.UTM] = Nation.convertLandslotijToUTM(d, {
-          i=newLandSlot.indexRow;
-          j=newLandSlot.indexColumn
-        });
-        var currentUTMList : [Nation.UTM] = utms;
-        var result = Nation.removeDuplicatePoints(
-          Array.append<Nation.UTM>(currentUTMList, convertedLandslot)
-        );
-        for(i in Iter.range(0, currentUTMList.size() - 1)){
-          for(j in Iter.range(0, convertedLandslot.size() - 1)){
-            if(currentUTMList[i] == convertedLandslot[j]){
-              result := Array.filter<Nation.UTM>(result, func(val: Nation.UTM) : Bool { val != currentUTMList[i] });
-            };
-          };
-        };
-        return result;
-      };
-    }; 
-  };
+  // public shared({caller}) func extendNation(d : Nat, utms : [Nation.UTM], newLandSlotId : Text) : async [Nation.UTM] {
+  //   let rsNewLandSlot = state.landSlots.get(newLandSlotId);
+  //   switch (rsNewLandSlot) {
+  //     case null {
+  //       return [];  
+  //     };
+  //     case (?newLandSlot) {
+  //       let convertedLandslot : [Nation.UTM] = Nation.convertLandslotijToUTM(d, {
+  //         i=newLandSlot.indexRow;
+  //         j=newLandSlot.indexColumn
+  //       });
+  //       var currentUTMList : [Nation.UTM] = utms;
+
+  //       var result = Nation.removeDuplicatePoints(
+  //         Array.append<Nation.UTM>(currentUTMList, convertedLandslot)
+  //       );
+  //       for(i in Iter.range(0, currentUTMList.size() - 1)){
+  //         for(j in Iter.range(0, convertedLandslot.size() - 1)){
+  //           if(currentUTMList[i] == convertedLandslot[j]){
+  //             result := Array.filter<Nation.UTM>(result, func(val: Nation.UTM) : Bool { val != currentUTMList[i] });
+  //           };
+  //         };
+  //       };
+  //       return result;
+  //     };
+  //   }; 
+  // };
+  
   public shared({caller}) func getNationIndex(landSlotIds : [Text]) : async {i:Nat;j:Nat} {
     var sumRow : Nat = 0;
     var sumColumn : Nat = 0;

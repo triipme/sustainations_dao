@@ -71,6 +71,7 @@
     "perfect-scrollbar": "^1.5.5",
     "phaser": "^3.55.2",
     "phaser3-rex-plugins": "^1.1.71",
+    "polygon-clipping": "^0.15.3",
     "prismjs": "^1.28.0",
     "proj4": "^2.8.0",
     "prop-types": "^15.8.1",
