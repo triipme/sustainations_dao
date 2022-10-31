@@ -65,18 +65,6 @@ class selectItemScene extends BaseScene {
         successCallback();
       });
     }, this);
-    this.load.rexAwait(function (successCallback, failureCallback) {
-      loadQuestItems(this.map).then((result) => {
-        if (result != []){}
-        this.questItems = result;
-        for (const index in result) {
-          this.itemNames.push(result[index].name);
-          this.itemStrength.push(result[index].strengthRequire);
-          this.load.image(result[index].name, loadItemUrl(result[index].images));
-        };
-        successCallback();
-      });
-    }, this)
 
     //For Engine
     this.load.rexAwait(function (successCallback, failureCallback) {
@@ -92,6 +80,20 @@ class selectItemScene extends BaseScene {
           if (result != []){}
           this.questItems = result;
           console.log("result: ", result);
+          for (const index in result) {
+            this.itemNames.push(result[index].name);
+            this.itemStrength.push(result[index].strengthRequire);
+            this.load.image(result[index].name, loadItemUrl(result[index].images));
+          };
+          successCallback();
+        });
+      }, this)
+    }
+    else {
+      this.load.rexAwait(function (successCallback, failureCallback) {
+        loadQuestItems(this.map).then((result) => {
+          if (result != []){}
+          this.questItems = result;
           for (const index in result) {
             this.itemNames.push(result[index].name);
             this.itemStrength.push(result[index].strengthRequire);
