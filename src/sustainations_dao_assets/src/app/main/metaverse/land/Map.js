@@ -34,12 +34,10 @@ var isFarmMode = false
 export var mapZoom = 0
 
 const Map = () => {
-  const loadLands = async (i, j) => {
-    landData = await loadLandSlotsfromCenter(i, j);
-  }
-  const loadNations = async (i, j) => {
-    nationData = await loadNationsfromCenter(i, j);
 
+  const loadNations = async (i, j) => {
+    landData = await loadLandSlotsfromCenter(i, j);
+    nationData = await loadNationsfromCenter(i, j);
   }
   const map = useMap()
   const [purchaseBtn, setPurchaseBtn] = useState(true)
@@ -61,11 +59,9 @@ const Map = () => {
     if (init == 0) {
       country = await loadNation();
       if (country === undefined) {
-        await loadLands(0, 0);
         await loadNations(0, 0)
         setLoading("none")
       } else {
-        await loadLands(Number(country.indexRow), Number(country.indexColumn));
         await loadNations(Number(country.indexRow), Number(country.indexColumn));
         map.setView([Number(nationData[0].geometry.coordinates[0][0][1]), Number(nationData[0].geometry.coordinates[0][0][0])], 13)
         setLoading("none")
@@ -82,7 +78,6 @@ const Map = () => {
   const onMove = useCallback(() => {
     setPosition(map.getCenter())
     if (index != undefined) {
-      loadLands(index[0], index[1]);
       loadNations(index[0], index[1])
     }
   }, [map])
@@ -144,17 +139,16 @@ const Map = () => {
     }
     else {
       // if having enough ICP
-      let isBuy = await buyLandSlot()
-      if (isBuy !== undefined) {
+      // let isBuy = await buyLandSlot()
+      // if (isBuy !== undefined) {
         numRandom -= 1
         landSlotRand = await randomLandSlot()
-
-        console.log(await updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom))
+        await updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom)
         map.setView([landSlotRand.geometry.coordinates[0][0][1], landSlotRand.geometry.coordinates[0][0][0]], 13)
-      } else {
+      //} else {
         // if not having enough ICP
-        setAlert(true)
-      }
+        // setAlert(true)
+      //}
     }
     setPurchaseBtn(false)
     setLoading("none")
@@ -164,6 +158,8 @@ const Map = () => {
     setLoading("accept")
     let landBuyingStatus = await loadLandBuyingStatus()
     let country = await loadNation()
+
+    //convert Bigint utms to Number utms
     let utms = undefined
     if (country !== undefined) {
       utms = country.utms.map(e => {
@@ -172,8 +168,8 @@ const Map = () => {
         })
       });
     }
-    console.log(utms)
 
+    // update Nation UTMS
     let nationUTMS = unionLandSlots(
       utms===undefined? [] : [utms],
       [[
@@ -183,10 +179,10 @@ const Map = () => {
         [(Number(landBuyingStatus.properties.i)+1)*1000, Number(landBuyingStatus.properties.j)*1000],
       ]]
     )
-    console.log(await createLandSlot(landBuyingStatus.properties.i, landBuyingStatus.properties.j,nationUTMS[0][0]))
+    await createLandSlot(landBuyingStatus.properties.i, landBuyingStatus.properties.j,nationUTMS[0][0])
     numRandom = 3
     landSlotRand = []
-    loadNations(Number(landBuyingStatus.properties.i), Number(landBuyingStatus.properties.j))
+    await loadNations(Number(landBuyingStatus.properties.i), Number(landBuyingStatus.properties.j))
     map.setView([Number(landBuyingStatus.geometry.coordinates[0][0][1]), Number(landBuyingStatus.geometry.coordinates[0][0][0])], 13)
     setLoading("none")
     setPurchaseBtn(true)
@@ -196,7 +192,7 @@ const Map = () => {
     setLoading("try")
     numRandom -= 1
     landSlotRand = await randomLandSlot()
-    console.log(await updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom))
+    await updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom)
     map.setView([landSlotRand.geometry.coordinates[0][0][1], landSlotRand.geometry.coordinates[0][0][0]], 13)
     setLoading("none")
   }
