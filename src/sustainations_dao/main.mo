@@ -3289,18 +3289,18 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
       return #err(#NotAuthorized); //isNotAuthorized
     };
     let rsEvent = state.questEngine.events.get(idEvent);
-    switch (rsEvent){
+    switch (rsEvent) {
       case null {
         #err(#NotFound);
       };
-      case (?event){
-        for (V in state.questEngine.scenes.vals()){
-          if (event.id == V.idEvent){
+      case (?event) {
+        for (V in state.questEngine.scenes.vals()) {
+          if (event.id == V.idEvent) {
             return #ok(V);
           };
         };
         return #err(#NotFound);
-      }
+      };
     };
   };
 
@@ -3357,6 +3357,93 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
       };
     };
   };
+
+  public shared ({ caller }) func listQuestItemEngines(idQuest : Text) : async Response<[Types.Item]> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    var listItemId : [Text] = [];
+    var listItem : [Types.Item] = [];
+    let listEvent = await listSceneQuests(idQuest);
+    switch (listEvent){
+      case (#err(err)){
+        #err(err);
+      };
+      case (#ok(listEvent)){
+        for (event in listEvent.vals()){
+          for (eventOption in state.questEngine.eventOptions.vals()) {
+            if (eventOption.requireItemId != "null" and eventOption.eventId == event){
+              switch (Array.find<Text>(listItemId, func (x: Text) {
+                x == eventOption.requireItemId
+              })){
+                case null {
+                  listItemId := Array.append<Text>(listItemId, [eventOption.requireItemId]);
+                };
+                case (?v){};
+              }
+            };
+          };
+        };
+        for (v in listItemId.vals()){
+          let item : ?Types.Item = state.items.get(v);
+          switch (item){
+            case null{
+              return #err(#NotFound);
+            };
+            case (?item){
+              listItem := Array.append<Types.Item>(listItem, [item]);
+            }
+          }
+        };
+        #ok(listItem) 
+      };
+    };
+  };
+
+  public shared ({ caller }) func takeOptionEngine(eventId : Text) : async Response<[Types.Character]> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    var result : [Types.Character] = [];
+    for ((K, character) in state.characters.entries()) {
+      if (character.userId == caller) {
+        for ((K, eventOption) in state.questEngine.eventOptions.entries()) {
+          if (eventOption.eventId == eventId) {
+            var strengthRequire : Float = 0;
+            for (item in state.items.vals()) {
+              if (item.id == eventOption.requireItemId) {
+                strengthRequire := item.strengthRequire;
+              };
+            };
+            result := Array.append<Types.Character>(result, [await Character.takeOption(character, strengthRequire, eventOption, state)]);
+          };
+        };
+      };
+    };
+    #ok(result);
+  };
+
+  public shared ({ caller }) func collectsMaterialEngines(eventId : Text) : async Response<[Types.CharacterCollectsMaterials]> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    var result : [Types.CharacterCollectsMaterials] = [];
+    for ((K, character) in state.characters.entries()) {
+      if (character.userId == caller) {
+        for ((K, eventOption) in state.questEngine.eventOptions.entries()) {
+          if (eventOption.eventId == eventId) {
+            let characterCollectMaterial = await CharacterCollectsMaterials.collectsMaterials(character.id, eventOption, state);
+            result := Array.append<Types.CharacterCollectsMaterials>(result, [characterCollectMaterial]);
+          };
+        };
+      };
+    };
+    #ok(result);
+  };
+
+
+  
+  
 
   // Item
   public shared ({ caller }) func createItem(item : Types.Item) : async Response<Text> {

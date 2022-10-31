@@ -270,6 +270,27 @@ async function readScene(eventId) {
   return scene;
 }
 
+async function loadQuestItemEngines(idQuest) {
+  const { user } = store.getState();
+  const func = async () => await user.actor.listQuestItemEngines(idQuest);
+  const scene = (await func()).ok;
+  return scene;
+}
+
+async function characterTakeOptionEngine(eventId) {
+  const { user } = store.getState();
+  const takeOptionEngine = async () => await user.actor.takeOptionEngine(eventId);
+  const result = (await takeOptionEngine()).ok;
+  return result;
+};
+
+async function characterCollectsMaterialEngines(eventId) {
+  const { user } = store.getState();
+  const collectsMaterialEngines = async () => await user.actor.collectsMaterialEngines(eventId);
+  const result = (await collectsMaterialEngines()).ok;
+  return result;
+};
+
 export {
   getUserInfo,
   loadQuestItems,
@@ -301,5 +322,8 @@ export {
   listSceneQuests,
   loadEventOptionEngines,
   readEventEngine,
-  readScene
+  readScene,
+  loadQuestItemEngines,
+  characterTakeOptionEngine, 
+  characterCollectsMaterialEngines
 }

@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import BaseScene from '../BaseEngine'
+import BaseScene from '../BaseScene'
 import gameConfig from '../../GameConfig';
 import {
   loadEventOptionEngines,
@@ -7,7 +7,9 @@ import {
   listCharacterSelectsItems,
   createCharacterCollectsMaterials,
   readScene,
-  loadItemUrl
+  loadItemUrl,
+  characterTakeOptionEngine,
+  characterCollectsMaterialEngines
 } from '../../GameApi';
 import { settings } from '../settings';
 import { func } from 'prop-types';
@@ -47,9 +49,24 @@ export default class Engine extends BaseScene {
   async preload() {
     this.addLoadingScreen();
     console.log("data: ", this.listScene);
-    this.initialLoad(this.listScene[0]);
+    this.eventId = this.listScene[0];
+    this.initialLoad(this.eventId);
+    console.log("this eventid: ", this.eventId);
+    this.load.rexAwait(function (successCallback, failureCallback) {
+      characterTakeOptionEngine(this.eventId).then((result) => {
+        this.characterTakeOptions = result;
+        successCallback();
+      });
+    }, this);
+    this.load.rexAwait(function (successCallback, failureCallback) {
+      characterCollectsMaterialEngines(this.eventId).then((result) => {
+        this.characterCollectMaterials = result;
+        successCallback();
+      });
+    }, this);
     this.sceneEvent = await readScene(this.listScene[0])
     console.log(this.sceneEvent);
+    console.log("this.characterTakeOptions", this.characterTakeOptions);
 
 
     //Preload
@@ -105,6 +122,7 @@ export default class Engine extends BaseScene {
   }
 
   async create() {
+    console.log("this.characterTakeOptions 2", this.characterTakeOptions);
     console.log(this.listScene.shift())
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
@@ -239,24 +257,24 @@ export default class Engine extends BaseScene {
           this.setValue(this.stamina, this.characterTakeOptions[idx].currentStamina / this.characterTakeOptions[idx].maxStamina * 100);
           this.setValue(this.mana, this.characterTakeOptions[idx].currentMana / this.characterTakeOptions[idx].maxMana * 100);
           this.setValue(this.morale, this.characterTakeOptions[idx].currentMorale / this.characterTakeOptions[idx].maxMorale * 100);
-
+          
           //HP, Stamina, mana, morele in col 
           let loss_stat = this.showLossStat(this.characterData, this.characterTakeOptions[idx])
           this.showColorLossStat(423, 65, loss_stat[0]);
           this.showColorLossStat(460 + 200, 65, loss_stat[1]);
           this.showColorLossStat(470 + 200 * 2 + 20, 65, loss_stat[2]);
           this.showColorLossStat(490 + 200 * 3 + 35, 65, loss_stat[3]);
-
+          
           // update character after choose option
           updateCharacterStats(this.characterTakeOptions[idx]);
           // create charactercollectsmaterials after choose option
-          createCharacterCollectsMaterials(this.characterCollectMaterials[idx]);
+          // createCharacterCollectsMaterials(this.characterCollectMaterials[idx]);
         }
       });
     };
-
+    
   }
-
+  
   update() {
     //new player logic
     if (this.player.body.touching.down && this.isInteracting == false) {
