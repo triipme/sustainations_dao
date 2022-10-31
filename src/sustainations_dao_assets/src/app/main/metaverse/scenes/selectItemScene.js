@@ -217,7 +217,7 @@ class selectItemScene extends BaseScene {
           this.scene.start('lake');
         case 'engine':
           // this.scene.start('BaseEngine', {  listScene: await listSceneQuests("qe1")});
-          this.scene.start('BaseEngine', {  listScene: this.listScene});
+          this.scene.start('Engine', {  listScene: this.listScene});
           break;
         default:
           console.log('invalid map name');

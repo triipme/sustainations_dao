@@ -45,7 +45,7 @@ import lake_scene3 from './scenes/lake/lake_scene3';
 import lake_scene4 from './scenes/lake/lake_scene4';
 import lake_scene5 from './scenes/lake/lake_scene5';
 
-import BaseEngine from './scenes/Engine/BaseEngine';
+import Engine from './scenes/Engine/Engine';
 
 const gameConfig = {
   type: Phaser.CANVAS,
@@ -79,7 +79,7 @@ const gameConfig = {
     catalonia_scene3, catalonia_scene5_1, catalonia_scene5_2, catalonia_scene6, catalonia_scene7, catalonia_scene8,
     catalonia_scene9, catalonia_scene10, catalonia_scene11, catalonia_scene12, catalonia_scene13, 
     lava_scene1, lava_scene2, lava_scene3, lava_scene4, lava_scene5, lake_scene1, lake_scene2, lake_scene3, lake_scene4, lake_scene5,
-    BaseEngine] 
+    Engine] 
 };
 
 export default gameConfig;

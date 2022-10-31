@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import BaseScene from '../BaseScene'
+import BaseScene from '../BaseEngine'
 import gameConfig from '../../GameConfig';
 import {
   loadEventOptionEngines,
@@ -26,9 +26,9 @@ const item_potion = 'metaverse/scenes/item_ingame_HP.png'
 const popupWindo = 'metaverse/selectMap/Catalonia_popup.png';
 const popupClose = 'metaverse/selectMap/UI_ingame_close.png';
 
-export default class BaseEngine extends BaseScene {
+export default class Engine extends BaseScene {
   constructor() {
-    super('BaseEngine');
+    super('Engine');
   }
 
   clearSceneCache() {
@@ -269,7 +269,7 @@ export default class BaseEngine extends BaseScene {
       this.sfx_char_footstep.stop();
 
       if (this.listScene.length === 0) this.scene.start("thanks", { isUsedPotion: this.isUsedPotion });
-      else this.scene.start("BaseEngine", { isUsedPotion: this.isUsedPotion, listScene: this.listScene });
+      else this.scene.start("Engine", { isUsedPotion: this.isUsedPotion, listScene: this.listScene });
     }
 
     if (this.player.x > 4200 && this.isInteracted == false) {
