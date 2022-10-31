@@ -76,6 +76,13 @@ class selectItemScene extends BaseScene {
       });
     }, this)
 
+    this.load.rexAwait(function (successCallback, failureCallback) {
+      listSceneQuests("qe1").then((result) => { // for test
+        this.listScene = result;
+        successCallback();
+      });
+    }, this)
+
     //preload
     this.clearCache();
     this.load.image("bg", bg);
@@ -206,14 +213,11 @@ class selectItemScene extends BaseScene {
         case 'lava':
           this.scene.start('lava_scene1');
           break;
-        // case 'lake':
-        //   this.scene.start('lake_scene1');
-        //   break;
-        // case 'lake':
-        //   this.scene.start('BaseEngine', { listScene: ["e36", "e37","e38","e39","e40"] });
-        //   break;
         case 'lake':
-          this.scene.start('BaseEngine', { listScene: await listSceneQuests("lake") });
+          this.scene.start('lake');
+        case 'engine':
+          // this.scene.start('BaseEngine', {  listScene: await listSceneQuests("qe1")});
+          this.scene.start('Engine', {  listScene: this.listScene});
           break;
         default:
           console.log('invalid map name');

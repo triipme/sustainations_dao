@@ -240,6 +240,7 @@ async function readEvent(eventId) {
   return event;
 }
 
+//Engine
 // list scene of quest
 async function listSceneQuests(idQuest) {
   const { user } = store.getState();
@@ -247,16 +248,27 @@ async function listSceneQuests(idQuest) {
   const list_scene_quest = (await func()).ok;
   return list_scene_quest;
 }
-// function listSceneQuests(idQuest) {
-//   const promise = new Promise((resolve, reject) => {
-//     const { user } = store.getState();
-//     const rs = user.actor.listSceneQuests(idQuest);
-//     resolve(rs);
-//   })
-//   promise.then((data) => {
-//     return data;
-//   })
-// };
+
+async function loadEventOptionEngines(eventId, selectedItemsIds) {
+  const { user } = store.getState();
+  const listEventOptionEngines = async () => await user.actor.listEventOptionEngines(eventId, selectedItemsIds);
+  const eventOptions = (await listEventOptionEngines()).ok;
+  return eventOptions;
+};
+
+async function readEventEngine(eventId) {
+  const { user } = store.getState();
+  const func = async () => await user.actor.readEventEngine(eventId);
+  const event = (await func()).ok;
+  return event;
+}
+
+async function readScene(eventId) {
+  const { user } = store.getState();
+  const func = async () => await user.actor.readScene(eventId);
+  const scene = (await func()).ok;
+  return scene;
+}
 
 export {
   getUserInfo,
@@ -286,5 +298,8 @@ export {
   getRemainingTime,
   payQuest,
   readEvent,
-  listSceneQuests
+  listSceneQuests,
+  loadEventOptionEngines,
+  readEventEngine,
+  readScene
 }
