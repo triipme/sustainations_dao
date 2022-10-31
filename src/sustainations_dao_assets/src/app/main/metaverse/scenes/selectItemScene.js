@@ -9,7 +9,8 @@ import {
   resetCharacter,
   loadCharacterAwait,
   resetCharacterCollectsMaterials,
-  listSceneQuests
+  listSceneQuests,
+  loadQuestItemEngines
 } from '../GameApi';
 import { throws } from 'assert';
 
@@ -64,24 +65,44 @@ class selectItemScene extends BaseScene {
         successCallback();
       });
     }, this);
-    this.load.rexAwait(function (successCallback, failureCallback) {
-      loadQuestItems(this.map).then((result) => {
-        this.questItems = result;
-        for (const index in result) {
-          this.itemNames.push(result[index].name);
-          this.itemStrength.push(result[index].strengthRequire);
-          this.load.image(result[index].name, loadItemUrl(result[index].images));
-        };
-        successCallback();
-      });
-    }, this)
 
+    //For Engine
     this.load.rexAwait(function (successCallback, failureCallback) {
-      listSceneQuests("qe1").then((result) => { // for test
+      listSceneQuests("engine").then((result) => { // for test
         this.listScene = result;
         successCallback();
       });
     }, this)
+
+    if  (this.map == "engine"){
+      this.load.rexAwait(function (successCallback, failureCallback) {
+        loadQuestItemEngines(this.map).then((result) => {
+          if (result != []){}
+          this.questItems = result;
+          console.log("result: ", result);
+          for (const index in result) {
+            this.itemNames.push(result[index].name);
+            this.itemStrength.push(result[index].strengthRequire);
+            this.load.image(result[index].name, loadItemUrl(result[index].images));
+          };
+          successCallback();
+        });
+      }, this)
+    }
+    else {
+      this.load.rexAwait(function (successCallback, failureCallback) {
+        loadQuestItems(this.map).then((result) => {
+          if (result != []){}
+          this.questItems = result;
+          for (const index in result) {
+            this.itemNames.push(result[index].name);
+            this.itemStrength.push(result[index].strengthRequire);
+            this.load.image(result[index].name, loadItemUrl(result[index].images));
+          };
+          successCallback();
+        });
+      }, this)
+    }
 
     //preload
     this.clearCache();
@@ -214,10 +235,11 @@ class selectItemScene extends BaseScene {
           this.scene.start('lava_scene1');
           break;
         case 'lake':
-          this.scene.start('lake');
+          this.scene.start('lake_scene1');
+          break;
         case 'engine':
           // this.scene.start('BaseEngine', {  listScene: await listSceneQuests("qe1")});
-          this.scene.start('Engine', {  listScene: this.listScene});
+          this.scene.start('Engine', { listScene: this.listScene });
           break;
         default:
           console.log('invalid map name');

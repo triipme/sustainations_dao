@@ -7,7 +7,9 @@ import {
   listCharacterSelectsItems,
   createCharacterCollectsMaterials,
   readScene,
-  loadItemUrl
+  loadItemUrl,
+  characterTakeOptionEngine,
+  characterCollectsMaterialEngines
 } from '../../GameApi';
 import { func } from 'prop-types';
 import { readEventEngine } from '../../GameApi';
@@ -38,7 +40,21 @@ export default class Engine extends BaseScene {
   async preload() {
     this.addLoadingScreen();
     console.log("data: ", this.listScene);
-    this.initialLoad(this.listScene[0]);
+    this.eventId = this.listScene[0];
+    this.initialLoad(this.eventId);
+    console.log("this eventid: ", this.eventId);
+    this.load.rexAwait(function (successCallback, failureCallback) {
+      characterTakeOptionEngine(this.eventId).then((result) => {
+        this.characterTakeOptions = result;
+        successCallback();
+      });
+    }, this);
+    this.load.rexAwait(function (successCallback, failureCallback) {
+      characterCollectsMaterialEngines(this.eventId).then((result) => {
+        this.characterCollectMaterials = result;
+        successCallback();
+      });
+    }, this);
     this.sceneEvent = await readScene(this.listScene[0])
     console.log(this.sceneEvent);
 
@@ -75,6 +91,7 @@ export default class Engine extends BaseScene {
 
 
   async create() {
+    console.log("this.characterTakeOptions 2", this.characterTakeOptions);
     console.log(this.listScene.shift())
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
@@ -192,27 +209,49 @@ export default class Engine extends BaseScene {
           this.setValue(this.stamina, this.characterTakeOptions[idx].currentStamina / this.characterTakeOptions[idx].maxStamina * 100);
           this.setValue(this.mana, this.characterTakeOptions[idx].currentMana / this.characterTakeOptions[idx].maxMana * 100);
           this.setValue(this.morale, this.characterTakeOptions[idx].currentMorale / this.characterTakeOptions[idx].maxMorale * 100);
-
+          
           //HP, Stamina, mana, morele in col 
           let loss_stat = this.showLossStat(this.characterData, this.characterTakeOptions[idx])
           this.showColorLossStat(423, 65, loss_stat[0]);
           this.showColorLossStat(460 + 200, 65, loss_stat[1]);
           this.showColorLossStat(470 + 200 * 2 + 20, 65, loss_stat[2]);
           this.showColorLossStat(490 + 200 * 3 + 35, 65, loss_stat[3]);
-
+          
           // update character after choose option
           updateCharacterStats(this.characterTakeOptions[idx]);
           // create charactercollectsmaterials after choose option
-          createCharacterCollectsMaterials(this.characterCollectMaterials[idx]);
+          // createCharacterCollectsMaterials(this.characterCollectMaterials[idx]);
         }
       });
     };
   }
-
+  
   update() {
+    //new player logic
+    if (this.player.body.touching.down && this.isInteracting == false) {
+      this.player.setVelocityX(settings.movementSpeed);
+    }
 
-    //locationStop, locationInteract, nextScene
-    this.playerLogicEngine(5100, 4200, "Engine");
+    if (this.player.x > 5100) {
+      console.log(this.sum)
+      this.pregameSound.stop();
+      this.sfx_char_footstep.stop();
+
+      if (this.listScene.length === 0) this.scene.start("thanks", { isUsedPotion: this.isUsedPotion });
+      else this.scene.start("Engine", { isUsedPotion: this.isUsedPotion, listScene: this.listScene });
+    }
+
+    if (this.player.x > 4200 && this.isInteracted == false) {
+
+      this.premiumPopupWindow.setVisible(true);
+      this.premiumPopupCloseBtn.setVisible(true);
+      this.des.setVisible(true);
+      // this.triggerPause();
+      this.sfx_char_footstep.stop();
+      this.player.setVelocityX(0);
+      this.player.play('idle-anims');
+      this.player.stop();
+    }
 
     //bg
     // scroll the texture of the tilesprites proportionally to the camera scroll
