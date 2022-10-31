@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import BaseScene from '../BaseEngine'
+import BaseScene from '../BaseScene'
 import gameConfig from '../../GameConfig';
 import {
   loadEventOptionEngines,
@@ -9,7 +9,6 @@ import {
   readScene,
   loadItemUrl
 } from '../../GameApi';
-import { settings } from '../settings';
 import { func } from 'prop-types';
 import { readEventEngine } from '../../GameApi';
 
@@ -23,7 +22,7 @@ const UI_Utility = 'metaverse/scenes/UI-utility.png'
 const UI_Utility_Sprite = 'metaverse/scenes/UI_Utility_Sprite.png'
 const item_potion = 'metaverse/scenes/item_ingame_HP.png'
 
-const popupWindo = 'metaverse/selectMap/Catalonia_popup.png';
+const popupWindow = 'metaverse/selectMap/Catalonia_popup.png';
 const popupClose = 'metaverse/selectMap/UI_ingame_close.png';
 
 export default class Engine extends BaseScene {
@@ -31,14 +30,6 @@ export default class Engine extends BaseScene {
     super('Engine');
   }
 
-  clearSceneCache() {
-    const textures_list = ['bg', 'UI_strength', 'effect', 'player', 'pickItemText',
-      'itembox', 'btnGo', 'btnClear', 'ground', 'background1', 'background2',
-      'background3', 'selectAction', 'btnBlank', 'obstacle', 'popupWindow'];
-    for (const index in textures_list) {
-      this.textures.remove(textures_list[index]);
-    }
-  }
 
   init(data) {
     this.listScene = data.listScene;
@@ -53,7 +44,10 @@ export default class Engine extends BaseScene {
 
 
     //Preload
-    this.clearSceneCache();
+    this.clearSceneCache(['bg', 'UI_strength', 'effect', 'player', 'pickItemText',
+      'itembox', 'btnGo', 'btnClear', 'ground', 'background1', 'background2',
+      'background3', 'selectAction', 'btnBlank', 'obstacle', 'popupWindow']);
+    // this.clearSceneCache();
     this.isInteracting = false;
     this.isInteracted = false;
     this.load.spritesheet("hero-running", heroRunningSprite, {
@@ -74,35 +68,11 @@ export default class Engine extends BaseScene {
     this.load.image("item_potion", item_potion);
 
     //Popup
-    this.load.spritesheet('popupWindo', popupWindo, { frameWidth: 980, frameHeight: 799 });
+    this.load.spritesheet('popupWindow', popupWindow, { frameWidth: 980, frameHeight: 799 });
     this.load.image("popupClose", popupClose);
 
   }
 
-  //defined function
-
-  triggerPause() {
-    this.isInteracting = true;
-    this.veil.setVisible(true);
-    this.selectAction.setVisible(true);
-    for (const idx in this.options) {
-      this.options[idx].setVisible(true);
-      this.options[idx].text.setVisible(true);
-    }
-
-  }
-
-  triggerContinue() {
-    this.veil.setVisible(false);
-    this.selectAction.setVisible(false);
-    for (const idx in this.options) {
-      this.options[idx].setVisible(false);
-      this.options[idx].text.setVisible(false);
-    }
-    this.isInteracting = false;
-    this.isInteracted = true;
-    this.player.play('running-anims');
-  }
 
   async create() {
     console.log(this.listScene.shift())
@@ -150,21 +120,20 @@ export default class Engine extends BaseScene {
 
 
     //popup
-    this.premiumPopupWindow = this.add.sprite(gameConfig.scale.width / 2, gameConfig.scale.height / 2, "popupWindo")
+    this.premiumPopupWindow = this.add.sprite(gameConfig.scale.width / 2, gameConfig.scale.height / 2, "popupWindow")
       .setScale(0.5).setVisible(false).setScrollFactor(0);
 
     this.premiumPopupCloseBtn = this.add.image(gameConfig.scale.width / 2 + 230, gameConfig.scale.height / 2 - 150, "popupClose")
       .setInteractive().setScale(0.25).setVisible(false).setScrollFactor(0).setScale(0.25);
 
     this.premiumPopupCloseBtn.on('pointerdown', () => {
-      console.log("Hello World");
       this.clickSound.play();
       this.isInteracted = true;
       this.premiumPopupWindow.setVisible(false);
       this.premiumPopupCloseBtn.setVisible(false);
       this.des.setVisible(false);
       this.triggerPause();
-      console.log("Hello World");
+   
     });
 
     // load description of event
@@ -182,25 +151,9 @@ export default class Engine extends BaseScene {
       }
     }).setVisible(false).setScrollFactor(0);
 
-    //scrolling
-    this.graphics = this.make.graphics();
+    //Scrolling
+    this.scrolling();
 
-    this.graphics.fillRect(152, 230, 900, 250).setScrollFactor(0);
-
-    this.mask = new Phaser.Display.Masks.GeometryMask(this, this.graphics);
-
-    this.des.setMask(this.mask);
-
-    // //  The rectangle they can 'drag' within
-    this.add.zone(150, 230, 900, 250).setOrigin(0).setInteractive().setVisible(true).setScrollFactor(0)
-      .on('pointermove', (pointer) => {
-        if (pointer.isDown) {
-          this.des.y += (pointer.velocity.y / 10);
-
-          this.des.y = Phaser.Math.Clamp(this.des.y, -400, 720);
-        }
-
-      })
 
     for (const idx in this.eventOptions) {
 
@@ -254,35 +207,12 @@ export default class Engine extends BaseScene {
         }
       });
     };
-
   }
 
   update() {
-    //new player logic
-    if (this.player.body.touching.down && this.isInteracting == false) {
-      this.player.setVelocityX(settings.movementSpeed);
-    }
 
-    if (this.player.x > 5100) {
-      console.log(this.sum)
-      this.pregameSound.stop();
-      this.sfx_char_footstep.stop();
-
-      if (this.listScene.length === 0) this.scene.start("thanks", { isUsedPotion: this.isUsedPotion });
-      else this.scene.start("Engine", { isUsedPotion: this.isUsedPotion, listScene: this.listScene });
-    }
-
-    if (this.player.x > 4200 && this.isInteracted == false) {
-
-      this.premiumPopupWindow.setVisible(true);
-      this.premiumPopupCloseBtn.setVisible(true);
-      this.des.setVisible(true);
-      // this.triggerPause();
-      this.sfx_char_footstep.stop();
-      this.player.setVelocityX(0);
-      this.player.play('idle-anims');
-      this.player.stop();
-    }
+    //locationStop, locationInteract, nextScene
+    this.playerLogicEngine(5100, 4200, "Engine");
 
     //bg
     // scroll the texture of the tilesprites proportionally to the camera scroll
