@@ -235,7 +235,8 @@ class selectItemScene extends BaseScene {
           this.scene.start('lava_scene1');
           break;
         case 'lake':
-          this.scene.start('lake');
+          this.scene.start('lake_scene1');
+          break;
         case 'engine':
           // this.scene.start('BaseEngine', {  listScene: await listSceneQuests("qe1")});
           this.scene.start('Engine', { listScene: this.listScene });

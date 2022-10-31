@@ -66,7 +66,6 @@ export default class Engine extends BaseScene {
     }, this);
     this.sceneEvent = await readScene(this.listScene[0])
     console.log(this.sceneEvent);
-    console.log("this.characterTakeOptions", this.characterTakeOptions);
 
 
     //Preload
