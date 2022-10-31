@@ -21,7 +21,7 @@ function getUserInfo() {
 async function buyLandSlot() {
   const { user } = store.getState();
   const func = async () => await user.actor.buyLandSlot();
-  const result = (await func()).ok;
+  const result = (func()).ok;
   return result;
 }
 
@@ -29,7 +29,7 @@ async function buyLandSlot() {
 async function randomLandSlot() {
   const { user } = store.getState();
   const func = async () => await user.actor.randomLandSlot();
-  const result = (await func()).ok; 
+  const result = (func()).ok; 
   let feature = {
     type: "Feature",
     properties: { "zoneNumber": result.zoneNumber, "zoneLetter": result.zoneLetter, "i": result.i, "j": result.j },
@@ -45,7 +45,7 @@ async function randomLandSlot() {
 async function createLandSlot(i, j,nationUTMS) {
   const { user } = store.getState();
   const func = async () => await user.actor.createLandSlot(parseInt(i), parseInt(j), nationUTMS,20, "N", 1000);
-  const result = (await func()).ok;
+  const result = (func()).ok;
   return result;
 };
 
@@ -55,7 +55,7 @@ async function loadNationsfromCenter(x, y) {
   const func = async () => await user.actor.loadNationsArea(
     x - 100, y - 100, x + 100, y + 100
   );
-  const nations = (await func()).ok;
+  const nations = (func()).ok;
   // let zone = 20
   var result = {
     features: []
@@ -135,7 +135,7 @@ function getLandIndex(latlng, landData) {
 async function loadLandTransferHistories() {
   const { user } = store.getState();
   const listLandTransferHistories = async () => await user.actor.listLandTransferHistories();
-  const landTransferHistories = (await listLandTransferHistories()).ok;
+  const landTransferHistories = (listLandTransferHistories()).ok;
   return landTransferHistories;
 };
 
@@ -143,7 +143,7 @@ async function loadLandTransferHistories() {
 async function updateLandBuyingStatus(indexRow, indexColumn, randomTimes) {
   const { user } = store.getState();
   const func = async () => await user.actor.updateLandBuyingStatus(parseInt(indexRow), parseInt(indexColumn), randomTimes);
-  const result = (await func()).ok;
+  const result = (func()).ok;
   return result;
 
 };
@@ -152,7 +152,7 @@ async function updateLandBuyingStatus(indexRow, indexColumn, randomTimes) {
 async function loadLandBuyingStatus() {
   const { user } = store.getState();
   const readLandBuyingStatus = async () => await user.actor.readLandBuyingStatus();
-  const landBuyingStatus = (await readLandBuyingStatus()).ok;
+  const landBuyingStatus = (readLandBuyingStatus()).ok;
   var feature = undefined
   if (landBuyingStatus != undefined) {
     feature = {
@@ -212,7 +212,7 @@ async function loadTileSlots(properties) {
 async function loadNation() {
   const { user } = store.getState();
   const func = async () => await user.actor.readNation();
-  const result = (await func()).ok;
+  const result = (func()).ok;
   return result;
 
 };
