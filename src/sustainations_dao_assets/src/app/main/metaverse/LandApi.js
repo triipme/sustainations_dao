@@ -17,6 +17,15 @@ function getUserInfo() {
   });
 };
 
+// list Inventory
+function listInventory() {
+  return new Promise((resolve, reject) => {
+    const { user } = store.getState();
+    const rs = user.actor.listInventory();
+    resolve(rs);
+  });
+};
+
 // buy LandSlot
 async function buyLandSlot() {
   const { user } = store.getState();
@@ -222,6 +231,7 @@ async function loadNation() {
 
 export {
   getUserInfo,
+  listInventory,
   randomLandSlot,
   createLandSlot,
   loadLandTransferHistories,

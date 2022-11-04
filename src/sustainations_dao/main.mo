@@ -3733,7 +3733,7 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
     #ok("Success");
   };
 
-  public shared query({caller}) func openInventory(characterId : Text) : async Response<[Types.Inventory]> {
+  public shared query({caller}) func listInventory(characterId : Text) : async Response<[Types.Inventory]> {
     var list : [Types.Inventory] = [];
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
