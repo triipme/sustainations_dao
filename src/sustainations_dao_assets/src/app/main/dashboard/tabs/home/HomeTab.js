@@ -81,7 +81,7 @@ function HomeTab() {
         <InvestedProject counter={analysis.gamePlayCount.questCompletedCount} objectLabel="Quest" counterLabel="Completed" />
       </motion.div>
       <motion.div variants={item}>
-        <OpenProject counter={analysis.gamePlayCount.questPlayCount} objectLabel="Quest" counterLabel="Turns" />
+        <OpenProject counter={analysis.gamePlayCount.purchasedLandSlotsCount} objectLabel="Land Slots" counterLabel="Purchased" />
       </motion.div>
       <motion.div variants={item} className="sm:col-span-2 md:col-span-4">
         <GithubIssuesWidget />

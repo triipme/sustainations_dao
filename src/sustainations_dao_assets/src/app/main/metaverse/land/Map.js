@@ -39,7 +39,6 @@ const Map = () => {
   }
   const loadNations = async (i, j) => {
     nationData = await loadNationsfromCenter(i, j);
-
   }
   const map = useMap()
   const [purchaseBtn, setPurchaseBtn] = useState(true)
