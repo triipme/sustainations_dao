@@ -56,7 +56,6 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
     miniGameCompletedCount = 0;
     questPlayCount = 0;
     questCompletedCount = 0;
-    purchasedLandSlotsCount = 0;
   };
 
   var state : State.State = State.empty();
@@ -2067,7 +2066,6 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
           miniGameCompletedCount = gamePlayAnalytics.miniGameCompletedCount + completedCount;
           questPlayCount = gamePlayAnalytics.questPlayCount;
           questCompletedCount = gamePlayAnalytics.questCompletedCount;
-          purchasedLandSlotsCount = gamePlayAnalytics.purchasedLandSlotsCount;
         };
         return #ok((duplicateAndShuffleCards, newPlayerId));
       };
@@ -2105,7 +2103,6 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
                     miniGameCompletedCount = gamePlayAnalytics.miniGameCompletedCount + 1;
                     questPlayCount = gamePlayAnalytics.questPlayCount;
                     questCompletedCount = gamePlayAnalytics.questCompletedCount;
-                    purchasedLandSlotsCount = gamePlayAnalytics.purchasedLandSlotsCount;
                   };
                 };
                 return #ok((duplicateAndShuffleCards, pid));
@@ -2144,7 +2141,6 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
                     miniGameCompletedCount = gamePlayAnalytics.miniGameCompletedCount + 1;
                     questPlayCount = gamePlayAnalytics.questPlayCount;
                     questCompletedCount = gamePlayAnalytics.questCompletedCount;
-                    purchasedLandSlotsCount = gamePlayAnalytics.purchasedLandSlotsCount;
                   };
                 };
                 return #ok((duplicateAndShuffleCards, pid));
@@ -2675,7 +2671,6 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
       miniGameCompletedCount = gamePlayAnalytics.miniGameCompletedCount;
       questPlayCount = gamePlayAnalytics.questPlayCount;
       questCompletedCount = gamePlayAnalytics.questCompletedCount + 1;
-      purchasedLandSlotsCount = gamePlayAnalytics.purchasedLandSlotsCount;
     };
 
     Debug.print(debug_show(gamePlayAnalytics));
@@ -2765,7 +2760,6 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
           miniGameCompletedCount = gamePlayAnalytics.miniGameCompletedCount;
           questPlayCount = gamePlayAnalytics.questPlayCount + 1;
           questCompletedCount = gamePlayAnalytics.questCompletedCount;
-          purchasedLandSlotsCount = gamePlayAnalytics.purchasedLandSlotsCount;
         };
         #ok("Success");
       };  
@@ -3810,7 +3804,7 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
 
 
 
-// Land Slot
+  // Land Slot
   public shared({caller}) func createLandSlot(indexRow : Nat,indexColumn : Nat,nationUTMS: [[Nat]],zoneNumber : Nat,zoneLetter : Text, d : Nat) : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
@@ -3836,7 +3830,6 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
       miniGameCompletedCount = gamePlayAnalytics.miniGameCompletedCount;
       questPlayCount = gamePlayAnalytics.questPlayCount;
       questCompletedCount = gamePlayAnalytics.questCompletedCount;
-      purchasedLandSlotsCount = gamePlayAnalytics.purchasedLandSlotsCount + 1;
     };
     // save land transter history
     ignore await createLandTransferHistory(newLandSlot.ownerId,newLandSlot.id,0.0001);
@@ -3845,6 +3838,10 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
     // update user nation
     ignore await createNation(newLandSlot.ownerId,newLandSlot.id,nationUTMS);
     #ok("Success");
+  };
+
+  public query func purchasedLandSlotsCounter() : async Response<Nat> {
+    #ok(state.landSlots.size());
   };
 
   // Land

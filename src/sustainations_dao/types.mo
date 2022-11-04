@@ -428,6 +428,6 @@ module {
     miniGameCompletedCount : Nat;
     questPlayCount : Nat;
     questCompletedCount : Nat;
-    purchasedLandSlotsCount : Nat;
+    // purchasedLandSlotsCount : ?Nat;
   };
 };

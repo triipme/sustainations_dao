@@ -23,6 +23,13 @@ function HomeTab() {
     console.log('result.ok', result.ok);
     return result.ok;
   }, [user]);
+  const purchasedLandSlots = useAsyncMemo(async () => {
+    setLoading(true);
+    const result = await user.actor.purchasedLandSlotsCounter();
+    setLoading(false);
+    console.log('result.ok', result.ok);
+    return result.ok;
+  }, [user]);
   const container = {
     show: {
       transition: {
@@ -81,7 +88,7 @@ function HomeTab() {
         <InvestedProject counter={analysis.gamePlayCount.questCompletedCount} objectLabel="Quest" counterLabel="Completed" />
       </motion.div>
       <motion.div variants={item}>
-        <OpenProject counter={analysis.gamePlayCount.purchasedLandSlotsCount} objectLabel="Land Slots" counterLabel="Purchased" />
+        <OpenProject counter={purchasedLandSlots} objectLabel="Land Slots" counterLabel="Purchased" />
       </motion.div>
       <motion.div variants={item} className="sm:col-span-2 md:col-span-4">
         <GithubIssuesWidget />
