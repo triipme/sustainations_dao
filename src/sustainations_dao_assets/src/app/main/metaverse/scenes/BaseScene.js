@@ -357,5 +357,12 @@ class BaseScene extends Phaser.Scene {
       }
   }
 
+  scrollTexture(speedBack, speedMid, speedObstacle, speedFront){
+    this.bg_1.tilePositionX = this.myCam.scrollX * speedBack;
+    this.bg_2.tilePositionX = this.myCam.scrollX * speedMid;
+    this.obstacle.tilePositionX = this.myCam.scrollX * speedObstacle;
+    this.bg_3.tilePositionX = this.myCam.scrollX * speedFront;
+  }
+
 }
 export default BaseScene;

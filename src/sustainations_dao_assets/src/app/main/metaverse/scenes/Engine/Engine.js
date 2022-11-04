@@ -13,6 +13,7 @@ import {
 } from '../../GameApi';
 import { func } from 'prop-types';
 import { readEventEngine } from '../../GameApi';
+import { settings } from '../settings';
 
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
@@ -63,7 +64,7 @@ export default class Engine extends BaseScene {
     this.clearSceneCache(['bg', 'UI_strength', 'effect', 'player', 'pickItemText',
       'itembox', 'btnGo', 'btnClear', 'ground', 'background1', 'background2',
       'background3', 'selectAction', 'btnBlank', 'obstacle', 'popupWindow']);
-    // this.clearSceneCache();
+ 
     this.isInteracting = false;
     this.isInteracted = false;
     this.load.spritesheet("hero-running", heroRunningSprite, {
@@ -227,37 +228,16 @@ export default class Engine extends BaseScene {
   }
   
   update() {
-    //new player logic
-    if (this.player.body.touching.down && this.isInteracting == false) {
-      this.player.setVelocityX(settings.movementSpeed);
-    }
 
-    if (this.player.x > 5100) {
-      console.log(this.sum)
-      this.pregameSound.stop();
-      this.sfx_char_footstep.stop();
-
-      if (this.listScene.length === 0) this.scene.start("thanks", { isUsedPotion: this.isUsedPotion });
-      else this.scene.start("Engine", { isUsedPotion: this.isUsedPotion, listScene: this.listScene });
-    }
-
-    if (this.player.x > 4200 && this.isInteracted == false) {
-
-      this.premiumPopupWindow.setVisible(true);
-      this.premiumPopupCloseBtn.setVisible(true);
-      this.des.setVisible(true);
-      // this.triggerPause();
-      this.sfx_char_footstep.stop();
-      this.player.setVelocityX(0);
-      this.player.play('idle-anims');
-      this.player.stop();
-    }
+    // locationStop, locationInteract, nextScene
+    this.playerLogicEngine(5100, 4200, "Engine");
 
     //bg
     // scroll the texture of the tilesprites proportionally to the camera scroll
-    this.bg_1.tilePositionX = this.myCam.scrollX * .3;
-    this.bg_2.tilePositionX = this.myCam.scrollX * 1;
-    this.obstacle.tilePositionX = this.myCam.scrollX * 1;
-    this.bg_3.tilePositionX = this.myCam.scrollX * 1;
+    this.scrollTexture(.3, 1, 1, 1);
+    // this.bg_1.tilePositionX = this.myCam.scrollX * .3;
+    // this.bg_2.tilePositionX = this.myCam.scrollX * 1;
+    // this.obstacle.tilePositionX = this.myCam.scrollX * 1;
+    // this.bg_3.tilePositionX = this.myCam.scrollX * 1;
   }
 }
