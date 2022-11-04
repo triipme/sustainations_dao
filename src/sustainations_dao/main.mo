@@ -3825,7 +3825,7 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
     };
     let created = state.landSlots.put(newLandSlot.id,newLandSlot);
     // save land transter history
-    ignore await createLandTransferHistory(newLandSlot.ownerId,newLandSlot.id,0.0001);
+    ignore await createLandTransferHistory(newLandSlot.ownerId,newLandSlot.id,0.0003);
     // delete user's current buying status 
     ignore await deleteLandBuyingStatus(newLandSlot.ownerId);
     // update user nation
@@ -3839,10 +3839,10 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
       return #err(#NotAuthorized);//isNotAuthorized
     };
 
-    switch (await deposit(10000, caller)) {
+    switch (await deposit(30000, caller)) {
       case(#ok(bIndex)) {
         await recordTransaction(
-          caller, 10000, caller, Principal.fromActor(this),
+          caller, 30000, caller, Principal.fromActor(this),
           #buyLandSlot, null, bIndex
         );
         #ok("Success");
