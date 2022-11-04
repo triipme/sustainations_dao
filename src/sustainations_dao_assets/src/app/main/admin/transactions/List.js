@@ -92,8 +92,7 @@ const Transactions = () => {
       if (!!user.actor?.getTransactions) {
         const result = await user.actor.getTransactions();
         if ("ok" in result) {
-          setTransactions(result.ok);
-          console.log('transactions', result.ok);
+          setTransactions(_.orderBy(result.ok, ['timestamp'], ['desc']));
           setLoading(false);
         } else {
           throw result.err;
