@@ -56,6 +56,7 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
     miniGameCompletedCount = 0;
     questPlayCount = 0;
     questCompletedCount = 0;
+    purchasedLandSlotsCount = 0;
   };
 
   var state : State.State = State.empty();
@@ -2066,6 +2067,7 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
           miniGameCompletedCount = gamePlayAnalytics.miniGameCompletedCount + completedCount;
           questPlayCount = gamePlayAnalytics.questPlayCount;
           questCompletedCount = gamePlayAnalytics.questCompletedCount;
+          purchasedLandSlotsCount = gamePlayAnalytics.purchasedLandSlotsCount;
         };
         return #ok((duplicateAndShuffleCards, newPlayerId));
       };
@@ -2103,6 +2105,7 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
                     miniGameCompletedCount = gamePlayAnalytics.miniGameCompletedCount + 1;
                     questPlayCount = gamePlayAnalytics.questPlayCount;
                     questCompletedCount = gamePlayAnalytics.questCompletedCount;
+                    purchasedLandSlotsCount = gamePlayAnalytics.purchasedLandSlotsCount;
                   };
                 };
                 return #ok((duplicateAndShuffleCards, pid));
@@ -2141,6 +2144,7 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
                     miniGameCompletedCount = gamePlayAnalytics.miniGameCompletedCount + 1;
                     questPlayCount = gamePlayAnalytics.questPlayCount;
                     questCompletedCount = gamePlayAnalytics.questCompletedCount;
+                    purchasedLandSlotsCount = gamePlayAnalytics.purchasedLandSlotsCount;
                   };
                 };
                 return #ok((duplicateAndShuffleCards, pid));
@@ -2671,6 +2675,7 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
       miniGameCompletedCount = gamePlayAnalytics.miniGameCompletedCount;
       questPlayCount = gamePlayAnalytics.questPlayCount;
       questCompletedCount = gamePlayAnalytics.questCompletedCount + 1;
+      purchasedLandSlotsCount = gamePlayAnalytics.purchasedLandSlotsCount;
     };
 
     Debug.print(debug_show(gamePlayAnalytics));
@@ -2760,6 +2765,7 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
           miniGameCompletedCount = gamePlayAnalytics.miniGameCompletedCount;
           questPlayCount = gamePlayAnalytics.questPlayCount + 1;
           questCompletedCount = gamePlayAnalytics.questCompletedCount;
+          purchasedLandSlotsCount = gamePlayAnalytics.purchasedLandSlotsCount;
         };
         #ok("Success");
       };  
@@ -3824,6 +3830,14 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
       price = 1;
     };
     let created = state.landSlots.put(newLandSlot.id,newLandSlot);
+    // update purchased land slots count
+    gamePlayAnalytics := {
+      miniGamePlayCount = gamePlayAnalytics.miniGamePlayCount;
+      miniGameCompletedCount = gamePlayAnalytics.miniGameCompletedCount;
+      questPlayCount = gamePlayAnalytics.questPlayCount;
+      questCompletedCount = gamePlayAnalytics.questCompletedCount;
+      purchasedLandSlotsCount = gamePlayAnalytics.purchasedLandSlotsCount + 1;
+    };
     // save land transter history
     ignore await createLandTransferHistory(newLandSlot.ownerId,newLandSlot.id,0.0001);
     // delete user's current buying status 
@@ -4269,50 +4283,60 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
     #ok((list));
   };
 
-  public type LandSlot = {
-    i: Nat;
-    j: Nat;
-  };
+  // public type LandSlot = {
+  //   i: Nat;
+  //   j: Nat;
+  // };
   
-  public type UTM = (Nat, Nat);
+  // public type UTM = (Nat, Nat);
 
-  public shared({caller}) func generateNation(d : Nat, landslots : [LandSlot]) : async Response<[UTM]> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
-    };
-    var list : [UTM] = [];
-    for(value in landslots.vals()){
-      var point1 : UTM = (value.i * d, value.j * d);
-      var point2 : UTM = (value.i * d, (value.j + 1) * d);
-      var point3 : UTM = ((value.i + 1) * d, (value.j + 1)* d);
-      var point4 : UTM = ((value.i + 1)* d, value.j * d);
-      list := Array.append<UTM>(list, [point1, point2, point3, point4]);
-    };
+  // public shared({caller}) func generateNation(d : Nat, landslots : [LandSlot]) : async Response<[UTM]> {
+  //   if(Principal.toText(caller) == "2vxsx-fae") {
+  //     return #err(#NotAuthorized);//isNotAuthorized
+  //   };
+  //   var list : [UTM] = [];
+  //   for(value in landslots.vals()){
+  //     var point1 : UTM = (value.i * d, value.j * d);
+  //     var point2 : UTM = (value.i * d, (value.j + 1) * d);
+  //     var point3 : UTM = ((value.i + 1) * d, (value.j + 1)* d);
+  //     var point4 : UTM = ((value.i + 1)* d, value.j * d);
+  //     list := Array.append<UTM>(list, [point1, point2, point3, point4]);
+  //   };
     
-    #ok(list);
-  };
+  //   #ok(list);
+  // };
 
-  public shared({caller}) func generateNationPro(d : Nat, landslots : [LandSlot]) : async Response<[UTM]> {
+  // public shared({caller}) func generateNationPro(d : Nat, landslots : [LandSlot]) : async Response<[UTM]> {
+  //   if(Principal.toText(caller) == "2vxsx-fae") {
+  //     return #err(#NotAuthorized);//isNotAuthorized
+  //   };
+  //   var list : [UTM] = [];
+  //   for(value in landslots.vals()){
+  //     var temp = Nation.convertLandslotijToUTM(d, value);
+  //     list := Array.append<UTM>(list, temp);
+  //   };
+  //   var result : [UTM] = [];
+  //   for(i in Iter.range(0, list.size()-1)){
+  //     var duplicate = false;
+  //     for(j in Iter.range(i+1, list.size()-1)){
+  //       if(list[i] == list[j]){
+  //         duplicate := true;
+  //       };
+  //     };
+  //     if(duplicate == false){
+  //       result := Array.append<UTM>(result, [list[i]]);
+  //     };
+  //   };
+  //   #ok(result);
+  // };
+
+  public shared({caller}) func addICP(uid : Text) : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
-    var list : [UTM] = [];
-    for(value in landslots.vals()){
-      var temp = Nation.convertLandslotijToUTM(d, value);
-      list := Array.append<UTM>(list, temp);
-    };
-    var result : [UTM] = [];
-    for(i in Iter.range(0, list.size()-1)){
-      var duplicate = false;
-      for(j in Iter.range(i+1, list.size()-1)){
-        if(list[i] == list[j]){
-          duplicate := true;
-        };
-      };
-      if(duplicate == false){
-        result := Array.append<UTM>(result, [list[i]]);
-      };
-    };
-    #ok(result);
+    let reward = transferFee * 99;
+    let receipt = await refund(reward, Principal.fromText(uid));
+
+    #ok("GGFF");
   };
 };

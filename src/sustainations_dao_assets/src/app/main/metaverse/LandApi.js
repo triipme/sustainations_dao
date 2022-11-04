@@ -52,10 +52,10 @@ async function createLandSlot(i, j,nationUTMS) {
 
 async function loadNationsfromCenter(x, y) {
   const { user } = store.getState();
-  const func = async () => await user.actor.loadNationsArea(
+  const nations = (await user.actor.loadNationsArea(
     x - 100, y - 100, x + 100, y + 100
-  );
-  const nations = (await func()).ok;
+  )).ok;
+
   // let zone = 20
   var result = {
     features: []
@@ -82,7 +82,7 @@ function utm2lonlat(utmX, utmY) {
   return result
 };
 // load LandSLot from Center
-async function loadLandSlotsfromCenter(x, y) {
+function loadLandSlotsfromCenter(x, y) {
   let d = 1000
   let zone = 20
   let result = {

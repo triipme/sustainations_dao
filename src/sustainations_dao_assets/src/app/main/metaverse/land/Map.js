@@ -35,7 +35,7 @@ export var mapZoom = 0
 
 const Map = () => {
   const loadLands = async (i, j) => {
-    landData = await loadLandSlotsfromCenter(i, j);
+    landData = loadLandSlotsfromCenter(i, j);
   }
   const loadNations = async (i, j) => {
     nationData = await loadNationsfromCenter(i, j);
@@ -49,6 +49,7 @@ const Map = () => {
   const [farmLocation, setFarmLocation] = useState(null)
   const [mode, setMode] = useState('land')
   const [loading, setLoading] = useState("loadingmap")
+
   if (mode === 'farm')
     isFarmMode = true
   else isFarmMode = false
@@ -77,7 +78,6 @@ const Map = () => {
   initial()
 
   let index = getLandIndex(position, landData)
-
 
   const onMove = useCallback(async () => {
     setPosition(map.getCenter())
