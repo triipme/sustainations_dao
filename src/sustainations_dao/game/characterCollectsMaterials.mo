@@ -32,7 +32,7 @@ module CharacterCollectsMaterials {
     else if ( randomPercent > eventOption.riskChance and randomPercent <= (eventOption.riskChance + eventOption.luckyChance) ) {
       if (Text.contains(eventOption.gainByLuck,#text "/") == true) {
         materialId := await Material.getRandomMaterial(Iter.toArray(Text.split(eventOption.gainByLuck,#text "/")),state);
-        amount := +2;
+        amount := +Float.toInt(await RandomMethod.randomNumber(1,3));
       };
     };
 
