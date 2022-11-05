@@ -349,6 +349,16 @@ module {
     objectId : Text;
   };
 
+  public type FarmObject = {
+    id : Text;
+    landSlotId : Text;
+    indexRow : Nat;
+    indexColumn : Nat;
+    name : Text;
+    status : Text;
+    remainingTime : Int;
+  };
+
   public type Seed = {
     id : Text;
     harvestedProductId : Text;

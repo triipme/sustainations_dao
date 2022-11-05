@@ -3973,38 +3973,6 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
     #ok((list));
   };
 
-  // public shared({caller}) func loadLandSlotsArea(beginX : Int, beginY : Int, endX : Int, endY : Int) : async Response<[Types.Geometry]> {
-  //   if(Principal.toText(caller) == "2vxsx-fae") {
-  //     return #err(#NotAuthorized);//isNotAuthorized
-  //   };
-  //   let id = Principal.toText(Principal.fromActor(this));
-  //   let rsLandConfig = state.landConfigs.get(id);
-  //   switch (rsLandConfig) {
-  //     case null {
-  //       return #err(#NotFound);
-  //     };
-  //     case (?landConfig) {
-  //       var geometries : [Types.Geometry] = [];
-
-  //       let iterI = Iter.range(
-  //         Int.abs(Int.max(beginX,0)),
-  //         Int.abs(Int.min(endX,landConfig.mapHeight-1))
-  //       );
-  //       for (i in iterI) {
-  //         let iterJ = Iter.range(
-  //           Int.abs(Int.max(beginY,0)),
-  //           Int.abs(Int.min(endY,landConfig.mapWidth-1))
-  //         );
-  //         for (j in iterJ) {  
-  //           let geometry = await landSlotToGeometry(i,j);
-  //           geometries := Array.append(geometries, [geometry]);
-  //         };
-  //       };
-  //       return #ok(geometries);
-  //     };
-  //   };
-  // };
-
   public shared({caller}) func loadNationsArea(beginX : Int, beginY : Int, endX : Int, endY : Int) : async Response<[Types.Geometry]> {
     var list : [Types.Nation] = [];
     if(Principal.toText(caller) == "2vxsx-fae") {
@@ -4362,6 +4330,68 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
     return #ok("Success");
   };
 
+  public shared({caller}) func loadTilesArea(beginX : Int, beginY : Int, endX : Int, endY : Int) : async Response<[Types.FarmObject]> {
+    var list : [Types.FarmObject] = [];
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    let iterI = Iter.range(Int.abs(beginX), Int.abs(endX));
+    for (i in iterI) {
+      let iterJ = Iter.range(Int.abs(beginY), Int.abs(endY));
+      for (j in iterJ) {  
+        let id = Nat.toText(i)#"-"#Nat.toText(j);
+        let rsTile=state.tiles.get(id);
+        switch (rsTile) {
+          case (null) {  
+          };
+          case (?tile) {
+            let rsPlant = state.plants.get(tile.objectId);
+            switch (rsPlant) {
+              case null {
+              };
+              case (?plant) {
+                let rsSeed = state.seeds.get(plant.seedId);
+                switch (rsSeed) {
+                  case null {
+                  };
+                  case (?seed) {
+                    // update plant status
+                    var status = plant.status;
+                    let remainningTime = Int.max(seed.waitTime - (Time.now() - plant.plantTime), 0);
+                    if (remainningTime == 0) {
+                      let updatePlant : Types.Plant = {
+                        id = plant.id;
+                        seedId = plant.seedId;
+                        hasEffectId = plant.hasEffectId;
+                        status = "fullgrown";
+                        plantTime = plant.plantTime;
+                      };
+                      status := "fullgrown";
+                      let updated = Plant.update(updatePlant, state);
+                    };
+                    // add farm object
+                    let newFarmObject : Types.FarmObject = {
+                      id = tile.id;
+                      landSlotId = tile.landSlotId;
+                      indexRow = tile.indexRow;
+                      indexColumn = tile.indexColumn;
+                      name = seed.name;
+                      status = status;
+                      remainingTime = remainningTime;
+                    };
+                    list := Array.append(list, [newFarmObject]);
+                  };
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+    #ok((list));
+  };
+
   public shared query({caller}) func listTiles() : async Response<[(Text, Types.Tile)]> {
     var list : [(Text, Types.Tile)] = [];
     if(Principal.toText(caller) == "2vxsx-fae") {
@@ -4395,7 +4425,7 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
           id = uuid;
           seedId = V.id;
           hasEffectId = "";
-          status = "";
+          status = "growing";
           plantTime = Time.now()/1000000000;
         };
 
