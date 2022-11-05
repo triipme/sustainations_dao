@@ -34,10 +34,10 @@ var isFarmMode = false
 export var mapZoom = 0
 
 const Map = () => {
-
+  
   const loadNations = async (i, j) => {
     landData = await loadLandSlotsfromCenter(i, j);
-    nationData = await loadNationsfromCenter(i, j);
+    nationData = await loadNationsfromCenter(i, j); 
   }
   const map = useMap()
   const [purchaseBtn, setPurchaseBtn] = useState(true)
@@ -138,7 +138,7 @@ const Map = () => {
     }
     else {
       // if having enough ICP
-      // let isBuy = await buyLandSlot()
+      let isBuy = await buyLandSlot()
       if (isBuy !== undefined) {
         numRandom -= 1
         landSlotRand = await randomLandSlot()

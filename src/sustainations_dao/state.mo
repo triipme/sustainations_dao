@@ -56,6 +56,9 @@ module {
     landBuyingStatuses : Map<Text,Types.LandBuyingStatus>;
     landConfigs : Map<Text,Types.LandConfig>;
     nations : Map<Text,Types.Nation>;
+    tiles : Map<Text, Types.Tile>;
+    seeds : Map<Text, Types.Seed>;
+    plants : Map<Text, Types.Plant>;
   };
 
   public func empty() : State {
@@ -106,6 +109,9 @@ module {
       landBuyingStatuses = TrieMap.TrieMap<Text,Types.LandBuyingStatus>(Text.equal,Text.hash);
       landConfigs = TrieMap.TrieMap<Text,Types.LandConfig>(Text.equal,Text.hash);
       nations = TrieMap.TrieMap<Text, Types.Nation>(Text.equal,Text.hash);
+      tiles = TrieMap.TrieMap<Text, Types.Tile>(Text.equal,Text.hash);
+      seeds = TrieMap.TrieMap<Text, Types.Seed>(Text.equal,Text.hash);
+      plants = TrieMap.TrieMap<Text, Types.Plant>(Text.equal,Text.hash);
     };
   };
 };

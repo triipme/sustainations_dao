@@ -197,9 +197,10 @@ async function loadTileSlots(properties) {
     for (let j = y; j < y + 10; j++) {
       let latlng1 = utm2lonlat(d * j, d * i);
       let latlng2 = utm2lonlat(d * (j + 1), d * (i + 1));
+      let landId = properties.i.toString() + "-" + properties.j.toString();
       let feature = {
         type: "Feature",
-        properties: { "zone": zone, "i": i, "j": j },
+        properties: { "zone": zone, "i": i, "j": j, "landId" : landId},
         geometry: {
           type: "Polygon", coordinates: [
             [
