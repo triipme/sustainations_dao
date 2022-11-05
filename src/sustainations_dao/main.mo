@@ -4316,20 +4316,93 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
     #ok((list));
   };
 
-  // Tile
-  // public shared({caller}) func plantTree(plantId : Text, indexRow : Nat, indexColumn ) : async Response<Text> {
-  //   if(Principal.toText(caller) == "2vxsx-fae") {
-  //     return #err(#NotAuthorized);//isNotAuthorized
-  //   };
-  //   // let uuid : Text = await createUUID();
-  //   let rsSeed = state.seeds.get(seed.id);
-  //   switch (rsSeed) {
-  //     case (?V) { #err(#AlreadyExisting); };
-  //     case null {
-  //       Seed.create(seed, state);
-  //       #ok("Success");
-  //     };
-  //   };
-  // };
+  // Plant Tree
+  public shared({caller}) func plantTree(landId : Text, indexRow : Nat, indexColumn : Nat, materialId : Text) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    
+    let rsMaterial = state.materials.get(materialId);
+    switch (rsMaterial) {
+      case null {
+        #err(#NotFound);
+      };
+      case (?material) {
+        let rsLandSlot = state.landSlots.get(landId);
+        switch (rsLandSlot) {
+          case null {
+            #err(#NotFound);
+          };
+          case (?landSlot) {
+            let objectId = await createPlant(materialId);
+            let createdTile = await createTile(landId, indexRow, indexColumn, objectId);
+            return #ok("Success");
+          };
+        };
+      };
+    };
 
+  };
+
+  // Tile
+  public shared({caller}) func createTile(landId : Text, indexRow : Nat, indexColumn : Nat, objectId : Text) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    
+    let tileId = Nat.toText(indexRow)#"-"#Nat.toText(indexColumn);
+    let newTile : Types.Tile = {
+      id = tileId;
+      landSlotId = landId;
+      indexRow = indexRow;
+      indexColumn = indexColumn;
+      objectId = objectId;
+    };
+    let created = Tile.create(newTile, state);
+    return #ok("Success");
+  };
+
+  public shared query({caller}) func listTiles() : async Response<[(Text, Types.Tile)]> {
+    var list : [(Text, Types.Tile)] = [];
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    for((K,V) in state.tiles.entries()) {
+      list := Array.append<(Text, Types.Tile)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+
+  // Plant
+  public shared func createPlant(materialId : Text) : async Text {  
+    for((K,V) in state.seeds.entries()) {
+      if (V.materialId == materialId) {
+        var uuid : Text = await createUUID();
+        label whileLoop loop {
+          while (true) {
+          let rsPlant = state.plants.get(uuid);
+          switch (rsPlant) {
+              case (?V) {
+                uuid := await createUUID();
+              };
+              case null {
+                break whileLoop;
+              };
+            };
+          };
+        };
+        let newPlant : Types.Plant = {
+          id = uuid;
+          seedId = V.id;
+          hasEffectId = "";
+          status = "";
+          plantTime = Time.now()/1000000000;
+        };
+
+        let created = Plant.create(newPlant, state);
+        return uuid;
+      };
+    };
+    "NotFound";
+  };
 };

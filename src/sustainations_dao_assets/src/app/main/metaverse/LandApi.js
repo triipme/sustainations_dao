@@ -227,6 +227,14 @@ async function loadNation() {
 
 };
 
+// Plant Tree
+async function plantTree(landId, indexRow, indexColumn, materialId) {
+  const { user } = store.getState();
+  const func = async () => await user.actor.plantTree(landId, indexRow, indexColumn, materialId);
+  const result = (await func()).ok;
+  return result;
+}
+
 // Draw polygon 
 
 
@@ -244,5 +252,6 @@ export {
   getLandIndex,
   loadTileSlots,
   loadNation,
-  unionLandSlots
+  unionLandSlots,
+  plantTree
 }
