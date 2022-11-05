@@ -45,6 +45,9 @@ import LandSlot "./land/landSlot";
 import Nation "./land/nation";
 import LandTransferHistory "./land/landTransferHistory";
 import LandBuyingStatus "./land/landBuyingStatus";
+import Tile "./land/tile";
+import Seed "./land/seed";
+import Plant "./land/plant";
 
 shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georustId : ?Text}) = this {
   stable var transferFee : Nat64 = 10_000;
@@ -106,6 +109,9 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
   private stable var nations : [(Text, Types.Nation)] = [];
   private stable var landTransferHistories : [(Text, Types.LandTransferHistory)] = [];
   private stable var landBuyingStatuses :  [(Text, Types.LandBuyingStatus)] = [];
+  private stable var tiles :  [(Text, Types.Tile)] = [];
+  private stable var seeds :  [(Text, Types.Seed)] = [];
+  private stable var plants :  [(Text, Types.Plant)] = [];
 
   system func preupgrade() {
     Debug.print("Begin preupgrade");
@@ -155,6 +161,9 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
     nations := Iter.toArray(state.nations.entries());
     landTransferHistories := Iter.toArray(state.landTransferHistories.entries());
     landBuyingStatuses := Iter.toArray(state.landBuyingStatuses.entries());
+    tiles := Iter.toArray(state.tiles.entries());
+    seeds := Iter.toArray(state.seeds.entries());
+    plants := Iter.toArray(state.plants.entries());
     Debug.print("End preupgrade");
   };
 
@@ -285,6 +294,15 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
     };
     for ((k, v) in Iter.fromArray(landBuyingStatuses)) {
       state.landBuyingStatuses.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(tiles)) {
+      state.tiles.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(seeds)) {
+      state.seeds.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(plants)) {
+      state.plants.put(k, v);
     };
     Debug.print("End postupgrade");
   };
@@ -3003,6 +3021,7 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
           name = usableItem.name;
           image = usableItem.image;
           increaseStat = usableItem.increaseStat;
+          effect = usableItem.effect;
         });
         #ok("Success");
       };
@@ -4268,4 +4287,49 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
     };
     #ok((list));
   };
+
+  // Seed
+  public shared({caller}) func createSeed(seed: Types.Seed) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    // let uuid : Text = await createUUID();
+    let rsSeed = state.seeds.get(seed.id);
+    switch (rsSeed) {
+      case (?V) { #err(#AlreadyExisting); };
+      case null {
+        Seed.create(seed, state);
+        #ok("Success");
+      };
+    };
+  };
+
+
+  public shared query({caller}) func listSeeds() : async Response<[(Text, Types.Seed)]> {
+    var list : [(Text, Types.Seed)] = [];
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    for((K,V) in state.seeds.entries()) {
+      list := Array.append<(Text, Types.Seed)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+
+  // Tile
+  // public shared({caller}) func plantTree(plantId : Text, indexRow : Nat, indexColumn ) : async Response<Text> {
+  //   if(Principal.toText(caller) == "2vxsx-fae") {
+  //     return #err(#NotAuthorized);//isNotAuthorized
+  //   };
+  //   // let uuid : Text = await createUUID();
+  //   let rsSeed = state.seeds.get(seed.id);
+  //   switch (rsSeed) {
+  //     case (?V) { #err(#AlreadyExisting); };
+  //     case null {
+  //       Seed.create(seed, state);
+  //       #ok("Success");
+  //     };
+  //   };
+  // };
+
 };
