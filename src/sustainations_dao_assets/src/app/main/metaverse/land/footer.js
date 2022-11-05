@@ -51,33 +51,11 @@ const Footer = () => {
               color: '#fff',
               marginLeft: 10
             }}>
-            Purchased
-          </span>
-        </div>
-
-        <div
-          className='d-flex align-items-center'
-          style={{
-            marginRight: 25
-          }}>
-          <div
-            className='item'
-            style={{
-              backgroundColor: '#FAA61A'
-            }}></div>
-          <span
-            style={{
-              color: '#fff',
-              marginLeft: 10
-            }}>
-            Premium
+            Neighbor
           </span>
         </div>
         <div
-          className='d-flex align-items-center'
-          style={{
-            marginRight: 25
-          }}>
+          className='d-flex align-items-center'>
           <div
             className='item'
             style={{
@@ -88,7 +66,7 @@ const Footer = () => {
               color: '#fff',
               marginLeft: 10
             }}>
-            Owner
+            Purchase
           </span>
         </div>
       </div>
