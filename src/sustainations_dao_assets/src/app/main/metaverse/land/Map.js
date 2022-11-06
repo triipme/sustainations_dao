@@ -133,7 +133,6 @@ const Map = () => {
     setLoading("purchased")
     let landBuyingStatus = await loadLandBuyingStatus()
     if (landBuyingStatus != undefined) {
-      // let landBuyingStatus = await loadLandBuyingStatus()
       numRandom = Number(landBuyingStatus.properties.randomTimes)
       map.setView([Number(landBuyingStatus.geometry.coordinates[0][0][1]), Number(landBuyingStatus.geometry.coordinates[0][0][0])], 13)
       landSlotRand = landBuyingStatus
@@ -142,10 +141,10 @@ const Map = () => {
       // if having enough ICP
       let isBuy = await buyLandSlot()
       if (isBuy !== undefined) {
-        numRandom -= 1
         landSlotRand = await randomLandSlot()
-        await updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom)
         map.setView([landSlotRand.geometry.coordinates[0][0][1], landSlotRand.geometry.coordinates[0][0][0]], 13)
+        numRandom -= 1
+        await updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom)
       } else {
         // if not having enough ICP
         setAlert(true)
@@ -159,7 +158,6 @@ const Map = () => {
     setLoading("accept")
     let landBuyingStatus = await loadLandBuyingStatus()
     let country = await loadNation()
-
     //convert Bigint utms to Number utms
     let utms = undefined
     if (country !== undefined) {
@@ -192,10 +190,9 @@ const Map = () => {
   const handleTryAgain = async () => {
     setLoading("try")
     landSlotRand = await randomLandSlot()
-    await updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom)
     map.setView([landSlotRand.geometry.coordinates[0][0][1], landSlotRand.geometry.coordinates[0][0][0]], 13)
     numRandom -= 1
-    console.log(await updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom))
+    await updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom)
     setLoading("none")
   }
 
@@ -210,9 +207,7 @@ const Map = () => {
     }
     return (
       <div style={{ height: "100%", backgroundColor: isFarmMode ? "gray" : "#8ab4f8" }}>
-
         <GeoJSON data={mapData.features} onEachFeature={onEachLand} />
-
       </div>
     )
   }
