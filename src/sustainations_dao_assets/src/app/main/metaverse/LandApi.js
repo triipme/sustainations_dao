@@ -18,10 +18,10 @@ function getUserInfo() {
 };
 
 // list Inventory
-function listInventory() {
+function listInventory(characterId) {
   return new Promise((resolve, reject) => {
     const { user } = store.getState();
-    const rs = user.actor.listInventory();
+    const rs = user.actor.listInventory(characterId);
     resolve(rs);
   });
 };
