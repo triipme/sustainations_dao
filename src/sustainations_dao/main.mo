@@ -3849,7 +3849,7 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
 
 
 
-// Land Slot
+  // Land Slot
   public shared({caller}) func createLandSlot(indexRow : Nat,indexColumn : Nat,nationUTMS: [[Nat]],zoneNumber : Nat,zoneLetter : Text, d : Nat) : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
@@ -3869,6 +3869,13 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
       price = 1;
     };
     let created = state.landSlots.put(newLandSlot.id,newLandSlot);
+    // update purchased land slots count
+    gamePlayAnalytics := {
+      miniGamePlayCount = gamePlayAnalytics.miniGamePlayCount;
+      miniGameCompletedCount = gamePlayAnalytics.miniGameCompletedCount;
+      questPlayCount = gamePlayAnalytics.questPlayCount;
+      questCompletedCount = gamePlayAnalytics.questCompletedCount;
+    };
     // save land transter history
     ignore await createLandTransferHistory(newLandSlot.ownerId,newLandSlot.id,0.0003);
     // delete user's current buying status 
@@ -3876,6 +3883,10 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
     // update user nation
     ignore await createNation(newLandSlot.ownerId,newLandSlot.id,nationUTMS);
     #ok("Success");
+  };
+
+  public query func purchasedLandSlotsCounter() : async Response<Nat> {
+    #ok(state.landSlots.size());
   };
 
   // Land

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, lazy } from "react";
 import { GeoJSON, useMap, useMapEvents, ImageOverlay } from "react-leaflet";
 import "./styles.css";
 import UIFarm from "./FarmUI"
