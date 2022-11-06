@@ -17,6 +17,7 @@ import Text "mo:base/Text";
 import Time "mo:base/Time";
 import TrieMap "mo:base/TrieMap";
 import UUID "mo:uuid/UUID";
+import Buffer "mo:base/Buffer";
 
 import Account "./plugins/Account";
 import Moment "./plugins/Moment";
@@ -3444,6 +3445,33 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
       };
     };
     #ok(result);
+  };
+
+  public shared ({ caller }) func randomObstacle(idQuest : Text) : async Response<Text> {
+    var listRandom : [Text] = [];
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let quest = await readQuestEngine(idQuest);
+    var list : [Text] = [];
+    switch (quest) {
+      case (#err(err)) return #err(err);
+      case (#ok(quest)) {
+        list := quest.listScene;
+      };
+    };
+    let size = Iter.size(Iter.fromArray(list));
+    var r = await Random.randomNat();
+    var index = r % size;
+    // listRandom := Array.append<Text>(listRandom, [list[index]]);
+    let event = list[index];
+    var obstacle = "";
+    for (scene in state.questEngine.scenes.vals()) {
+      if (scene.idEvent == event) {
+        obstacle := scene.obstacle;
+      };
+    };
+    #ok(obstacle);
   };
 
   // Item

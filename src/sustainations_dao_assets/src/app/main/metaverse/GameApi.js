@@ -204,6 +204,13 @@ async function openInventory(characterId) {
   return rs;
 };
 
+async function listItemInventory(characterId) {
+  const { user } = store.getState();
+  const func = async () => await user.actor.listItemInventory(characterId);
+  const rs = (await func()).ok;
+  return rs;
+};
+
 async function getRemainingTime(waitingTime, character) {
   const { user } = store.getState();
   const getRemainingTime = async () => await user.actor.getRemainingTime(waitingTime, character);
@@ -324,6 +331,7 @@ export {
   readEventEngine,
   readScene,
   loadQuestItemEngines,
-  characterTakeOptionEngine, 
-  characterCollectsMaterialEngines
+  characterTakeOptionEngine,
+  characterCollectsMaterialEngines,
+  listItemInventory
 }
