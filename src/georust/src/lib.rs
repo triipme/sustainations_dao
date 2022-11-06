@@ -56,22 +56,6 @@ fn randomnumber(begin : f64, end: f64) -> u64 {
 
 
 #[ic_cdk_macros::query]
-fn randomtwonumber(begin : f64, end: f64) -> (u64, u64) {
-    let startI = time();
-    set_seeds(startI as u64);
-    let ruI = Rnum::newu64();
-    let numberI = ruI.rannum_in(begin, end).getu64();
-
-    let mut startJ = time();
-    if (startI == startJ) {startJ = time()+1;}
-    set_seeds(startJ as u64);
-    let ruJ = Rnum::newu64();
-    let numberJ = ruJ.rannum_in(begin, end).getu64();
-    ic_cdk::print(format!("{:?} {:?}", startI, startJ));
-    return (numberI.unwrap(), numberJ.unwrap());
-}
-
-#[ic_cdk_macros::query]
 fn randompair(begin : f64, end: f64) -> (u64,u64) {
     let start = time();
     let ru = Rnum::newu64();
