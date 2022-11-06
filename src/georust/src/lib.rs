@@ -71,6 +71,20 @@ fn randomtwonumber(begin : f64, end: f64) -> (u64, u64) {
     return (numberI.unwrap(), numberJ.unwrap());
 }
 
+#[ic_cdk_macros::query]
+fn randompair(begin : f64, end: f64) -> (u64,u64) {
+    let start = time();
+    let ru = Rnum::newu64();
+    
+    set_seeds(start as u64);
+    let num1 = ru.rannum_in(begin, end).getu64();
+
+    set_seeds(start*2 as u64);
+    let num2 = ru.rannum_in(begin, end).getu64();
+
+    return (num1.unwrap(),num2.unwrap());
+}
+
 
 #[ic_cdk_macros::query]
 fn proj(easting: f64, northing: f64, zone_num: i32, zone_letter: String) -> (f64, f64) {

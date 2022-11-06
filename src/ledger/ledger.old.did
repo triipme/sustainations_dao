@@ -1,0 +1,551 @@
+type Voter = 
+ record {
+   timestamp: Time;
+   uid: principal;
+   vote: Vote;
+ };
+type VoteArgs = 
+ record {
+   proposalId: text;
+   vote: Vote;
+ };
+type Vote = 
+ variant {
+   no;
+   yes;
+ };
+type UserInfo = 
+ record {
+   agreement: bool;
+   balance: nat64;
+   depositAddress: text;
+   "principal": text;
+ };
+type UserAgreementSerializer = 
+ record {
+   address: text;
+   timestamp: Time;
+ };
+type TxRecord = 
+ record {
+   amount: nat64;
+   blockIndex: nat64;
+   caller: principal;
+   fee: nat64;
+   fromPrincipal: principal;
+   refId: opt text;
+   refType: Operation;
+   timestamp: Time;
+   toPrincipal: principal;
+   uuid: text;
+ };
+type Time = int;
+type Response_9 = 
+ variant {
+   err: Error;
+   ok: GearClass;
+ };
+type Response_8 = 
+ variant {
+   err: Error;
+   ok: GearRarity;
+ };
+type Response_7 = 
+ variant {
+   err: Error;
+   ok: GearSubstat;
+ };
+type Response_6 = 
+ variant {
+   err: Error;
+   ok: Item;
+ };
+type Response_5 = 
+ variant {
+   err: Error;
+   ok: Material;
+ };
+type Response_4 = 
+ variant {
+   err: Error;
+   ok: Quest;
+ };
+type Response_34 = 
+ variant {
+   err: Error;
+   ok: DashboardAnalysis;
+ };
+type Response_33 = 
+ variant {
+   err: Error;
+   ok: Proposal;
+ };
+type Response_32 = 
+ variant {
+   err: Error;
+   ok: vec TxRecord;
+ };
+type Response_31 = 
+ variant {
+   err: Error;
+   ok: UserAgreementSerializer;
+ };
+type Response_30 = 
+ variant {
+   err: Error;
+   ok: principal;
+ };
+type Response_3 = 
+ variant {
+   err: Error;
+   ok: vec Character;
+ };
+type Response_29 = 
+ variant {
+   err: Error;
+   ok: UserInfo;
+ };
+type Response_28 = 
+ variant {
+   err: Error;
+   ok: vec record {
+             text;
+             EventOption;
+           };
+ };
+type Response_27 = 
+ variant {
+   err: Error;
+   ok: vec record {
+             text;
+             CharacterClass;
+           };
+ };
+type Response_26 = 
+ variant {
+   err: Error;
+   ok: vec record {
+             text;
+             Character;
+           };
+ };
+type Response_25 = 
+ variant {
+   err: Error;
+   ok: vec EventOption;
+ };
+type Response_24 = 
+ variant {
+   err: Error;
+   ok: vec record {
+             text;
+             Event;
+           };
+ };
+type Response_23 = 
+ variant {
+   err: Error;
+   ok: vec record {
+             text;
+             GearClass;
+           };
+ };
+type Response_22 = 
+ variant {
+   err: Error;
+   ok: vec record {
+             text;
+             GearRarity;
+           };
+ };
+type Response_21 = 
+ variant {
+   err: Error;
+   ok: vec record {
+             text;
+             Gear;
+           };
+ };
+type Response_20 = 
+ variant {
+   err: Error;
+   ok: vec record {
+             text;
+             Item;
+           };
+ };
+type Response_2 = 
+ variant {
+   err: Error;
+   ok: text;
+ };
+type Response_19 = 
+ variant {
+   err: Error;
+   ok: vec record {
+             text;
+             Material;
+           };
+ };
+type Response_18 = 
+ variant {
+   err: Error;
+   ok: vec Proposal;
+ };
+type Response_17 = 
+ variant {
+   err: Error;
+   ok: vec Item;
+ };
+type Response_16 = 
+ variant {
+   err: Error;
+   ok: vec record {
+             text;
+             Quest;
+           };
+ };
+type Response_15 = 
+ variant {
+   err: Error;
+   ok: vec record {
+             text;
+             GearSubstat;
+           };
+ };
+type Response_14 = 
+ variant {
+   err: Error;
+   ok: record {
+         text;
+         Character;
+       };
+ };
+type Response_13 = 
+ variant {
+   err: Error;
+   ok: CharacterClass;
+ };
+type Response_12 = 
+ variant {
+   err: Error;
+   ok: Event;
+ };
+type Response_11 = 
+ variant {
+   err: Error;
+   ok: EventOption;
+ };
+type Response_10 = 
+ variant {
+   err: Error;
+   ok: Gear;
+ };
+type Response_1 = 
+ variant {
+   err: Error;
+   ok: ProposalState;
+ };
+type Response = 
+ variant {
+   err: Error;
+   ok: nat64;
+ };
+type QuestItem = 
+ record {
+   id: text;
+   itemId: text;
+   questId: text;
+ };
+type Quest = 
+ record {
+   description: text;
+   id: text;
+   images: text;
+   name: text;
+   price: int;
+ };
+type ProposalType = 
+ variant {
+   product;
+   project;
+ };
+type ProposalStaticAttributes = 
+ record {
+   categories: vec text;
+   fundingTypes: vec text;
+ };
+type ProposalState = 
+ variant {
+   approved;
+   executing;
+   failed: text;
+   open;
+   rejected;
+   succeeded;
+ };
+type ProposalPayload = 
+ record {
+   categories: vec text;
+   description: opt text;
+   discussionLink: opt text;
+   document: opt text;
+   dueDate: Time;
+   fundingAmount: nat;
+   fundingType: text;
+   images: opt vec text;
+   location: text;
+   name: text;
+   story: opt text;
+   video: opt text;
+ };
+type Proposal = 
+ record {
+   payload: ProposalPayload;
+   proposalType: opt ProposalType;
+   proposer: principal;
+   status: ProposalState;
+   timestamp: Time;
+   uuid: text;
+   voters: List;
+   votesYes: nat64;
+ };
+type Operation = 
+ variant {
+   awardUserAgreement;
+   createProposal;
+   executeApprovedProposal;
+   returnProposalFee;
+   returnVoteFee;
+   vote;
+   withdraw;
+ };
+type Material = 
+ record {
+   description: text;
+   id: text;
+   name: text;
+ };
+type List = 
+ opt record {
+       Voter;
+       List;
+     };
+type Item = 
+ record {
+   id: text;
+   images: text;
+   name: text;
+   strengthRequire: float64;
+ };
+type ICP = record {e8s: nat64;};
+type GearSubstat = 
+ record {
+   description: text;
+   id: text;
+   substat: int;
+ };
+type GearRarity = 
+ record {
+   boxColor: text;
+   description: text;
+   id: text;
+   name: text;
+ };
+type GearClass = 
+ record {
+   description: text;
+   id: text;
+   mainStat: int;
+   name: text;
+ };
+type Gear = 
+ record {
+   description: text;
+   gearClassId: text;
+   gearRarity: text;
+   id: text;
+   images: text;
+   name: text;
+   substatIds: vec text;
+ };
+type EventOption = 
+ record {
+   description: text;
+   eventId: text;
+   gainByLuck: text;
+   gainExp: int;
+   gainHP: float64;
+   gainMana: float64;
+   gainMorale: float64;
+   gainOther: float64;
+   gainStamina: float64;
+   id: text;
+   lossHP: float64;
+   lossMana: float64;
+   lossMorale: float64;
+   lossOther: text;
+   lossStamina: float64;
+   luckyChance: float64;
+   requireItemId: text;
+   riskChance: float64;
+   riskLost: text;
+ };
+type Event = 
+ record {
+   description: text;
+   destinationName: text;
+   id: text;
+   locationName: text;
+   questId: text;
+ };
+type Error = 
+ variant {
+   AlreadyExisting;
+   AlreadyVoted;
+   BalanceLow;
+   NotAuthorized;
+   NotFound;
+   ProposalIsNotOpened;
+   SomethingWrong;
+   TransferFailure;
+ };
+type DashboardAnalysis = 
+ record {
+   products: record {
+               invested: nat;
+               opening: nat;
+               overdue: nat;
+             };
+   projects: record {
+               invested: nat;
+               opening: nat;
+               overdue: nat;
+             };
+   userAgreement: nat;
+ };
+type CharacterClass = 
+ record {
+   baseHP: float64;
+   baseIntelligence: int;
+   baseLuck: int;
+   baseMana: float64;
+   baseMorale: float64;
+   baseStamina: float64;
+   baseStrength: float64;
+   baseVitality: int;
+   description: text;
+   id: text;
+   name: text;
+   specialAbility: text;
+ };
+type Character = 
+ record {
+   classId: text;
+   currentExp: int;
+   currentHP: float64;
+   currentMana: float64;
+   currentMorale: float64;
+   currentStamina: float64;
+   gearIds: opt vec text;
+   id: text;
+   intelligence: int;
+   level: int;
+   levelUpExp: int;
+   luck: int;
+   materialIds: opt vec text;
+   maxHP: float64;
+   maxMana: float64;
+   maxMorale: float64;
+   maxStamina: float64;
+   name: text;
+   status: text;
+   strength: float64;
+   userId: principal;
+   vitality: int;
+ };
+service : {
+  createCharacter: (text) -> (Response_2);
+  createCharacterClass: (CharacterClass) -> (Response_2);
+  createCharacterTakeOption: (text, text, text) -> (Response_2);
+  createEvent: (text, Event) -> (Response_2);
+  createEventOption: (EventOption) -> (Response_2);
+  createGear: (text, Gear) -> (Response_2);
+  createGearClass: (GearClass) -> (Response_2);
+  createGearRarity: (GearRarity) -> (Response_2);
+  createGearSubstat: (GearSubstat) -> (Response_2);
+  createItem: (Item) -> (Response_2);
+  createMaterial: (Material) -> (Response_2);
+  createQuest: (Quest) -> (Response_2);
+  createQuestItem: (QuestItem) -> (Response_2);
+  dashboardAnalysis: () -> (Response_34) query;
+  deleteCharacter: (text) -> (Response_2);
+  deleteCharacterClass: (text) -> (Response_2);
+  deleteEvent: (text) -> (Response_2);
+  deleteEventOption: (text) -> (Response_2);
+  deleteGear: (text) -> (Response_2);
+  deleteGearClass: (text) -> (Response_2);
+  deleteGearRarity: (text) -> (Response_2);
+  deleteGearSubstat: (text) -> (Response_2);
+  deleteItem: (text) -> (Response_2);
+  deleteMaterial: (text) -> (Response_2);
+  deleteQuest: (text) -> (Response_2);
+  deleteQuestItem: (text) -> (Response_2);
+  destroyProposal: (text) -> (Response_2);
+  getBalance: () -> (ICP);
+  getCharacterStatus: () -> (Response_2) query;
+  getDepositAddress: () -> (text) query;
+  getProposal: (text) -> (Response_33) query;
+  getSystemAddress: () -> (blob) query;
+  getSystemBalance: () -> (ICP);
+  getTransactions: () -> (Response_32) query;
+  getUserAgreement: (text) -> (Response_31) query;
+  getUserId: () -> (Response_30) query;
+  getUserInfo: () -> (Response_29);
+  listAllCharacters: () -> (Response_26) query;
+  listAllEventOptions: () -> (Response_28) query;
+  listCharacterClasses: () -> (Response_27) query;
+  listCharacters: () -> (Response_26) query;
+  listEventOptions: (text) -> (Response_25) query;
+  listEvents: () -> (Response_24) query;
+  listGearClasses: () -> (Response_23) query;
+  listGearRarities: () -> (Response_22) query;
+  listGears: () -> (Response_21) query;
+  listItems: () -> (Response_20) query;
+  listMaterials: () -> (Response_19) query;
+  listProposals: (ProposalType) -> (Response_18) query;
+  listQuestItems: (text) -> (Response_17) query;
+  listQuests: () -> (Response_16) query;
+  listgearSubstats: () -> (Response_15) query;
+  proposalStaticAttributes: (ProposalType) ->
+   (ProposalStaticAttributes) query;
+  readCharacter: () -> (Response_14) query;
+  readCharacterClass: (text) -> (Response_13) query;
+  readEvent: (text) -> (Response_12) query;
+  readEventOption: (text) -> (Response_11) query;
+  readGear: (text) -> (Response_10) query;
+  readGearClass: (text) -> (Response_9) query;
+  readGearRarity: (text) -> (Response_8) query;
+  readGearSubstat: (text) -> (Response_7) query;
+  readItem: (text) -> (Response_6) query;
+  readMaterial: (text) -> (Response_5) query;
+  readQuest: (text) -> (Response_4) query;
+  resetCharacterStat: () -> (Response_2);
+  submitAgreement: () -> (Response_2);
+  submitProposal: (ProposalPayload, ProposalType) -> (Response_2);
+  takeOption: (text) -> (Response_3);
+  updateCharacter: (Character) -> (Response_2);
+  updateCharacterClass: (CharacterClass) -> (Response_2);
+  updateEvent: (Event) -> (Response_2);
+  updateEventOption: (EventOption) -> (Response_2);
+  updateGear: (Gear) -> (Response_2);
+  updateGearClass: (GearClass) -> (Response_2);
+  updateGearRarity: (GearRarity) -> (Response_2);
+  updateGearSubstat: (GearSubstat) -> (Response_2);
+  updateItem: (Item) -> (Response_2);
+  updateMaterial: (Material) -> (Response_2);
+  updateQuest: (Quest) -> (Response_2);
+  updateQuestItem: (QuestItem) -> (Response_2);
+  vote: (VoteArgs) -> (Response_1);
+  withdraw: (nat64, principal) -> (Response);
+}

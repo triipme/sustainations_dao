@@ -17,14 +17,24 @@ function getUserInfo() {
   });
 };
 
-// list Inventory
-function listInventory() {
+// list characters
+function listCharacters() {
   return new Promise((resolve, reject) => {
     const { user } = store.getState();
-    const rs = user.actor.listInventory();
+    const rs = user.actor.listCharacters();
     resolve(rs);
   });
 };
+
+// list Inventory
+function listInventory(characterId) {
+  return new Promise((resolve, reject) => {
+    const { user } = store.getState();
+    const rs = user.actor.listInventory(characterId);
+    resolve(rs);
+  });
+};
+
 
 // buy LandSlot
 async function buyLandSlot() {
@@ -61,10 +71,10 @@ async function createLandSlot(i, j,nationUTMS) {
 
 async function loadNationsfromCenter(x, y) {
   const { user } = store.getState();
-  const func = async () => await user.actor.loadNationsArea(
+  const nations = (await user.actor.loadNationsArea(
     x - 100, y - 100, x + 100, y + 100
-  );
-  const nations = (await func()).ok;
+  )).ok;
+
   // let zone = 20
   var result = {
     features: []
@@ -91,7 +101,7 @@ function utm2lonlat(utmX, utmY) {
   return result
 };
 // load LandSLot from Center
-async function loadLandSlotsfromCenter(x, y) {
+function loadLandSlotsfromCenter(x, y) {
   let d = 1000
   let zone = 20
   let result = {
@@ -248,6 +258,7 @@ async function plantTree(landId, indexRow, indexColumn, materialId) {
 export {
   getUserInfo,
   listInventory,
+  listCharacters,
   randomLandSlot,
   createLandSlot,
   loadLandTransferHistories,

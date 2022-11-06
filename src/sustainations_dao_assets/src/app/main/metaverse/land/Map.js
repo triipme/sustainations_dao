@@ -40,8 +40,6 @@ const Map = () => {
   const loadNations = async (i, j) => {
     landData = await loadLandSlotsfromCenter(i, j);
     nationData = await loadNationsfromCenter(i, j); 
-    let landId = i.toString()+"-"+j.toString();
-    console.log(await plantTree(landId,i,j,"m3tomato_seed"));
   }
   const map = useMap()
   const [purchaseBtn, setPurchaseBtn] = useState(true)
@@ -51,6 +49,7 @@ const Map = () => {
   const [farmLocation, setFarmLocation] = useState(null)
   const [mode, setMode] = useState('land')
   const [loading, setLoading] = useState("loadingmap")
+
   if (mode === 'farm')
     isFarmMode = true
   else isFarmMode = false
@@ -77,7 +76,6 @@ const Map = () => {
   initial()
 
   let index = getLandIndex(position, landData)
-
 
   const onMove = useCallback(async () => {
     setPosition(map.getCenter())
