@@ -209,14 +209,14 @@ const Metaverse = () => {
     });
   };
 
-  const createLandSlots = () => {
+  const createSeed = () => {
     return new Promise(resolve => {
-      const landSlots = data[8];
-      landSlots.forEach(async landSlot => {
+      const seeds = data[8];
+      seeds.forEach(async seed => {
         try {
-          if (!!actor?.createLandSlot) {
-            const rs = await actor.createLandSlot(landSlot);
-            console.log("Create LandSlot");
+          if (!!actor?.createSeed) {
+            const rs = await actor.createSeed(seed);
+            console.log("Create Seed");
             console.log(rs);
           }
         } catch (error) {
@@ -230,7 +230,6 @@ const Metaverse = () => {
 
   const handleSubmit = async () => {
     setLoading(true);
-    await createLandSlots();
     await createItem();
     await createQuest();
     await createQuestItem();
@@ -239,6 +238,7 @@ const Metaverse = () => {
     await createEvent();
     await createEventOption();
     await createCharacterClass();
+    await createSeed();
     console.log("DONE");
     setLoading(false);
   };

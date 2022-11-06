@@ -192,6 +192,7 @@ module {
     name : Text;
     image : Text;
     increaseStat : Float;
+    effect : Text;
   };
 
   public type EventItem = {
@@ -339,7 +340,47 @@ module {
     indexColumn : Nat;
     utms : [[Nat]]; 
   };
-//-------------------------Geometry------------------------------//
+//-------------------------Farm------------------------------//
+  public type Tile = {
+    id : Text;
+    landSlotId : Text;
+    indexRow : Nat;
+    indexColumn : Nat;
+    objectId : Text;
+  };
+
+  public type FarmObject = {
+    id : Text;
+    landSlotId : Text;
+    indexRow : Nat;
+    indexColumn : Nat;
+    name : Text;
+    status : Text;
+    remainingTime : Int;
+  };
+
+  public type Seed = {
+    id : Text;
+    harvestedProductId : Text;
+    materialId : Text;
+    rowSize : Nat;
+    columnSize : Nat;
+    name : Text;
+    description : Text;
+    waitTime : Int;
+    expiryTime : Int;
+    grownCondition : Text;
+    minAmount : Int;
+    maxAmount : Int;
+  };
+
+  public type Plant = {
+    id : Text;
+    seedId : Text;
+    hasEffectId : Text;
+    status : Text;
+    plantTime : Int;
+  };
 
   // Error codes
   public type Error = {

@@ -17,6 +17,25 @@ function getUserInfo() {
   });
 };
 
+// list characters
+function listCharacters() {
+  return new Promise((resolve, reject) => {
+    const { user } = store.getState();
+    const rs = user.actor.listCharacters();
+    resolve(rs);
+  });
+};
+
+// list Inventory
+function listInventory(characterId) {
+  return new Promise((resolve, reject) => {
+    const { user } = store.getState();
+    const rs = user.actor.listInventory(characterId);
+    resolve(rs).ok;
+  });
+};
+
+
 // buy LandSlot
 async function buyLandSlot() {
   const { user } = store.getState();
@@ -184,13 +203,21 @@ async function loadTileSlots(properties) {
   let zone = Number(properties.zone)
   let x = Number(properties.i) * 10
   let y = Number(properties.j) * 10
+
+  const { user } = store.getState();
+  const  func = async () => await user.actor.loadTilesArea(x,y,x+10,y+10);
+  const tiles = (await func()).ok;
+  console.log("Tiles--------------------");
+  console.log(tiles);
+
   for (let i = x; i < x + 10; i++) {
     for (let j = y; j < y + 10; j++) {
       let latlng1 = utm2lonlat(d * j, d * i);
       let latlng2 = utm2lonlat(d * (j + 1), d * (i + 1));
+      let landId = properties.i.toString() + "-" + properties.j.toString();
       let feature = {
         type: "Feature",
-        properties: { "zone": zone, "i": i, "j": j },
+        properties: { "zone": zone, "i": i, "j": j, "landId" : landId},
         geometry: {
           type: "Polygon", coordinates: [
             [
@@ -217,11 +244,21 @@ async function loadNation() {
 
 };
 
+// Plant Tree
+async function plantTree(landId, indexRow, indexColumn, materialId) {
+  const { user } = store.getState();
+  const func = async () => await user.actor.plantTree(landId, indexRow, indexColumn, materialId);
+  const result = (await func()).ok;
+  return result;
+}
+
 // Draw polygon 
 
 
 export {
   getUserInfo,
+  listInventory,
+  listCharacters,
   randomLandSlot,
   createLandSlot,
   loadLandTransferHistories,
@@ -233,5 +270,6 @@ export {
   getLandIndex,
   loadTileSlots,
   loadNation,
-  unionLandSlots
+  unionLandSlots,
+  plantTree
 }
