@@ -203,6 +203,13 @@ async function loadTileSlots(properties) {
   let zone = Number(properties.zone)
   let x = Number(properties.i) * 10
   let y = Number(properties.j) * 10
+
+  const { user } = store.getState();
+  const  func = async () => await user.actor.loadTilesArea(x,y,x+10,y+10);
+  const tiles = (await func()).ok;
+  console.log("Tiles--------------------");
+  console.log(tiles);
+
   for (let i = x; i < x + 10; i++) {
     for (let j = y; j < y + 10; j++) {
       let latlng1 = utm2lonlat(d * j, d * i);
@@ -237,6 +244,14 @@ async function loadNation() {
 
 };
 
+// Plant Tree
+async function plantTree(landId, indexRow, indexColumn, materialId) {
+  const { user } = store.getState();
+  const func = async () => await user.actor.plantTree(landId, indexRow, indexColumn, materialId);
+  const result = (await func()).ok;
+  return result;
+}
+
 // Draw polygon 
 
 
@@ -255,5 +270,6 @@ export {
   getLandIndex,
   loadTileSlots,
   loadNation,
-  unionLandSlots
+  unionLandSlots,
+  plantTree
 }
