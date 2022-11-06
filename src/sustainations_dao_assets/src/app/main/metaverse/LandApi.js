@@ -31,7 +31,7 @@ function listInventory(characterId) {
   return new Promise((resolve, reject) => {
     const { user } = store.getState();
     const rs = user.actor.listInventory(characterId);
-    resolve(rs);
+    resolve(rs).ok;
   });
 };
 
