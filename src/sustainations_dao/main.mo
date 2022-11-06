@@ -3365,37 +3365,42 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
     var listItemId : [Text] = [];
     var listItem : [Types.Item] = [];
     let listEvent = await listSceneQuests(idQuest);
-    switch (listEvent){
-      case (#err(err)){
+    switch (listEvent) {
+      case (#err(err)) {
         #err(err);
       };
-      case (#ok(listEvent)){
-        for (event in listEvent.vals()){
+      case (#ok(listEvent)) {
+        for (event in listEvent.vals()) {
           for (eventOption in state.questEngine.eventOptions.vals()) {
-            if (eventOption.requireItemId != "null" and eventOption.eventId == event){
-              switch (Array.find<Text>(listItemId, func (x: Text) {
-                x == eventOption.requireItemId
-              })){
+            if (eventOption.requireItemId != "null" and eventOption.eventId == event) {
+              switch (
+                Array.find<Text>(
+                  listItemId,
+                  func(x : Text) {
+                    x == eventOption.requireItemId;
+                  }
+                )
+              ) {
                 case null {
                   listItemId := Array.append<Text>(listItemId, [eventOption.requireItemId]);
                 };
-                case (?v){};
-              }
+                case (?v) {};
+              };
             };
           };
         };
-        for (v in listItemId.vals()){
+        for (v in listItemId.vals()) {
           let item : ?Types.Item = state.items.get(v);
-          switch (item){
-            case null{
+          switch (item) {
+            case null {
               return #err(#NotFound);
             };
-            case (?item){
+            case (?item) {
               listItem := Array.append<Types.Item>(listItem, [item]);
-            }
-          }
+            };
+          };
         };
-        #ok(listItem) 
+        #ok(listItem);
       };
     };
   };
@@ -3440,10 +3445,6 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
     };
     #ok(result);
   };
-
-
-  
-  
 
   // Item
   public shared ({ caller }) func createItem(item : Types.Item) : async Response<Text> {
@@ -4295,6 +4296,44 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
     for ((_, inventory) in state.inventories.entries()) {
       if (inventory.characterId == characterId) {
         list := Array.append<Types.Inventory>(list, [inventory]);
+      };
+    };
+    #ok((list));
+  };
+
+  public shared ({ caller }) func addInventory(characterId : Text, amount : Nat) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let reset = await resetCharacterCollectsMaterials(characterId);
+    for (v in state.materials.vals()) {
+      let material : Types.CharacterCollectsMaterials = {
+        id = await createUUID();
+        characterId = characterId;
+        materialId = v.id;
+        amount = amount;
+      };
+      let w = await createCharacterCollectsMaterials(material);
+    };
+    let rsInven = await createInventory(characterId);
+    let reset_last = await resetCharacterCollectsMaterials(characterId);
+    #ok("Success");
+  };
+
+  public shared ({ caller }) func listItemInventory(characterId : Text) : async Response<[(Text, Text, Int)]> {
+    var list : [(Text, Text, Int)] = [];
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    for ((_, inventory) in state.inventories.entries()) {
+      if (inventory.characterId == characterId) {
+        let findMaterial = await readMaterial(inventory.materialId);
+        label s switch (findMaterial) {
+          case (#ok(material)) {
+            list := Array.append<(Text, Text, Int)>(list, [(inventory.materialId, material.name, inventory.amount)]);
+          };
+          case _ {};
+        };
       };
     };
     #ok((list));

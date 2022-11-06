@@ -182,9 +182,9 @@ module {
     price : Nat64;
     description : Text;
     images : Text;
-    isActive: Bool;
-    dateCreate: Time.Time;
-    listScene: [Text];
+    isActive : Bool;
+    dateCreate : Time.Time;
+    listScene : [Text];
   };
 
   //--------------------- Scene ---------------------//
@@ -316,7 +316,7 @@ module {
     zone : Nat;
     xIndex : Nat;
     yIndex : Nat;
-    price: Float; 
+    price : Float;
   };
 
   //--------------------- Land Transfer History ---------------------//
@@ -331,17 +331,16 @@ module {
   //--------------------- Land Buying Status ---------------------//
   public type LandBuyingStatus = {
     id : Principal;
-    currentZone: Int;
-    currentLandSlotId: Text;
+    currentZone : Int;
+    currentLandSlotId : Text;
     randomTimes : Int;
   };
 
-//------------------------------------------------------------//
-public type UserhasLandSLots = {
-  id : Principal;
-  landSlotIds : [Text];
-};
-
+  //------------------------------------------------------------//
+  public type UserhasLandSLots = {
+    id : Principal;
+    landSlotIds : [Text];
+  };
 
   // Error codes
   public type Error = {
