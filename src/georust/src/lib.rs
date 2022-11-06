@@ -45,12 +45,30 @@ fn greet() -> () {
 //     return num;
 // }
 #[ic_cdk_macros::query]
-fn randomnumber(begin : f64, end: f64, d: u64) -> u64 {
-    let start = time()*d;
+fn randomnumber(begin : f64, end: f64) -> u64 {
+    let start = time();
     set_seeds(start as u64);
     let ru = Rnum::newu64();
-    let num = ru.rannum_in(begin, end).getu64();
-    return num.unwrap();
+    let number = ru.rannum_in(begin, end).getu64();
+    ic_cdk::print(format!("{:?}", number));
+    return number.unwrap();
+}
+
+
+#[ic_cdk_macros::query]
+fn randomtwonumber(begin : f64, end: f64) -> (u64, u64) {
+    let startI = time();
+    set_seeds(startI as u64);
+    let ruI = Rnum::newu64();
+    let numberI = ruI.rannum_in(begin, end).getu64();
+
+    let mut startJ = time();
+    if (startI == startJ) {startJ = time()+1;}
+    set_seeds(startJ as u64);
+    let ruJ = Rnum::newu64();
+    let numberJ = ruJ.rannum_in(begin, end).getu64();
+    ic_cdk::print(format!("{:?} {:?}", startI, startJ));
+    return (numberI.unwrap(), numberJ.unwrap());
 }
 
 

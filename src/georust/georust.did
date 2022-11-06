@@ -1,5 +1,6 @@
 service : {
     "greet": () -> () query;
     proj: (float64, float64, int32, text) -> (float64, float64) query;
-    randomnumber: (float64, float64, nat64) -> (nat64) query;
+    randomnumber: (float64, float64) -> (nat64) query;
+    randomtwonumber: (float64, float64) -> (nat64, nat64) query;
 }

@@ -40,7 +40,8 @@ const Map = () => {
   const loadNations = async (i, j) => {
     landData = await loadLandSlotsfromCenter(i, j);
     nationData = await loadNationsfromCenter(i, j); 
-    console.log(await plantTree("97-1249",97,1249,"m3tomato_seed"));
+    let landId = i.toString()+"-"+j.toString();
+    console.log(await plantTree(landId,i,j,"m3tomato_seed"));
   }
   const map = useMap()
   const [purchaseBtn, setPurchaseBtn] = useState(true)
