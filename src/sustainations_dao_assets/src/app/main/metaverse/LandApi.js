@@ -17,6 +17,15 @@ function getUserInfo() {
   });
 };
 
+// list characters
+function listCharacters() {
+  return new Promise((resolve, reject) => {
+    const { user } = store.getState();
+    const rs = user.actor.listCharacters();
+    resolve(rs);
+  });
+};
+
 // list Inventory
 function listInventory(characterId) {
   return new Promise((resolve, reject) => {
@@ -25,6 +34,7 @@ function listInventory(characterId) {
     resolve(rs);
   });
 };
+
 
 // buy LandSlot
 async function buyLandSlot() {
@@ -233,6 +243,7 @@ async function loadNation() {
 export {
   getUserInfo,
   listInventory,
+  listCharacters,
   randomLandSlot,
   createLandSlot,
   loadLandTransferHistories,
