@@ -5,7 +5,8 @@ import {
   gainCharacterExp,
   openInventory,
   createInventory,
-  loadCharacter
+  loadCharacter,
+  resetCharacterCollectsMaterials
 } from '../GameApi';
 
 const bg = 'metaverse/UI_finish.png';
@@ -45,6 +46,7 @@ class thanks extends BaseScene {
         this.scene.start('selectMap');
       });
     createInventory(this.characterData.id);
+    resetCharacterCollectsMaterials(this.characterData.id);
     gainCharacterExp(this.characterData);
     this.inventory = await openInventory(this.characterData.id);
   }

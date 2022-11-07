@@ -58,8 +58,8 @@ class BaseScene extends Phaser.Scene {
       });
     }, this);
 
-    this.load.rexAwait(function(successCallback, failureCallback) {
-      getHpPotion().then( (result) => {
+    this.load.rexAwait(function (successCallback, failureCallback) {
+      getHpPotion().then((result) => {
         this.hpPotion = result.ok;
         successCallback();
       });
@@ -291,6 +291,7 @@ class BaseScene extends Phaser.Scene {
     }
 
   }
+
 
 
 }
