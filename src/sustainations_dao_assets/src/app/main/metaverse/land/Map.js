@@ -142,7 +142,7 @@ const Map = () => {
       let isBuy = await buyLandSlot()
       if (isBuy !== undefined) {
         landSlotRand = await randomLandSlot()
-        // console.log("random purcahse", landSlotRand)
+        
         map.setView([landSlotRand.geometry.coordinates[0][0][1], landSlotRand.geometry.coordinates[0][0][0]], 13)
         numRandom -= 1
         await updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom)
@@ -191,7 +191,6 @@ const Map = () => {
   const handleTryAgain = async () => {
     setLoading("try")
     landSlotRand = await randomLandSlot()
-    // console.log("random try again", landSlotRand)
     map.setView([landSlotRand.geometry.coordinates[0][0][1], landSlotRand.geometry.coordinates[0][0][0]], 13)
     numRandom -= 1
     await updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom)
