@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo, lazy } from "react";
 import { GeoJSON, MapContainer, useMap, useMapEvents, TileLayer, Rectangle, ImageOverlay } from "react-leaflet";
 import "./styles.css";
 // import BigMap from "./bigmap"
@@ -24,7 +24,7 @@ function Land() {
         dragging={mapZoom == 2 ? false : true}
         // bounds={}
         ref={setMap}>
-        <Map />
+        <Map/>
       </MapContainer>
     ),
     [],

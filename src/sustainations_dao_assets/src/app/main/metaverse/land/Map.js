@@ -1,7 +1,6 @@
 import mapData from "./data/pangea-1.json";
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { GeoJSON, useMap } from "react-leaflet";
-import { BrowserView, MobileView, isBrowser, isMobile } from 'react-device-detect';
 import Back from "./Back";
 import Footer from "./footer";
 import "./styles.css";
