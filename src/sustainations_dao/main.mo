@@ -3788,6 +3788,28 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
     #ok((list));
   };
 
+  public shared({caller}) func subtractInventory(inventoryId : Text) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsInventory = state.inventories.get(inventoryId);
+    switch (rsInventory) {
+      case (null) {
+        return #err(#NotFound);
+      };
+      case (?inventory) {
+        let updateInventory : Types.Inventory = {
+          id = inventory.id;
+          characterId = inventory.characterId;
+          materialId = inventory.materialId;
+          amount = Int.max(inventory.amount-1,0);
+        };
+        let updated = Inventory.update(updateInventory,state);
+        return #ok("Success");
+      };
+    };
+  };
+
 // convert utm2lonlat
   public shared func utm2lonlat(easting: Float, northing: Float, zoneNum: Int32, zoneLetter: Text) : async (Float, Float) {
 		let result = await georust.proj(easting, northing, zoneNum, zoneLetter);

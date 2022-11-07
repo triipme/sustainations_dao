@@ -35,6 +35,15 @@ function listInventory(characterId) {
   });
 };
 
+// list Inventory
+function subtractInventory(inventoryId) {
+  return new Promise((resolve, reject) => {
+    const { user } = store.getState();
+    const rs = user.actor.subtractInventory(inventoryId);
+    resolve(rs);
+  });
+};
+
 
 // buy LandSlot
 async function buyLandSlot() {
@@ -258,6 +267,7 @@ async function plantTree(landId, indexRow, indexColumn, materialId) {
 export {
   getUserInfo,
   listInventory,
+  subtractInventory,
   listCharacters,
   randomLandSlot,
   createLandSlot,
