@@ -3874,13 +3874,6 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
       price = 1;
     };
     let created = state.landSlots.put(newLandSlot.id,newLandSlot);
-    // update purchased land slots count
-    gamePlayAnalytics := {
-      miniGamePlayCount = gamePlayAnalytics.miniGamePlayCount;
-      miniGameCompletedCount = gamePlayAnalytics.miniGameCompletedCount;
-      questPlayCount = gamePlayAnalytics.questPlayCount;
-      questCompletedCount = gamePlayAnalytics.questCompletedCount;
-    };
     // save land transter history
     ignore await createLandTransferHistory(newLandSlot.ownerId,newLandSlot.id,0.0003);
     // delete user's current buying status 

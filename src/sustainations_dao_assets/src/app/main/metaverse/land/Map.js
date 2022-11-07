@@ -209,9 +209,7 @@ const Map = () => {
     }
     return (
       <div style={{ height: "100%", backgroundColor: isFarmMode ? "gray" : "#8ab4f8" }}>
-
         <GeoJSON data={mapData.features} onEachFeature={onEachLand} />
-
       </div>
     )
   }
