@@ -10,7 +10,8 @@ const exhaustedSprite = 'metaverse/character_sprite_exhausted.png';
 
 import { 
   loadCharacter,
-  getRemainingTime
+  getRemainingTime,
+  resetCharacterCollectsMaterials
 } from '../GameApi';
 
 class exhausted extends BaseScene {
@@ -50,6 +51,8 @@ class exhausted extends BaseScene {
   }
   
   async create() {
+    // reset character collect materials
+    resetCharacterCollectsMaterials(this.characterData.id);
     // platforms
     const platforms = this.physics.add.staticGroup();
     for (let x = -50; x < gameConfig.scale.width; x += 4) {
