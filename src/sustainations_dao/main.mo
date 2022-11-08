@@ -45,6 +45,9 @@ import LandSlot "./land/landSlot";
 import Nation "./land/nation";
 import LandTransferHistory "./land/landTransferHistory";
 import LandBuyingStatus "./land/landBuyingStatus";
+import Tile "./land/tile";
+import Seed "./land/seed";
+import Plant "./land/plant";
 
 shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georustId : ?Text}) = this {
   stable var transferFee : Nat64 = 10_000;
@@ -106,6 +109,9 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
   private stable var nations : [(Text, Types.Nation)] = [];
   private stable var landTransferHistories : [(Text, Types.LandTransferHistory)] = [];
   private stable var landBuyingStatuses :  [(Text, Types.LandBuyingStatus)] = [];
+  private stable var tiles :  [(Text, Types.Tile)] = [];
+  private stable var seeds :  [(Text, Types.Seed)] = [];
+  private stable var plants :  [(Text, Types.Plant)] = [];
 
   system func preupgrade() {
     Debug.print("Begin preupgrade");
@@ -155,6 +161,9 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
     nations := Iter.toArray(state.nations.entries());
     landTransferHistories := Iter.toArray(state.landTransferHistories.entries());
     landBuyingStatuses := Iter.toArray(state.landBuyingStatuses.entries());
+    tiles := Iter.toArray(state.tiles.entries());
+    seeds := Iter.toArray(state.seeds.entries());
+    plants := Iter.toArray(state.plants.entries());
     Debug.print("End preupgrade");
   };
 
@@ -285,6 +294,15 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
     };
     for ((k, v) in Iter.fromArray(landBuyingStatuses)) {
       state.landBuyingStatuses.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(tiles)) {
+      state.tiles.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(seeds)) {
+      state.seeds.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(plants)) {
+      state.plants.put(k, v);
     };
     Debug.print("End postupgrade");
   };
@@ -3003,6 +3021,7 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
           name = usableItem.name;
           image = usableItem.image;
           increaseStat = usableItem.increaseStat;
+          effect = usableItem.effect;
         });
         #ok("Success");
       };
@@ -3733,17 +3752,81 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
     #ok("Success");
   };
 
-  public shared query({caller}) func openInventory(characterId : Text) : async Response<[Types.Inventory]> {
-    var list : [Types.Inventory] = [];
+
+  public type Inventory = {
+    id : Text;
+    characterId : Text;
+    materialId : Text;
+    materialName : Text;
+    amount : Int;
+  };
+
+  public shared query({caller}) func listInventory(characterId : Text) : async Response<[Inventory]> {
+    var list : [Inventory] = [];
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
     };
     for((_, inventory) in state.inventories.entries()) {
       if(inventory.characterId == characterId){
-        list := Array.append<Types.Inventory>(list, [inventory]);
+        let rsMaterial = state.materials.get(inventory.materialId);
+        switch (rsMaterial) {
+          case null {
+          };
+          case (?material) {
+            let inv : Inventory = {
+              id = inventory.id;
+              characterId = inventory.characterId;
+              materialId = inventory.materialId;
+              materialName = material.name;
+              amount = inventory.amount;
+            };
+            list := Array.append<Inventory>(list, [inv]);
+          };
+        };
       };
     };
     #ok((list));
+  };
+
+
+public shared ({ caller }) func addInventory(characterId : Text, amount : Nat) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let reset = await resetCharacterCollectsMaterials(characterId);
+    for (v in state.materials.vals()) {
+      let material : Types.CharacterCollectsMaterials = {
+        id = await createUUID();
+        characterId = characterId;
+        materialId = v.id;
+        amount = amount;
+      };
+      let w = await createCharacterCollectsMaterials(material);
+    };
+    let rsInven = await createInventory(characterId);
+    #ok("Success");
+  };
+
+public shared({caller}) func subtractInventory(inventoryId : Text) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let rsInventory = state.inventories.get(inventoryId);
+    switch (rsInventory) {
+      case (null) {
+        return #err(#NotFound);
+      };
+      case (?inventory) {
+        let updateInventory : Types.Inventory = {
+          id = inventory.id;
+          characterId = inventory.characterId;
+          materialId = inventory.materialId;
+          amount = Int.max(inventory.amount-1,0);
+        };
+        let updated = Inventory.update(updateInventory,state);
+        return #ok("Success");
+      };
+    };
   };
 
 // convert utm2lonlat
@@ -3751,9 +3834,14 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
 		let result = await georust.proj(easting, northing, zoneNum, zoneLetter);
 		return result;
 	};
-  public shared func randomIndex(begin: Float, end: Float, d: Nat64) : async Int {
-		let result = await georust.randomnumber(begin,end,d);
+  public shared func randomIndex(begin: Float, end: Float) : async Int {
+		let result = await georust.randomnumber(begin,end);
 		return Nat64.toNat(result);
+	};
+
+  public shared func randomPair(begin: Float, end: Float) : async (Int,Int) {
+		let result = await georust.randompair(begin,end);
+		return ( Nat64.toNat(result.0), Nat64.toNat(result.1));
 	};
 
 
@@ -3804,7 +3892,7 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
 
 
 
-// Land Slot
+  // Land Slot
   public shared({caller}) func createLandSlot(indexRow : Nat,indexColumn : Nat,nationUTMS: [[Nat]],zoneNumber : Nat,zoneLetter : Text, d : Nat) : async Response<Text> {
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
@@ -3824,13 +3912,24 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
       price = 1;
     };
     let created = state.landSlots.put(newLandSlot.id,newLandSlot);
+    // update purchased land slots count
+    gamePlayAnalytics := {
+      miniGamePlayCount = gamePlayAnalytics.miniGamePlayCount;
+      miniGameCompletedCount = gamePlayAnalytics.miniGameCompletedCount;
+      questPlayCount = gamePlayAnalytics.questPlayCount;
+      questCompletedCount = gamePlayAnalytics.questCompletedCount;
+    };
     // save land transter history
-    ignore await createLandTransferHistory(newLandSlot.ownerId,newLandSlot.id,0.0001);
+    ignore await createLandTransferHistory(newLandSlot.ownerId,newLandSlot.id,0.0003);
     // delete user's current buying status 
     ignore await deleteLandBuyingStatus(newLandSlot.ownerId);
     // update user nation
     ignore await createNation(newLandSlot.ownerId,newLandSlot.id,nationUTMS);
     #ok("Success");
+  };
+
+  public query func purchasedLandSlotsCounter() : async Response<Nat> {
+    #ok(state.landSlots.size());
   };
 
   // Land
@@ -3839,10 +3938,10 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
       return #err(#NotAuthorized);//isNotAuthorized
     };
 
-    switch (await deposit(10000, caller)) {
+    switch (await deposit(30000, caller)) {
       case(#ok(bIndex)) {
         await recordTransaction(
-          caller, 10000, caller, Principal.fromActor(this),
+          caller, 30000, caller, Principal.fromActor(this),
           #buyLandSlot, null, bIndex
         );
         #ok("Success");
@@ -3866,8 +3965,9 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
             return #err(#NotFound);
           };
           case (?landConfig) {
-            var i = await randomIndex(0,Float.fromInt(landConfig.mapHeight-1),1);
-            var j = await randomIndex(0,Float.fromInt(landConfig.mapWidth-1),2);
+            var pair = await randomPair(0,Float.fromInt(landConfig.mapHeight-1));
+            var i = pair.0;
+            var j = pair.1;
             // check to see if random function return already-exist landSlot, if yes run random function again
             label whileloop loop {
               while (true) {
@@ -3878,8 +3978,9 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
                     break whileloop;
                   };
                   case  (?landSlot) {
-                    i := await randomIndex(0,Float.fromInt(landConfig.mapHeight-1),1);
-                    j := await randomIndex(0,Float.fromInt(landConfig.mapWidth-1),2);
+                    pair := await randomPair(0,Float.fromInt(landConfig.mapHeight-1));
+                    i := pair.0;
+                    j := pair.1;
                   };
                 };
               };
@@ -3898,7 +3999,7 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
           };
           case (?LandConfig) {
             let adjacentLandSlots= await getAdjacentLandSlots(nation.landSlotIds,LandConfig);
-            let index = await randomIndex(0.0,Float.fromInt(adjacentLandSlots.size()-1),1);
+            let index = await randomIndex(0.0,Float.fromInt(adjacentLandSlots.size()-1));
             let result = adjacentLandSlots[Int.abs(index)];
             return #ok(
               await landSlotToGeometry(Int.abs(result.i), Int.abs(result.j))
@@ -3953,38 +4054,6 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
     };
     #ok((list));
   };
-
-  // public shared({caller}) func loadLandSlotsArea(beginX : Int, beginY : Int, endX : Int, endY : Int) : async Response<[Types.Geometry]> {
-  //   if(Principal.toText(caller) == "2vxsx-fae") {
-  //     return #err(#NotAuthorized);//isNotAuthorized
-  //   };
-  //   let id = Principal.toText(Principal.fromActor(this));
-  //   let rsLandConfig = state.landConfigs.get(id);
-  //   switch (rsLandConfig) {
-  //     case null {
-  //       return #err(#NotFound);
-  //     };
-  //     case (?landConfig) {
-  //       var geometries : [Types.Geometry] = [];
-
-  //       let iterI = Iter.range(
-  //         Int.abs(Int.max(beginX,0)),
-  //         Int.abs(Int.min(endX,landConfig.mapHeight-1))
-  //       );
-  //       for (i in iterI) {
-  //         let iterJ = Iter.range(
-  //           Int.abs(Int.max(beginY,0)),
-  //           Int.abs(Int.min(endY,landConfig.mapWidth-1))
-  //         );
-  //         for (j in iterJ) {  
-  //           let geometry = await landSlotToGeometry(i,j);
-  //           geometries := Array.append(geometries, [geometry]);
-  //         };
-  //       };
-  //       return #ok(geometries);
-  //     };
-  //   };
-  // };
 
   public shared({caller}) func loadNationsArea(beginX : Int, beginY : Int, endX : Int, endY : Int) : async Response<[Types.Geometry]> {
     var list : [Types.Nation] = [];
@@ -4267,5 +4336,208 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
       list := Array.append<(Text, Types.LandBuyingStatus)>(list, [(K, V)]);
     };
     #ok((list));
+  };
+
+  // Seed
+  public shared({caller}) func createSeed(seed: Types.Seed) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    // let uuid : Text = await createUUID();
+    let rsSeed = state.seeds.get(seed.id);
+    switch (rsSeed) {
+      case (?V) { #err(#AlreadyExisting); };
+      case null {
+        Seed.create(seed, state);
+        #ok("Success");
+      };
+    };
+  };
+
+
+  public shared query({caller}) func listSeeds() : async Response<[(Text, Types.Seed)]> {
+    var list : [(Text, Types.Seed)] = [];
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    for((K,V) in state.seeds.entries()) {
+      list := Array.append<(Text, Types.Seed)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+
+  // Plant Tree
+  public shared({caller}) func plantTree(landId : Text, indexRow : Nat, indexColumn : Nat, materialId : Text) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    
+    let rsMaterial = state.materials.get(materialId);
+    switch (rsMaterial) {
+      case null {
+        #err(#NotFound);
+      };
+      case (?material) {
+        let rsLandSlot = state.landSlots.get(landId);
+        switch (rsLandSlot) {
+          case null {
+            #err(#NotFound);
+          };
+          case (?landSlot) {
+            let objectId = await createPlant(materialId);
+            let createdTile = await createTile(landId, indexRow, indexColumn, objectId);
+            return #ok("Success");
+          };
+        };
+      };
+    };
+
+  };
+
+  // Tile
+  public shared({caller}) func createTile(landId : Text, indexRow : Nat, indexColumn : Nat, objectId : Text) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    
+    let tileId = Nat.toText(indexRow)#"-"#Nat.toText(indexColumn);
+    let newTile : Types.Tile = {
+      id = tileId;
+      landSlotId = landId;
+      indexRow = indexRow;
+      indexColumn = indexColumn;
+      objectId = objectId;
+    };
+    let created = Tile.create(newTile, state);
+    return #ok("Success");
+  };
+
+  public shared({caller}) func loadTilesArea(beginX : Int, beginY : Int, endX : Int, endY : Int) : async Response<[Types.FarmObject]> {
+    var list : [Types.FarmObject] = [];
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+
+    let iterI = Iter.range(Int.abs(beginX), Int.abs(endX));
+    for (i in iterI) {
+      let iterJ = Iter.range(Int.abs(beginY), Int.abs(endY));
+      for (j in iterJ) {  
+        let id = Nat.toText(i)#"-"#Nat.toText(j);
+        let rsTile=state.tiles.get(id);
+        switch (rsTile) {
+          case (null) {  
+            // add empty farm object
+            let newFarmObject : Types.FarmObject = {
+              id = "None";
+              landSlotId = "None";
+              indexRow = i;
+              indexColumn = j;
+              name = "None";
+              status = "None";
+              remainingTime = 0;
+            };
+            list := Array.append(list, [newFarmObject]);
+          };
+          case (?tile) {
+            let rsPlant = state.plants.get(tile.objectId);
+            switch (rsPlant) {
+              case null {
+              };
+              case (?plant) {
+                let rsSeed = state.seeds.get(plant.seedId);
+                switch (rsSeed) {
+                  case null {
+                  };
+                  case (?seed) {
+                    // update plant status
+                    var status = plant.status;
+                    let remainningTime = Int.max(seed.waitTime - (Time.now()/1000000000 - plant.plantTime), 0);
+                    if (remainningTime == 0) {
+                      let updatePlant : Types.Plant = {
+                        id = plant.id;
+                        seedId = plant.seedId;
+                        hasEffectId = plant.hasEffectId;
+                        status = "fullGrown";
+                        plantTime = plant.plantTime;
+                      };
+                      status := "fullGrown";
+                      let updated = Plant.update(updatePlant, state);
+                    }
+                    else if (remainningTime <=seed.waitTime/2)
+                    {
+                      let updatePlant : Types.Plant = {
+                        id = plant.id;
+                        seedId = plant.seedId;
+                        hasEffectId = plant.hasEffectId;
+                        status = "growing";
+                        plantTime = plant.plantTime;
+                      };
+                      status := "growing";
+                      let updated = Plant.update(updatePlant, state);
+                    };
+                    // add farm object
+                    let newFarmObject : Types.FarmObject = {
+                      id = tile.id;
+                      landSlotId = tile.landSlotId;
+                      indexRow = tile.indexRow;
+                      indexColumn = tile.indexColumn;
+                      name = seed.name;
+                      status = status;
+                      remainingTime = remainningTime;
+                    };
+                    list := Array.append(list, [newFarmObject]);
+                  };
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+    #ok((list));
+  };
+
+  public shared query({caller}) func listTiles() : async Response<[(Text, Types.Tile)]> {
+    var list : [(Text, Types.Tile)] = [];
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    for((K,V) in state.tiles.entries()) {
+      list := Array.append<(Text, Types.Tile)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+
+  // Plant
+  public shared func createPlant(materialId : Text) : async Text {  
+    for((K,V) in state.seeds.entries()) {
+      if (V.materialId == materialId) {
+        var uuid : Text = await createUUID();
+        label whileLoop loop {
+          while (true) {
+          let rsPlant = state.plants.get(uuid);
+          switch (rsPlant) {
+              case (?V) {
+                uuid := await createUUID();
+              };
+              case null {
+                break whileLoop;
+              };
+            };
+          };
+        };
+        let newPlant : Types.Plant = {
+          id = uuid;
+          seedId = V.id;
+          hasEffectId = "";
+          status = "newlyPlanted";
+          plantTime = Time.now()/1000000000;
+        };
+
+        let created = Plant.create(newPlant, state);
+        return uuid;
+      };
+    };
+    "NotFound";
   };
 };

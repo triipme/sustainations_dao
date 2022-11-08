@@ -17,6 +17,34 @@ function getUserInfo() {
   });
 };
 
+// list characters
+function listCharacters() {
+  return new Promise((resolve, reject) => {
+    const { user } = store.getState();
+    const rs = user.actor.listCharacters();
+    resolve(rs);
+  });
+};
+
+// list Inventory
+function listInventory(characterId) {
+  return new Promise((resolve, reject) => {
+    const { user } = store.getState();
+    const rs = user.actor.listInventory(characterId);
+    resolve(rs).ok;
+  });
+};
+
+// list Inventory
+function subtractInventory(inventoryId) {
+  return new Promise((resolve, reject) => {
+    const { user } = store.getState();
+    const rs = user.actor.subtractInventory(inventoryId);
+    resolve(rs);
+  });
+};
+
+
 // buy LandSlot
 async function buyLandSlot() {
   const { user } = store.getState();
@@ -181,31 +209,48 @@ async function loadTileSlots(properties) {
     features: []
   };
   let d = 100
-  let zone = Number(properties.zone)
+  let zone = Number(properties.zoneNumber)
   let x = Number(properties.i) * 10
   let y = Number(properties.j) * 10
-  for (let i = x; i < x + 10; i++) {
-    for (let j = y; j < y + 10; j++) {
-      let latlng1 = utm2lonlat(d * j, d * i);
-      let latlng2 = utm2lonlat(d * (j + 1), d * (i + 1));
-      let feature = {
-        type: "Feature",
-        properties: { "zone": zone, "i": i, "j": j },
-        geometry: {
-          type: "Polygon", coordinates: [
-            [
-              [latlng1[0], latlng1[1]],
-              [latlng2[0], latlng1[1]],
-              [latlng2[0], latlng2[1]],
-              [latlng1[0], latlng2[1]],
-              [latlng1[0], latlng1[1]]
-            ]
+
+  const { user } = store.getState();
+  const  func = async () => await user.actor.loadTilesArea(x,y,x+9,y+9);
+  const tiles = (await func()).ok;
+
+  var result = {
+    features: []
+  };
+  for (let tile of tiles) {
+    let latlng1 = utm2lonlat(d * Number(tile.indexColumn), d * Number(tile.indexRow));
+    let latlng2 = utm2lonlat(d * (Number(tile.indexColumn) + 1), d * (Number(tile.indexRow) + 1));
+    let landId = properties.i.toString() + "-" + properties.j.toString();
+    let feature = {
+      type: "Feature",
+      properties: { 
+        "zone": zone, 
+        "i": Number(tile.indexRow), 
+        "j": Number(tile.indexColumn), 
+        "landId" : landId,
+        "tileId" : tile.id,
+        "name" : tile.name,
+        "status" : tile.status,
+        "remainingTime" : Number(tile.remainingTime)
+      },
+      geometry: {
+        type: "Polygon", coordinates: [
+          [
+            [latlng1[0], latlng1[1]],
+            [latlng2[0], latlng1[1]],
+            [latlng2[0], latlng2[1]],
+            [latlng1[0], latlng2[1]],
+            [latlng1[0], latlng1[1]]
           ]
-        }
+        ]
+      }
       };
       result.features.push(feature)
-    }
   }
+  console.log(result.features)
   return result.features
 }
 
@@ -217,11 +262,23 @@ async function loadNation() {
 
 };
 
+// Plant Tree
+async function plantTree(landId, indexRow, indexColumn, materialId) {
+  const { user } = store.getState();
+  const func = async () => await user.actor.plantTree(landId, indexRow, indexColumn, materialId);
+  const result = (await func()).ok;
+  return result;
+}
+
+
 // Draw polygon 
 
 
 export {
   getUserInfo,
+  listInventory,
+  subtractInventory,
+  listCharacters,
   randomLandSlot,
   createLandSlot,
   loadLandTransferHistories,
@@ -233,5 +290,6 @@ export {
   getLandIndex,
   loadTileSlots,
   loadNation,
-  unionLandSlots
+  unionLandSlots,
+  plantTree
 }

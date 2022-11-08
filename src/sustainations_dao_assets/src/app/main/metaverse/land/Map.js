@@ -1,7 +1,6 @@
 import mapData from "./data/pangea-1.json";
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { GeoJSON, useMap } from "react-leaflet";
-import { BrowserView, MobileView, isBrowser, isMobile } from 'react-device-detect';
 import Back from "./Back";
 import Footer from "./footer";
 import "./styles.css";
@@ -20,7 +19,8 @@ import {
   getUserInfo,
   updateLandBuyingStatus,
   loadNation,
-  unionLandSlots
+  unionLandSlots,
+  plantTree
 } from '../LandApi'
 
 var country = null
@@ -31,15 +31,16 @@ var init = 0
 var mapFeature = null
 var landSlotRand = null
 var isFarmMode = false
+var landSlotProperties = null
 export var mapZoom = 0
 
 const Map = () => {
-  const loadLands = async (i, j) => {
-    landData = await loadLandSlotsfromCenter(i, j);
-  }
-  const loadNations = async (i, j) => {
-    nationData = await loadNationsfromCenter(i, j);
 
+
+  const loadNations = async (i, j) => {
+    landData = await loadLandSlotsfromCenter(i, j);
+    nationData = await loadNationsfromCenter(i, j);
+    console.log(await plantTree("97-1249", 97, 1249, "m3tomato_seed"));
   }
   const map = useMap()
   const [purchaseBtn, setPurchaseBtn] = useState(true)
@@ -58,22 +59,18 @@ const Map = () => {
   mapZoom = map.getZoom()
   // position is value coord center screen
   const initial = async () => {
-    if (init == 0) {
+    if (loading === "loadingmap") {
       country = await loadNation();
       if (country === undefined) {
-        await loadLands(0, 0);
         await loadNations(0, 0)
         setLoading("none")
       } else {
-        await loadLands(Number(country.indexRow), Number(country.indexColumn));
         await loadNations(Number(country.indexRow), Number(country.indexColumn));
         map.setView([Number(nationData[0].geometry.coordinates[0][0][1]), Number(nationData[0].geometry.coordinates[0][0][0])], 13)
         setLoading("none")
       }
     }
-    init = 1
   }
-
   initial()
 
   let index = getLandIndex(position, landData)
@@ -82,11 +79,9 @@ const Map = () => {
   const onMove = useCallback(async () => {
     setPosition(map.getCenter())
     if (index != undefined) {
-      await loadLands(index[0], index[1]);
-      await loadNations(index[0], index[1])
+      loadNations(index[0], index[1])
     }
   }, [map])
-  // console.log(index)
 
   useEffect(() => {
     map.on('move', onMove)
@@ -103,7 +98,7 @@ const Map = () => {
   const onEachRandomLandSlot = (country, layer) => {
     layer.setStyle({
       color: "#FFFFFF",
-      fillColor: "#48c3c8",
+      fillColor: "#9ed6ad",
       fillOpacity: "1"
     })
   }
@@ -117,6 +112,7 @@ const Map = () => {
     layer.on({
       click: async (e) => {
         mapFeature = await loadTileSlots(country.properties)
+        landSlotProperties = country.properties
         setModeBtn(true)
         setPurchaseBtn(false)
         setFarmLocation(e.latlng)
@@ -125,7 +121,7 @@ const Map = () => {
     // handle click on poligon
   }
 
-
+  console.log(landSlotProperties)
   const handleChangeMode = () => {
     map.setView(farmLocation, 18)
     isFarmMode = true
@@ -136,7 +132,7 @@ const Map = () => {
     setLoading("purchased")
     let landBuyingStatus = await loadLandBuyingStatus()
     if (landBuyingStatus != undefined) {
-      let landBuyingStatus = await loadLandBuyingStatus()
+      // let landBuyingStatus = await loadLandBuyingStatus()
       numRandom = Number(landBuyingStatus.properties.randomTimes)
       map.setView([Number(landBuyingStatus.geometry.coordinates[0][0][1]), Number(landBuyingStatus.geometry.coordinates[0][0][0])], 13)
       landSlotRand = landBuyingStatus
@@ -145,9 +141,9 @@ const Map = () => {
       // if having enough ICP
       let isBuy = await buyLandSlot()
       if (isBuy !== undefined) {
-        landSlotRand = await randomLandSlot()
         numRandom -= 1
-        console.log(await updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom))
+        landSlotRand = await randomLandSlot()
+        await updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom)
         map.setView([landSlotRand.geometry.coordinates[0][0][1], landSlotRand.geometry.coordinates[0][0][0]], 13)
       } else {
         // if not having enough ICP
@@ -162,6 +158,8 @@ const Map = () => {
     setLoading("accept")
     let landBuyingStatus = await loadLandBuyingStatus()
     let country = await loadNation()
+
+    //convert Bigint utms to Number utms
     let utms = undefined
     if (country !== undefined) {
       utms = country.utms.map(e => {
@@ -170,8 +168,8 @@ const Map = () => {
         })
       });
     }
-    // console.log(utms)
 
+    // update Nation UTMS
     let nationUTMS = unionLandSlots(
       utms === undefined ? [] : [utms],
       [[
@@ -181,7 +179,7 @@ const Map = () => {
         [(Number(landBuyingStatus.properties.i) + 1) * 1000, Number(landBuyingStatus.properties.j) * 1000],
       ]]
     )
-    console.log(await createLandSlot(landBuyingStatus.properties.i, landBuyingStatus.properties.j, nationUTMS[0][0]))
+    await createLandSlot(landBuyingStatus.properties.i, landBuyingStatus.properties.j, nationUTMS[0][0])
     numRandom = 3
     landSlotRand = []
     await loadNations(Number(landBuyingStatus.properties.i), Number(landBuyingStatus.properties.j))
@@ -193,6 +191,7 @@ const Map = () => {
   const handleTryAgain = async () => {
     setLoading("try")
     landSlotRand = await randomLandSlot()
+    await updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom)
     map.setView([landSlotRand.geometry.coordinates[0][0][1], landSlotRand.geometry.coordinates[0][0][0]], 13)
     numRandom -= 1
     console.log(await updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom))
@@ -209,7 +208,7 @@ const Map = () => {
 
     }
     return (
-      <div style={{ height: "100%", backgroundColor: isFarmMode ? "gray" : "#8ab4f8" }}>
+      <div>
 
         <GeoJSON data={mapData.features} onEachFeature={onEachLand} />
 
@@ -218,10 +217,10 @@ const Map = () => {
   }
   return (
     <>
-      <BigMap></BigMap>
-      <BrowserView>
+      {loading !== "loadingmap" ? <div style={{ height: "100%", backgroundColor: isFarmMode ? "gray" : "#8ab4f8" }}>
+        <BigMap></BigMap>
         <div>
-          {mode === 'land' &&
+          {mode === 'land' ?
             <div>
               <Back />
               <Footer />
@@ -243,7 +242,9 @@ const Map = () => {
                   display: modeBtn ? "block" : "none"
                 }} onClick={handleChangeMode}>Go to farm mode { }</button>
 
-                {!modeBtn && <div className="containPopup" style={{ left: "32%" }}>
+                {!modeBtn ? <div className="containPopup" style={{
+                  display: purchaseBtn ? "none" : "block"
+                }}>
                   {/* Popup purchase */}
                   <div className="popupBoder" style={{
                     display: purchaseBtn ? "none" : "block"
@@ -309,112 +310,12 @@ const Map = () => {
                         }}>EXIT</h2>
                     </>
                   }
-                </div>}
+                </div> : null}
               </div>
-            </div>}
+            </div> : null}
         </div>
-        {mode === 'farm' && <Farm mapFeatures={mapFeature} />}
-      </BrowserView>
-      <MobileView>
-        <div>
-          {mode === 'land' &&
-            <div>
-              <Back />
-              <Footer />
-              <GeoJSON key={Math.floor(Math.random() * 99999)} data={nationData} onEachFeature={onEachLandSlot} />
-              <GeoJSON key={Math.floor(Math.random() * 99999)} data={landSlotRand} onEachFeature={onEachRandomLandSlot} />
-              <div>
-                <div>
-                  {loading == "purchased" ? <button className="buttonload" style={{
-                    display: purchaseBtn ? "block" : "none"
-                  }}
-                  ><i className="fa fa-spinner fa-spin"></i> LOADING</button> :
-                    <button className="buttonload" style={{
-                      display: purchaseBtn ? "block" : "none"
-                    }}
-                      onClick={() => handlePurchase()}>Buy a new Land Slot</button>}
-                </div>
-
-                <button className="button-85" style={{
-                  display: modeBtn ? "block" : "none"
-                }} onClick={handleChangeMode}>Go to farm mode { }</button>
-
-                {!modeBtn && <div className="containPopup" style={{
-                  left: "-20%",
-                  scale: "80%"
-                }}>
-                  {/* Popup purchase */}
-                  <div className="popupBoder" style={{
-                    display: purchaseBtn ? "none" : "block"
-                  }}>
-                    <img
-                      src="metaverse/windownPopup/UI_ingame_popup_panel.png" />
-                    <h1
-                      style={{
-                        position: "absolute",
-                        top: "50%",
-                        left: "50%",
-                        transform: "translate(-100%, -80%)",
-                        fontSize: "136%"
-                      }}
-                    >{!alert ? "Do you want to receive this land slot with 0.0002 icp ?" : "You do not have enough ICP to make this transaction !"}</h1>
-                  </div>
-                  {!alert ? <>
-                    {loading === "accept" ? <h2 className="popupAccept"
-                      style={{
-                        display: purchaseBtn ? "none" : "block"
-                      }}><i className="fa fa-spinner fa-spin"></i> LOADING</h2> : <h2 className="popupAccept"
-                        style={{
-                          display: purchaseBtn ? "none" : "block"
-                        }}
-                        onClick={() => {
-                          handleAccept()
-                          setRender(!render)
-                        }}>ACCEPT</h2>}
-                    {loading === "try" ? <h2 className="popupTryAgain"
-                      style={{
-                        // if numRandom = 0 then, turn off try again button
-                        display: purchaseBtn || numRandom <= 0 ? "none" : "block",
-                      }}
-                    ><i className="fa fa-spinner fa-spin"></i> LOADING</h2> : <h2 className="popupTryAgain"
-                      style={{
-                        // if numRandom = 0 then, turn off try again button
-                        display: purchaseBtn || numRandom <= 0 ? "none" : "block",
-                      }}
-                      onClick={() => {
-                        handleTryAgain()
-                        setRender(!render)
-                      }}
-                    >Try Again</h2>}
-
-                    <span style={{
-                      position: "absolute",
-                      top: "82%",
-                      left: "30%",
-                      display: purchaseBtn ? "none" : "block"
-                    }}>Number of Retry:
-                      {numRandom}</span>
-                  </> :
-                    <>
-                      <h2 className="popupAccept"
-                        style={{
-                          display: alert && !purchaseBtn ? "block" : "none",
-                          left: "16%"
-                        }}
-                        onClick={() => {
-                          setAlert(false)
-                          setPurchaseBtn(true)
-                        }}>EXIT</h2>
-                    </>
-                  }
-                </div>}
-              </div>
-            </div>}
-        </div>
-
-
-        {mode === 'farm' && <Farm mapFeatures={mapFeature} />}
-      </MobileView>
+        {mode === 'farm' && <Farm mapFeatures={mapFeature} landSlotProperties = {landSlotProperties} />}
+      </div> : <Loading/>}
 
       <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
