@@ -6,7 +6,7 @@ import "./styles.css";
 import UIFarm from "./FarmUI"
 import Map from "./Map"
 import {
-  loadNation,
+  subtractInventory,
   loadTileSlots,
   listInventory,
   plantTree
@@ -38,6 +38,19 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
     loadinventoryStatus();
   }, [inventory]);
 
+  const [time, setTime] = useState(Date.now());
+
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      setTime(Date.now());
+      let tile = await loadTileSlots(landSlotProperties)
+      setTileplant(tile)
+    }, 10000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
   const latlng = tileplant.map(feature => {
     return feature.geometry.coordinates[0].map(item => {
       return [item[1], item[0]]
@@ -56,18 +69,20 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
     })
     layer.on({
       click: async (e) => {
-        console.log(country)
         for (let i = 0; i < inventory.length; i++) {
-          if (inventoryStatus[inventory[i].materialName] === true && country.properties.name === "None") {
-            console.log("plant", inventory[i].materialName, inventory[i].materialId)
-            console.log(await plantTree(country.properties.landId, country.properties.i, country.properties.j, inventory[i].materialId))
+          if (inventoryStatus[inventory[i].materialName] === true && country.properties.name === "None" && inventory[i].amount > 0) {
+            console.log("Plant tree status: ", await plantTree(country.properties.landId, country.properties.i, country.properties.j, inventory[i].materialId))
+            await subtractInventory(inventory[i].id)
             let tile = await loadTileSlots(landSlotProperties)
+            let inv = await listInventory(principal)
             setTileplant(tile)
+            setInventory(inv.ok)
           }
         }
       }
     });
   }
+  console.log(inventory)
   return (
     <>
       {mode === 'farm' ? <>
@@ -134,14 +149,16 @@ const Inventory = ({ inventory }) => {
 
 const CreateBound = ({ latlng, tileplant }) => {
   let path = "metaverse/farm/Sustaination_farm/farm-object/PNG/"
-  console.log("tile: ",tileplant)
   return (
     <>
       {tileplant.map((tag, value) => {
-        let pathItem = path + tag.properties.status+ "-" + tag.properties.name + ".png"
+        let pathItem = path + tag.properties.status + "-" + tag.properties.name + ".png"
 
         if (tag.properties.name === "None") {
           return <ImageOverlay key={value} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm-Tiles-05.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} />
+        }
+        else if (tag.properties.status === "newlyPlanted") {
+          return <ImageOverlay key={value} url={'metaverse/farm/Sustaination_farm/farm-object/PNG/newlyPlanted.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} />
         }
         else {
           return <ImageOverlay key={value} url={pathItem} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} />

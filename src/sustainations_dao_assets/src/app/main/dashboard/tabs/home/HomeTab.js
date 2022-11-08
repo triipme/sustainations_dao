@@ -15,7 +15,7 @@ import ScheduleWidget from './widgets/ScheduleWidget';
 function HomeTab() {
   const user = useSelector(selectUser);
   const [loading, setLoading] = useState(true)
-  const [purchasedLandslot, setPurchasedLandslot] = useState(0)
+  const [purchasedLandSlots, setPurchasedLandSlots] = useState(0)
 
   const analysis = useAsyncMemo(async () => {
     setLoading(true);
@@ -24,14 +24,14 @@ function HomeTab() {
     console.log('result.ok', result.ok);
     return result.ok;
   }, [user]);
-  const purchasedLandSlots = async () => {
-    const rs = await user.actor.purchasedLandSlotsCounter();
-    setPurchasedLandslot(rs);
-  };
-  useEffect(()=>{
-    purchasedLandSlots();
-    console.log("GGGGGG", purchasedLandslot)
-  },[user])
+  useEffect(() => {
+    async function fetchData() {
+      const result = await user.actor.purchasedLandSlotsCounter();
+      setPurchasedLandSlots(result.ok);
+    }
+    fetchData();
+  }, [user]);
+
   const container = {
     show: {
       transition: {
@@ -90,7 +90,7 @@ function HomeTab() {
         <InvestedProject counter={analysis.gamePlayCount.questCompletedCount} objectLabel="Quest" counterLabel="Completed" />
       </motion.div>
       <motion.div variants={item}>
-        <OpenProject counter={purchasedLandslot} objectLabel="Land Slots" counterLabel="Purchased" />
+        <OpenProject counter={purchasedLandSlots} objectLabel="Land Slots" counterLabel="Purchased" />
       </motion.div>
       <motion.div variants={item} className="sm:col-span-2 md:col-span-4">
         <GithubIssuesWidget />
