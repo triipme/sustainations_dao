@@ -2,6 +2,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { canisterId, idlFactory } from '../../../../declarations/sustainations_dao';
 import { canisterId as ledgerCanisterId } from '../../../../declarations/ledger';
+import { canisterId as frontendCanisterId } from '../../../../declarations/frontend';
 
 import { createClient } from "@connect2ic/core";
 import { InfinityWallet } from "@connect2ic/core/providers/infinity-wallet";
@@ -17,7 +18,7 @@ const initialState = createClient({
       // boolean
       dev: isDevelopment,
       // whitelisted canisters
-      whitelist: [canisterId],
+      whitelist: [canisterId, frontendCanisterId],
       // The host used for canisters
       host: window.location.origin,
     }),
@@ -39,7 +40,7 @@ const initialState = createClient({
     appName: "Sustainations DAO",
     // Certain providers require specifying which canisters are whitelisted
     // Array<string>
-    whitelist: [canisterId],
+    whitelist: [canisterId, frontendCanisterId],
     // Certain providers allow you to specify a canisterId for the Ledger canister
     // For example when running it locally
     ledgerCanisterId: isDevelopment ? ledgerCanisterId : "ryjl3-tyaaa-aaaaa-aaaba-cai",

@@ -48,8 +48,9 @@ import LandBuyingStatus "./land/landBuyingStatus";
 import Tile "./land/tile";
 import Seed "./land/seed";
 import Plant "./land/plant";
+import Env ".env";
 
-shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georustId : ?Text}) = this {
+shared({caller = owner}) actor class SustainationsDAO() = this {
   stable var transferFee : Nat64 = 10_000;
   stable var createProposalFee : Nat64 = 20_000;
   stable var voteFee : Nat64 = 20_000;
@@ -312,8 +313,8 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
   };
 
   type Response<Ok> = Result.Result<Ok, Types.Error>;
-  private let ledger : Ledger.Interface = actor(Option.get(ledgerId, "ryjl3-tyaaa-aaaaa-aaaba-cai"));
-  private let georust : GeoRust.Interface = actor(Option.get(georustId, "qoctq-giaaa-aaaaa-aaaea-cai"));
+  private let ledger : Ledger.Interface = actor(Env.LEDGER_ID);
+  private let georust : GeoRust.Interface = actor(Env.GEORUST_ID);
 
   private func createUUID() : async Text {
     var ae = AsyncSource.Source();
