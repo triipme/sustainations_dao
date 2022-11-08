@@ -3788,18 +3788,6 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
     #ok((list));
   };
 
-   public shared query ({ caller }) func openInventory(characterId : Text) : async Response<[Types.Inventory]> {
-    var list : [Types.Inventory] = [];
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized); //isNotAuthorized
-    };
-    for ((_, inventory) in state.inventories.entries()) {
-      if (inventory.characterId == characterId) {
-        list := Array.append<Types.Inventory>(list, [inventory]);
-      };
-    };
-    #ok((list));
-  };
 
   public shared ({ caller }) func addInventory(characterId : Text, amount : Nat) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
@@ -3820,24 +3808,7 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
   };
 
 
- public shared ({ caller }) func listItemInventory(characterId : Text) : async Response<[(Text, Text, Int)]> {
-    var list : [(Text, Text, Int)] = [];
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized); //isNotAuthorized
-    };
-    for ((_, inventory) in state.inventories.entries()) {
-      if (inventory.characterId == characterId) {
-        let findMaterial = await readMaterial(inventory.materialId);
-        label s switch (findMaterial) {
-          case (#ok(material)) {
-            list := Array.append<(Text, Text, Int)>(list, [(inventory.materialId, material.name, inventory.amount)]);
-          };
-          case _ {};
-        };
-      };
-    };
-    #ok((list));
-  };
+
 // convert utm2lonlat
   public shared func utm2lonlat(easting: Float, northing: Float, zoneNum: Int32, zoneLetter: Text) : async (Float, Float) {
 		let result = await georust.proj(easting, northing, zoneNum, zoneLetter);

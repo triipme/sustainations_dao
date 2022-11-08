@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useAsyncMemo } from "use-async-memo";
 import { selectUser } from 'app/store/userSlice';
@@ -15,6 +15,7 @@ import ScheduleWidget from './widgets/ScheduleWidget';
 function HomeTab() {
   const user = useSelector(selectUser);
   const [loading, setLoading] = useState(true)
+  const [purchasedLandslot, setPurchasedLandslot] = useState(0)
 
   const analysis = useAsyncMemo(async () => {
     setLoading(true);
@@ -23,13 +24,14 @@ function HomeTab() {
     console.log('result.ok', result.ok);
     return result.ok;
   }, [user]);
-  const purchasedLandSlots = useAsyncMemo(async () => {
-    setLoading(true);
-    const result = await user.actor.purchasedLandSlotsCounter();
-    setLoading(false);
-    console.log('result.ok', result.ok);
-    return result.ok;
-  }, [user]);
+  const purchasedLandSlots = async () => {
+    const rs = await user.actor.purchasedLandSlotsCounter();
+    setPurchasedLandslot(rs);
+  };
+  useEffect(()=>{
+    purchasedLandSlots();
+    console.log("GGGGGG", purchasedLandslot)
+  },[user])
   const container = {
     show: {
       transition: {
@@ -88,7 +90,7 @@ function HomeTab() {
         <InvestedProject counter={analysis.gamePlayCount.questCompletedCount} objectLabel="Quest" counterLabel="Completed" />
       </motion.div>
       <motion.div variants={item}>
-        <OpenProject counter={purchasedLandSlots} objectLabel="Land Slots" counterLabel="Purchased" />
+        <OpenProject counter={purchasedLandslot} objectLabel="Land Slots" counterLabel="Purchased" />
       </motion.div>
       <motion.div variants={item} className="sm:col-span-2 md:col-span-4">
         <GithubIssuesWidget />

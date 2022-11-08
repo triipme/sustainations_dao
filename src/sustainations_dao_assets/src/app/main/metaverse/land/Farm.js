@@ -25,9 +25,8 @@ const Farm = ({ mapFeatures }) => {
       setInventory(inv.ok)
     }
     load(); // run it, run it
-
   }, []);
-
+  console.log("Inventory: ",inventory)
   useEffect(() => {
     const loadinventoryStatus = async () => {
       for (let i = 0; i < inventory.length; i++) {
@@ -57,13 +56,13 @@ const Farm = ({ mapFeatures }) => {
     })
 
     layer.on({
-      click: (e) => {
+      click: async (e) => {
+        console.log("country: ", country)
         for (let i = 0; i < inventory.length; i++) {
-          console.log("item: ", inventoryStatus[inventory[i].materialName])
           if (inventoryStatus[inventory[i].materialName] === true) {
-            console.log("plant", inventory[i].materialName, inventory[i])
-            plantTree(mapFeatures[0].properties.landId, country.properties.i, country.properties.j, inventory[i].idMaterial)
-          }
+            console.log("plant", inventory[i].materialName, inventory[i].materialId)
+            console.log(await plantTree(mapFeatures[0].properties.landId, country.properties.i, country.properties.j, inventory[i].materialId)
+          )}
           // console.log(country.geometry.coordinates, inventory[i].position, country.geometry.coordinates.includes(inventory[i].position))
           // if (inventoryStatus[inventory[i].name] === true) {
           //   if (inventory[i].amount > 0) {

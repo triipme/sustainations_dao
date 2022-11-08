@@ -49,7 +49,6 @@ const Map = () => {
   const [farmLocation, setFarmLocation] = useState(null)
   const [mode, setMode] = useState('land')
   const [loading, setLoading] = useState("loadingmap")
-  console.log(loading)
   if (mode === 'farm')
     isFarmMode = true
   else isFarmMode = false
@@ -82,7 +81,6 @@ const Map = () => {
       loadNations(index[0], index[1])
     }
   }, [map])
-  // console.log(index)
 
   useEffect(() => {
     map.on('move', onMove)

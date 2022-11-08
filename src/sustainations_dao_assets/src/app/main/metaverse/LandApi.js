@@ -252,18 +252,11 @@ async function plantTree(landId, indexRow, indexColumn, materialId) {
   return result;
 }
 
-async function listItemInventory(characterId) {
-  const { user } = store.getState();
-  const func = async () => await user.actor.listItemInventory(characterId);
-  const rs = (await func()).ok;
-  return rs;
-};
 
 // Draw polygon 
 
 
 export {
-  listItemInventory,
   getUserInfo,
   listInventory,
   listCharacters,
