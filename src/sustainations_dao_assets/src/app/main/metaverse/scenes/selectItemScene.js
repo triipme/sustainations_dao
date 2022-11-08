@@ -53,7 +53,6 @@ class selectItemScene extends BaseScene {
     this.load.rexAwait(function (successCallback, failureCallback) {
       getUserInfo().then((result) => {
         this.userInfo = result.ok;
-        console.log(this.userInfo);
         successCallback();
       });
     }, this);
@@ -205,6 +204,9 @@ class selectItemScene extends BaseScene {
           break;
         case 'lake':
           this.scene.start('lake_scene1');
+          break;
+        case 'city':
+          this.scene.start('city_scene1');
           break;
         default:
           console.log('invalid map name');

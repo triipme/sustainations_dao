@@ -5,10 +5,15 @@
       "candid": "src/ledger/ledger.did",
       "wasm": "src/ledger/ledger.wasm"
     },
+    "georust":{
+      "candid": "src/georust/georust.did",
+      "package": "georust",
+      "type": "rust"
+    },
     "sustainations_dao": {
       "main": "src/sustainations_dao/main.mo",
       "type": "motoko",
-      "dependencies": ["ledger"]
+      "dependencies": ["ledger", "georust"]
     },
     "frontend": {
       "dependencies": [

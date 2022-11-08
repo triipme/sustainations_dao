@@ -1,12 +1,13 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { GeoJSON, MapContainer, useMap, useMapEvents, TileLayer, Rectangle, ImageOverlay } from "react-leaflet";
-// import mapData from "./data/land_size_100_400X400_zone_20.json";
 import "./styles.css";
-import BigMap from "./bigmap"
+// import BigMap from "./bigmap"
 import Map from "./Map"
+import mapZoom from "./Map"
 
-const zoom = 4
+let zoom = 3
 var center = [0.0, -67.488694797721564]
+// import { GeoJSON } from "react-leaflet";
 
 function Land() {
   const [map, setMap] = useState(null)
@@ -15,12 +16,14 @@ function Land() {
       <MapContainer
         style={{ height: "100%" }}
         center={center}
+        minZoom={2}
         zoom={zoom}
         scrollWheelZoom={true}
         doubleClickZoom={false}
         zoomControl={false}
+        dragging={mapZoom == 2 ? false : true}
+        // bounds={}
         ref={setMap}>
-        <BigMap></BigMap>
         <Map />
       </MapContainer>
     ),

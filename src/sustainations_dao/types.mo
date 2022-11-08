@@ -283,16 +283,34 @@ module {
   };
 
   // Land
+  //--------------------- Land Config -------------------//
+  public type LandConfig = {
+    id : Text;
+    mapWidth : Int;
+    mapHeight: Int;
+  };
+
   //--------------------- Land Slot ---------------------//
   public type LandSlot = {
     id : Text;
     ownerId : Principal;
     isPremium : Bool;
     isSelling : Bool;
-    zone : Nat;
-    xIndex : Nat;
-    yIndex : Nat;
+    indexRow : Nat;
+    indexColumn : Nat;
+    zoneNumber : Nat;
+    zoneLetter : Text;
+    easting : Nat;
+    northing : Nat;
     price: Float; 
+  };
+
+  public type Geometry = {
+    zoneNumber : Nat;
+    zoneLetter : Text;
+    i : Nat;
+    j : Nat;
+    coordinates: [[[Float]]];
   };
 
 //--------------------- Land Transfer History ---------------------//
@@ -304,20 +322,24 @@ module {
     transferTime : Int;
     price : Float;
   };
+
+
 //--------------------- Land Buying Status ---------------------//
   public type LandBuyingStatus = {
     id : Principal;
-    currentZone: Int;
-    currentLandSlotId: Text;
-    randomTimes : Int;
+    geometry : Geometry;
+    randomTimes : Nat;
   };
 
-//------------------------------------------------------------//
-public type UserhasLandSLots = {
-  id : Principal;
-  landSlotIds : [Text];
-};
-
+//--------------------------Nation--------------------------//
+  public type Nation = {
+    id : Principal;
+    landSlotIds : [Text];
+    indexRow : Nat;
+    indexColumn : Nat;
+    utms : [[Nat]]; 
+  };
+//-------------------------Geometry------------------------------//
 
   // Error codes
   public type Error = {
