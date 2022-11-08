@@ -4,10 +4,20 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import DfinityAgentService from '../../auth/services/dfinityAgentService';
-import { canisterId } from '../../../../../declarations/sustainations_dao';
+import { useConnect } from "@connect2ic/react";
 
 function SignInPage() {
   const [authClient, setAuthClient] = useState(undefined);
+
+  const { connect } = useConnect({
+    onConnect: (data) => {
+      console.log("connected!", data);
+      DfinityAgentService.login();
+    },
+    onDisconnect: () => {
+      console.log("disconnected!")
+    }
+  });
 
   useLayoutEffect(() => {
     (async () => {
@@ -27,39 +37,6 @@ function SignInPage() {
         console.log(error);
       }
     });
-  };
-
-  const verifyInfinityWalletConnection = async () => {
-    const connected = await window.ic.infinityWallet.isConnected();
-    if (connected) {
-      return true;
-    } else {
-      try {
-        await window.ic.infinityWallet.requestConnect({
-          whitelist: [canisterId],
-          host: 'https://testnet.infinityswap.one'
-        });
-        return true;
-      } catch (_e) {
-        console.log(_e);
-        return false;
-      }
-    }
-  };
-
-  const handleConnectInfinityWallet = async () => {
-    if (window?.ic?.infinityWallet) {
-      verifyInfinityWalletConnection().then(async (connected) => {
-        if (connected) {
-          // login
-          DfinityAgentService.login();
-        } else {
-          console.log('The agent creation was rejected.')
-        }
-      })
-    } else {
-      console.log('You need to install InfinityWallet first.')
-    }
   };
 
   function redirectUrl(url) {
@@ -116,7 +93,7 @@ function SignInPage() {
               aria-label="Use Infinity Wallet"
               type="button"
               size="large"
-              onClick={() => handleConnectInfinityWallet()}
+              onClick={() => connect('infinity')}
             >
               Use Infinity Wallet
             </Button>

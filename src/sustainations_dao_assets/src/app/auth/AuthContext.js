@@ -1,15 +1,16 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import _ from '@lodash';
 import FuseSplashScreen from '@fuse/core/FuseSplashScreen';
 import { showMessage } from 'app/store/fuse/messageSlice';
 import { logoutUser, setUser } from 'app/store/userSlice';
+import { selectClient } from 'app/store/clientSlice';
 import { getS3Object } from '../hooks';
 import DfinityAgentService from './services/dfinityAgentService';
 
 import { AuthClient } from '@dfinity/auth-client';
-import { canisterId, createActor, idlFactory } from '../../../../declarations/sustainations_dao';
+import { canisterId, createActor } from '../../../../declarations/sustainations_dao';
 
 const AuthContext = React.createContext();
 
@@ -18,22 +19,38 @@ function AuthProvider({ children }) {
   const [waitAuthCheck, setWaitAuthCheck] = useState(true);
   const dispatch = useDispatch();
 
+  const client = useSelector(selectClient);
+
   useEffect(() => {
     const initAuthClient = async () => {
-      const client = await AuthClient.create();
-      const authenticated = await client.isAuthenticated();
-      let actor;
-      const infinityWalletConnected = await window?.ic?.infinityWallet?.isConnected();
+      const authClient = await AuthClient.create();
+      const authenticated = await authClient.isAuthenticated();
+      const status = await client.status;
+      const walletAuthenticated = status.idle == "connected";
+      let actor, principal;
+      let logged = false;
       if (authenticated) {
         setIsAuthenticated(authenticated); //check isAuthorized first time
-        const identity = client.getIdentity();
-        console.log('aaa', identity);
+        const identity = authClient.getIdentity();
         actor = createActor(canisterId, {
           agentOptions: {
             identity
           }
         });
-        const principal = identity.getPrincipal().toText();
+        principal = identity.getPrincipal().toText();
+        logged = true;
+      } else if (walletAuthenticated) {
+        const error = client._service.state.context.actors['sustainationsDao'].error;
+        if (error) {
+          console.log('Error when connecting wallet!', error);
+          return false;
+        }
+        setIsAuthenticated(walletAuthenticated); //check isAuthorized first time
+        actor = client._service.state.context.actors['sustainationsDao'].value;
+        principal = client.principal;
+        logged = true;
+      }
+      if (logged) {
         const result = await actor.getUserInfo();
         let brandRole = [];
         const brandRoles = _.keys(result?.ok?.brandRole[0]);
@@ -65,57 +82,14 @@ function AuthProvider({ children }) {
           profile,
           avatar
         };
-
-        dispatch(setUser(userState));
-        setWaitAuthCheck(false);
-      } else if (infinityWalletConnected) {
-        actor = await window.ic.infinityWallet.createActor({
-          canisterId,
-          interfaceFactory: idlFactory,
-        });
-        console.log(actor);
-
-        const principal = await window.ic.infinityWallet.getPrincipal();
-        const result = await actor.getUserInfo();
-        let brandRole = [];
-        const brandRoles = _.keys(result?.ok?.brandRole[0]);
-        if (_.includes(brandRoles, 'owner')) {
-          brandRole = ['brandOwner'];
-        }
-        if (_.includes(brandRoles, 'staff')) {
-          brandRole = ['brandStaff'];
-        }
-        const profile = result?.ok?.profile[0];
-        let avatar = '';
-        if (profile?.avatar[0]) {
-          async function getFile(path) {
-            if (path) {
-              const file = await getS3Object(path);
-              return file;
-            }
-          };
-          avatar = await getFile(profile?.avatar[0]);
-        }
-        const profileRole = _.isEmpty(profile?.role) ? ['user'] : _.keys(profile?.role);
-        const userState = {
-          role: result?.ok?.agreement ? _.union(profileRole, brandRole) : ['needAgreement'],
-          actor,
-          depositAddress: result?.ok?.depositAddress,
-          balance: result?.ok?.balance,
-          principal: principal.toText(),
-          brandId: result?.ok?.brandId[0],
-          profile,
-          avatar
-        };
-
+        console.log('userState', userState);
         dispatch(setUser(userState));
         setWaitAuthCheck(false);
       } else {
         pass();
-        actor = createActor(canisterId);
         const userState = {
           role: [],
-          actor,
+          actor: createActor(canisterId),
           depositAddress: '',
           principal: '',
           balance: 0,
@@ -125,11 +99,13 @@ function AuthProvider({ children }) {
         };
         dispatch(setUser(userState));
       }
+      return true;
     };
 
     const resetAuthClient = async () => {
-      const client = await AuthClient.create();
-      await client.logout();
+      const authClient = await AuthClient.create();
+      await authClient.logout();
+      await client.disconnect();
     };
 
     initAuthClient();
@@ -145,11 +121,16 @@ function AuthProvider({ children }) {
 
     function success(message) {
       setWaitAuthCheck(true);
-      Promise.all([initAuthClient()]).then(() => {
-        setWaitAuthCheck(false);
-        setIsAuthenticated(true);
-        if (message) {
-          dispatch(showMessage({ message }));
+      initAuthClient().then((logged) => {
+        console.log('result', logged);
+        if (logged) {
+          setWaitAuthCheck(false);
+          setIsAuthenticated(true);
+          if (message) {
+            dispatch(showMessage({ message }));
+          }
+        } else {
+          pass('Error! Please try again later');
         }
       });
     }
