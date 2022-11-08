@@ -214,19 +214,27 @@ async function loadTileSlots(properties) {
   let y = Number(properties.j) * 10
 
   const { user } = store.getState();
-  const  func = async () => await user.actor.loadTilesArea(x,y,x+10,y+10);
+  const  func = async () => await user.actor.loadTilesArea(x,y,x+9,y+9);
   const tiles = (await func()).ok;
-  console.log("Tiles--------------------");
-  console.log(tiles);
 
-  for (let i = x; i < x + 10; i++) {
-    for (let j = y; j < y + 10; j++) {
-      let latlng1 = utm2lonlat(d * j, d * i);
-      let latlng2 = utm2lonlat(d * (j + 1), d * (i + 1));
-      let landId = properties.i.toString() + "-" + properties.j.toString();
+  var result = {
+    features: []
+  };
+  for (let tile of tiles) {
+    let latlng1 = utm2lonlat(d * Number(tile.indexColumn), d * Number(tile.indexRow));
+      let latlng2 = utm2lonlat(d * (Number(tile.indexColumn) + 1), d * (Number(tile.indexRow) + 1));
       let feature = {
         type: "Feature",
-        properties: { "zone": zone, "i": i, "j": j, "landId" : landId},
+        properties: { 
+          "zone": zone, 
+          "i": Number(tile.indexRow), 
+          "j": Number(tile.indexColumn), 
+          "landId" : tile.landSlotId,
+          "tileId" : tile.id,
+          "name" : tile.name,
+          "status" : tile.status,
+          "remainingTime" : Number(tile.remainningTime)
+        },
         geometry: {
           type: "Polygon", coordinates: [
             [
@@ -240,8 +248,8 @@ async function loadTileSlots(properties) {
         }
       };
       result.features.push(feature)
-    }
   }
+  console.log(result.features)
   return result.features
 }
 
