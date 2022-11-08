@@ -187,7 +187,7 @@ class selectMap extends BaseScene {
 
 
     //addspriteX, addspriteY, nameMap
-    this.selectAreaCity = this.add.sprite(850, 305, 'selectArea')
+    this.selectAreaCity = this.add.sprite(1000, 420, 'selectArea')
       .setScale(0.18)
       .setInteractive();
     this.selectAreaCity.on('pointerover', () => {

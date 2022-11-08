@@ -292,6 +292,89 @@ class BaseScene extends Phaser.Scene {
 
   }
 
+  clearSceneCache(textures_list) {
+    for (const index in textures_list) {
+      this.textures.remove(textures_list[index]);
+    }
+  }
+
+  triggerPause() {
+    this.isInteracting = true;
+    this.veil.setVisible(true);
+    this.selectAction.setVisible(true);
+    for (const idx in this.options) {
+      this.options[idx].setVisible(true);
+      this.options[idx].text.setVisible(true);
+    }
+
+  }
+
+  triggerContinue() {
+    this.veil.setVisible(false);
+    this.selectAction.setVisible(false);
+    for (const idx in this.options) {
+      this.options[idx].setVisible(false);
+      this.options[idx].text.setVisible(false);
+    }
+    this.isInteracting = false;
+    this.isInteracted = true;
+    this.player.play('running-anims');
+  }
+
+  scrolling() {
+    this.graphics = this.make.graphics();
+
+    this.graphics.fillRect(152, 230, 900, 250).setScrollFactor(0);
+
+    this.mask = new Phaser.Display.Masks.GeometryMask(this, this.graphics);
+
+    this.des.setMask(this.mask);
+
+    // //  The rectangle they can 'drag' within
+    this.add.zone(150, 230, 900, 250).setOrigin(0).setInteractive().setVisible(true).setScrollFactor(0)
+      .on('pointermove', (pointer) => {
+        if (pointer.isDown) {
+          this.des.y += (pointer.velocity.y / 10);
+
+          this.des.y = Phaser.Math.Clamp(this.des.y, -400, 720);
+        }
+      })
+  }
+
+  playerLogicEngine(locationStop, locationInteract, nextScene){
+      //new player logic
+      if (this.player.body.touching.down && this.isInteracting == false) {
+        this.player.setVelocityX(settings.movementSpeed);
+      }
+  
+      if (this.player.x > locationStop) { //5100
+        console.log(this.sum)
+        this.pregameSound.stop();
+        this.sfx_char_footstep.stop();
+  
+        if (this.listScene.length === 0) this.scene.start("thanks", { isUsedPotion: this.isUsedPotion });
+        else this.scene.start(nextScene, { isUsedPotion: this.isUsedPotion, listScene: this.listScene });
+      }
+  
+      if (this.player.x > locationInteract && this.isInteracted == false) { //4200
+  
+        this.premiumPopupWindow.setVisible(true);
+        this.premiumPopupCloseBtn.setVisible(true);
+        this.des.setVisible(true);
+        this.sfx_char_footstep.stop();
+        this.player.setVelocityX(0);
+        this.player.play('idle-anims');
+        this.player.stop();
+      }
+  }
+
+  scrollTexture(speedBack, speedMid, speedObstacle, speedFront){
+    this.bg_1.tilePositionX = this.myCam.scrollX * speedBack;
+    this.bg_2.tilePositionX = this.myCam.scrollX * speedMid;
+    this.obstacle.tilePositionX = this.myCam.scrollX * speedObstacle;
+    this.bg_3.tilePositionX = this.myCam.scrollX * speedFront;
+  }
+
 
 
 }

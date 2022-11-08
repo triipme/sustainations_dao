@@ -13,10 +13,10 @@ import { readEvent } from '../../GameApi';
 
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
-const bg1 = 'metaverse/scenes/city/Scene1/PNG/back.png';
-const bg2 = 'metaverse/scenes/city/Scene1/PNG/mid.png';
-const bg3 = 'metaverse/scenes/city/Scene1/PNG/front.png';
-const obstacle = 'metaverse/scenes/city/Scene1/PNG/obstacle.png';
+const bg1 = 'metaverse/scenes/city/Scene3/PNG/back.png';
+const bg2 = 'metaverse/scenes/city/Scene3/PNG/mid.png';
+const bg3 = 'metaverse/scenes/city/Scene3/PNG/front.png';
+const obstacle = 'metaverse/scenes/city/Scene2/PNG/obstacle.png';
 const selectAction = 'metaverse/scenes/background_menu.png';
 const btnBlank = 'metaverse/scenes/selection.png';
 
@@ -29,9 +29,9 @@ const popupWindow = 'metaverse/selectMap/Catalonia_popup.png';
 const popupClose = 'metaverse/selectMap/UI_ingame_close.png';
 
 
-export default class city_scene1 extends BaseScene {
+export default class city_scene3 extends BaseScene {
   constructor() {
-    super('city_scene1');
+    super('city_scene3');
   }
 
 
@@ -230,7 +230,7 @@ export default class city_scene1 extends BaseScene {
     if (this.player.x > 5100) {
       this.pregameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start("city_scene2", { isUsedPotion: this.isUsedPotion });
+      this.scene.start("city_scene4", { isUsedPotion: this.isUsedPotion });
     }
 
     if (this.player.x > 4200 && this.isInteracted == false) {
