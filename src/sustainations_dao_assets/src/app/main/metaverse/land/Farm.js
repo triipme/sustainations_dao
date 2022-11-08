@@ -1,32 +1,44 @@
-import { useState, lazy } from "react";
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { selectUser } from "app/store/userSlice";
 import { GeoJSON, useMap, useMapEvents, ImageOverlay } from "react-leaflet";
 import "./styles.css";
 import UIFarm from "./FarmUI"
 import Map from "./Map"
+import {
+  listInventory,
+  plantTree
+} from '../LandApi'
 
-const inventoryStatus = { tomato: false, rice: false, potato: false, dig: false }
-
-var inventory = [
-  {
-    name: "tomato",
-    amount: 3,
-    position: []
-  },
-  {
-    name: "wheat",
-    amount: 3,
-    position: []
-  },
-  {
-    name: "carrot",
-    amount: 3,
-    position: []
-  }
-]
+var inventoryStatus = { dig: false }
 
 const Farm = ({ mapFeatures }) => {
+  const user = useSelector(selectUser)
+  const { principal } = user;
+
+  const [inventory, setInventory] = useState([])
   const [mode, setMode] = useState('farm')
-  const [itemStatus, setItemStatus] = useState(inventoryStatus)
+
+  useEffect(() => {
+    const load = async () => {
+      const inv = await listInventory(principal)
+      setInventory(inv.ok)
+    }
+    load(); // run it, run it
+
+  }, []);
+
+  useEffect(() => {
+    const loadinventoryStatus = async () => {
+      for (let i = 0; i < inventory.length; i++) {
+        if (inventory[i].materialName !== "wood" && inventory[i].materialName !== "seed") {
+          inventoryStatus[inventory[i].materialName] = false
+        }
+      }
+    }
+    loadinventoryStatus();
+  }, [inventory]);
+
   const latlng = mapFeatures.map(feature => {
     return feature.geometry.coordinates[0].map(item => {
       return [item[1], item[0]]
@@ -47,48 +59,49 @@ const Farm = ({ mapFeatures }) => {
     layer.on({
       click: (e) => {
         for (let i = 0; i < inventory.length; i++) {
-          if (inventoryStatus[inventory[i].name] === true) {
-            if (inventory[i].amount > 0) {
-              inventory[i].position.push(country.geometry.coordinates)
-              inventory[i].amount--
-            }
+          console.log("item: ", inventoryStatus[inventory[i].materialName])
+          if (inventoryStatus[inventory[i].materialName] === true) {
+            console.log("plant", inventory[i].materialName, inventory[i])
+            plantTree(mapFeatures[0].properties.landId, country.properties.i, country.properties.j, inventory[i].idMaterial)
           }
-          // console.log(inventoryStatus)
-          else if (inventoryStatus.dig === true) {
-            console.log("run")
-            for (let j = 0; j < inventory[i].position.length; j++) {
-              if (JSON.stringify(inventory[i].position[j]) === JSON.stringify(country.geometry.coordinates)) {
-                inventory[i].position.splice(j, 1)
-              }
-            }
-          }
+          // console.log(country.geometry.coordinates, inventory[i].position, country.geometry.coordinates.includes(inventory[i].position))
+          // if (inventoryStatus[inventory[i].name] === true) {
+          //   if (inventory[i].amount > 0) {
+          //     inventory[i].position.push(country.geometry.coordinates)
+          //     inventory[i].amount--
+          //   }
+          // }
+          // // console.log(inventoryStatus)
+          // else if (inventoryStatus.dig === true) {
+          //   for (let j = 0; j < inventory[i].position.length; j++) {
+          //     if (JSON.stringify(inventory[i].position[j]) === JSON.stringify(country.geometry.coordinates)) {
+          //       inventory[i].position.splice(j, 1)
+          //     }
+          //   }
+          // }
         }
       }
     });
   }
 
-
   return (
     <>
-      {mode === 'farm' && <>
-
+      {mode === 'farm' ? <>
         <GeoJSON key={Math.floor(Math.random() * 9999)} data={mapFeatures} onEachFeature={onEachLandSlot} />
         <CreateBound {...{ latlng, posLand }}></CreateBound>
         <UIFarm></UIFarm>
-        <Inventory></Inventory>
-        <ShowPlant inventory={inventory}></ShowPlant>
-        <button className="button-85" style={{ top: "250px" }} onClick={() => setMode('land')}>Go to map mode</button>
-      </>}
-      {
-        mode === 'land' && <>
-          <Map></Map>
-        </>
-      }
+        <Inventory inventory={inventory}></Inventory>
+        {/* <ShowPlant inventory={inventory}></ShowPlant> */}
+        <button className="button-85" style={{ top: "250px" }} onClick={() => {
+          setMode('land'); location.reload();
+        }}>Go to map mode</button>
+      </> : <Map></Map>}
+
     </>
   )
 }
 
-const Inventory = () => {
+const Inventory = ({ inventory }) => {
   function initialInventory(item) {
     for (const property in inventoryStatus) {
       if (property !== item)
@@ -98,34 +111,39 @@ const Inventory = () => {
   let path = "/metaverse/farm/Sustaination_farm/farm-object/PNG/"
   return (
     <div className="farmItem">
-      <div className="imgItem">
+      <div className="imgItem" key={101}>
         <img
           onClick={() => {
             inventoryStatus["dig"] = !inventoryStatus["dig"]
             initialInventory("dig")
-            console.log(inventoryStatus.dig)
           }}
           src={"/metaverse/farm/Sustaination_farm/farm-object/PNG/shovel.png"}
           alt=""
         />
       </div>
-
-      {inventory.map((key, value) => {
-        let pathItem = path + key.name + '-icon.png'
-        return (
-          <div className="imgItem">
-            <img
-              onClick={() => {
-                inventoryStatus[key.name] = !inventoryStatus[key.name]
-                initialInventory(key.name)
-              }}
-              src={pathItem}
-              alt=""
-            />
-            <div className="top-right">{inventory[value].amount}</div>
-          </div>
-        )
-      })}
+      {inventory.length > 0 ?
+        <>
+          {inventory.map((key, value) => {
+            if (key.materialName !== "wood" && key.materialName !== "seed") {
+              let pathItem = path + key.materialName + '-icon.png'
+              return (
+                <div className="imgItem" key={value}>
+                  <img
+                    onClick={() => {
+                      inventoryStatus[key.materialName] = !inventoryStatus[key.materialName]
+                      initialInventory(key.materialName)
+                    }}
+                    src={pathItem}
+                    alt=""
+                  />
+                  <div className="top-right">{key.amount.toString()}</div>
+                </div>
+              )
+            } else {
+              <></>
+            }
+          })}
+        </> : null}
     </div>
   )
 }
@@ -133,37 +151,38 @@ const Inventory = () => {
 const CreateBound = ({ latlng, posLand }) => {
   return (
     <>
-      {posLand.map(tag => {
+      {posLand.map((tag, value) => {
         return (
-          <>
-            <ImageOverlay key={tag} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm-Tiles-05.png'} bounds={[latlng[tag][1], latlng[tag][3]]} />
-          </>
+          <ImageOverlay key={value} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm-Tiles-05.png'} bounds={[latlng[tag][1], latlng[tag][3]]} />
         )
       })}
     </>
   )
 }
 
-const ShowPlant = (inventory) => {
+const ShowPlant = ({ inventory }) => {
   let path = "metaverse/farm/Sustaination_farm/farm-object/PNG/"
+
   return (
     <>
-      {inventory.inventory.map(plant => {
-        if (plant.position.length > 0) {
-          console.log("plant: ", plant)
-          let pathItem = path + "growing-" + plant.name + ".png"
-          return (
-            plant.position.map((item) => {
-              console.log("item: ", item)
-              return (
-                <ImageOverlay key={Math.floor(Math.random() * 9999)} url={pathItem}
-                  bounds={[[item[0][0][1], item[0][0][0]], [item[0][2][1], item[0][2][0]]]} />
-              )
-            }))
-        }
-        else
-          return null
-      })}
+      {inventory.length > 0 ? <div>
+        {inventory.map(plant => {
+          if (plant.position.length > 0) {
+            console.log("plant: ", plant)
+            let pathItem = path + "growing-" + plant.materialName + ".png"
+            return (
+              plant.position.map((item) => {
+                console.log("item: ", item)
+                return (
+                  <ImageOverlay key={Math.floor(Math.random() * 9999)} url={pathItem}
+                    bounds={[[item[0][0][1], item[0][0][0]], [item[0][2][1], item[0][2][0]]]} />
+                )
+              }))
+          }
+          else
+            return null
+        })}
+      </div> : null}
     </>
   )
 }
