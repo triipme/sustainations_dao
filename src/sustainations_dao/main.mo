@@ -3756,6 +3756,7 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
   public type Inventory = {
     id : Text;
     characterId : Text;
+    materialId : Text;
     materialName : Text;
     amount : Int;
   };
@@ -3775,6 +3776,7 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
             let inv : Inventory = {
               id = inventory.id;
               characterId = inventory.characterId;
+              materialId = inventory.materialId;
               materialName = material.name;
               amount = inventory.amount;
             };
