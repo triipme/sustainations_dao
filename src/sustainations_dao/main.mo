@@ -4433,7 +4433,18 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
                     // update plant status
                     var status = plant.status;
                     let remainningTime = Int.max(seed.waitTime - (Time.now() - plant.plantTime), 0);
-                    if (remainningTime <=seed.waitTime/2)
+                    if (remainningTime == 0) {
+                      let updatePlant : Types.Plant = {
+                        id = plant.id;
+                        seedId = plant.seedId;
+                        hasEffectId = plant.hasEffectId;
+                        status = "fullGrown";
+                        plantTime = plant.plantTime;
+                      };
+                      status := "fullGrown";
+                      let updated = Plant.update(updatePlant, state);
+                    }
+                    else if (remainningTime <=seed.waitTime/2)
                     {
                       let updatePlant : Types.Plant = {
                         id = plant.id;
@@ -4443,17 +4454,6 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
                         plantTime = plant.plantTime;
                       };
                       status := "growing";
-                      let updated = Plant.update(updatePlant, state);
-                    }
-                    else if (remainningTime == 0) {
-                      let updatePlant : Types.Plant = {
-                        id = plant.id;
-                        seedId = plant.seedId;
-                        hasEffectId = plant.hasEffectId;
-                        status = "fullGrown";
-                        plantTime = plant.plantTime;
-                      };
-                      status := "fullGrown";
                       let updated = Plant.update(updatePlant, state);
                     };
                     // add farm object

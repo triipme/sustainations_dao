@@ -209,7 +209,7 @@ async function loadTileSlots(properties) {
     features: []
   };
   let d = 100
-  let zone = Number(properties.zone)
+  let zone = Number(properties.zoneNumber)
   let x = Number(properties.i) * 10
   let y = Number(properties.j) * 10
 
@@ -233,7 +233,7 @@ async function loadTileSlots(properties) {
           "tileId" : tile.id,
           "name" : tile.name,
           "status" : tile.status,
-          "remainingTime" : Number(tile.remainningTime)
+          "remainingTime" : Number(tile.remainingTime)
         },
         geometry: {
           type: "Polygon", coordinates: [
