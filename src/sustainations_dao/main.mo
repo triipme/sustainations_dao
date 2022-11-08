@@ -4432,7 +4432,7 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
                   case (?seed) {
                     // update plant status
                     var status = plant.status;
-                    let remainningTime = Int.max(seed.waitTime - (Time.now() - plant.plantTime), 0);
+                    let remainningTime = Int.max(seed.waitTime - (Time.now()/1000000000 - plant.plantTime), 0);
                     if (remainningTime == 0) {
                       let updatePlant : Types.Plant = {
                         id = plant.id;

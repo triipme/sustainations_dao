@@ -222,30 +222,31 @@ async function loadTileSlots(properties) {
   };
   for (let tile of tiles) {
     let latlng1 = utm2lonlat(d * Number(tile.indexColumn), d * Number(tile.indexRow));
-      let latlng2 = utm2lonlat(d * (Number(tile.indexColumn) + 1), d * (Number(tile.indexRow) + 1));
-      let feature = {
-        type: "Feature",
-        properties: { 
-          "zone": zone, 
-          "i": Number(tile.indexRow), 
-          "j": Number(tile.indexColumn), 
-          "landId" : tile.landSlotId,
-          "tileId" : tile.id,
-          "name" : tile.name,
-          "status" : tile.status,
-          "remainingTime" : Number(tile.remainingTime)
-        },
-        geometry: {
-          type: "Polygon", coordinates: [
-            [
-              [latlng1[0], latlng1[1]],
-              [latlng2[0], latlng1[1]],
-              [latlng2[0], latlng2[1]],
-              [latlng1[0], latlng2[1]],
-              [latlng1[0], latlng1[1]]
-            ]
+    let latlng2 = utm2lonlat(d * (Number(tile.indexColumn) + 1), d * (Number(tile.indexRow) + 1));
+    let landId = properties.i.toString() + "-" + properties.j.toString();
+    let feature = {
+      type: "Feature",
+      properties: { 
+        "zone": zone, 
+        "i": Number(tile.indexRow), 
+        "j": Number(tile.indexColumn), 
+        "landId" : landId,
+        "tileId" : tile.id,
+        "name" : tile.name,
+        "status" : tile.status,
+        "remainingTime" : Number(tile.remainingTime)
+      },
+      geometry: {
+        type: "Polygon", coordinates: [
+          [
+            [latlng1[0], latlng1[1]],
+            [latlng2[0], latlng1[1]],
+            [latlng2[0], latlng2[1]],
+            [latlng1[0], latlng2[1]],
+            [latlng1[0], latlng1[1]]
           ]
-        }
+        ]
+      }
       };
       result.features.push(feature)
   }
