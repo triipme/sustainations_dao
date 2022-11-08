@@ -31,6 +31,7 @@ var init = 0
 var mapFeature = null
 var landSlotRand = null
 var isFarmMode = false
+var landSlotProperties = null
 export var mapZoom = 0
 
 const Map = () => {
@@ -111,6 +112,7 @@ const Map = () => {
     layer.on({
       click: async (e) => {
         mapFeature = await loadTileSlots(country.properties)
+        landSlotProperties = country.properties
         setModeBtn(true)
         setPurchaseBtn(false)
         setFarmLocation(e.latlng)
@@ -119,7 +121,7 @@ const Map = () => {
     // handle click on poligon
   }
 
-
+  console.log(landSlotProperties)
   const handleChangeMode = () => {
     map.setView(farmLocation, 18)
     isFarmMode = true
@@ -312,7 +314,7 @@ const Map = () => {
               </div>
             </div> : null}
         </div>
-        {mode === 'farm' && <Farm mapFeatures={mapFeature} />}
+        {mode === 'farm' && <Farm mapFeatures={mapFeature} landSlotProperties = {landSlotProperties} />}
       </div> : <Loading/>}
 
       <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
