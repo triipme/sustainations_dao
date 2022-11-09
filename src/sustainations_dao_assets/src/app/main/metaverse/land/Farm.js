@@ -16,6 +16,7 @@ var inventoryStatus = { dig: false }
 
 const Farm = ({ mapFeatures, landSlotProperties }) => {
   const user = useSelector(selectUser)
+  console.log("user: ", user)
   const { principal } = user;
   const [tileplant, setTileplant] = useState(mapFeatures)
   const [inventory, setInventory] = useState([])

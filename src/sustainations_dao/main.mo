@@ -3794,17 +3794,26 @@ public shared ({ caller }) func addInventory(characterId : Text, amount : Nat) :
       return #err(#NotAuthorized); //isNotAuthorized
     };
     let reset = await resetCharacterCollectsMaterials(characterId);
-    for (v in state.materials.vals()) {
-      let material : Types.CharacterCollectsMaterials = {
-        id = await createUUID();
-        characterId = characterId;
-        materialId = v.id;
-        amount = amount;
+    let findCharacter = state.characters.get(characterId);
+    switch (findCharacter) {
+      case null {
+        return #err(#NotFound);
       };
-      let w = await createCharacterCollectsMaterials(material);
+      case (_) {
+        for (v in state.materials.vals()) {
+          let material : Types.CharacterCollectsMaterials = {
+            id = await createUUID();
+            characterId = characterId;
+            materialId = v.id;
+            amount = amount;
+          };
+          let w = await createCharacterCollectsMaterials(material);
+        };
+        let rsInven = await createInventory(characterId);
+        let reset_last = await resetCharacterCollectsMaterials(characterId);
+      }
     };
-    let rsInven = await createInventory(characterId);
-    #ok("Success");
+    return #ok("Success");
   };
 
 public shared({caller}) func subtractInventory(inventoryId : Text) : async Response<Text> {
