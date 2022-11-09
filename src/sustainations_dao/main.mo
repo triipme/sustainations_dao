@@ -4036,7 +4036,7 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
     #ok((list));
   };
 
-  public shared({caller}) func loadNationsArea(beginX : Int, beginY : Int, endX : Int, endY : Int) : async Response<[Types.Geometry]> {
+  public shared({caller}) func loadNationsArea(beginX : Int, beginY : Int, endX : Int, endY : Int) : async Response<[Types.NationGeometry]> {
     var list : [Types.Nation] = [];
     if(Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized);//isNotAuthorized
@@ -4081,14 +4081,15 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
           };
         };
 
-        var geometries : [Types.Geometry] = [];
+        var geometries : [Types.NationGeometry] = [];
         for (value in list.vals()) {
           var coordinates : [[Float]] = [];
           for (utm in value.utms.vals()) {
             let lonlat = await utm2lonlat(Float.fromInt(utm[1]), Float.fromInt(utm[0]), 20, "N");
             coordinates := Array.append(coordinates, [[lonlat.0,lonlat.1]]);
           };
-          let newGeometry : Types.Geometry = {
+          let newGeometry : Types.NationGeometry = {
+            id = Principal.toText(value.id);
             zoneLetter = "N";
             zoneNumber = 20;
             i = value.indexRow;
