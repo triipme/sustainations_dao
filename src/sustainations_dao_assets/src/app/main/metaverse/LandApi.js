@@ -91,7 +91,13 @@ async function loadNationsfromCenter(x, y) {
   for (let nation of nations) {
     let feature = {
       type: "Feature",
-      properties: { "zoneNumber": nation.zoneNumber, "zoneLetter": nation.zoneLetter, "i": nation.i, "j": nation.j },
+      properties: {
+        "id":nation.id,
+        "zoneNumber": nation.zoneNumber, 
+        "zoneLetter": nation.zoneLetter, 
+        "i": nation.i, 
+        "j": nation.j
+      },
       geometry: {
         type: "Polygon", coordinates: nation.coordinates,
       }
