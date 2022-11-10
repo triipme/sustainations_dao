@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useAsyncMemo } from "use-async-memo";
 import { selectUser } from 'app/store/userSlice';
@@ -24,7 +24,6 @@ function HomeTab() {
     console.log('result.ok', result.ok);
     return result.ok;
   }, [user]);
-
   useEffect(() => {
     async function fetchData() {
       const result = await user.actor.purchasedLandSlotsCounter();

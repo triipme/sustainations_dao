@@ -23,3 +23,7 @@ src/sustainations_dao_assets/src/styles/app.css
 
 scripts/test.sh
 target/
+
+src/sustainations_dao/.env.mo
+sustainations_dao.wasm
+sustainations_dao.wasm.gz

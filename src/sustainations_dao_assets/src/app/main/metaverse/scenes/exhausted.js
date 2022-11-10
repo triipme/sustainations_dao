@@ -50,7 +50,7 @@ class exhausted extends BaseScene {
   }
   
   async create() {
-    //reset character collect materials
+    // reset character collect materials
     resetCharacterCollectsMaterials(this.characterData.id);
     // platforms
     const platforms = this.physics.add.staticGroup();

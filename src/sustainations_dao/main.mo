@@ -48,8 +48,9 @@ import LandBuyingStatus "./land/landBuyingStatus";
 import Tile "./land/tile";
 import Seed "./land/seed";
 import Plant "./land/plant";
+import Env ".env";
 
-shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georustId : ?Text}) = this {
+shared({caller = owner}) actor class SustainationsDAO() = this {
   stable var transferFee : Nat64 = 10_000;
   stable var createProposalFee : Nat64 = 20_000;
   stable var voteFee : Nat64 = 20_000;
@@ -312,8 +313,8 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
   };
 
   type Response<Ok> = Result.Result<Ok, Types.Error>;
-  private let ledger : Ledger.Interface = actor(Option.get(ledgerId, "ryjl3-tyaaa-aaaaa-aaaba-cai"));
-  private let georust : GeoRust.Interface = actor(Option.get(georustId, "qoctq-giaaa-aaaaa-aaaea-cai"));
+  private let ledger : Ledger.Interface = actor(Env.LEDGER_ID);
+  private let georust : GeoRust.Interface = actor(Env.GEORUST_ID);
 
   private func createUUID() : async Text {
     var ae = AsyncSource.Source();
@@ -3756,6 +3757,7 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
   public type Inventory = {
     id : Text;
     characterId : Text;
+    materialId : Text;
     materialName : Text;
     amount : Int;
   };
@@ -3775,6 +3777,7 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
             let inv : Inventory = {
               id = inventory.id;
               characterId = inventory.characterId;
+              materialId = inventory.materialId;
               materialName = material.name;
               amount = inventory.amount;
             };
@@ -3786,20 +3789,8 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
     #ok((list));
   };
 
-   public shared query ({ caller }) func openInventory(characterId : Text) : async Response<[Types.Inventory]> {
-    var list : [Types.Inventory] = [];
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized); //isNotAuthorized
-    };
-    for ((_, inventory) in state.inventories.entries()) {
-      if (inventory.characterId == characterId) {
-        list := Array.append<Types.Inventory>(list, [inventory]);
-      };
-    };
-    #ok((list));
-  };
 
-  public shared ({ caller }) func addInventory(characterId : Text, amount : Nat) : async Response<Text> {
+public shared ({ caller }) func addInventory(characterId : Text, amount : Nat) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
@@ -3817,25 +3808,28 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
     #ok("Success");
   };
 
-
- public shared ({ caller }) func listItemInventory(characterId : Text) : async Response<[(Text, Text, Int)]> {
-    var list : [(Text, Text, Int)] = [];
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized); //isNotAuthorized
+public shared({caller}) func subtractInventory(inventoryId : Text) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
     };
-    for ((_, inventory) in state.inventories.entries()) {
-      if (inventory.characterId == characterId) {
-        let findMaterial = await readMaterial(inventory.materialId);
-        label s switch (findMaterial) {
-          case (#ok(material)) {
-            list := Array.append<(Text, Text, Int)>(list, [(inventory.materialId, material.name, inventory.amount)]);
-          };
-          case _ {};
+    let rsInventory = state.inventories.get(inventoryId);
+    switch (rsInventory) {
+      case (null) {
+        return #err(#NotFound);
+      };
+      case (?inventory) {
+        let updateInventory : Types.Inventory = {
+          id = inventory.id;
+          characterId = inventory.characterId;
+          materialId = inventory.materialId;
+          amount = Int.max(inventory.amount-1,0);
         };
+        let updated = Inventory.update(updateInventory,state);
+        return #ok("Success");
       };
     };
-    #ok((list));
   };
+
 // convert utm2lonlat
   public shared func utm2lonlat(easting: Float, northing: Float, zoneNum: Int32, zoneLetter: Text) : async (Float, Float) {
 		let result = await georust.proj(easting, northing, zoneNum, zoneLetter);
@@ -4426,6 +4420,17 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
         let rsTile=state.tiles.get(id);
         switch (rsTile) {
           case (null) {  
+            // add empty farm object
+            let newFarmObject : Types.FarmObject = {
+              id = "None";
+              landSlotId = "None";
+              indexRow = i;
+              indexColumn = j;
+              name = "None";
+              status = "None";
+              remainingTime = 0;
+            };
+            list := Array.append(list, [newFarmObject]);
           };
           case (?tile) {
             let rsPlant = state.plants.get(tile.objectId);
@@ -4440,16 +4445,28 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
                   case (?seed) {
                     // update plant status
                     var status = plant.status;
-                    let remainningTime = Int.max(seed.waitTime - (Time.now() - plant.plantTime), 0);
+                    let remainningTime = Int.max(seed.waitTime - (Time.now()/1000000000 - plant.plantTime), 0);
                     if (remainningTime == 0) {
                       let updatePlant : Types.Plant = {
                         id = plant.id;
                         seedId = plant.seedId;
                         hasEffectId = plant.hasEffectId;
-                        status = "fullgrown";
+                        status = "fullGrown";
                         plantTime = plant.plantTime;
                       };
-                      status := "fullgrown";
+                      status := "fullGrown";
+                      let updated = Plant.update(updatePlant, state);
+                    }
+                    else if (remainningTime <=seed.waitTime/2)
+                    {
+                      let updatePlant : Types.Plant = {
+                        id = plant.id;
+                        seedId = plant.seedId;
+                        hasEffectId = plant.hasEffectId;
+                        status = "growing";
+                        plantTime = plant.plantTime;
+                      };
+                      status := "growing";
                       let updated = Plant.update(updatePlant, state);
                     };
                     // add farm object
@@ -4507,7 +4524,7 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
           id = uuid;
           seedId = V.id;
           hasEffectId = "";
-          status = "growing";
+          status = "newlyPlanted";
           plantTime = Time.now()/1000000000;
         };
 

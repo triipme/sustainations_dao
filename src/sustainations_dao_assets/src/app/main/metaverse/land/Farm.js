@@ -6,28 +6,27 @@ import "./styles.css";
 import UIFarm from "./FarmUI"
 import Map from "./Map"
 import {
+  subtractInventory,
+  loadTileSlots,
   listInventory,
   plantTree
 } from '../LandApi'
 
 var inventoryStatus = { dig: false }
 
-const Farm = ({ mapFeatures }) => {
+const Farm = ({ mapFeatures, landSlotProperties }) => {
   const user = useSelector(selectUser)
   const { principal } = user;
-
+  const [tileplant, setTileplant] = useState(mapFeatures)
   const [inventory, setInventory] = useState([])
   const [mode, setMode] = useState('farm')
-
   useEffect(() => {
     const load = async () => {
       const inv = await listInventory(principal)
       setInventory(inv.ok)
     }
     load(); // run it, run it
-
   }, []);
-
   useEffect(() => {
     const loadinventoryStatus = async () => {
       for (let i = 0; i < inventory.length; i++) {
@@ -39,7 +38,20 @@ const Farm = ({ mapFeatures }) => {
     loadinventoryStatus();
   }, [inventory]);
 
-  const latlng = mapFeatures.map(feature => {
+  const [time, setTime] = useState(Date.now());
+
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      setTime(Date.now());
+      let tile = await loadTileSlots(landSlotProperties)
+      setTileplant(tile)
+    }, 10000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
+  const latlng = tileplant.map(feature => {
     return feature.geometry.coordinates[0].map(item => {
       return [item[1], item[0]]
     })
@@ -55,40 +67,27 @@ const Farm = ({ mapFeatures }) => {
       fillColor: "#FFFFFF",
       fillOpacity: "0.1"
     })
-
     layer.on({
-      click: (e) => {
+      click: async (e) => {
         for (let i = 0; i < inventory.length; i++) {
-          console.log("item: ", inventoryStatus[inventory[i].materialName])
-          if (inventoryStatus[inventory[i].materialName] === true) {
-            console.log("plant", inventory[i].materialName, inventory[i])
-            plantTree(mapFeatures[0].properties.landId, country.properties.i, country.properties.j, inventory[i].idMaterial)
+          if (inventoryStatus[inventory[i].materialName] === true && country.properties.name === "None" && inventory[i].amount > 0) {
+            console.log("Plant tree status: ", await plantTree(country.properties.landId, country.properties.i, country.properties.j, inventory[i].materialId))
+            await subtractInventory(inventory[i].id)
+            let tile = await loadTileSlots(landSlotProperties)
+            let inv = await listInventory(principal)
+            setTileplant(tile)
+            setInventory(inv.ok)
           }
-          // console.log(country.geometry.coordinates, inventory[i].position, country.geometry.coordinates.includes(inventory[i].position))
-          // if (inventoryStatus[inventory[i].name] === true) {
-          //   if (inventory[i].amount > 0) {
-          //     inventory[i].position.push(country.geometry.coordinates)
-          //     inventory[i].amount--
-          //   }
-          // }
-          // // console.log(inventoryStatus)
-          // else if (inventoryStatus.dig === true) {
-          //   for (let j = 0; j < inventory[i].position.length; j++) {
-          //     if (JSON.stringify(inventory[i].position[j]) === JSON.stringify(country.geometry.coordinates)) {
-          //       inventory[i].position.splice(j, 1)
-          //     }
-          //   }
-          // }
         }
       }
     });
   }
-
+  console.log(inventory)
   return (
     <>
       {mode === 'farm' ? <>
-        <GeoJSON key={Math.floor(Math.random() * 9999)} data={mapFeatures} onEachFeature={onEachLandSlot} />
-        <CreateBound {...{ latlng, posLand }}></CreateBound>
+        <GeoJSON key={Math.floor(Math.random() * 9999)} data={tileplant} onEachFeature={onEachLandSlot} />
+        <CreateBound {...{ latlng, tileplant }}></CreateBound>
         <UIFarm></UIFarm>
         <Inventory inventory={inventory}></Inventory>
         {/* <ShowPlant inventory={inventory}></ShowPlant> */}
@@ -148,42 +147,50 @@ const Inventory = ({ inventory }) => {
   )
 }
 
-const CreateBound = ({ latlng, posLand }) => {
+const CreateBound = ({ latlng, tileplant }) => {
+  let path = "metaverse/farm/Sustaination_farm/farm-object/PNG/"
   return (
     <>
-      {posLand.map((tag, value) => {
-        return (
-          <ImageOverlay key={value} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm-Tiles-05.png'} bounds={[latlng[tag][1], latlng[tag][3]]} />
-        )
+      {tileplant.map((tag, value) => {
+        let pathItem = path + tag.properties.status + "-" + tag.properties.name + ".png"
+
+        if (tag.properties.name === "None") {
+          return <ImageOverlay key={value} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm-Tiles-05.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} />
+        }
+        else if (tag.properties.status === "newlyPlanted") {
+          return <ImageOverlay key={value} url={'metaverse/farm/Sustaination_farm/farm-object/PNG/newlyPlanted.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} />
+        }
+        else {
+          return <ImageOverlay key={value} url={pathItem} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} />
+        }
       })}
     </>
   )
 }
 
-const ShowPlant = ({ inventory }) => {
-  let path = "metaverse/farm/Sustaination_farm/farm-object/PNG/"
+// const ShowPlant = ({ inventory }) => {
 
-  return (
-    <>
-      {inventory.length > 0 ? <div>
-        {inventory.map(plant => {
-          if (plant.position.length > 0) {
-            console.log("plant: ", plant)
-            let pathItem = path + "growing-" + plant.materialName + ".png"
-            return (
-              plant.position.map((item) => {
-                console.log("item: ", item)
-                return (
-                  <ImageOverlay key={Math.floor(Math.random() * 9999)} url={pathItem}
-                    bounds={[[item[0][0][1], item[0][0][0]], [item[0][2][1], item[0][2][0]]]} />
-                )
-              }))
-          }
-          else
-            return null
-        })}
-      </div> : null}
-    </>
-  )
-}
+//   return (
+//     <>
+//       {inventory.length > 0 ? <div>
+//         {inventory.map(plant => {
+//           if (plant.position.length > 0) {
+//             console.log("plant: ", plant)
+//             
+//             return (
+//               plant.position.map((item) => {
+//                 console.log("item: ", item)
+//                 return (
+//                   <ImageOverlay key={Math.floor(Math.random() * 9999)} url={pathItem}
+//                     bounds={[[item[0][0][1], item[0][0][0]], [item[0][2][1], item[0][2][0]]]} />
+//                 )
+//               }))
+//           }
+//           else
+//             return null
+//         })}
+//       </div> : null}
+//     </>
+//   )
+// }
 export default Farm;
