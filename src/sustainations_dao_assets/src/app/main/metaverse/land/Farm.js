@@ -1,18 +1,18 @@
 import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { selectUser } from "app/store/userSlice";
 import { GeoJSON, useMap, useMapEvents, ImageOverlay } from "react-leaflet";
 import "./styles.css";
 import UIFarm from "./FarmUI"
 import Map from "./Map"
 import {
-  listInventory
+  listInventory,
+  plantTree
 } from '../LandApi'
-import { useSelector } from "react-redux";
-import { selectUser } from "app/store/userSlice";
 
 var inventoryStatus = { dig: false }
 
 const Farm = ({ mapFeatures }) => {
-
   const user = useSelector(selectUser)
   const { principal } = user;
 
@@ -25,15 +25,20 @@ const Farm = ({ mapFeatures }) => {
       setInventory(inv.ok)
     }
     load(); // run it, run it
-    for (let i = 0; i < inventory.length; i++) {
-      inventoryStatus[inventory[i].materialId] = false
-    }
+
   }, []);
 
-  console.log(inventory)
+  useEffect(() => {
+    const loadinventoryStatus = async () => {
+      for (let i = 0; i < inventory.length; i++) {
+        if (inventory[i].materialName !== "wood" && inventory[i].materialName !== "seed") {
+          inventoryStatus[inventory[i].materialName] = false
+        }
+      }
+    }
+    loadinventoryStatus();
+  }, [inventory]);
 
-
-  console.log(inventoryStatus["dig"])
   const latlng = mapFeatures.map(feature => {
     return feature.geometry.coordinates[0].map(item => {
       return [item[1], item[0]]
@@ -54,49 +59,49 @@ const Farm = ({ mapFeatures }) => {
     layer.on({
       click: (e) => {
         for (let i = 0; i < inventory.length; i++) {
-          console.log(country.geometry.coordinates, inventory[i].position, country.geometry.coordinates.includes(inventory[i].position))
-          if (inventoryStatus[inventory[i].name] === true) {
-            if (inventory[i].amount > 0) {
-              inventory[i].position.push(country.geometry.coordinates)
-              inventory[i].amount--
-            }
+          console.log("item: ", inventoryStatus[inventory[i].materialName])
+          if (inventoryStatus[inventory[i].materialName] === true) {
+            console.log("plant", inventory[i].materialName, inventory[i])
+            plantTree(mapFeatures[0].properties.landId, country.properties.i, country.properties.j, inventory[i].idMaterial)
           }
-          // console.log(inventoryStatus)
-          else if (inventoryStatus.dig === true) {
-            console.log("run")
-            for (let j = 0; j < inventory[i].position.length; j++) {
-              if (JSON.stringify(inventory[i].position[j]) === JSON.stringify(country.geometry.coordinates)) {
-                inventory[i].position.splice(j, 1)
-              }
-            }
-          }
+          // console.log(country.geometry.coordinates, inventory[i].position, country.geometry.coordinates.includes(inventory[i].position))
+          // if (inventoryStatus[inventory[i].name] === true) {
+          //   if (inventory[i].amount > 0) {
+          //     inventory[i].position.push(country.geometry.coordinates)
+          //     inventory[i].amount--
+          //   }
+          // }
+          // // console.log(inventoryStatus)
+          // else if (inventoryStatus.dig === true) {
+          //   for (let j = 0; j < inventory[i].position.length; j++) {
+          //     if (JSON.stringify(inventory[i].position[j]) === JSON.stringify(country.geometry.coordinates)) {
+          //       inventory[i].position.splice(j, 1)
+          //     }
+          //   }
+          // }
         }
       }
     });
   }
 
-
   return (
     <>
-      {mode === 'farm' && <>
-
+      {mode === 'farm' ? <>
         <GeoJSON key={Math.floor(Math.random() * 9999)} data={mapFeatures} onEachFeature={onEachLandSlot} />
         <CreateBound {...{ latlng, posLand }}></CreateBound>
         <UIFarm></UIFarm>
         <Inventory inventory={inventory}></Inventory>
-        <ShowPlant inventory={inventory}></ShowPlant>
-        <button className="button-85" style={{ top: "250px" }} onClick={() => setMode('land')}>Go to map mode</button>
-      </>}
-      {
-        mode === 'land' ? <>
-          <Map></Map>
-        </> : null
-      }
+        {/* <ShowPlant inventory={inventory}></ShowPlant> */}
+        <button className="button-85" style={{ top: "250px" }} onClick={() => {
+          setMode('land'); location.reload();
+        }}>Go to map mode</button>
+      </> : <Map></Map>}
+
     </>
   )
 }
 
-const Inventory = (inventory) => {
+const Inventory = ({ inventory }) => {
   function initialInventory(item) {
     for (const property in inventoryStatus) {
       if (property !== item)
@@ -111,30 +116,34 @@ const Inventory = (inventory) => {
           onClick={() => {
             inventoryStatus["dig"] = !inventoryStatus["dig"]
             initialInventory("dig")
-            console.log(inventoryStatus.dig)
           }}
           src={"/metaverse/farm/Sustaination_farm/farm-object/PNG/shovel.png"}
           alt=""
         />
       </div>
-      {inventory.length > 0 ? <div>
-        {inventory.map((key, value) => {
-          let pathItem = path + key.name + '-icon.png'
-          return (
-            <div className="imgItem" key={value}>
-              <img
-                onClick={() => {
-                  inventoryStatus[key.name] = !inventoryStatus[key.name]
-                  initialInventory(key.name)
-                }}
-                src={pathItem}
-                alt=""
-              />
-              <div className="top-right">{inventory[value].amount}</div>
-            </div>
-          )
-        })}
-      </div> : null}
+      {inventory.length > 0 ?
+        <>
+          {inventory.map((key, value) => {
+            if (key.materialName !== "wood" && key.materialName !== "seed") {
+              let pathItem = path + key.materialName + '-icon.png'
+              return (
+                <div className="imgItem" key={value}>
+                  <img
+                    onClick={() => {
+                      inventoryStatus[key.materialName] = !inventoryStatus[key.materialName]
+                      initialInventory(key.materialName)
+                    }}
+                    src={pathItem}
+                    alt=""
+                  />
+                  <div className="top-right">{key.amount.toString()}</div>
+                </div>
+              )
+            } else {
+              <></>
+            }
+          })}
+        </> : null}
     </div>
   )
 }
@@ -151,15 +160,16 @@ const CreateBound = ({ latlng, posLand }) => {
   )
 }
 
-const ShowPlant = (inventory) => {
+const ShowPlant = ({ inventory }) => {
   let path = "metaverse/farm/Sustaination_farm/farm-object/PNG/"
+
   return (
     <>
       {inventory.length > 0 ? <div>
         {inventory.map(plant => {
           if (plant.position.length > 0) {
             console.log("plant: ", plant)
-            let pathItem = path + "growing-" + plant.name + ".png"
+            let pathItem = path + "growing-" + plant.materialName + ".png"
             return (
               plant.position.map((item) => {
                 console.log("item: ", item)

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useAsyncMemo } from "use-async-memo";
 import { selectUser } from 'app/store/userSlice';
@@ -15,6 +15,7 @@ import ScheduleWidget from './widgets/ScheduleWidget';
 function HomeTab() {
   const user = useSelector(selectUser);
   const [loading, setLoading] = useState(true)
+  const [purchasedLandSlots, setPurchasedLandSlots] = useState(0)
 
   const analysis = useAsyncMemo(async () => {
     setLoading(true);
@@ -23,13 +24,15 @@ function HomeTab() {
     console.log('result.ok', result.ok);
     return result.ok;
   }, [user]);
-  const purchasedLandSlots = useAsyncMemo(async () => {
-    setLoading(true);
-    const result = await user.actor.purchasedLandSlotsCounter();
-    setLoading(false);
-    console.log('result.ok', result.ok);
-    return result.ok;
+
+  useEffect(() => {
+    async function fetchData() {
+      const result = await user.actor.purchasedLandSlotsCounter();
+      setPurchasedLandSlots(result.ok);
+    }
+    fetchData();
   }, [user]);
+
   const container = {
     show: {
       transition: {

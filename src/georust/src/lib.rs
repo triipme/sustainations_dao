@@ -45,12 +45,26 @@ fn greet() -> () {
 //     return num;
 // }
 #[ic_cdk_macros::query]
-fn randomnumber(begin : f64, end: f64, d: u64) -> u64 {
-    let start = time()*d;
+fn randomnumber(begin : f64, end: f64) -> u64 {
+    let start = time();
     set_seeds(start as u64);
     let ru = Rnum::newu64();
     let num = ru.rannum_in(begin, end).getu64();
     return num.unwrap();
+}
+
+#[ic_cdk_macros::query]
+fn randompair(begin : f64, end: f64) -> (u64,u64) {
+    let start = time();
+    let ru = Rnum::newu64();
+    
+    set_seeds(start as u64);
+    let num1 = ru.rannum_in(begin, end).getu64();
+
+    set_seeds(start*2 as u64);
+    let num2 = ru.rannum_in(begin, end).getu64();
+
+    return (num1.unwrap(),num2.unwrap());
 }
 
 

@@ -71,10 +71,10 @@ async function createLandSlot(i, j,nationUTMS) {
 
 async function loadNationsfromCenter(x, y) {
   const { user } = store.getState();
-  const nations = (await user.actor.loadNationsArea(
+  const func = async () => await user.actor.loadNationsArea(
     x - 100, y - 100, x + 100, y + 100
-  )).ok;
-
+  );
+  const nations = (await func()).ok;
   // let zone = 20
   var result = {
     features: []
@@ -101,7 +101,7 @@ function utm2lonlat(utmX, utmY) {
   return result
 };
 // load LandSLot from Center
-function loadLandSlotsfromCenter(x, y) {
+async function loadLandSlotsfromCenter(x, y) {
   let d = 1000
   let zone = 20
   let result = {
@@ -252,10 +252,18 @@ async function plantTree(landId, indexRow, indexColumn, materialId) {
   return result;
 }
 
+async function listItemInventory(characterId) {
+  const { user } = store.getState();
+  const func = async () => await user.actor.listItemInventory(characterId);
+  const rs = (await func()).ok;
+  return rs;
+};
+
 // Draw polygon 
 
 
 export {
+  listItemInventory,
   getUserInfo,
   listInventory,
   listCharacters,
