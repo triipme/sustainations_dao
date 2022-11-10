@@ -16,13 +16,16 @@ var inventoryStatus = { dig: false }
 
 const Farm = ({ mapFeatures, landSlotProperties }) => {
   const user = useSelector(selectUser)
-  const { principal } = user;
   const [tileplant, setTileplant] = useState(mapFeatures)
   const [inventory, setInventory] = useState([])
   const [mode, setMode] = useState('farm')
+  const [characterId, setChacterId] = useState("")
+
   useEffect(() => {
     const load = async () => {
-      const inv = await listInventory(principal)
+      const characterid = await user.actor.readCharacter()
+      setChacterId(characterid.ok[0])
+      const inv = await listInventory(characterid.ok[0])
       setInventory(inv.ok)
     }
     load(); // run it, run it
@@ -74,7 +77,7 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
             console.log("Plant tree status: ", await plantTree(country.properties.landId, country.properties.i, country.properties.j, inventory[i].materialId))
             await subtractInventory(inventory[i].id)
             let tile = await loadTileSlots(landSlotProperties)
-            let inv = await listInventory(principal)
+            let inv = await listInventory(characterId)
             setTileplant(tile)
             setInventory(inv.ok)
           }
@@ -82,7 +85,6 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
       }
     });
   }
-  console.log(inventory)
   return (
     <>
       {mode === 'farm' ? <>
@@ -168,29 +170,4 @@ const CreateBound = ({ latlng, tileplant }) => {
   )
 }
 
-// const ShowPlant = ({ inventory }) => {
-
-//   return (
-//     <>
-//       {inventory.length > 0 ? <div>
-//         {inventory.map(plant => {
-//           if (plant.position.length > 0) {
-//             console.log("plant: ", plant)
-//             
-//             return (
-//               plant.position.map((item) => {
-//                 console.log("item: ", item)
-//                 return (
-//                   <ImageOverlay key={Math.floor(Math.random() * 9999)} url={pathItem}
-//                     bounds={[[item[0][0][1], item[0][0][0]], [item[0][2][1], item[0][2][0]]]} />
-//                 )
-//               }))
-//           }
-//           else
-//             return null
-//         })}
-//       </div> : null}
-//     </>
-//   )
-// }
 export default Farm;

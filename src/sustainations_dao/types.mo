@@ -340,6 +340,15 @@ module {
     indexColumn : Nat;
     utms : [[Nat]]; 
   };
+
+  public type NationGeometry = {
+    id : Text;
+    zoneNumber : Nat;
+    zoneLetter : Text;
+    i : Nat;
+    j : Nat;
+    coordinates: [[[Float]]];
+  };
 //-------------------------Farm------------------------------//
   public type Tile = {
     id : Text;

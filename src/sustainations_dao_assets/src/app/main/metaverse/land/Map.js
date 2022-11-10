@@ -1,4 +1,5 @@
 import mapData from "./data/pangea-1.json";
+import { useSelector } from "react-redux";
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { GeoJSON, useMap } from "react-leaflet";
 import Back from "./Back";
@@ -6,6 +7,8 @@ import Footer from "./footer";
 import "./styles.css";
 import Farm from "./Farm"
 import Loading from "./loading"
+import { selectUser } from "app/store/userSlice";
+
 
 import {
   buyLandSlot,
@@ -22,6 +25,7 @@ import {
   unionLandSlots,
   plantTree
 } from '../LandApi'
+import { ConfigurationServicePlaceholders } from "aws-sdk/lib/config_service_placeholders";
 
 var country = null
 var numRandom = 3
@@ -36,11 +40,12 @@ export var mapZoom = 0
 
 const Map = () => {
 
-
+  const user = useSelector(selectUser)
+  const { principal } = user;
   const loadNations = async (i, j) => {
     landData = await loadLandSlotsfromCenter(i, j);
     nationData = await loadNationsfromCenter(i, j);
-    console.log(await plantTree("97-1249", 97, 1249, "m3tomato_seed"));
+    (await plantTree("97-1249", 97, 1249, "m3tomato_seed"));
   }
   const map = useMap()
   const [purchaseBtn, setPurchaseBtn] = useState(true)
@@ -104,24 +109,35 @@ const Map = () => {
   }
   const onEachLandSlot = (country, layer) => {
     // set style for each poligon
-    layer.setStyle({
-      color: "#002E5E",
-      fillColor: "#002E5E",
-      fillOpacity: ".75"
-    })
+    if (country.properties.id === principal) {
+      layer.setStyle({
+        color: "#002E5E",
+        fillColor: "#002E5E",
+        fillOpacity: ".75"
+      })
+    } else {
+      layer.setStyle({
+        color: "#48c3c8",
+        fillColor: "#48c3c8",
+        fillOpacity: ".75"
+      })
+    }
+
+
     layer.on({
       click: async (e) => {
-        mapFeature = await loadTileSlots(country.properties)
-        landSlotProperties = country.properties
-        setModeBtn(true)
-        setPurchaseBtn(false)
-        setFarmLocation(e.latlng)
+        if (country.properties.id === principal) {
+          mapFeature = await loadTileSlots(country.properties)
+          landSlotProperties = country.properties
+          setModeBtn(true)
+          setPurchaseBtn(false)
+          setFarmLocation(e.latlng)
+        }
       }
     });
     // handle click on poligon
   }
 
-  console.log(landSlotProperties)
   const handleChangeMode = () => {
     map.setView(farmLocation, 18)
     isFarmMode = true
@@ -194,7 +210,7 @@ const Map = () => {
     await updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom)
     map.setView([landSlotRand.geometry.coordinates[0][0][1], landSlotRand.geometry.coordinates[0][0][0]], 13)
     numRandom -= 1
-    console.log(await updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom))
+    (await updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom))
     setLoading("none")
   }
 
@@ -314,8 +330,8 @@ const Map = () => {
               </div>
             </div> : null}
         </div>
-        {mode === 'farm' && <Farm mapFeatures={mapFeature} landSlotProperties = {landSlotProperties} />}
-      </div> : <Loading/>}
+        {mode === 'farm' && <Farm mapFeatures={mapFeature} landSlotProperties={landSlotProperties} />}
+      </div> : <Loading />}
 
       <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />

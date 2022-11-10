@@ -91,7 +91,13 @@ async function loadNationsfromCenter(x, y) {
   for (let nation of nations) {
     let feature = {
       type: "Feature",
-      properties: { "zoneNumber": nation.zoneNumber, "zoneLetter": nation.zoneLetter, "i": nation.i, "j": nation.j },
+      properties: {
+        "id":nation.id,
+        "zoneNumber": nation.zoneNumber, 
+        "zoneLetter": nation.zoneLetter, 
+        "i": nation.i, 
+        "j": nation.j
+      },
       geometry: {
         type: "Polygon", coordinates: nation.coordinates,
       }
@@ -270,7 +276,10 @@ async function plantTree(landId, indexRow, indexColumn, materialId) {
   return result;
 }
 
+// async function readCharacter() {
+//   const { user } = store.getState();
 
+// }
 // Draw polygon 
 
 
