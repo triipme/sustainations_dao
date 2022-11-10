@@ -85,7 +85,6 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
       }
     });
   }
-  console.log(inventory)
   return (
     <>
       {mode === 'farm' ? <>
