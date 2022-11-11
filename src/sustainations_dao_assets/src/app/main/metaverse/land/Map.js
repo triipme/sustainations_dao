@@ -26,15 +26,15 @@ import {
   plantTree
 } from '../LandApi'
 import { ConfigurationServicePlaceholders } from "aws-sdk/lib/config_service_placeholders";
+import BigMap from "./BigMap";
+import Land from "./Land";
+import { useNavigate } from "react-router-dom";
 
 var country = null
 var numRandom = 3
 var landData = []
 var nationData = []
-var init = 0
-var mapFeature = null
 var landSlotRand = null
-var isFarmMode = false
 var landSlotProperties = null
 export var mapZoom = 0
 
@@ -52,34 +52,33 @@ const Map = () => {
   const [modeBtn, setModeBtn] = useState(false)
   const [alert, setAlert] = useState(false)
   const [render, setRender] = useState(true)
-  const [farmLocation, setFarmLocation] = useState(null)
+  const [farmProperties, setFarmProperties] = useState(null)
   const [mode, setMode] = useState('land')
   const [loading, setLoading] = useState("loadingmap")
-  if (mode === 'farm')
-    isFarmMode = true
-  else isFarmMode = false
+  const navigate = useNavigate()
   // get lnglat center
   const [position, setPosition] = useState(() => map.getCenter())
 
   mapZoom = map.getZoom()
   // position is value coord center screen
-  const initial = async () => {
-    if (loading === "loadingmap") {
-      country = await loadNation();
-      if (country === undefined) {
-        await loadNations(0, 0)
-        setLoading("none")
-      } else {
-        await loadNations(Number(country.indexRow), Number(country.indexColumn));
-        map.setView([Number(nationData[0].geometry.coordinates[0][0][1]), Number(nationData[0].geometry.coordinates[0][0][0])], 13)
-        setLoading("none")
+  useEffect(() => {
+    const initial = async () => {
+      if (loading === "loadingmap") {
+        country = await loadNation();
+        if (country === undefined) {
+          await loadNations(0, 0)
+          setLoading("none")
+        } else {
+          await loadNations(Number(country.indexRow), Number(country.indexColumn));
+          map.setView([Number(nationData[0].geometry.coordinates[0][0][1]), Number(nationData[0].geometry.coordinates[0][0][0])], 13)
+          setLoading("none")
+        }
       }
     }
-  }
-  initial()
-
+    initial()
+  }, [])
+  
   let index = getLandIndex(position, landData)
-
 
   const onMove = useCallback(async () => {
     setPosition(map.getCenter())
@@ -126,12 +125,11 @@ const Map = () => {
 
     layer.on({
       click: async (e) => {
+        console.log(country.properties);
         if (country.properties.id === principal) {
-          mapFeature = await loadTileSlots(country.properties)
-          landSlotProperties = country.properties
           setModeBtn(true)
           setPurchaseBtn(false)
-          setFarmLocation(e.latlng)
+          setFarmProperties(country.properties)
         }
       }
     });
@@ -139,9 +137,10 @@ const Map = () => {
   }
 
   const handleChangeMode = () => {
-    map.setView(farmLocation, 18)
-    isFarmMode = true
-    setMode("farm")
+    console.log(farmProperties);
+    navigate('/metaverse/farm',{
+      state: farmProperties
+    })
   }
 
   const handlePurchase = async () => {
@@ -213,31 +212,12 @@ const Map = () => {
     (await updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom))
     setLoading("none")
   }
-
-  const BigMap = () => {
-    const onEachLand = (country, layer) => {
-      layer.setStyle({
-        color: "#002E5E",
-        fillColor: "#9ed6ad",
-        fillOpacity: isFarmMode ? "0" : "1"
-      })
-
-    }
-    return (
-      <div>
-
-        <GeoJSON data={mapData.features} onEachFeature={onEachLand} />
-
-      </div>
-    )
-  }
   return (
     <>
-      {loading !== "loadingmap" ? <div style={{ height: "100%", backgroundColor: isFarmMode ? "gray" : "#8ab4f8" }}>
-        <BigMap></BigMap>
+      {loading !== "loadingmap" ?
         <div>
-          {mode === 'land' ?
-            <div>
+          <BigMap />
+          <div>
               <Back />
               <Footer />
               <GeoJSON key={Math.floor(Math.random() * 99999)} data={nationData} onEachFeature={onEachLandSlot} />
@@ -328,22 +308,16 @@ const Map = () => {
                   }
                 </div> : null}
               </div>
-            </div> : null}
-        </div>
-        {mode === 'farm' && <Farm mapFeatures={mapFeature} landSlotProperties={landSlotProperties} />}
+            </div> 
       </div> : <Loading />}
-
-      <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
-      <meta name="viewport" content="width=device-width, initial-scale=1"></meta>
-      <link
-        rel="stylesheet"
-        href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
-        integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
-        crossOrigin=""
-      />
     </>
   )
 }
 
-export default Map;
+const MapContainer = ()=>{
+  return <Land>
+    <Map />
+  </Land>
+}
+
+export default MapContainer;

@@ -56,8 +56,9 @@ async function buyLandSlot() {
 // random LandSlot
 async function randomLandSlot() {
   const { user } = store.getState();
-  const func = async () => await user.actor.randomLandSlot();
-  const result = (await func()).ok; 
+  const func = await user.actor.randomLandSlot()
+  const result = func?.ok; 
+  console.log(func);
   let feature = {
     type: "Feature",
     properties: { "zoneNumber": result.zoneNumber, "zoneLetter": result.zoneLetter, "i": result.i, "j": result.j },
@@ -80,32 +81,34 @@ async function createLandSlot(i, j,nationUTMS) {
 
 async function loadNationsfromCenter(x, y) {
   const { user } = store.getState();
-  const func = async () => await user.actor.loadNationsArea(
+  const func = await user.actor.loadNationsArea(
     x - 100, y - 100, x + 100, y + 100
   );
-  const nations = (await func()).ok;
+  const nations = func?.ok;
   // let zone = 20
   var result = {
     features: []
   };
-  for (let nation of nations) {
-    let feature = {
-      type: "Feature",
-      properties: {
-        "id":nation.id,
-        "zoneNumber": nation.zoneNumber, 
-        "zoneLetter": nation.zoneLetter, 
-        "i": nation.i, 
-        "j": nation.j
-      },
-      geometry: {
-        type: "Polygon", coordinates: nation.coordinates,
+  if (nations) {
+    for (let nation of nations) {
+      let feature = {
+        type: "Feature",
+        properties: {
+          "id":nation.id,
+          "zoneNumber": nation.zoneNumber, 
+          "zoneLetter": nation.zoneLetter, 
+          "i": nation.i, 
+          "j": nation.j
+        },
+        geometry: {
+          type: "Polygon", coordinates: nation.coordinates,
+        }
       }
+      result.features.push(feature)
     }
-    result.features.push(feature)
   }
   console.log(result.features)
-  return result.features
+  return nations ? result.features : [];
 }
 
 function utm2lonlat(utmX, utmY) {
@@ -271,8 +274,8 @@ async function loadNation() {
 // Plant Tree
 async function plantTree(landId, indexRow, indexColumn, materialId) {
   const { user } = store.getState();
-  const func = async () => await user.actor.plantTree(landId, indexRow, indexColumn, materialId);
-  const result = (await func()).ok;
+  const func = await user.actor.plantTree(landId, indexRow, indexColumn, materialId);
+  const result = func?.ok;
   return result;
 }
 
