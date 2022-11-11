@@ -3753,6 +3753,29 @@ shared({caller = owner}) actor class SustainationsDAO({ledgerId : ?Text; georust
   };
 
 
+  public shared ({ caller }) func addInventory(userId : Text, amount : Nat) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    for ((k,character) in state.characters.entries()) {
+      if (Principal.toText(character.userId) == userId) {
+        for (material in state.materials.vals()) {
+          let characterCollectMaterial : Types.CharacterCollectsMaterials = {
+            id = await createUUID();
+            characterId = character.id;
+            materialId = material.id;
+            amount = amount;
+          };
+          let w = await createCharacterCollectsMaterials(characterCollectMaterial);
+        };
+        let rsInven = await createInventory(character.id);
+        let reset_last = await resetCharacterCollectsMaterials(character.id);
+      };
+    };
+    #ok("Success");
+  };
+
+
   public type Inventory = {
     id : Text;
     characterId : Text;
