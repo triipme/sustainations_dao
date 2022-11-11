@@ -276,7 +276,10 @@ async function plantTree(landId, indexRow, indexColumn, materialId) {
   return result;
 }
 
+// async function readCharacter() {
+//   const { user } = store.getState();
 
+// }
 // Draw polygon 
 
 

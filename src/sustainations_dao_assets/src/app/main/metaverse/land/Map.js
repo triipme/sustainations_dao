@@ -41,12 +41,11 @@ export var mapZoom = 0
 const Map = () => {
 
   const user = useSelector(selectUser)
-  console.log("user: ", user)
   const { principal } = user;
   const loadNations = async (i, j) => {
     landData = await loadLandSlotsfromCenter(i, j);
     nationData = await loadNationsfromCenter(i, j);
-    console.log(await plantTree("97-1249", 97, 1249, "m3tomato_seed"));
+    (await plantTree("97-1249", 97, 1249, "m3tomato_seed"));
   }
   const map = useMap()
   const [purchaseBtn, setPurchaseBtn] = useState(true)
@@ -109,7 +108,6 @@ const Map = () => {
     })
   }
   const onEachLandSlot = (country, layer) => {
-    console.log(country)
     // set style for each poligon
     if (country.properties.id === principal) {
       layer.setStyle({
@@ -140,7 +138,6 @@ const Map = () => {
     // handle click on poligon
   }
 
-  console.log(landSlotProperties)
   const handleChangeMode = () => {
     map.setView(farmLocation, 18)
     isFarmMode = true
@@ -213,7 +210,7 @@ const Map = () => {
     await updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom)
     map.setView([landSlotRand.geometry.coordinates[0][0][1], landSlotRand.geometry.coordinates[0][0][0]], 13)
     numRandom -= 1
-    console.log(await updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom))
+    (await updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom))
     setLoading("none")
   }
 
