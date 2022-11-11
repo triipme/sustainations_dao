@@ -4,9 +4,20 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import DfinityAgentService from '../../auth/services/dfinityAgentService';
+import { useConnect } from "@connect2ic/react";
 
 function SignInPage() {
   const [authClient, setAuthClient] = useState(undefined);
+
+  const { connect } = useConnect({
+    onConnect: (data) => {
+      console.log("connected!", data);
+      DfinityAgentService.login();
+    },
+    onDisconnect: () => {
+      console.log("disconnected!")
+    }
+  });
 
   useLayoutEffect(() => {
     (async () => {
@@ -64,6 +75,27 @@ function SignInPage() {
               onClick={() => handleLogin()}
             >
               Sign in
+            </Button>
+          </div>
+          <div className="flex items-center mt-16">
+            <div className="flex-auto mt-px border-t" />
+            <Typography className="mx-8" color="text.secondary">
+              Or
+            </Typography>
+            <div className="flex-auto mt-px border-t" />
+          </div>
+          <div className="flex items-center">
+            <Button
+              variant="contained"
+              color="secondary"
+              className="w-full mt-16 flex-auto"
+              style={{color: '#ffffff'}}
+              aria-label="Use Infinity Wallet"
+              type="button"
+              size="large"
+              onClick={() => connect('infinity')}
+            >
+              Use Infinity Wallet
             </Button>
           </div>
         </div>
