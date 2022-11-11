@@ -16,6 +16,7 @@ function HomeTab() {
   const user = useSelector(selectUser);
   const [loading, setLoading] = useState(true)
   const [purchasedLandSlots, setPurchasedLandSlots] = useState(0)
+  const [plantedTreesCount, setPlantedTreesCount] = useState(0)
 
   const analysis = useAsyncMemo(async () => {
     setLoading(true);
@@ -26,8 +27,10 @@ function HomeTab() {
   }, [user]);
   useEffect(() => {
     async function fetchData() {
-      const result = await user.actor.purchasedLandSlotsCounter();
-      setPurchasedLandSlots(result.ok);
+      const landslots = await user.actor.purchasedLandSlotsCounter();
+      setPurchasedLandSlots(landslots.ok);
+      const trees = await user.actor.plantedTreesCounter();
+      setPlantedTreesCount(trees.ok);
     }
     fetchData();
   }, [user]);
@@ -91,6 +94,9 @@ function HomeTab() {
       </motion.div>
       <motion.div variants={item}>
         <OpenProject counter={purchasedLandSlots} objectLabel="Land Slots" counterLabel="Purchased" />
+      </motion.div>
+      <motion.div variants={item}>
+        <InvestedProject counter={plantedTreesCount} objectLabel="Trees" counterLabel="Planted" />
       </motion.div>
       <motion.div variants={item} className="sm:col-span-2 md:col-span-4">
         <GithubIssuesWidget />
