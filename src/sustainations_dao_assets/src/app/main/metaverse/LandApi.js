@@ -35,6 +35,15 @@ function listInventory(characterId) {
   });
 };
 
+// list Inventory
+function subtractInventory(inventoryId) {
+  return new Promise((resolve, reject) => {
+    const { user } = store.getState();
+    const rs = user.actor.subtractInventory(inventoryId);
+    resolve(rs);
+  });
+};
+
 
 // buy LandSlot
 async function buyLandSlot() {
@@ -200,24 +209,33 @@ async function loadTileSlots(properties) {
     features: []
   };
   let d = 100
-  let zone = Number(properties.zone)
+  let zone = Number(properties.zoneNumber)
   let x = Number(properties.i) * 10
   let y = Number(properties.j) * 10
 
   const { user } = store.getState();
-  const  func = async () => await user.actor.loadTilesArea(x,y,x+10,y+10);
+  const  func = async () => await user.actor.loadTilesArea(x,y,x+9,y+9);
   const tiles = (await func()).ok;
-  console.log("Tiles--------------------");
-  console.log(tiles);
+  
 
-  for (let i = x; i < x + 10; i++) {
-    for (let j = y; j < y + 10; j++) {
-      let latlng1 = utm2lonlat(d * j, d * i);
-      let latlng2 = utm2lonlat(d * (j + 1), d * (i + 1));
-      let landId = properties.i.toString() + "-" + properties.j.toString();
+  var result = {
+    features: []
+  };
+  for (let tile of tiles) {
+    let latlng1 = utm2lonlat(d * Number(tile.indexColumn), d * Number(tile.indexRow));
+      let latlng2 = utm2lonlat(d * (Number(tile.indexColumn) + 1), d * (Number(tile.indexRow) + 1));
       let feature = {
         type: "Feature",
-        properties: { "zone": zone, "i": i, "j": j, "landId" : landId},
+        properties: { 
+          "zone": zone, 
+          "i": Number(tile.indexRow), 
+          "j": Number(tile.indexColumn), 
+          "landId" : tile.landSlotId,
+          "tileId" : tile.id,
+          "name" : tile.name,
+          "status" : tile.status,
+          "remainingTime" : Number(tile.remainingTime)
+        },
         geometry: {
           type: "Polygon", coordinates: [
             [
@@ -231,7 +249,6 @@ async function loadTileSlots(properties) {
         }
       };
       result.features.push(feature)
-    }
   }
   return result.features
 }
@@ -266,6 +283,7 @@ export {
   listItemInventory,
   getUserInfo,
   listInventory,
+  subtractInventory,
   listCharacters,
   randomLandSlot,
   createLandSlot,

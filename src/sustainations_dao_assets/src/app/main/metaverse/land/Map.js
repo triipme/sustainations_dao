@@ -113,6 +113,8 @@ const Map = () => {
     layer.on({
       click: async (e) => {
         mapFeature = await loadTileSlots(country.properties)
+        console.log("country.properties")
+        console.log(country.properties)
         setModeBtn(true)
         setPurchaseBtn(false)
         setFarmLocation(e.latlng)
