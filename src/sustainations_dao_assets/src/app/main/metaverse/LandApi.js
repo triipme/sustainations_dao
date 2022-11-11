@@ -3,7 +3,7 @@ import proj4Src from 'proj4';
 import polygonClipping from 'polygon-clipping';
 // call api
 // use func union in polygon-clipping
-function unionLandSlots(utm1,utm2) {
+function unionLandSlots(utm1, utm2) {
   const rs = polygonClipping.union(utm1, utm2);
   return rs;
 };
@@ -57,7 +57,7 @@ async function buyLandSlot() {
 async function randomLandSlot() {
   const { user } = store.getState();
   const func = async () => await user.actor.randomLandSlot();
-  const result = (await func()).ok; 
+  const result = (await func()).ok;
   let feature = {
     type: "Feature",
     properties: { "zoneNumber": result.zoneNumber, "zoneLetter": result.zoneLetter, "i": result.i, "j": result.j },
@@ -70,9 +70,9 @@ async function randomLandSlot() {
 }
 
 // create LandSlot
-async function createLandSlot(i, j,nationUTMS) {
+async function createLandSlot(i, j, nationUTMS) {
   const { user } = store.getState();
-  const func = async () => await user.actor.createLandSlot(parseInt(i), parseInt(j), nationUTMS,20, "N", 1000);
+  const func = async () => await user.actor.createLandSlot(parseInt(i), parseInt(j), nationUTMS, 20, "N", 1000);
   const result = (await func()).ok;
   return result;
 };
@@ -80,11 +80,16 @@ async function createLandSlot(i, j,nationUTMS) {
 
 async function loadNationsfromCenter(x, y) {
   const { user } = store.getState();
-  const func = async () => await user.actor.loadNationsArea(
+  // const func = async () => await user.actor.loadNationsArea(
+  //   x - 100, y - 100, x + 100, y + 100
+  // );
+  // const nations = (await func()).ok;
+  // let zone = 20
+  const nats = await user.actor.loadNationsArea(
     x - 100, y - 100, x + 100, y + 100
   );
-  const nations = (await func()).ok;
-  // let zone = 20
+  console.log(nats)
+  const nations = nats.ok
   var result = {
     features: []
   };
@@ -92,10 +97,10 @@ async function loadNationsfromCenter(x, y) {
     let feature = {
       type: "Feature",
       properties: {
-        "id":nation.id,
-        "zoneNumber": nation.zoneNumber, 
-        "zoneLetter": nation.zoneLetter, 
-        "i": nation.i, 
+        "id": nation.id,
+        "zoneNumber": nation.zoneNumber,
+        "zoneLetter": nation.zoneLetter,
+        "i": nation.i,
         "j": nation.j
       },
       geometry: {
@@ -122,9 +127,9 @@ async function loadLandSlotsfromCenter(x, y) {
   let result = {
     features: []
   };
-  
-  for (let i = Math.max(x - 25, 0); i <= Math.min(x + 25, 1500 - 1); i++) {
-    for (let j = Math.max(y - 25, 0); j <= Math.min(y + 25, 1500 - 1); j++) {
+
+  for (let i = Math.max(x - 100, 0); i <= Math.min(x + 100, 1500 - 1); i++) {
+    for (let j = Math.max(y - 100, 0); j <= Math.min(y + 100, 1500 - 1); j++) {
 
       let xIndex = Number(i)
       let yIndex = Number(j)
@@ -220,7 +225,7 @@ async function loadTileSlots(properties) {
   let y = Number(properties.j) * 10
 
   const { user } = store.getState();
-  const  func = async () => await user.actor.loadTilesArea(x,y,x+9,y+9);
+  const func = async () => await user.actor.loadTilesArea(x, y, x + 9, y + 9);
   const tiles = (await func()).ok;
 
   var result = {
@@ -232,15 +237,15 @@ async function loadTileSlots(properties) {
     let landId = properties.i.toString() + "-" + properties.j.toString();
     let feature = {
       type: "Feature",
-      properties: { 
-        "zone": zone, 
-        "i": Number(tile.indexRow), 
-        "j": Number(tile.indexColumn), 
-        "landId" : landId,
-        "tileId" : tile.id,
-        "name" : tile.name,
-        "status" : tile.status,
-        "remainingTime" : Number(tile.remainingTime)
+      properties: {
+        "zone": zone,
+        "i": Number(tile.indexRow),
+        "j": Number(tile.indexColumn),
+        "landId": landId,
+        "tileId": tile.id,
+        "name": tile.name,
+        "status": tile.status,
+        "remainingTime": Number(tile.remainingTime)
       },
       geometry: {
         type: "Polygon", coordinates: [
@@ -253,8 +258,8 @@ async function loadTileSlots(properties) {
           ]
         ]
       }
-      };
-      result.features.push(feature)
+    };
+    result.features.push(feature)
   }
   console.log(result.features)
   return result.features

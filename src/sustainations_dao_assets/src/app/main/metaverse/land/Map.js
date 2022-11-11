@@ -31,7 +31,6 @@ var country = null
 var numRandom = 3
 var landData = []
 var nationData = []
-var init = 0
 var mapFeature = null
 var landSlotRand = null
 var isFarmMode = false
@@ -83,13 +82,14 @@ const Map = () => {
 
   const onMove = useCallback(async () => {
     setPosition(map.getCenter())
-    if (index != undefined) {
-      loadNations(index[0], index[1])
-    }
+    
   }, [map])
 
   useEffect(() => {
     map.on('move', onMove)
+    if (index != undefined) {
+      loadNations(index[0], index[1])
+    }
     return () => {
       map.off('move', onMove)
     }
