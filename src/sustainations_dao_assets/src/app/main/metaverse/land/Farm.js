@@ -226,46 +226,68 @@ function FarmContainer() {
   const { state: properties } = useLocation();
   const [farmFeatures, setFarmFeatures] = useState();
   const [farmProperties, setFarmProperties] = useState(properties);
-  useEffect(() => {
-
-  })
+  const [isDone, setIsDone] = useState(false)
+  console.log("properties", properties)
   useEffect(() => {
     (async () => {
-    
-      // if (!farmProperties) {
-      // if not click from land page ,then get my first land
-      // myFarmProperties = {
-      //   id: "ce5rw-6vk5m-apk4a-hzex3-csd2n-wmsgi-6uzcn-rgf54-epapm-5ozzf-3qe",
-      //   zoneNumber: 20n,
-      //   zoneLetter: "N",
-      //   i: 409n,
-      //   j: 598n
-      // };
-      // setFarmProperties(myFarmProperties);
-      // }
-      let myFarm= farmProperties
-      if (!farmProperties) {
-        // if not click from land page ,then get my first land
+      if (farmProperties) {
+        let myFarmProperties = farmProperties;
+        setFarmProperties(myFarmProperties);
+        setFarmFeatures(await loadTileSlots(myFarmProperties));
+        setIsDone(true)
+      } else {
         let myFarmProperties = await loadUserLandSlots()
+        console.log("run")
         console.log("myFarmProperties ", myFarmProperties)
-        myFarm = {
+        if (myFarmProperties) {
+          let myFarm = {
             id: myFarmProperties[0].id,
             zoneNumber: myFarmProperties[0].zoneNumber,
             zoneLetter: myFarmProperties[0].zoneLetter,
             i: myFarmProperties[0].indexRow,
             j: myFarmProperties[0].indexColumn,
           };
-        setFarmProperties(myFarm);
+          setFarmProperties(myFarm);
+          console.log("run")
+
+          setFarmFeatures(await loadTileSlots(myFarm));
+          console.log("run")
+
+        }
+        setIsDone(true)
       }
-      setFarmFeatures(await loadTileSlots(myFarm));
     })();
   }, []);
+  console.log("is done: ", isDone)
   return (
     <Land>
-      {farmFeatures ? (
+      {isDone === true ? (
         <>
-          <BigMap />
-          <Farm mapFeatures={farmFeatures} landSlotProperties={farmProperties} />
+          {farmFeatures ? <>
+            <BigMap />
+            <Farm mapFeatures={farmFeatures} landSlotProperties={farmProperties} />
+          </> : (
+            <div style={{
+              backgroundColor: "#111827", width: "100%", height: "100%", display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "white"
+            }}>
+              <div>
+                <img style={{
+
+                  display: "block",
+                  marginLeft: "auto",
+                  marginRight: "auto",
+                  width: "50%"
+                }} src="metaverse/sustainations-logo.png" />
+                <h1 style={{ display: "block", textAlign: "center" }}>YOU DON'T HAVE ANY LAND SLOT !!!</h1><br></br>
+                <h1 style={{ textAlign: "center", color: "white", cursor: "pointer", backgroundColor: "orange", margin: "0 200px" }} onClick={() => {
+                  window.location.replace("/metaverse");
+                }}>Click here to go back</h1>
+              </div>
+            </div>
+          )}
         </>
       ) : (
         <Loading />

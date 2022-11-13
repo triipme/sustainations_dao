@@ -72,6 +72,9 @@ function HomeTab() {
         <OpenProject counter={purchasedLandSlots} objectLabel="Land Slots" counterLabel="Purchased" />
       </motion.div>
       <motion.div variants={item}>
+        <InvestedProject counter={plantedTreesCount} objectLabel="Trees" counterLabel="Planted" />
+      </motion.div>
+      <motion.div variants={item}>
         <OpenProject counter={analysis.gamePlayCount.miniGamePlayCount} objectLabel="Mini Game" counterLabel="Turns" />
       </motion.div>
       <motion.div variants={item}>
@@ -94,9 +97,6 @@ function HomeTab() {
       </motion.div>
       <motion.div variants={item}>
         <InvestedProject counter={analysis.products.invested} objectLabel="Invested Products" counterLabel="Products" />
-      </motion.div>
-      <motion.div variants={item}>
-        <InvestedProject counter={plantedTreesCount} objectLabel="Trees" counterLabel="Planted" />
       </motion.div>
       <motion.div variants={item} className="sm:col-span-2 md:col-span-4">
         <GithubIssuesWidget />
