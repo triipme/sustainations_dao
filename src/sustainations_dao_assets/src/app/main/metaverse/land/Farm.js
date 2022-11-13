@@ -4,7 +4,7 @@ import { selectUser } from "app/store/userSlice";
 import { GeoJSON, useMap, useMapEvents, ImageOverlay, MapContainer } from "react-leaflet";
 import "./styles.css";
 import UIFarm from "./FarmUI";
-import { subtractInventory, loadTileSlots, listInventory, plantTree } from "../LandApi";
+import { subtractInventory, loadTileSlots, listInventory, plantTree, loadUserLandSlots } from "../LandApi";
 import Land from "./Land";
 import BigMap from "./BigMap";
 import Loading from "./loading";
@@ -20,10 +20,13 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
   const [loading, setLoading] = useState(false)
   const map = useMap();
   const navigate = useNavigate();
+  console.log("mapFeatures, landSlotProperties", mapFeatures, landSlotProperties)
   useEffect(() => {
     const load = async () => {
       const characterid = await user.actor.readCharacter();
       setChacterId(characterid.ok[0]);
+      console.log(characterid.ok[0])
+
       const inv = await listInventory(characterid.ok[0]);
       console.log(inv.ok)
       setInventory(inv.ok);
@@ -89,10 +92,11 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
           ) {
             setLoading(true)
             positionTree = country.properties.i * 10 + country.properties.j
-            console.log(country.properties.landId,
+            console.log("Country: ", country.properties.landId,
               country.properties.i,
               country.properties.j,
               inventory[i].materialId)
+
             console.log(
               "Plant tree status: ",
               await plantTree(
@@ -223,20 +227,37 @@ function FarmContainer() {
   const [farmFeatures, setFarmFeatures] = useState();
   const [farmProperties, setFarmProperties] = useState(properties);
   useEffect(() => {
+
+  })
+  useEffect(() => {
     (async () => {
-      let myFarmProperties = farmProperties;
+    
+      // if (!farmProperties) {
+      // if not click from land page ,then get my first land
+      // myFarmProperties = {
+      //   id: "ce5rw-6vk5m-apk4a-hzex3-csd2n-wmsgi-6uzcn-rgf54-epapm-5ozzf-3qe",
+      //   zoneNumber: 20n,
+      //   zoneLetter: "N",
+      //   i: 409n,
+      //   j: 598n
+      // };
+      // setFarmProperties(myFarmProperties);
+      // }
+      let myFarm= farmProperties
       if (!farmProperties) {
         // if not click from land page ,then get my first land
-        myFarmProperties = {
-          id: "ce5rw-6vk5m-apk4a-hzex3-csd2n-wmsgi-6uzcn-rgf54-epapm-5ozzf-3qe",
-          zoneNumber: 20n,
-          zoneLetter: "N",
-          i: 409n,
-          j: 598n
-        };
-        setFarmProperties(myFarmProperties);
+        let myFarmProperties = await loadUserLandSlots()
+        console.log("myFarmProperties ", myFarmProperties)
+        myFarm = {
+            id: myFarmProperties[0].id,
+            zoneNumber: myFarmProperties[0].zoneNumber,
+            zoneLetter: myFarmProperties[0].zoneLetter,
+            i: myFarmProperties[0].indexRow,
+            j: myFarmProperties[0].indexColumn,
+          };
+        setFarmProperties(myFarm);
       }
-      setFarmFeatures(await loadTileSlots(myFarmProperties));
+      setFarmFeatures(await loadTileSlots(myFarm));
     })();
   }, []);
   return (
