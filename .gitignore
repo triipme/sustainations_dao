@@ -27,3 +27,4 @@ target/
 src/sustainations_dao/.env.mo
 sustainations_dao.wasm
 sustainations_dao.wasm.gz
+yarn.lock
