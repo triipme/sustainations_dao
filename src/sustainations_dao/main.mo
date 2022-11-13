@@ -4499,6 +4499,10 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
 
   };
 
+  public query func plantedTreesCounter() : async Response<Nat> {
+    #ok(state.plants.size());
+  };
+
   // Tile
   public shared ({ caller }) func createTile(landId : Text, indexRow : Nat, indexColumn : Nat, objectId : Text) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
