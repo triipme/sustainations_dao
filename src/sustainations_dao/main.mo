@@ -4642,13 +4642,13 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
     "NotFound";
   };
   
-  public shared({caller}) func addICP(uid : Text) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
-    };
-    let reward = transferFee * 99;
-    let receipt = await refund(reward, Principal.fromText(uid));
+  // public shared({caller}) func addICP(uid : Text) : async Response<Text> {
+  //   if(Principal.toText(caller) == "2vxsx-fae") {
+  //     return #err(#NotAuthorized);//isNotAuthorized
+  //   };
+  //   let reward = transferFee * 99;
+  //   let receipt = await refund(reward, Principal.fromText(uid));
 
-    #ok("GGFF");
-  };
+  //   #ok("GGFF");
+  // };
 };
