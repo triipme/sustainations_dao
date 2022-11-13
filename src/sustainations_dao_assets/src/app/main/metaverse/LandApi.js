@@ -260,13 +260,22 @@ async function loadTileSlots(properties) {
   return result.features
 }
 
+// load User Nation
 async function loadNation() {
   const { user } = store.getState();
   const func = async () => await user.actor.readNation();
   const result = (await func()).ok;
   return result;
-
 };
+
+// load User landSlots
+async function loadUserLandSlots() {
+  const { user } = store.getState();
+  const func = async () => await user.actor.listUserLandSlots();
+  const result = (await func()).ok;
+  return result;
+};
+
 
 // Plant Tree
 async function plantTree(landId, indexRow, indexColumn, materialId) {
@@ -276,11 +285,7 @@ async function plantTree(landId, indexRow, indexColumn, materialId) {
   return result;
 }
 
-// async function readCharacter() {
-//   const { user } = store.getState();
 
-// }
-// Draw polygon 
 
 
 export {
@@ -299,6 +304,7 @@ export {
   getLandIndex,
   loadTileSlots,
   loadNation,
+  loadUserLandSlots,
   unionLandSlots,
   plantTree
 }
