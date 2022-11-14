@@ -1,5 +1,4 @@
 import "./styles.css";
-import FuseLoading from "@fuse/core/FuseLoading";
 const Loading = () => {
   return (
     <>
@@ -9,12 +8,18 @@ const Loading = () => {
         justifyContent: "center",
         color: "white"
       }}>
-        <div style={{width: "120px" }}>
+        <div style={{ width: "120px" }}>
           <img style={{
             width: "120px",
             height: "120px",
             display: "block"
           }} src="metaverse/sustainations-logo.png" />
+          <h4 style={{
+            width: "120px",
+            display: "block",
+            margin: "20px 0",
+            textAlign: "center"
+          }}>PLEASE WAIT</h4>
           <img style={{
             width: "50px",
             height: "50px",
