@@ -8,6 +8,7 @@ import { subtractInventory, loadTileSlots, listInventory, plantTree, loadUserLan
 import Land from "./Land";
 import BigMap from "./BigMap";
 import Loading from "./loading";
+import Back from "./Back"
 import { useLocation, useNavigate } from "react-router-dom";
 
 var inventoryStatus = { dig: false };
@@ -265,6 +266,7 @@ function FarmContainer() {
         <>
           {farmFeatures ? <>
             <BigMap />
+            {/* <Back /> */}
             <Farm mapFeatures={farmFeatures} landSlotProperties={farmProperties} />
           </> : (
             <div style={{
