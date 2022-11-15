@@ -1,13 +1,16 @@
+import "./styles.css";
 
 const UIFarm = () => {
   return (
     <>
       <ul style={{ zIndex: 10000, position: "fixed", width: "100vw", margin: "2vh", top: "20px" }}>
         <li>
+          <div>
           <img src="metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-27.png"></img>
+          </div>
         </li>
         <li>
-          <img src="metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-28.png"></img>
+            <img src="metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-28.png"></img>
         </li>
         <li>
           <img src="metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-29.png"></img>
