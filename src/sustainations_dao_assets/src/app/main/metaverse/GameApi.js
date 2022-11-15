@@ -198,7 +198,7 @@ async function createInventory(characterId) {
 
 async function openInventory(characterId){
   const { user } = store.getState();
-  const func = async () => await user.actor.openInventory(characterId);
+  const func = async () => await user.actor.listInventory(characterId);
   const rs = (await func()).ok;
   return rs;
 };
@@ -247,6 +247,14 @@ async function listSceneQuests(idQuest) {
   return list_scene_quest;
 }
 
+async function addAllInventory(characterId, amount) {
+  return new Promise((resolve, reject) => {
+    const { user } = store.getState();
+    const rs = user.actor.addAllInventory(characterId, amount);
+    resolve(rs);
+  });
+};
+
 
 
 
@@ -279,5 +287,6 @@ export {
   getRemainingTime,
   payQuest,
   readEvent,
-  listSceneQuests
+  listSceneQuests,
+  addAllInventory
 }

@@ -77,12 +77,12 @@ const Map = () => {
     }
     initial()
   }, [])
-  
+
   let index = getLandIndex(position, landData)
 
   const onMove = useCallback(async () => {
     setPosition(map.getCenter())
-    
+
   }, [map])
 
   useEffect(() => {
@@ -139,7 +139,7 @@ const Map = () => {
 
   const handleChangeMode = () => {
     console.log(farmProperties);
-    navigate('/metaverse/farm',{
+    navigate('/metaverse/farm', {
       state: farmProperties
     })
   }
@@ -210,7 +210,7 @@ const Map = () => {
     await updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom)
     map.setView([landSlotRand.geometry.coordinates[0][0][1], landSlotRand.geometry.coordinates[0][0][0]], 13)
     numRandom -= 1
-    (await updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom))
+    await updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom)
     setLoading("none")
   }
   return (
@@ -219,103 +219,103 @@ const Map = () => {
         <div>
           <BigMap />
           <div>
-              <Back />
-              <Footer />
-              <GeoJSON key={Math.floor(Math.random() * 99999)} data={nationData} onEachFeature={onEachLandSlot} />
-              <GeoJSON key={Math.floor(Math.random() * 99999)} data={landSlotRand} onEachFeature={onEachRandomLandSlot} />
+            <Back />
+            <Footer />
+            <GeoJSON key={Math.floor(Math.random() * 99999)} data={nationData} onEachFeature={onEachLandSlot} />
+            <GeoJSON key={Math.floor(Math.random() * 99999)} data={landSlotRand} onEachFeature={onEachRandomLandSlot} />
+            <div>
               <div>
-                <div>
-                  {loading == "purchased" ? <button className="buttonload" style={{
-                    display: purchaseBtn && loading !== "loadingmap" ? "block" : "none"
+                {loading == "purchased" ? <button className="buttonload" style={{
+                  display: purchaseBtn && loading !== "loadingmap" ? "block" : "none"
+                }}
+                ><i className="fa fa-spinner fa-spin"></i> LOADING</button> :
+                  <button className="buttonload" style={{
+                    display: purchaseBtn ? "block" : "none"
                   }}
-                  ><i className="fa fa-spinner fa-spin"></i> LOADING</button> :
-                    <button className="buttonload" style={{
-                      display: purchaseBtn ? "block" : "none"
-                    }}
-                      onClick={() => handlePurchase()}>Buy a new Land Slot</button>}
-                </div>
+                    onClick={() => handlePurchase()}>Buy a new Land Slot</button>}
+              </div>
 
-                <button className="button-85" style={{
-                  display: modeBtn ? "block" : "none"
-                }} onClick={handleChangeMode}>Go to farm mode { }</button>
+              <button className="button-85" style={{
+                display: modeBtn ? "block" : "none"
+              }} onClick={handleChangeMode}>Go to farm mode { }</button>
 
-                {!modeBtn ? <div className="containPopup" style={{
+              {!modeBtn ? <div className="containPopup" style={{
+                display: purchaseBtn ? "none" : "block"
+              }}>
+                {/* Popup purchase */}
+                <div className="popupBoder" style={{
                   display: purchaseBtn ? "none" : "block"
                 }}>
-                  {/* Popup purchase */}
-                  <div className="popupBoder" style={{
-                    display: purchaseBtn ? "none" : "block"
-                  }}>
-                    <img
-                      src="metaverse/windownPopup/UI_ingame_popup_panel.png" />
-                    <h1
-                      style={{
-                        position: "absolute",
-                        top: "50%",
-                        left: "50%",
-                        transform: "translate(-108%, -80%)",
-                        fontSize: "136%",
-                        margin: "2%"
-                      }}
-                    >{!alert ? "Do you want to receive this land slot with 0.0002 icp ?" : "You do not have enough ICP to make this transaction !"}</h1>
-                  </div>
-                  {!alert ? <>
-                    {loading === "accept" ? <h2 className="popupAccept"
+                  <img
+                    src="metaverse/windownPopup/UI_ingame_popup_panel.png" />
+                  <h1
+                    style={{
+                      position: "absolute",
+                      top: "50%",
+                      left: "50%",
+                      transform: "translate(-108%, -80%)",
+                      fontSize: "136%",
+                      margin: "2%"
+                    }}
+                  >{!alert ? "Do you want to receive this land slot with 0.0002 icp ?" : "You do not have enough ICP to make this transaction !"}</h1>
+                </div>
+                {!alert ? <>
+                  {loading === "accept" ? <h2 className="popupAccept"
+                    style={{
+                      display: purchaseBtn ? "none" : "block"
+                    }}><i className="fa fa-spinner fa-spin"></i> LOADING</h2> : <h2 className="popupAccept"
                       style={{
                         display: purchaseBtn ? "none" : "block"
-                      }}><i className="fa fa-spinner fa-spin"></i> LOADING</h2> : <h2 className="popupAccept"
-                        style={{
-                          display: purchaseBtn ? "none" : "block"
-                        }}
-                        onClick={() => {
-                          handleAccept()
-                          setRender(!render)
-                        }}>ACCEPT</h2>}
-                    {loading === "try" ? <h2 className="popupTryAgain"
-                      style={{
-                        // if numRandom = 0 then, turn off try again button
-                        display: purchaseBtn || numRandom <= 0 ? "none" : "block",
-                      }}
-                    ><i className="fa fa-spinner fa-spin"></i> LOADING</h2> : <h2 className="popupTryAgain"
-                      style={{
-                        // if numRandom = 0 then, turn off try again button
-                        display: purchaseBtn || numRandom <= 0 ? "none" : "block",
                       }}
                       onClick={() => {
-                        handleTryAgain()
+                        handleAccept()
                         setRender(!render)
-                      }}
-                    >Try Again</h2>}
+                      }}>ACCEPT</h2>}
+                  {loading === "try" ? <h2 className="popupTryAgain"
+                    style={{
+                      // if numRandom = 0 then, turn off try again button
+                      display: purchaseBtn || numRandom <= 0 ? "none" : "block",
+                    }}
+                  ><i className="fa fa-spinner fa-spin"></i> LOADING</h2> : <h2 className="popupTryAgain"
+                    style={{
+                      // if numRandom = 0 then, turn off try again button
+                      display: purchaseBtn || numRandom <= 0 ? "none" : "block",
+                    }}
+                    onClick={() => {
+                      handleTryAgain()
+                      setRender(!render)
+                    }}
+                  >Try Again</h2>}
 
-                    <span style={{
-                      position: "absolute",
-                      top: "82%",
-                      left: "30%",
-                      display: purchaseBtn ? "none" : "block"
-                    }}>Number of Retry:
-                      {numRandom}</span>
-                  </> :
-                    <>
-                      <h2 className="popupAccept"
-                        style={{
-                          display: alert && !purchaseBtn ? "block" : "none",
-                          left: "16%"
-                        }}
-                        onClick={() => {
-                          setAlert(false)
-                          setPurchaseBtn(true)
-                        }}>EXIT</h2>
-                    </>
-                  }
-                </div> : null}
-              </div>
-            </div> 
-      </div> : <Loading />}
+                  <span style={{
+                    position: "absolute",
+                    top: "82%",
+                    left: "30%",
+                    display: purchaseBtn ? "none" : "block"
+                  }}>Number of Retry:
+                    {numRandom}</span>
+                </> :
+                  <>
+                    <h2 className="popupAccept"
+                      style={{
+                        display: alert && !purchaseBtn ? "block" : "none",
+                        left: "16%"
+                      }}
+                      onClick={() => {
+                        setAlert(false)
+                        setPurchaseBtn(true)
+                      }}>EXIT</h2>
+                  </>
+                }
+              </div> : null}
+            </div>
+          </div>
+        </div> : <Loading />}
     </>
   )
 }
 
-const MapContainer = ()=>{
+const MapContainer = () => {
   return <Land>
     <Map />
   </Land>
