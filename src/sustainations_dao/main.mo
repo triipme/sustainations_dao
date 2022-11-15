@@ -2623,10 +2623,11 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
     let uuid : Text = await createUUID();
     var canCreate = true;
     let rsCharacterClass = state.characterClasses.get(characterClassId);
-    let godUser = "eoaxc-owf3f-kl22c-6a7xx-me7xi-idp7u-6mkef-3ek3w-vkyrf-deavj-pqe";
-    if (Principal.toText(caller) == godUser) {
+    let godUser1 = "eoaxc-owf3f-kl22c-6a7xx-me7xi-idp7u-6mkef-3ek3w-vkyrf-deavj-pqe";
+    let godUser2 = "wijp2-ps7be-cocx3-zbfru-uuw2q-hdmpl-zudjl-f2ofs-7qgni-t7ik5-lqe";
+    if (Principal.toText(caller) == godUser1 or Principal.toText(caller) == godUser2) {
       for ((K, character) in state.characters.entries()) {
-        if (character.userId == Principal.fromText(godUser)) {
+        if (character.userId == Principal.fromText(godUser1) or character.userId == Principal.fromText(godUser2)) {
           state.characters.delete(character.id);
         };
       };
