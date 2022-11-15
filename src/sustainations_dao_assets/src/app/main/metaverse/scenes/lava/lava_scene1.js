@@ -284,7 +284,7 @@ export default class lava_scene1 extends BaseScene {
     if (this.player.x > 5100) {
       this.pregameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start("lava_scene5", { isUsedPotion: this.isUsedPotion });
+      this.scene.start("lava_scene2", { isUsedPotion: this.isUsedPotion });
     }
 
     if (this.player.x > 4450 && this.isInteracted == false) {

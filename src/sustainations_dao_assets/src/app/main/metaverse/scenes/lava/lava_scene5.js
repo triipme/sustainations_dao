@@ -216,7 +216,7 @@ export default class lava_scene5 extends BaseScene {
         this.options[idx].setFrame(2);
       }
 
-      this.options[idx].on('pointerdown', () => {
+      this.options[idx].on('pointerdown',  () => {
         if (takeable) {
 
           if (this.eventOptions[idx][1].description === 'Use the key to open the golden chest') {
@@ -224,7 +224,7 @@ export default class lava_scene5 extends BaseScene {
             this.premiumPopupCloseBtn.setVisible(true);
             this.desChest.setVisible(true);
 
-            this.premiumPopupCloseBtn.on('pointerdown', () => {
+            this.premiumPopupCloseBtn.on('pointerdown', async () => {
 
               this.clickSound.play();
               this.premiumPopupWindow.setVisible(false);
@@ -235,6 +235,7 @@ export default class lava_scene5 extends BaseScene {
               this.clickSound.play();
               this.sfx_char_footstep.play();
               this.sfx_obstacle_remove.play();
+              console.log(await addAllInventory(this.characterData.id, 3))
 
             });
           } else {
@@ -269,7 +270,6 @@ export default class lava_scene5 extends BaseScene {
           updateCharacterStats(this.characterTakeOptions[idx]);
           // create charactercollectsmaterials after choose option
           // createCharacterCollectsMaterials(this.characterCollectMaterials[idx]);
-          addAllInventory(this.characterData.id, 3)
         }
       });
 

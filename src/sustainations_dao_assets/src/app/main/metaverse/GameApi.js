@@ -198,7 +198,7 @@ async function createInventory(characterId) {
 
 async function openInventory(characterId){
   const { user } = store.getState();
-  const func = async () => await user.actor.openInventory(characterId);
+  const func = async () => await user.actor.listInventory(characterId);
   const rs = (await func()).ok;
   return rs;
 };

@@ -37,7 +37,6 @@ class exhausted extends BaseScene {
         successCallback();
       });
     }, this);
-
     this.clearSceneCache();
     this.load.image("ground", ground);
     this.load.image('exhausted_text', exhausted_text);

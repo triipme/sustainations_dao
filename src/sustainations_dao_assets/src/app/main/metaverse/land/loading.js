@@ -1,38 +1,34 @@
 import "./styles.css";
-import { BrowserView, MobileView, isBrowser, isMobile } from 'react-device-detect';
-
 const Loading = () => {
   return (
     <>
-      <BrowserView>
-        <div className="containPopup" style={{
-          scale: "50%",
-          position: "absolute ",
-          top: "10%",
-          left: "25%"
-        }}>
-          <div className="popupBoder" style={{ opacity: 1 }}>
-            <img src="metaverse/sustainations-logo.png"></img>
-            <img src="metaverse/loading.gif" style={{
-              height: "25%", width: "25%", marginLeft: "37%"
-            }}></img>
-          </div>
+      <div style={{
+        backgroundColor: "#111827", width: "100%", height: "100%", display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "white"
+      }}>
+        <div style={{ width: "120px" }}>
+          <img style={{
+            width: "120px",
+            height: "120px",
+            display: "block"
+          }} src="metaverse/sustainations-logo.png" />
+          <h4 style={{
+            width: "120px",
+            display: "block",
+            margin: "20px 0",
+            textAlign: "center"
+          }}>PLEASE WAIT</h4>
+          <img style={{
+            width: "50px",
+            height: "50px",
+            marginLeft: "35px",
+            display: "block"
+          }} src="metaverse/loading.gif">
+          </img>
         </div>
-      </BrowserView>
-      <MobileView>
-        <div className="containPopup" style={{
-              left: "-30%",
-              scale: "50%",
-              top: "5%"
-        }}>
-          <div className="popupBoder" style={{ opacity: 1 }}>
-            <img src="metaverse/sustainations-logo.png"></img>
-            <img src="metaverse/loading.gif" style={{
-              height: "25%", width: "25%", marginLeft: "37%"
-            }}></img>
-          </div>
-        </div>
-      </MobileView>
+      </div>
     </>
   )
 }

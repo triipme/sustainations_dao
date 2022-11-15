@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useAsyncMemo } from "use-async-memo";
 import { selectUser } from 'app/store/userSlice';
@@ -15,6 +15,8 @@ import ScheduleWidget from './widgets/ScheduleWidget';
 function HomeTab() {
   const user = useSelector(selectUser);
   const [loading, setLoading] = useState(true)
+  const [purchasedLandSlots, setPurchasedLandSlots] = useState(0)
+  const [plantedTreesCount, setPlantedTreesCount] = useState(0)
 
   const analysis = useAsyncMemo(async () => {
     setLoading(true);
@@ -23,6 +25,16 @@ function HomeTab() {
     console.log('result.ok', result.ok);
     return result.ok;
   }, [user]);
+  useEffect(() => {
+    async function fetchData() {
+      const landslots = await user.actor.purchasedLandSlotsCounter();
+      setPurchasedLandSlots(landslots.ok);
+      const trees = await user.actor.plantedTreesCounter();
+      setPlantedTreesCount(trees.ok);
+    }
+    fetchData();
+  }, [user]);
+
   const container = {
     show: {
       transition: {
@@ -51,6 +63,24 @@ function HomeTab() {
         <UserAgreement userAgreement={analysis.userAgreement} />
       </motion.div>
       <motion.div variants={item}>
+        <OpenProject counter={analysis.gamePlayCount.questPlayCount} objectLabel="Quest" counterLabel="Turns" />
+      </motion.div>
+      <motion.div variants={item}>
+        <InvestedProject counter={analysis.gamePlayCount.questCompletedCount} objectLabel="Quest" counterLabel="Completed" />
+      </motion.div>
+      <motion.div variants={item}>
+        <OpenProject counter={purchasedLandSlots} objectLabel="Land Slots" counterLabel="Purchased" />
+      </motion.div>
+      <motion.div variants={item}>
+        <InvestedProject counter={plantedTreesCount} objectLabel="Trees" counterLabel="Planted" />
+      </motion.div>
+      <motion.div variants={item}>
+        <OpenProject counter={analysis.gamePlayCount.miniGamePlayCount} objectLabel="Mini Game" counterLabel="Turns" />
+      </motion.div>
+      <motion.div variants={item}>
+        <InvestedProject counter={analysis.gamePlayCount.miniGameCompletedCount} objectLabel="Mini Game" counterLabel="Completed" />
+      </motion.div>
+      <motion.div variants={item}>
         <OverdueProject counter={analysis.projects.overdue} objectLabel="Projects" />
       </motion.div>
       <motion.div variants={item}>
@@ -67,18 +97,6 @@ function HomeTab() {
       </motion.div>
       <motion.div variants={item}>
         <InvestedProject counter={analysis.products.invested} objectLabel="Invested Products" counterLabel="Products" />
-      </motion.div>
-      <motion.div variants={item}>
-        <OpenProject counter={analysis.gamePlayCount.miniGamePlayCount} objectLabel="Mini Game" counterLabel="Turns" />
-      </motion.div>
-      <motion.div variants={item}>
-        <InvestedProject counter={analysis.gamePlayCount.miniGameCompletedCount} objectLabel="Mini Game" counterLabel="Completed" />
-      </motion.div>
-      <motion.div variants={item}>
-        <OpenProject counter={analysis.gamePlayCount.questPlayCount} objectLabel="Quest" counterLabel="Turns" />
-      </motion.div>
-      <motion.div variants={item}>
-        <InvestedProject counter={analysis.gamePlayCount.questCompletedCount} objectLabel="Quest" counterLabel="Completed" />
       </motion.div>
       <motion.div variants={item} className="sm:col-span-2 md:col-span-4">
         <GithubIssuesWidget />

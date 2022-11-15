@@ -1,115 +1,301 @@
-import { useState } from "react";
-import { GeoJSON, useMap, useMapEvents, ImageOverlay } from "react-leaflet";
+import { useEffect, useMemo, useState } from "react";
+import { useSelector } from "react-redux";
+import { selectUser } from "app/store/userSlice";
+import { GeoJSON, useMap, useMapEvents, ImageOverlay, MapContainer } from "react-leaflet";
 import "./styles.css";
-import UIFarm from "./FarmUI"
-import Map from "./Map"
-const inventory = { tomato: false, dig: false }
-const Farm = ({ mapFeatures }) => {
-    const [mode, setMode] = useState('farm')
-    // console.log("Mode:", mode)
-    const latlng = mapFeatures.map(feature => {
+import UIFarm from "./FarmUI";
+import { subtractInventory, loadTileSlots, listInventory, plantTree, loadUserLandSlots } from "../LandApi";
+import Land from "./Land";
+import BigMap from "./BigMap";
+import Loading from "./loading";
+import Back from "./Back"
+import { useLocation, useNavigate } from "react-router-dom";
+
+var inventoryStatus = { dig: false };
+var positionTree = -1
+const Farm = ({ mapFeatures, landSlotProperties }) => {
+  const user = useSelector(selectUser);
+  const [tileplant, setTileplant] = useState(mapFeatures);
+  const [inventory, setInventory] = useState([]);
+  const [characterId, setChacterId] = useState("");
+  const [loading, setLoading] = useState(false)
+  const map = useMap();
+  const navigate = useNavigate();
+  console.log("mapFeatures, landSlotProperties", mapFeatures, landSlotProperties)
+  useEffect(() => {
+    const load = async () => {
+      const characterid = await user.actor.readCharacter();
+      setChacterId(characterid.ok[0]);
+      console.log(characterid.ok[0])
+
+      const inv = await listInventory(characterid.ok[0]);
+      console.log(inv.ok)
+      setInventory(inv.ok);
+    };
+    load();
+    map.setView(
+      [
+        Number(tileplant[0].geometry.coordinates[0][0][1]),
+        Number(tileplant[0].geometry.coordinates[0][0][0])
+      ],
+      17
+    );
+  }, []);
+  useEffect(() => {
+    const loadinventoryStatus = async () => {
+      for (let i = 0; i < inventory.length; i++) {
+        if (inventory[i].materialName !== "wood" && inventory[i].materialName !== "seed") {
+          inventoryStatus[inventory[i].materialName] = false;
+        }
+      }
+    };
+    loadinventoryStatus();
+  }, [inventory]);
+
+  const [time, setTime] = useState(Date.now());
+
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      setTime(Date.now());
+      let tile = await loadTileSlots(landSlotProperties);
+      setTileplant(tile);
+    }, 10000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
+  const latlng = useMemo(
+    () =>
+      tileplant?.map(feature => {
         return feature.geometry.coordinates[0].map(item => {
-            return [item[1], item[0]]
-        })
+          return [item[1], item[0]];
+        });
+      }),
+    []
+  );
+
+  const onEachLandSlot = (country, layer) => {
+    layer.setStyle({
+      color: "#FFFFFF",
+      fillColor: "#FFFFFF",
+      fillOpacity: "0.1"
     });
+    layer.on({
+      click: async e => {
+        console.log(inventory, inventoryStatus)
+        for (let i = 0; i < inventory.length; i++) {
 
-    var posD = [1, 2, 3, 4, 5, 6, 7, 8]
-    var posU = [91, 92, 93, 94, 95, 96, 97, 98]
-    var posL = [10, 20, 30, 40, 50, 60, 70, 80]
-    var posR = [19, 29, 39, 49, 59, 69, 79, 89]
-    var posC = [0, 9, 90, 99]
-    var posLand = []
-    for(let i = 0; i < 100; i++){
-        if(!posD.includes(i) || !posU.includes(i) || !posL.includes(i) || !posR.includes(i) ||!posC.includes(i) )
-            posLand.push(i)
+          if (
+            inventoryStatus[inventory[i].materialName] === true &&
+            country.properties.name === "None" &&
+            inventory[i].amount > 0 && loading === false
+          ) {
+            setLoading(true)
+            positionTree = country.properties.i * 10 + country.properties.j
+            console.log("Country: ", country.properties.landId,
+              country.properties.i,
+              country.properties.j,
+              inventory[i].materialId)
+
+            console.log(
+              "Plant tree status: ",
+              await plantTree(
+                country.properties.landId,
+                country.properties.i,
+                country.properties.j,
+                inventory[i].materialId
+              )
+            );
+            await subtractInventory(inventory[i].id);
+            let tile = await loadTileSlots(landSlotProperties);
+            let inv = await listInventory(characterId);
+            setTileplant(tile);
+            setInventory(inv.ok);
+            setLoading(false)
+            positionTree = -1
+          }
+        }
+      }
+    });
+  };
+  return (
+    <>
+      <GeoJSON
+        key={Math.floor(Math.random() * 9999)}
+        data={tileplant}
+        onEachFeature={onEachLandSlot}
+      />
+      <CreateBound {...{ latlng, tileplant, loading }}></CreateBound>
+      <UIFarm></UIFarm>
+      <Inventory inventory={inventory}></Inventory>
+      {/* <ShowPlant inventory={inventory}></ShowPlant> */}
+      <button
+        className="button-85"
+        style={{ top: "250px" }}
+        onClick={() => {
+          navigate("/metaverse/land");
+        }}>
+        Go to map mode
+      </button>
+    </>
+  );
+};
+
+const Inventory = ({ inventory }) => {
+  function initialInventory(item) {
+    for (const property in inventoryStatus) {
+      if (property !== item)
+        inventoryStatus[property] = false
     }
-    const onEachLandSlot = (country, layer) => {
-        layer.setStyle({
-            color: "#FFFFFF",
-            fillColor: "#FFFFFF",
-            fillOpacity: "0.1"
-        })
-    }
-    // console.log(posD, posU, posL, posR, posC)
-    return (
+  }
+  const [color, setColor] = useState(-1)
+
+  let path = "/metaverse/farm/Sustaination_farm/farm-object/PNG/"
+  return (
+    <div className="farmItem">
+      <div className="imgItem" key={101}>
+        <img
+          onClick={() => {
+            inventoryStatus["dig"] = !inventoryStatus["dig"]
+            initialInventory("dig")
+          }}
+          src={"/metaverse/farm/Sustaination_farm/farm-object/PNG/shovel.png"}
+          alt=""
+        />
+      </div>
+      {inventory.length > 0 ?
         <>
-            {mode === 'farm' && <>
+          {inventory.map((value, i) => {
+            if (value.materialName !== "wood" && value.materialName !== "seed") {
+              let bgColor
 
-                <GeoJSON key={Math.floor(Math.random() * 9999)} data={mapFeatures} onEachFeature={onEachLandSlot} />
-                <CreateBound {...{ latlng, posD, posU, posL, posR, posC, posLand }}></CreateBound>
-                <UIFarm></UIFarm>
-                <button className="button-85" style={{top: "250px"}} onClick={()=>setMode('land')}>Go to map mode</button>
-            </>}
-            {
-                mode === 'land' && <>
-                    <Map></Map>
-                </>
+              let pathItem = path + value.materialName + '-icon.png'
+              return (
+                <div className="imgItem" key={i} >
+                  <img
+                    style={{ backgroundColor: i == color && inventoryStatus[value.materialName] == true ? "#FFF" : "#FFF" }}
+                    onClick={() => {
+                      inventoryStatus[value.materialName] = !inventoryStatus[value.materialName]
+                      initialInventory(value.materialName)
+                      setColor(i)
+                    }}
+                    src={pathItem}
+                    alt=""
+                  />
+                  <div className="top-right">{value.amount.toString()}</div>
+                </div>
+              )
+            } else {
+              <></>
             }
-        </>
-    )
+          })}
+        </> : null}
+    </div>
+  )
 }
 
-const CreateBound = ({ latlng, posD, posU, posL, posR, posC, posLand }) => {
-    return (
+const CreateBound = ({ latlng, tileplant, loading }) => {
+  let path = "metaverse/farm/Sustaination_farm/farm-object/PNG/";
+  return (
+    <>
+      {tileplant.map((tag, value) => {
+        let pathItem = path + tag.properties.status + "-" + tag.properties.name + ".png"
+        if (loading === true && positionTree == tag.properties.i * 10 + tag.properties.j) {
+          return (
+            <>
+              <ImageOverlay key={value + 100} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm-Tiles-05.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} />
+              <ImageOverlay key={value + 200} url={'metaverse/Ripple-loading.gif'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} />
+            </>
+          )
+        }
+        else if (tag.properties.name === "None") {
+          return <ImageOverlay key={value} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm-Tiles-05.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} />
+        }
+        else if (tag.properties.status === "newlyPlanted") {
+          return <ImageOverlay key={value} url={'metaverse/farm/Sustaination_farm/farm-object/PNG/newlyPlanted.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} />
+        }
+        else {
+          return <ImageOverlay key={value} url={pathItem} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} />
+        }
+      })}
+    </>
+  );
+};
+
+function FarmContainer() {
+  const { state: properties } = useLocation();
+  const [farmFeatures, setFarmFeatures] = useState();
+  const [farmProperties, setFarmProperties] = useState(properties);
+  const [isDone, setIsDone] = useState(false)
+  console.log("properties", properties)
+  useEffect(() => {
+    (async () => {
+      if (farmProperties) {
+        let myFarmProperties = farmProperties;
+        setFarmProperties(myFarmProperties);
+        setFarmFeatures(await loadTileSlots(myFarmProperties));
+        setIsDone(true)
+      } else {
+        let myFarmProperties = await loadUserLandSlots()
+        console.log("run")
+        console.log("myFarmProperties ", myFarmProperties)
+        if (myFarmProperties) {
+          let myFarm = {
+            id: myFarmProperties[0].id,
+            zoneNumber: myFarmProperties[0].zoneNumber,
+            zoneLetter: myFarmProperties[0].zoneLetter,
+            i: myFarmProperties[0].indexRow,
+            j: myFarmProperties[0].indexColumn,
+          };
+          setFarmProperties(myFarm);
+          console.log("run")
+
+          setFarmFeatures(await loadTileSlots(myFarm));
+          console.log("run")
+
+        }
+        setIsDone(true)
+      }
+    })();
+  }, []);
+  console.log("is done: ", isDone)
+  return (
+    <Land>
+      {isDone === true ? (
         <>
-            {posLand.map(tag => {
-                return (
-                    <ImageOverlay key={tag} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm-Tiles-05.png'} bounds={[latlng[tag][1], latlng[tag][3]]} />
-                )
-            })}
-            {posD.map(tag => {
-                return (
-                    <ImageOverlay key={tag} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm-Tiles-08.png'} bounds={[latlng[tag][1], latlng[tag][3]]} />
-                )
-            })}
-            {posU.map(tag => {
-                return (
-                    <ImageOverlay key={tag} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm-Tiles-02.png'} bounds={[latlng[tag][1], latlng[tag][3]]} />
-                )
-            })}
-            {posL.map(tag => {
-                return (
-                    <ImageOverlay key={tag} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm-Tiles-04.png'} bounds={[latlng[tag][1], latlng[tag][3]]} />
-                )
-            })}
-            {posR.map(tag => {
-                return (
-                    <ImageOverlay key={tag} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm-Tiles-06.png'} bounds={[latlng[tag][1], latlng[tag][3]]} />
-                )
-            })}
-            {posC.map((tag, i) => {
-                switch (i) {
-                    case 0:
-                        return (
-                            <ImageOverlay key={tag} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm-Tiles-07.png'} bounds={[latlng[tag][1], latlng[tag][3]]} />
-                        )
-                    case 1:
-                        return (
-                            <ImageOverlay key={tag} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm-Tiles-09.png'} bounds={[latlng[tag][1], latlng[tag][3]]} />
-                        )
-                    case 2:
-                        return (
-                            <ImageOverlay key={tag} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm-Tiles-01.png'} bounds={[latlng[tag][1], latlng[tag][3]]} />
-                        )
-                    case 3:
-                        return (
-                            <ImageOverlay key={tag} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm-Tiles-03.png'} bounds={[latlng[tag][1], latlng[tag][3]]} />
-                        )
-                    default:
-                        console.log("error")
-                }
-            })}
+          {farmFeatures ? <>
+            <BigMap />
+            {/* <Back /> */}
+            <Farm mapFeatures={farmFeatures} landSlotProperties={farmProperties} />
+          </> : (
+            <div style={{
+              backgroundColor: "#111827", width: "100%", height: "100%", display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "white"
+            }}>
+              <div>
+                <img style={{
+
+                  display: "block",
+                  marginLeft: "auto",
+                  marginRight: "auto",
+                  width: "50%"
+                }} src="metaverse/sustainations-logo.png" />
+                <h1 style={{ display: "block", textAlign: "center" }}>YOU DON'T HAVE ANY LAND SLOT !!!</h1><br></br>
+                <h1 style={{ textAlign: "center", color: "white", cursor: "pointer", backgroundColor: "orange", margin: "0 200px" }} onClick={() => {
+                  window.location.replace("/metaverse");
+                }}>Click here to go back</h1>
+              </div>
+            </div>
+          )}
         </>
-    )
+      ) : (
+        <Loading />
+      )}
+    </Land>
+  );
 }
 
-const Create = ({ latlng, pos }) => {
-    return (
-        pos.map(tag => {
-            return (
-                <ImageOverlay key={tag} url={'metaverse/farm/Sustaination_farm/farm-object/PNG/farmobject_4cachua1.png'} bounds={[latlng[tag][1], latlng[tag][3]]} />
-            )
-        })
-    )
-}
-export default Farm;
+export default FarmContainer;
