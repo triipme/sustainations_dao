@@ -184,6 +184,9 @@ h2:after {
   height: 30%;
 }
 
+ul>li>img {
+  padding: 20px;
+}
 .messengerBox>img {
   position: fixed;
   left: 4%;

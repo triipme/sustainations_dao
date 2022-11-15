@@ -3863,7 +3863,7 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
     #ok("Success");
   };
 
-  public type Inventory = {
+  public type InventoryInfo = {
     id : Text;
     characterId : Text;
     materialId : Text;
@@ -3871,8 +3871,8 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
     amount : Int;
   };
 
-  public shared query ({ caller }) func listInventory(characterId : Text) : async Response<[Inventory]> {
-    var list : [Inventory] = [];
+  public shared query ({ caller }) func listInventory(characterId : Text) : async Response<[InventoryInfo]> {
+    var list : [InventoryInfo] = [];
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
@@ -3882,14 +3882,14 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
         switch (rsMaterial) {
           case null {};
           case (?material) {
-            let inv : Inventory = {
+            let inv : InventoryInfo = {
               id = inventory.id;
               characterId = inventory.characterId;
               materialId = inventory.materialId;
               materialName = material.name;
               amount = inventory.amount;
             };
-            list := Array.append<Inventory>(list, [inv]);
+            list := Array.append<InventoryInfo>(list, [inv]);
           };
         };
       };
@@ -4147,6 +4147,31 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
       };
     };
     return adjacentLandSlots;
+  };
+
+  public shared query ({ caller }) func listUserLandSlots() : async Response<[Types.LandSlot]> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    var list : [Types.LandSlot] = [];
+    let id = Principal.toText(caller);
+    let rsNation = state.nations.get(id);
+    switch (rsNation) {
+      case null { return #err(#NotFound) };
+      case (?nation) {
+        for ( landSlotId in nation.landSlotIds.vals() ) {
+          let rsLandSlot = state.landSlots.get(landSlotId);
+          switch (rsLandSlot) {
+            case null {
+            };
+            case (?landSlot) {
+              list := Array.append<Types.LandSlot>(list,[landSlot]);
+            };
+          };
+        };
+        return #ok(list);
+      };
+    };
   };
 
   public shared query ({ caller }) func listAllLandSlots() : async Response<[(Text, Types.LandSlot)]> {
@@ -4645,5 +4670,4 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
     };
     "NotFound";
   };
-  
 };
