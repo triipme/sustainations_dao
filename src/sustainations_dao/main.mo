@@ -4469,6 +4469,37 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
     #ok((list));
   };
 
+   public shared ({ caller }) func addAllInventory(characterId : Text, amount : Int) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    for (material in state.materials.vals()) {
+      var check : Bool = false;
+      for((k, v) in state.inventories.entries()){
+        if (v.characterId == characterId and v.materialId == material.id){
+          let updateInventory : Types.Inventory = {
+          id = v.id;
+          characterId = characterId;
+          materialId = material.id;
+          amount = v.amount + amount;
+        };
+        let update = state.inventories.replace(v.id, updateInventory);
+        check := true;
+        }
+      };
+      if (check == false){
+        let newInventory : Types.Inventory = {
+          id = await createUUID();
+          characterId = characterId;
+          materialId = material.id;
+          amount = amount;
+        };
+        let newInven = state.inventories.put(newInventory.id, newInventory);
+      };
+    };
+    #ok("Success");
+  };
+
   // Seed
   public shared ({ caller }) func createSeed(seed : Types.Seed) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
@@ -4672,3 +4703,5 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
   };
   
 };
+
+
