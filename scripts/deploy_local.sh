@@ -19,8 +19,6 @@ dfx deploy ledger --argument '(record {
   send_whitelist = vec {}
   })'
 dfx deploy georust
-export LEDGER_ID=$(dfx canister id ledger)
-export GEORUST_ID=$(dfx canister id georust)
 
 # Replace with public api
 rm src/ledger/ledger.did
@@ -28,10 +26,11 @@ cp src/ledger/ledger.public.did src/ledger/ledger.did
 dfx canister call ledger account_balance '(record { account = '$(python3 -c 'print("vec{" + ";".join([str(b) for b in bytes.fromhex("'$LEDGER_ACC'")]) + "}")')' })'
 
 ## === INSTALL FRONTEND / BACKEND ==== 
-dfx deploy sustainations_dao --argument "(record{
-  ledgerId = opt(\"$LEDGER_ID\"); 
-  georustId = opt(\"$GEORUST_ID\")
-})"
+$(dfx cache show)/moc src/sustainations_dao/main.mo -c --debug --package base ./.vessel/base/f4f56295464a4b425921bd5121f6daff42d61304/src --package uuid ./.vessel/uuid/88871a6e1801c61ba54d42966f08be0604bb2a2d/src --package encoding ./.vessel/encoding/v0.3.1/src --package io ./.vessel/io/v0.3.0/src --package array ./.vessel/array/v0.1.1/src -o sustainations_dao.wasm
+
+gzip sustainations_dao.wasm
+
+dfx canister install sustainations_dao --mode upgrade --wasm sustainations_dao.wasm.gz
 ## === Transfer ICP to DAO's default subaccount ===
 export SYSTEM_ADDR=$(dfx canister call sustainations_dao getSystemAddress | tr -d '\n' | sed 's/,)/)/')
 echo $SYSTEM_ADDR
@@ -39,5 +38,5 @@ dfx canister call ledger transfer "(record { amount = record { e8s = 10_000_000_
 dfx canister call sustainations_dao getSystemBalance
 
 # dfx canister call sustainations_dao withdraw '(100000)'
-# dfx deploy frontend
+dfx deploy frontend
 # yarn start

@@ -66,7 +66,7 @@ const Footer = () => {
               color: '#fff',
               marginLeft: 10
             }}>
-            Purchase
+            Purchased
           </span>
         </div>
       </div>
