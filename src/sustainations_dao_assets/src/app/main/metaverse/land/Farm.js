@@ -21,15 +21,15 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
   const [loading, setLoading] = useState(false)
   const map = useMap();
   const navigate = useNavigate();
-  console.log("mapFeatures, landSlotProperties", mapFeatures, landSlotProperties)
+  // console.log("mapFeatures, landSlotProperties", mapFeatures, landSlotProperties)
   useEffect(() => {
     const load = async () => {
       const characterid = await user.actor.readCharacter();
       setChacterId(characterid.ok[0]);
-      console.log(characterid.ok[0])
+      // console.log(characterid.ok[0])
 
       const inv = await listInventory(characterid.ok[0]);
-      console.log(inv.ok)
+      // console.log(inv.ok)
       setInventory(inv.ok);
     };
     load();
@@ -83,7 +83,7 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
     });
     layer.on({
       click: async e => {
-        console.log(inventory, inventoryStatus)
+        // console.log(inventory, inventoryStatus)
         for (let i = 0; i < inventory.length; i++) {
 
           if (
@@ -93,10 +93,10 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
           ) {
             setLoading(true)
             positionTree = country.properties.i * 10 + country.properties.j
-            console.log("Country: ", country.properties.landId,
-              country.properties.i,
-              country.properties.j,
-              inventory[i].materialId)
+            // console.log("Country: ", country.properties.landId,
+            //   country.properties.i,
+            //   country.properties.j,
+            //   inventory[i].materialId)
 
             console.log(
               "Plant tree status: ",
@@ -228,7 +228,7 @@ function FarmContainer() {
   const [farmFeatures, setFarmFeatures] = useState();
   const [farmProperties, setFarmProperties] = useState(properties);
   const [isDone, setIsDone] = useState(false)
-  console.log("properties", properties)
+  // console.log("properties", properties)
   useEffect(() => {
     (async () => {
       if (farmProperties) {
@@ -238,8 +238,8 @@ function FarmContainer() {
         setIsDone(true)
       } else {
         let myFarmProperties = await loadUserLandSlots()
-        console.log("run")
-        console.log("myFarmProperties ", myFarmProperties)
+        // console.log("run")
+        // console.log("myFarmProperties ", myFarmProperties)
         if (myFarmProperties) {
           let myFarm = {
             id: myFarmProperties[0].id,
@@ -249,24 +249,24 @@ function FarmContainer() {
             j: myFarmProperties[0].indexColumn,
           };
           setFarmProperties(myFarm);
-          console.log("run")
+          // console.log("run")
 
           setFarmFeatures(await loadTileSlots(myFarm));
-          console.log("run")
+          // console.log("run")
 
         }
         setIsDone(true)
       }
     })();
   }, []);
-  console.log("is done: ", isDone)
+  // console.log("is done: ", isDone)
   return (
     <Land>
       {isDone === true ? (
         <>
           {farmFeatures ? <>
             <BigMap />
-            {/* <Back /> */}
+            <Back />
             <Farm mapFeatures={farmFeatures} landSlotProperties={farmProperties} />
           </> : (
             <div style={{
@@ -276,6 +276,8 @@ function FarmContainer() {
               color: "white"
             }}>
               <div>
+                <Back />
+
                 <img style={{
 
                   display: "block",
@@ -285,8 +287,8 @@ function FarmContainer() {
                 }} src="metaverse/sustainations-logo.png" />
                 <h1 style={{ display: "block", textAlign: "center" }}>YOU DON'T HAVE ANY LAND SLOT !!!</h1><br></br>
                 <h1 style={{ textAlign: "center", color: "white", cursor: "pointer", backgroundColor: "orange", margin: "0 200px" }} onClick={() => {
-                  window.location.replace("/metaverse");
-                }}>Click here to go back</h1>
+                  window.location.replace("/metaverse/land");
+                }}>Click here to go to buy land slot</h1>
               </div>
             </div>
           )}

@@ -259,7 +259,7 @@ async function loadTileSlots(properties) {
     };
     result.features.push(feature)
   }
-  console.log(result.features)
+  // console.log(result.features)
   return result.features
 }
 
