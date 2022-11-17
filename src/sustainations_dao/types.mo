@@ -391,6 +391,19 @@ module {
     plantTime : Int;
   };
 
+  // Farm Effect
+  public type FarmEffect = {
+    id : Text;
+    symbol : Text;
+    description : Text;
+  };
+
+  public type UserHasFarmEffect = {
+    id : Text;
+    farmEffectId : Text;
+    userId : Principal;
+  };
+
   // Error codes
   public type Error = {
     #BalanceLow;

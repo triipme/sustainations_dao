@@ -59,6 +59,8 @@ module {
     tiles : Map<Text, Types.Tile>;
     seeds : Map<Text, Types.Seed>;
     plants : Map<Text, Types.Plant>;
+    farmEffects : Map<Text, Types.FarmEffect>;
+    hasFarmEffects : Map<Text, Types.UserHasFarmEffect>;
   };
 
   public func empty() : State {
@@ -112,6 +114,8 @@ module {
       tiles = TrieMap.TrieMap<Text, Types.Tile>(Text.equal,Text.hash);
       seeds = TrieMap.TrieMap<Text, Types.Seed>(Text.equal,Text.hash);
       plants = TrieMap.TrieMap<Text, Types.Plant>(Text.equal,Text.hash);
+      farmEffects = TrieMap.TrieMap<Text, Types.FarmEffect>(Text.equal,Text.hash);
+      hasFarmEffects = TrieMap.TrieMap<Text, Types.UserHasFarmEffect>(Text.equal,Text.hash);
     };
   };
 };

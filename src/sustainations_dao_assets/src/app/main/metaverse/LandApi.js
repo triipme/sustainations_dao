@@ -285,10 +285,12 @@ async function plantTree(landId, indexRow, indexColumn, materialId) {
   return result;
 }
 
-// async function readCharacter() {
-//   const { user } = store.getState();
-
-// }
+async function getTilesFromTile(indexRow, indexColumn, plantId, tiles) {
+  const { user } = store.getState();
+  const func = await user.actor.getTilesFromTile(indexRow, indexColumn, plantId, tiles);
+  const result = func?.ok;
+  return result;
+}
 // Draw polygon 
 
 
@@ -310,5 +312,6 @@ export {
   loadNation,
   unionLandSlots,
   plantTree,
-  loadUserLandSlots
+  loadUserLandSlots,
+  getTilesFromTile
 }

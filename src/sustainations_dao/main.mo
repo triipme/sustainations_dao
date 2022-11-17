@@ -48,6 +48,8 @@ import LandBuyingStatus "./land/landBuyingStatus";
 import Tile "./land/tile";
 import Seed "./land/seed";
 import Plant "./land/plant";
+import FarmEffect "./land/farmEffect";
+import HasFarmEffect "./land/hasFarmEffect";
 import Env ".env";
 
 shared({caller = owner}) actor class SustainationsDAO() = this {
@@ -113,6 +115,8 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
   private stable var tiles : [(Text, Types.Tile)] = [];
   private stable var seeds : [(Text, Types.Seed)] = [];
   private stable var plants : [(Text, Types.Plant)] = [];
+  private stable var farmEffects : [(Text, Types.FarmEffect)] = [];
+  private stable var hasFarmEffects : [(Text, Types.UserHasFarmEffect)] = [];
 
   system func preupgrade() {
     Debug.print("Begin preupgrade");
@@ -165,6 +169,8 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
     tiles := Iter.toArray(state.tiles.entries());
     seeds := Iter.toArray(state.seeds.entries());
     plants := Iter.toArray(state.plants.entries());
+    farmEffects := Iter.toArray(state.farmEffects.entries());
+    hasFarmEffects := Iter.toArray(state.hasFarmEffects.entries());
     Debug.print("End preupgrade");
   };
 
@@ -304,6 +310,12 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
     };
     for ((k, v) in Iter.fromArray(plants)) {
       state.plants.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(farmEffects)) {
+      state.farmEffects.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(hasFarmEffects)) {
+      state.hasFarmEffects.put(k, v);
     };
     Debug.print("End postupgrade");
   };
@@ -4516,7 +4528,11 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
           case (?landSlot) {
             let objectId = await createPlant(materialId);
             let createdTile = await createTile(landId, indexRow, indexColumn, objectId);
-            return #ok("Success");
+            //
+            let listTiles = await listTilesFromLandSlot(landSlot);
+            let listTilesFromIJ = await getTilesFromTile(indexRow, indexColumn, objectId, listTiles);
+            let effect = await checkEffect(listTilesFromIJ);
+            return #ok("Success ");
           };
         };
       };
@@ -4638,6 +4654,24 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
     #ok((list));
   };
 
+  //
+  public query func listTilesFromLandSlot(landSlot : Types.LandSlot) : async [Types.Tile] {
+    var listTiles : [Types.Tile] = [];
+    for ( i in Iter.range(Int.abs(landSlot.indexRow*10), Int.abs((landSlot.indexRow*10)+9))) {
+      for (j in Iter.range(Int.abs(landSlot.indexColumn*10), Int.abs((landSlot.indexColumn*10)+9))) {
+        let id = Nat.toText(i) # "-" #Nat.toText(j);
+        let rsTile = state.tiles.get(id);
+        switch (rsTile) {
+          case null {};
+          case (?tile) {
+            listTiles := Array.append<Types.Tile>(listTiles, [tile]);
+          };
+        };
+      };
+    };
+    listTiles;
+  };
+
   // Plant
   public shared func createPlant(materialId : Text) : async Text {
     for ((K, V) in state.seeds.entries()) {
@@ -4670,5 +4704,201 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
     };
     "NotFound";
   };
+
+  // Farm Effect
+  public shared ({ caller }) func createFarmEffect(effect : Types.FarmEffect) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    // let uuid : Text = await createUUID();
+    let rsFarmEffect = state.farmEffects.get(effect.id);
+    switch (rsFarmEffect) {
+      case (?V) { #err(#AlreadyExisting) };
+      case null {
+        FarmEffect.create(effect, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared query ({ caller }) func listFarmEffects() : async Response<[(Text, Types.FarmEffect)]> {
+    var list : [(Text, Types.FarmEffect)] = [];
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    for ((K, V) in state.farmEffects.entries()) {
+      list := Array.append<(Text, Types.FarmEffect)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+
+
+  // user has farm effect
+  public shared ({ caller }) func createUserHasFarmEffect(hasEffect : Types.UserHasFarmEffect) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+
+    let rsHasFarmEffect = state.hasFarmEffects.get(hasEffect.id);
+    switch (rsHasFarmEffect) {
+      case (?V) { #err(#AlreadyExisting) };
+      case null {
+        HasFarmEffect.create(hasEffect, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared query ({ caller }) func listHasFarmEffects() : async Response<[(Text, Types.UserHasFarmEffect)]> {
+    var list : [(Text, Types.UserHasFarmEffect)] = [];
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    for ((K, V) in state.hasFarmEffects.entries()) {
+      if (V.userId == caller) {
+        list := Array.append<(Text, Types.UserHasFarmEffect)>(list, [(K, V)]);
+      };
+    };
+    #ok((list));
+  };
+
+  public shared query ({ caller }) func listAllUserHasFarmEffects() : async Response<[(Text, Types.UserHasFarmEffect)]> {
+    var list : [(Text, Types.UserHasFarmEffect)] = [];
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    for ((K, V) in state.hasFarmEffects.entries()) {
+      list := Array.append<(Text, Types.UserHasFarmEffect)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+
+  // get tileList from Tile has the same plantId
+  public query func deleteTileFromList(tile : Types.Tile, tiles : [Types.Tile]) : async [Types.Tile] {
+      Array.filter<Types.Tile>(tiles, func(val: Types.Tile) : Bool { tile.indexRow != val.indexRow and tile.indexColumn != val.indexColumn });
+  };
+
+  public func getTilesFromTile(indexRow : Nat, indexColumn : Nat, plantId : Text, tiles : [Types.Tile]) : async [Types.Tile] {
+    let x = indexRow;
+    let y = indexColumn;
+    let tile = Array.filter<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == x and val.indexColumn == y and val.objectId == plantId});
+    if ( tile == []) {
+      return tile;
+    };
+    let newTiles : [Types.Tile] = await deleteTileFromList(tile[0], tiles);
+
+    return Array.append<Types.Tile>(
+      [tile[0]],
+      Array.append<Types.Tile>(
+        if (Array.find<Types.Tile>(newTiles, func (val : Types.Tile) : Bool {val.indexRow == Int.max(x - 1,0) and val.indexColumn == y and val.objectId == plantId}) != null) {
+          await getTilesFromTile(x-1,y,plantId,newTiles);
+        } else {
+          [];
+        },
+        Array.append<Types.Tile>(
+          if (Array.find<Types.Tile>(newTiles, func (val : Types.Tile) : Bool {val.indexRow == x + 1 and val.indexColumn == y and val.objectId == plantId}) != null) {
+            await getTilesFromTile(x+1,y,plantId,newTiles);
+          }
+          else {
+            [];
+          },
+          Array.append<Types.Tile>(
+            if (Array.find<Types.Tile>(newTiles, func (val : Types.Tile) : Bool {val.indexRow == x and val.indexColumn == Int.max(y - 1, 0) and val.objectId == plantId}) != null) {
+              await getTilesFromTile(x,y-1,plantId,newTiles);
+            }
+            else {
+              [];
+            },
+            if (Array.find<Types.Tile>(newTiles, func (val : Types.Tile) : Bool {val.indexRow == x and val.indexColumn == y + 1 and val.objectId == plantId}) != null) {
+              await getTilesFromTile(x,y+1,plantId,newTiles);
+            }
+            else {
+              [];
+            }
+          ), 
+        ), 
+      ),
+    );
+  };
+  // check Farm Effect
+  public query func checkEffect(tiles : [Types.Tile]) : async Text {
+    for (effect in state.farmEffects.vals()) {
+      for (tile in tiles.vals()) {        
+        if ((effect.symbol == "T") 
+          and tiles.size() == 7
+          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow and val.indexColumn == Int.max(tile.indexColumn - 1, 0)}) != null)
+          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow and val.indexColumn == tile.indexColumn + 1}) != null)
+          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 1 and val.indexColumn == tile.indexColumn}) != null) 
+          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 2 and val.indexColumn == tile.indexColumn}) != null)
+          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 3 and val.indexColumn == tile.indexColumn}) != null)
+          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 4 and val.indexColumn == tile.indexColumn}) != null)
+        ) {
+          return effect.symbol;
+        };
+
+        if ((effect.symbol == "S") 
+          and tiles.size() == 11
+          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow and val.indexColumn == Int.max(tile.indexColumn - 1, 0)}) != null)
+          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow and val.indexColumn == tile.indexColumn + 1}) != null)
+          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 1 and val.indexColumn == Int.max(tile.indexColumn - 1, 0)}) != null) 
+          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 2 and val.indexColumn == Int.max(tile.indexColumn - 1, 0)}) != null)
+          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 2 and val.indexColumn == tile.indexColumn}) != null)
+          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 2 and val.indexColumn == tile.indexColumn + 1}) != null)
+          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 3 and val.indexColumn == tile.indexColumn + 1}) != null)
+          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 4 and val.indexColumn == Int.max(tile.indexColumn - 1, 0)}) != null)
+          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 4 and val.indexColumn == tile.indexColumn}) != null)
+          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 4 and val.indexColumn == tile.indexColumn + 1}) != null)
+        ) {
+          return effect.symbol;
+        };
+
+        if ((effect.symbol == "I") 
+          and tiles.size() == 9
+          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow and val.indexColumn == Int.max(tile.indexColumn - 1, 0)}) != null)
+          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow and val.indexColumn == tile.indexColumn + 1}) != null)
+          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 1 and val.indexColumn == tile.indexColumn}) != null) 
+          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 2 and val.indexColumn == tile.indexColumn}) != null)
+          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 3 and val.indexColumn == tile.indexColumn}) != null)
+          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 4 and val.indexColumn == Int.max(tile.indexColumn - 1, 0)}) != null)
+          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 4 and val.indexColumn == tile.indexColumn}) != null)
+          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 4 and val.indexColumn == tile.indexColumn + 1}) != null)
+        ) {
+          return effect.symbol;
+        }; 
+
+        if ((effect.symbol == "P") 
+          and tiles.size() == 10
+          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow and val.indexColumn == Int.max(tile.indexColumn - 1, 0)}) != null)
+          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow and val.indexColumn == tile.indexColumn + 1}) != null)
+          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 1 and val.indexColumn == Int.max(tile.indexColumn - 1, 0)}) != null) 
+          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 1 and val.indexColumn == tile.indexColumn + 1}) != null)
+          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 2 and val.indexColumn == Int.max(tile.indexColumn - 1, 0)}) != null)
+          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 2 and val.indexColumn == tile.indexColumn}) != null)
+          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 2 and val.indexColumn == tile.indexColumn + 1}) != null)
+          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 3 and val.indexColumn == Int.max(tile.indexColumn - 1, 0)}) != null)
+          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 4 and val.indexColumn == Int.max(tile.indexColumn - 1, 0)}) != null)
+        ) {
+          return effect.symbol;
+        };
+
+        if ((effect.symbol == "C") 
+          and tiles.size() == 9
+          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow and val.indexColumn == Int.max(tile.indexColumn - 1, 0)}) != null)
+          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow and val.indexColumn == tile.indexColumn + 1}) != null)
+          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 1 and val.indexColumn == Int.max(tile.indexColumn - 1, 0)}) != null) 
+          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 2 and val.indexColumn == Int.max(tile.indexColumn - 1, 0)}) != null)
+          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 3 and val.indexColumn == Int.max(tile.indexColumn - 1, 0)}) != null)
+          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 4 and val.indexColumn == Int.max(tile.indexColumn - 1, 0)}) != null)
+          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 4 and val.indexColumn == tile.indexColumn}) != null)
+          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 4 and val.indexColumn == tile.indexColumn + 1}) != null)
+        ) {
+          return effect.symbol;
+        }; 
+
+      };
+    };
+    return "0";
+  };
+
   
 };
