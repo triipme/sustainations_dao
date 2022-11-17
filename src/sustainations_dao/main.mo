@@ -4627,6 +4627,7 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
           case (?landSlot) {
             let objectId = await createPlant(materialId);
             let createdTile = await createTile(landId, indexRow, indexColumn, objectId);
+            // update Farm Effect
             return #ok("Success");
           };
         };
@@ -4693,6 +4694,8 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
           };
         };
         let deletedTile = state.tiles.delete(tileId);
+        // update Farm Effect
+
         #ok("Success");
       };
     };
