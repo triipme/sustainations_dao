@@ -247,6 +247,14 @@ async function listSceneQuests(idQuest) {
   return list_scene_quest;
 }
 
+async function addAllInventory(characterId, amount) {
+  return new Promise((resolve, reject) => {
+    const { user } = store.getState();
+    const rs = user.actor.addAllInventory(characterId, amount);
+    resolve(rs);
+  });
+};
+
 
 
 
@@ -279,5 +287,6 @@ export {
   getRemainingTime,
   payQuest,
   readEvent,
-  listSceneQuests
+  listSceneQuests,
+  addAllInventory
 }
