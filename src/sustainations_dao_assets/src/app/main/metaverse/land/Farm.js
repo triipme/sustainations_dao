@@ -60,6 +60,7 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
     const interval = setInterval(async () => {
       setTime(Date.now());
       let tile = await loadTileSlots(landSlotProperties);
+
       setTileplant(tile);
     }, 10000);
 
@@ -91,7 +92,7 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
           if (country.properties.status === "fullGrown" && inventoryStatus["dig"] === false && loading === false) {
             setLoading(true)
             console.log("Harvest", await user.actor.harvestTree(country.properties.tileId))
-            setTileplant(await loadTileSlots(landSlotProperties));
+            // setTileplant(await loadTileSlots(landSlotProperties));
             setLoading(false)
           }
           else if (
@@ -119,7 +120,7 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
           } else if (inventoryStatus["dig"] === true && loading === false) {
             setLoading(true)
             console.log("Remove: ", await user.actor.removeTree(country.properties.tileId))
-            setTileplant(await loadTileSlots(landSlotProperties));
+            // setTileplant(await loadTileSlots(landSlotProperties));
             setLoading(false)
           }
         }
@@ -127,6 +128,7 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
     });
   };
   console.log("inventoryStatus", inventoryStatus)
+
   return (
     <>
       <GeoJSON

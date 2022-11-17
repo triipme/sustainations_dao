@@ -298,12 +298,12 @@ async function loadUserLandSlots() {
 
 };
 // Plant Tree
-async function plantTree(landId, indexRow, indexColumn, materialId) {
-  const { user } = store.getState();
-  const func = await user.actor.plantTree(landId, indexRow, indexColumn, materialId);
-  const result = func?.ok;
-  return result;
-}
+// async function plantTree(landId, indexRow, indexColumn, materialId) {
+//   const { user } = store.getState();
+//   const func = await user.actor.plantTree(landId, indexRow, indexColumn, materialId);
+//   const result = func?.ok;
+//   return result;
+// }
 
 // Harvest Tree
 async function harvestTree(tileId) {
