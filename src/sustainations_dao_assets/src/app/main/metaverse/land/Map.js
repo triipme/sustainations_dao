@@ -146,7 +146,6 @@ const Map = () => {
   const handlePurchase = async () => {
     setLoading("purchased")
     let landBuyingStatus = await loadLandBuyingStatus()
-    console.log(landBuyingStatus);
     if (landBuyingStatus != undefined) {
       numRandom = Number(landBuyingStatus.properties.randomTimes)
       map.setView([Number(landBuyingStatus.geometry.coordinates[0][0][1]), Number(landBuyingStatus.geometry.coordinates[0][0][0])], 13)
