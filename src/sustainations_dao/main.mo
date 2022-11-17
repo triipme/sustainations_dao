@@ -4662,7 +4662,7 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
               seedId = plant.seedId;
               hasEffectId = plant.hasEffectId;
               status = "newlyPlanted";
-              plantTime = Time.now();
+              plantTime = Time.now() / 1000000000;
             };
             let updated = Plant.update(updatePlant,state);
             // add harvested product to user's Stash
