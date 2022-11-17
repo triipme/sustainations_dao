@@ -248,6 +248,13 @@ async function readEvent(eventId) {
 }
 
 //Engine
+//quest
+async function createQuestEngine(quest) {
+  const { user } = store.getState();
+  const func = async () => await user.actor.createQuestEngine(quest);
+  const rs = (await func()).ok;
+  return rs;
+}
 // list scene of quest
 async function listSceneQuests(idQuest) {
   const { user } = store.getState();
@@ -268,14 +275,6 @@ async function readEventEngine(eventId) {
   const func = async () => await user.actor.readEventEngine(eventId);
   const event = (await func()).ok;
   return event;
-}
-
-// list scene of quest
-async function listSceneQuests(idQuest) {
-  const { user } = store.getState();
-  const func = async () => await user.actor.listSceneQuests(idQuest);
-  const list_scene_quest = (await func()).ok;
-  return list_scene_quest;
 }
 
 async function addAllInventory(characterId, amount) {
@@ -350,5 +349,6 @@ export {
   loadQuestItemEngines,
   characterTakeOptionEngine,
   characterCollectsMaterialEngines,
-  listItemInventory
+  listItemInventory,
+  createQuestEngine
 }

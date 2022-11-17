@@ -1,119 +1,95 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import FuseLoading from '@fuse/core/FuseLoading';
 import _ from '@lodash';
-import { Controller, useForm, useFormContext } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import Box from '@mui/system/Box';
-import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 import {
   Avatar,
   Button,
   Card,
   CardContent,
-  IconButton,
-  InputAdornment,
-  TextField
+  TextField,
 } from '@mui/material';
-import Typography from '@mui/material/Typography';
+
+import { createQuestEngine } from '../../metaverse/GameApi';
 import LoadingButton from '@mui/lab/LoadingButton';
-import NavLinkAdapter from '@fuse/core/NavLinkAdapter';
-import { v4 as uuidv4 } from 'uuid';
+import Typography from '@mui/material/Typography';
+import { v4 as uuid } from 'uuid'
 
 import { useSelector, useDispatch } from "react-redux";
 import { selectUser, setUser } from 'app/store/userSlice';
-import QRCode from "react-qr-code";
-import { setS3Object, deleteS3Object } from "../../../hooks";
 import { showMessage } from 'app/store/fuse/messageSlice';
-import Event from './Event';
-import SceneImages from './SceneImages';
+
+// AWS3
+const AWS = require('aws-sdk');
+AWS.config.update({
+  accessKeyId: process.env.S3_ACCESS_KEY,
+  secretAccessKey: process.env.S3_SECRET_KEY,
+  region: process.env.S3_REGION,
+});
+
+var s3Bucket = new AWS.S3({ params: { Bucket: process.env.S3_BUCKET } });
+
+
+
 
 const QuestEngine = () => {
-  const navigate = useNavigate();
   const user = useSelector(selectUser);
-  const { profile } = user;
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
-  const currentAvatarPath = profile?.avatar[0];
-  const avatarUUID = currentAvatarPath ? currentAvatarPath.split("/")[2].split(".")[0] : uuidv4();
+  const id = uuid()
 
-  const { control, watch, handleSubmit, formState } = useForm({
+  const { control, handleSubmit, formState } = useForm({
     mode: 'onChange',
     defaultValues: {
-      questName: '',
-      price: '',
+      id: id,
+      name: '',
+      price: 0,
       description: '',
-      backImage: {
-        id: '',
+      imageQuest:
+      {
         base64data: '',
         path: ''
-      },
+      }
     }
   });
-  const avatar = watch('avatar');
-  const backImage = watch('backImage');
-  const { errors } = formState;
-
-  const [events, setEvents] = useState([]);
-  const [eventDatas, setEventDatas] = useState([{}]);
-  const handleAddEventData = (data) => {
-    setEventDatas(prevValues => {
-      return [...prevValues, data]
-    })
-  };
-  const handleAddEvent = () => {
-    setEvents(prevValues => {
-      return [...prevValues, <Event handleAddEventData = {handleAddEventData}/>]
-    })
-  };
-  console.log("Data event",eventDatas)
 
   const onSubmit = async (data) => {
+    console.log(data.questEventName, "quest event name")
     setLoading(true);
+    console.log('Luu data', data.imageQuest.path)
     try {
-      const result = await user.actor.updateUserProfile(
-        [data.username], [data.phone], [data.avatar.path || '']
-      );
-      if ("ok" in result) {
-        let avatarChanged;
-        if (data.avatar.path) {
-          avatarChanged = await setS3Object({
-            file: data.avatar.base64data,
-            name: data.avatar.path
-          });
-        } else {
-          avatarChanged = await deleteS3Object(currentAvatarPath);
-        }
-        Promise.resolve(avatarChanged).then(() => {
-          const newUserState = {
-            role: user.role,
-            actor: user.actor,
-            depositAddress: user.depositAddress,
-            balance: user.balance,
-            principal: user.principal,
-            brandId: user.brandId,
-            profile: result.ok,
-            avatar: data.avatar.base64data
-          };
-          dispatch(setUser(newUserState));
-          dispatch(showMessage({ message: 'Success!' }));
-          navigate('/profile');
-        });
-      } else {
-        throw result?.err;
+      var dataQuest = {
+        id: data.id,
+        name: data.name,
+        price: data.price,
+        description: data.description,
+        images: data.imageQuest.path
       }
-    } catch (error) {
-      console.log(error);
-      const message = {
-        "NotAuthorized": "Please sign in!."
-      }[Object.keys(error)[0]] || 'Error! Please try again later!'
-      dispatch(showMessage({ message }));
+      const resultQuest = await createQuestEngine(dataQuest)
+      if ('Success' == resultQuest) {
+        var buf = Buffer.from(data.imageQuest.base64data, 'base64')
+        var dataS3 = {
+          Key:  data.imageQuest.path,
+          Body: buf,
+          ContentEncoding: 'base64',
+          ContentType: 'image/jpeg'
+        };
+        s3Bucket.putObject(dataS3, function (err, dataS3) {
+          if (err) {
+            console.log('Error uploading data!');
+          } else {
+            console.log('Successfully uploaded the image!');
+          }
+        });
+        dispatch(showMessage({ message: 'Success!' }));
+      }
+    }
+    catch (err) {
+      console.log(err)
+      dispatch(showMessage({ message: 'Error!' }));
     }
     setLoading(false);
   };
-
-  if (!user) {
-    return (<FuseLoading />)
-  }
 
   return (
     <div className="relative flex flex-col flex-auto items-center">
@@ -123,90 +99,95 @@ const QuestEngine = () => {
             <Typography className="mt-32 mb-16 text-3xl font-bold tracking-tight leading-tight">
               Quest info
             </Typography>
-            <div className="text-lg mt-16 mb-8">
-              <span className="text-red-500">*</span>&nbsp;Quest Name
-            </div>
             <Controller
-              name="questName"
               control={control}
+              name="name"
               render={({ field }) => (
                 <TextField
+                  className="mt-32"
                   {...field}
-                  label="Quest Name"
-                  className="mt-8 mb-16"
-                  error={!!errors.questName}
-                  required
-                  helperText={errors?.questName?.message}
-                  autoFocus
+                  label="Quest name"
+                  placeholder="Quest name"
                   id="questName"
                   variant="outlined"
                   fullWidth
                 />
               )}
             />
-            <div className="text-lg mt-16 mb-8">
-              <span className="text-red-500">*</span>&nbsp;Price
-            </div>
             <Controller
+              control={control}
               name="price"
-              control={control}
               render={({ field }) => (
                 <TextField
+                  className="mt-32"
+                  type={"number"}
                   {...field}
-                  label="Price"
-                  className="mt-8 mb-16"
-                  error={!!errors.price}
-                  required
-                  helperText={errors?.price?.message}
-                  id="price"
+                  label="Quest price"
+                  placeholder="Quest price"
+                  id="questPrice"
                   variant="outlined"
                   fullWidth
                 />
               )}
             />
-            <div className="text-lg mt-16 mb-8">
-              <span className="text-red-500">*</span>&nbsp;Description
-            </div>
             <Controller
-              name="description"
               control={control}
+              name="description"
               render={({ field }) => (
                 <TextField
+                  className="mt-32"
                   {...field}
-                  label="Description"
-                  className="mt-8 mb-16"
-                  error={!!errors.description}
-                  required
-                  helperText={errors?.description?.message}
-                  id="description"
+                  label="Quest Description"
+                  placeholder="Quest description"
+                  id="questDescription"
                   variant="outlined"
                   fullWidth
                 />
               )}
             />
-            <div className="text-lg mt-16 mb-8">
-              <span className="text-red-500">*</span>&nbsp;Scene Images
-            </div>
-            <div className="flex">
-              <SceneImages control={control} imageType={"Front"} image={backImage}/>
-              <SceneImages control={control} imageType={"Mid"} image={backImage}/>
-              <SceneImages control={control} imageType={"Back"} image={backImage}/>
-              <SceneImages control={control} imageType={"Obstacle"} image={backImage}/>
-            </div>
-            {events}
-            <Button
-              className="ml-auto" 
-              variant="contained"
-              color="success"
-              onClick={() => {handleAddEvent()}}>
-              + Event
-            </Button>
+            <Controller
+              control={control}
+              name="imageQuest"
+              render={({ field: { onChange } }) => (
+                <Box
+                  className='mt-32'
+                >
+                  <div>
+                    <h3>Image Quest</h3>
+                    <input
+                      accept="image/*"
+                      type="file"
+                      onChange={async (e) => {
+                        function readFileAsync() {
+                          return new Promise((resolve, reject) => {
+                            const file = e.target.files[0];
+                            file.preview = URL.createObjectURL(file)
+                            // setAvatar(file)
+                            if (!file) {
+                              return;
+                            }
+                            const reader = new FileReader();
+                            reader.onload = () => {
+                              resolve({
+                                base64data: `${btoa(reader.result)}`,
+                                path: `development/quests/${id}`
+                              });
+                            };
+                            reader.onerror = reject;
+                            reader.readAsBinaryString(file);
+                          });
+                        }
+                        const newImage = await readFileAsync();
+                        onChange(newImage)
+                      }}
+                    />
+                  </div>
+                </Box>
+              )}
+            />
             <Box
               className="flex items-center mt-40 py-14 pr-16 pl-4 sm:pr-48 sm:pl-36 border-t"
-            > 
-              <Button className="ml-auto" component={NavLinkAdapter} to={-1}>
-                Cancel
-              </Button>
+            >
               <LoadingButton
                 className="ml-8"
                 variant="contained"
@@ -223,5 +204,6 @@ const QuestEngine = () => {
     </div>
   )
 }
+
 
 export default QuestEngine;
