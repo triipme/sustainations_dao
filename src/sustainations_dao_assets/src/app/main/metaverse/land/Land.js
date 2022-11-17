@@ -2,8 +2,6 @@ import { useMemo } from "react";
 import { MapContainer } from "react-leaflet";
 
 import "./styles.css";
-// import BigMap from "./bigmap"
-import Map from "./Map";
 import mapZoom from "./Map";
 import { Outlet, useLocation } from "react-router-dom";
 

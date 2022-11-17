@@ -11,19 +11,18 @@ import { selectUser } from "app/store/userSlice";
 
 
 import {
-  buyLandSlot,
+  // buyLandSlot,
   randomLandSlot,
-  createLandSlot,
+  // createLandSlot,
   loadLandBuyingStatus,
   loadNationsfromCenter,
   loadLandSlotsfromCenter,
-  loadTileSlots,
+  // loadTileSlots,
   getLandIndex,
-  getUserInfo,
-  updateLandBuyingStatus,
-  loadNation,
+  // getUserInfo,
+  // updateLandBuyingStatus,
+  // loadNation,
   unionLandSlots,
-  plantTree
 } from '../LandApi'
 import { ConfigurationServicePlaceholders } from "aws-sdk/lib/config_service_placeholders";
 import BigMap from "./BigMap";
@@ -35,7 +34,6 @@ var numRandom = 3
 var landData = []
 var nationData = []
 var landSlotRand = null
-var landSlotProperties = null
 export var mapZoom = 0
 
 const Map = () => {
@@ -45,7 +43,7 @@ const Map = () => {
   const loadNations = async (i, j) => {
     landData = await loadLandSlotsfromCenter(i, j);
     nationData = await loadNationsfromCenter(i, j);
-    (await plantTree("97-1249", 97, 1249, "m3tomato_seed"));
+    // (await plantTree("97-1249", 97, 1249, "m3tomato_seed"));
   }
   const map = useMap()
   const [purchaseBtn, setPurchaseBtn] = useState(true)
@@ -64,7 +62,7 @@ const Map = () => {
   useEffect(() => {
     const initial = async () => {
       if (loading === "loadingmap") {
-        country = await loadNation();
+        country = (await user.actor.readNation())?.ok;
         if (country === undefined) {
           await loadNations(0, 0)
           setLoading("none")
@@ -126,11 +124,12 @@ const Map = () => {
 
     layer.on({
       click: async (e) => {
-        console.log(country.properties);
+        // console.log(country.properties);
         if (country.properties.id === principal) {
           setModeBtn(true)
           setPurchaseBtn(false)
           setFarmProperties(country.properties)
+          // console.log("country: ", country.properties)
         }
       }
     });
@@ -155,11 +154,11 @@ const Map = () => {
     }
     else {
       // if having enough ICP
-      let isBuy = await buyLandSlot()
+      let isBuy = (await user.actor.buyLandSlot())?.ok;
       if (isBuy !== undefined) {
         numRandom -= 1
         landSlotRand = await randomLandSlot()
-        await updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom)
+        await user.actor.updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom)
         map.setView([landSlotRand.geometry.coordinates[0][0][1], landSlotRand.geometry.coordinates[0][0][0]], 13)
       } else {
         // if not having enough ICP
@@ -173,7 +172,7 @@ const Map = () => {
   const handleAccept = async () => {
     setLoading("accept")
     let landBuyingStatus = await loadLandBuyingStatus()
-    let country = await loadNation()
+    let country = (await user.actor.readNation())?.ok
 
     //convert Bigint utms to Number utms
     let utms = undefined
@@ -195,7 +194,7 @@ const Map = () => {
         [(Number(landBuyingStatus.properties.i) + 1) * 1000, Number(landBuyingStatus.properties.j) * 1000],
       ]]
     )
-    await createLandSlot(landBuyingStatus.properties.i, landBuyingStatus.properties.j, nationUTMS[0][0])
+    await user.actor.createLandSlot(landBuyingStatus.properties.i, landBuyingStatus.properties.j, nationUTMS[0][0],  20, "N", 1000)
     numRandom = 3
     landSlotRand = []
     await loadNations(Number(landBuyingStatus.properties.i), Number(landBuyingStatus.properties.j))
@@ -207,10 +206,10 @@ const Map = () => {
   const handleTryAgain = async () => {
     setLoading("try")
     landSlotRand = await randomLandSlot()
-    await updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom)
+    // await user.actor.updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom)
     map.setView([landSlotRand.geometry.coordinates[0][0][1], landSlotRand.geometry.coordinates[0][0][0]], 13)
     numRandom -= 1
-    await updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom)
+    await user.actor.updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom)
     setLoading("none")
   }
   return (

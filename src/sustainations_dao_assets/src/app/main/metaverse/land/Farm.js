@@ -4,7 +4,9 @@ import { selectUser } from "app/store/userSlice";
 import { GeoJSON, useMap, useMapEvents, ImageOverlay, MapContainer } from "react-leaflet";
 import "./styles.css";
 import UIFarm from "./FarmUI";
-import { subtractInventory, loadTileSlots, listInventory, plantTree, loadUserLandSlots } from "../LandApi";
+import {
+  loadTileSlots,
+} from "../LandApi";
 import Land from "./Land";
 import BigMap from "./BigMap";
 import Loading from "./loading";
@@ -21,14 +23,13 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
   const [loading, setLoading] = useState(false)
   const map = useMap();
   const navigate = useNavigate();
-  // console.log("mapFeatures, landSlotProperties", mapFeatures, landSlotProperties)
   useEffect(() => {
     const load = async () => {
       const characterid = await user.actor.readCharacter();
       setChacterId(characterid.ok[0]);
       // console.log(characterid.ok[0])
 
-      const inv = await listInventory(characterid.ok[0]);
+      const inv = await user.actor.listInventory(characterid.ok[0]);
       // console.log(inv.ok)
       setInventory(inv.ok);
     };
@@ -100,16 +101,16 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
 
             console.log(
               "Plant tree status: ",
-              await plantTree(
+              await user.actor.plantTree(
                 country.properties.landId,
                 country.properties.i,
                 country.properties.j,
                 inventory[i].materialId
               )
             );
-            await subtractInventory(inventory[i].id);
+            await user.actor.subtractInventory(inventory[i].id);
             let tile = await loadTileSlots(landSlotProperties);
-            let inv = await listInventory(characterId);
+            let inv = await user.actor.listInventory(characterId);
             setTileplant(tile);
             setInventory(inv.ok);
             setLoading(false)
@@ -130,14 +131,8 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
       <UIFarm></UIFarm>
       <Inventory inventory={inventory}></Inventory>
       {/* <ShowPlant inventory={inventory}></ShowPlant> */}
-      <button
-        className="button-85"
-        style={{ top: "250px" }}
-        onClick={() => {
-          navigate("/metaverse/land");
-        }}>
-        Go to map mode
-      </button>
+
+
     </>
   );
 };
@@ -168,7 +163,6 @@ const Inventory = ({ inventory }) => {
         <>
           {inventory.map((value, i) => {
             if (value.materialName !== "wood" && value.materialName !== "seed") {
-              let bgColor
 
               let pathItem = path + value.materialName + '-icon.png'
               return (
@@ -224,42 +218,46 @@ const CreateBound = ({ latlng, tileplant, loading }) => {
 };
 
 function FarmContainer() {
+  const user = useSelector(selectUser);
   const { state: properties } = useLocation();
   const [farmFeatures, setFarmFeatures] = useState();
   const [farmProperties, setFarmProperties] = useState(properties);
+  const [indexFarm, setIndexFarm] = useState(0)
   const [isDone, setIsDone] = useState(false)
-  // console.log("properties", properties)
+  const [listFarm, setListFarm] = useState(0)
   useEffect(() => {
     (async () => {
-      if (farmProperties) {
-        let myFarmProperties = farmProperties;
-        setFarmProperties(myFarmProperties);
-        setFarmFeatures(await loadTileSlots(myFarmProperties));
-        setIsDone(true)
-      } else {
-        let myFarmProperties = await loadUserLandSlots()
+      let myFarmProperties = (await user.actor.listUserLandSlots())?.ok
+
+      // console.log("F",myFarmProperties)
+      // if (farmProperties) {
+      //   myFarmProperties = farmProperties;
+      //   setFarmProperties(myFarmProperties);
+      //   setFarmFeatures(await loadTileSlots(myFarmProperties));
+      //   setIsDone(true)
+      // } else {
+      if (myFarmProperties) {
+        let myFarm = {
+          id: myFarmProperties[indexFarm].id,
+          zoneNumber: myFarmProperties[indexFarm].zoneNumber,
+          zoneLetter: myFarmProperties[indexFarm].zoneLetter,
+          i: myFarmProperties[indexFarm].indexRow,
+          j: myFarmProperties[indexFarm].indexColumn,
+        };
+
+        setFarmProperties(myFarm);
         // console.log("run")
-        // console.log("myFarmProperties ", myFarmProperties)
-        if (myFarmProperties) {
-          let myFarm = {
-            id: myFarmProperties[0].id,
-            zoneNumber: myFarmProperties[0].zoneNumber,
-            zoneLetter: myFarmProperties[0].zoneLetter,
-            i: myFarmProperties[0].indexRow,
-            j: myFarmProperties[0].indexColumn,
-          };
-          setFarmProperties(myFarm);
-          // console.log("run")
 
-          setFarmFeatures(await loadTileSlots(myFarm));
-          // console.log("run")
-
-        }
-        setIsDone(true)
+        setFarmFeatures(await loadTileSlots(myFarm));
+        // console.log("run")
+        setListFarm(Object.keys(myFarmProperties).length)
       }
+      setIsDone(true)
+      // }
     })();
-  }, []);
-  // console.log("is done: ", isDone)
+  }, [indexFarm]);
+  console.log("index:", indexFarm, listFarm)
+
   return (
     <Land>
       {isDone === true ? (
@@ -267,6 +265,25 @@ function FarmContainer() {
           {farmFeatures ? <>
             <BigMap />
             <Back />
+
+            {indexFarm > 0 ? <button
+              className="btn-farm"
+              style={{ top: "250px", left: "50px" }}
+              onClick={() => {
+                setIsDone(false)
+                setIndexFarm(indexFarm - 1)
+              }}>
+              Previous Farm
+            </button> : <></>}
+            {indexFarm < listFarm - 1 ? <button
+              className="btn-farm"
+              style={{ top: "250px", right: "50px" }}
+              onClick={() => {
+                setIsDone(false)
+                setIndexFarm(indexFarm + 1)
+              }}>
+              Next Farm
+            </button> : <></>}
             <Farm mapFeatures={farmFeatures} landSlotProperties={farmProperties} />
           </> : (
             <div style={{
