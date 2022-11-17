@@ -260,6 +260,7 @@ async function loadTileSlots(properties) {
     };
     result.features.push(feature)
   }
+  // console.log(result.features)
   return result.features
 }
 
@@ -285,12 +286,6 @@ async function plantTree(landId, indexRow, indexColumn, materialId) {
   return result;
 }
 
-async function getTilesFromTile(indexRow, indexColumn, plantId, tiles) {
-  const { user } = store.getState();
-  const func = await user.actor.getTilesFromTile(indexRow, indexColumn, plantId, tiles);
-  const result = func?.ok;
-  return result;
-}
 // Draw polygon 
 
 
@@ -312,6 +307,5 @@ export {
   loadNation,
   unionLandSlots,
   plantTree,
-  loadUserLandSlots,
-  getTilesFromTile
+  loadUserLandSlots
 }

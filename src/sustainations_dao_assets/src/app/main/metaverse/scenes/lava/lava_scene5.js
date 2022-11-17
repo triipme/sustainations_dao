@@ -5,7 +5,8 @@ import {
   loadEventOptions,
   updateCharacterStats,
   listCharacterSelectsItems,
-  createCharacterCollectsMaterials
+  createCharacterCollectsMaterials,
+  addAllInventory
 } from '../../GameApi';
 import { settings } from '../settings';
 import { func } from 'prop-types';
@@ -150,14 +151,14 @@ export default class lava_scene5 extends BaseScene {
       .setInteractive().setScale(0.25).setVisible(false).setScrollFactor(0).setScale(0.25);
 
     this.premiumPopupCloseBtn.on('pointerdown', () => {
-      console.log("Hello World");
+
       this.clickSound.play();
       this.isInteracted = true;
       this.premiumPopupWindow.setVisible(false);
       this.premiumPopupCloseBtn.setVisible(false);
       this.des.setVisible(false);
       this.triggerPause();
-      console.log("Hello World");
+
     });
 
     // load description of event
@@ -168,6 +169,18 @@ export default class lava_scene5 extends BaseScene {
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
       text: "A large chest is in front of us, is it a treasure?",
+      origin: { x: 0.5, y: 0.5 },
+      style: {
+        font: 'bold 25px Arial',
+        fill: 'gray',
+        wordWrap: { width: 400 }
+      }
+    }).setVisible(false).setScrollFactor(0);
+
+    this.desChest = this.make.text({
+      x: gameConfig.scale.width / 2,
+      y: gameConfig.scale.height / 2 - 10,
+      text: "Congratulations ! You receive some seeds.\nBuy a land and start farming now.",
       origin: { x: 0.5, y: 0.5 },
       style: {
         font: 'bold 25px Arial',
@@ -203,12 +216,43 @@ export default class lava_scene5 extends BaseScene {
         this.options[idx].setFrame(2);
       }
 
-      this.options[idx].on('pointerdown', () => {
+      this.options[idx].on('pointerdown',  () => {
         if (takeable) {
-          this.triggerContinue();
-          this.clickSound.play();
-          this.sfx_char_footstep.play();
-          this.sfx_obstacle_remove.play();
+
+          if (this.eventOptions[idx][1].description === 'Use the key to open the golden chest') {
+            this.premiumPopupWindow.setVisible(true);
+            this.premiumPopupCloseBtn.setVisible(true);
+            this.desChest.setVisible(true);
+
+            this.premiumPopupCloseBtn.on('pointerdown', async () => {
+
+              this.clickSound.play();
+              this.premiumPopupWindow.setVisible(false);
+              this.premiumPopupCloseBtn.setVisible(false);
+              this.desChest.setVisible(false);
+
+              this.triggerContinue();
+              this.clickSound.play();
+              this.sfx_char_footstep.play();
+              this.sfx_obstacle_remove.play();
+              console.log(await addAllInventory(this.characterData.id, 3))
+
+            });
+          } else {
+            this.triggerContinue();
+            this.clickSound.play();
+            this.sfx_char_footstep.play();
+            this.sfx_obstacle_remove.play();
+          }
+          this.veil.setVisible(false);
+          this.selectAction.setVisible(false);
+          for (const idx in this.options) {
+            this.options[idx].setVisible(false);
+            this.options[idx].text.setVisible(false);
+          }
+
+
+
           // stats after choose option
           this.setValue(this.hp, this.characterTakeOptions[idx].currentHP / this.characterTakeOptions[idx].maxHP * 100);
           this.setValue(this.stamina, this.characterTakeOptions[idx].currentStamina / this.characterTakeOptions[idx].maxStamina * 100);
@@ -225,7 +269,7 @@ export default class lava_scene5 extends BaseScene {
           // update character after choose option
           updateCharacterStats(this.characterTakeOptions[idx]);
           // create charactercollectsmaterials after choose option
-          createCharacterCollectsMaterials(this.characterCollectMaterials[idx]);
+          // createCharacterCollectsMaterials(this.characterCollectMaterials[idx]);
         }
       });
 

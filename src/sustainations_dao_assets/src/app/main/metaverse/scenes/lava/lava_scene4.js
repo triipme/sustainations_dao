@@ -237,7 +237,7 @@ export default class lava_scene4 extends BaseScene {
           // update character after choose option
           updateCharacterStats(this.characterTakeOptions[idx]);
           // create charactercollectsmaterials after choose option
-          createCharacterCollectsMaterials(this.characterCollectMaterials[idx]);
+          // createCharacterCollectsMaterials(this.characterCollectMaterials[idx]);
         }
       });
 
