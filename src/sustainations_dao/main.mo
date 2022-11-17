@@ -3980,6 +3980,17 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
             rsStash := true;
           };
         };
+
+        if (rsStash==false) {
+          let newStash : Types.Stash = {
+            id = await createUUID();
+            userId = userId;
+            usableItemId = seed.harvestedProductId;
+            quality = "Good";
+            amount = Float.toInt(await Random.randomNumber(Float.fromInt(seed.minAmount),Float.fromInt(seed.maxAmount)));
+          };
+          let updated = Stash.create(newStash,state);
+        };
       };
     };
     #ok("Success");
