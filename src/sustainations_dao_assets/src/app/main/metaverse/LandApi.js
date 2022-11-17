@@ -185,15 +185,6 @@ async function loadLandTransferHistories() {
   return landTransferHistories;
 };
 
-// update LandBuyingStatus
-async function updateLandBuyingStatus(indexRow, indexColumn, randomTimes) {
-  const { user } = store.getState();
-  const func = async () => await user.actor.updateLandBuyingStatus(parseInt(indexRow), parseInt(indexColumn), randomTimes);
-  const result = (await func()).ok;
-  return result;
-
-};
-
 // load LandBuyingStatuses
 async function loadLandBuyingStatus() {
   const { user } = store.getState();
@@ -322,7 +313,6 @@ export {
   createLandSlot,
   loadLandTransferHistories,
   buyLandSlot,
-  updateLandBuyingStatus,
   loadLandBuyingStatus,
   loadNationsfromCenter,
   loadLandSlotsfromCenter,

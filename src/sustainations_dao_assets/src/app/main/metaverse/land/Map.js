@@ -20,7 +20,6 @@ import {
   loadTileSlots,
   getLandIndex,
   getUserInfo,
-  updateLandBuyingStatus,
   loadNation,
   unionLandSlots,
   plantTree
@@ -147,8 +146,8 @@ const Map = () => {
   const handlePurchase = async () => {
     setLoading("purchased")
     let landBuyingStatus = await loadLandBuyingStatus()
+    console.log(landBuyingStatus);
     if (landBuyingStatus != undefined) {
-      // let landBuyingStatus = await loadLandBuyingStatus()
       numRandom = Number(landBuyingStatus.properties.randomTimes)
       map.setView([Number(landBuyingStatus.geometry.coordinates[0][0][1]), Number(landBuyingStatus.geometry.coordinates[0][0][0])], 13)
       landSlotRand = landBuyingStatus
@@ -159,7 +158,6 @@ const Map = () => {
       if (isBuy !== undefined) {
         numRandom -= 1
         landSlotRand = await randomLandSlot()
-        await updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom)
         map.setView([landSlotRand.geometry.coordinates[0][0][1], landSlotRand.geometry.coordinates[0][0][0]], 13)
       } else {
         // if not having enough ICP
@@ -207,10 +205,8 @@ const Map = () => {
   const handleTryAgain = async () => {
     setLoading("try")
     landSlotRand = await randomLandSlot()
-    await updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom)
     map.setView([landSlotRand.geometry.coordinates[0][0][1], landSlotRand.geometry.coordinates[0][0][0]], 13)
     numRandom -= 1
-    await updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom)
     setLoading("none")
   }
   return (
