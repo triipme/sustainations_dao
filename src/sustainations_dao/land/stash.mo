@@ -1,0 +1,28 @@
+import AsyncSource "mo:uuid/async/SourceV4";
+import UUID "mo:uuid/UUID";
+import Int "mo:base/Int";
+
+import Option "mo:base/Option";
+import Types "../types";
+import State "../state";
+
+module Stash {
+  public func getData(stash : Types.Stash) : Types.Stash {
+    let newStash : Types.Stash = {
+      id = stash.id;
+      userId = stash.userId;
+      usableItemId = stash.usableItemId;
+      quality = stash.quality;
+      amount = stash.amount;
+    };
+    return newStash;
+  };
+
+  public func create(stash : Types.Stash, state : State.State) {
+    state.stashes.put(stash.id, getData(stash));
+  };
+
+  public func update(stash : Types.Stash, state : State.State) {
+    state.stashes.put(stash.id, getData(stash));
+  };
+}

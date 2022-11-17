@@ -35,12 +35,21 @@ function listInventory(characterId) {
   });
 };
 
-// list Inventory
+// subtract Inventory
 function subtractInventory(inventoryId) {
   return new Promise((resolve, reject) => {
     const { user } = store.getState();
     const rs = user.actor.subtractInventory(inventoryId);
     resolve(rs);
+  });
+};
+
+// list Stash
+function listStash() {
+  return new Promise((resolve, reject) => {
+    const { user } = store.getState();
+    const rs = user.actor.listStash();
+    resolve(rs).ok;
   });
 };
 
@@ -285,17 +294,29 @@ async function plantTree(landId, indexRow, indexColumn, materialId) {
   return result;
 }
 
-// async function readCharacter() {
-//   const { user } = store.getState();
+// Harvest Tree
+async function harvestTree(tileId) {
+  const { user } = store.getState();
+  const func = await user.actor.harvestTree(tileId);
+  const result = func?.ok;
+  return result;
+}
 
-// }
-// Draw polygon 
+// Remove Tree
+async function removeTree(tileId) {
+  const { user } = store.getState();
+  const func = await user.actor.removeTree(tileId);
+  const result = func?.ok;
+  return result;
+}
+
 
 
 export {
   getUserInfo,
   listInventory,
   subtractInventory,
+  listStash,
   listCharacters,
   randomLandSlot,
   createLandSlot,
@@ -310,5 +331,7 @@ export {
   loadNation,
   unionLandSlots,
   plantTree,
+  harvestTree,
+  removeTree,
   loadUserLandSlots
 }

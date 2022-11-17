@@ -40,6 +40,7 @@ import GearRarity "./game/gearRarity";
 import GearSubstat "./game/gearSubstat";
 import Material "./game/material";
 import Inventory "./game/inventory";
+import Stash "./land/stash";
 import LandConfig "./land/landConfig";
 import LandSlot "./land/landSlot";
 import Nation "./land/nation";
@@ -105,6 +106,7 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
   private stable var gearSubstats : [(Text, Types.GearSubstat)] = [];
   private stable var materials : [(Text, Types.Material)] = [];
   private stable var inventories : [(Text, Types.Inventory)] = [];
+  private stable var stashes : [(Text, Types.Stash)] = [];
   private stable var landConfigs : [(Text, Types.LandConfig)] = [];
   private stable var landSlots : [(Text, Types.LandSlot)] = [];
   private stable var nations : [(Text, Types.Nation)] = [];
@@ -157,6 +159,7 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
     gearSubstats := Iter.toArray(state.gearSubstats.entries());
     materials := Iter.toArray(state.materials.entries());
     inventories := Iter.toArray(state.inventories.entries());
+    stashes := Iter.toArray(state.stashes.entries());
     landConfigs := Iter.toArray(state.landConfigs.entries());
     landSlots := Iter.toArray(state.landSlots.entries());
     nations := Iter.toArray(state.nations.entries());
@@ -280,6 +283,9 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
     };
     for ((k, v) in Iter.fromArray(inventories)) {
       state.inventories.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(stashes)) {
+      state.stashes.put(k, v);
     };
     for ((k, v) in Iter.fromArray(landConfigs)) {
       state.landConfigs.put(k, v);
@@ -3929,17 +3935,90 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
         return #err(#NotFound);
       };
       case (?inventory) {
-        let updateInventory : Types.Inventory = {
-          id = inventory.id;
-          characterId = inventory.characterId;
-          materialId = inventory.materialId;
-          amount = Int.max(inventory.amount -1, 0);
+        let newAmount = Int.max(inventory.amount -1, 0);
+        if  (newAmount == 0) {
+          let deleted = state.inventories.delete(inventoryId);
+        }
+        else {
+          let updateInventory : Types.Inventory = {
+            id = inventory.id;
+            characterId = inventory.characterId;
+            materialId = inventory.materialId;
+            amount = Int.max(inventory.amount -1, 0);
+          };
+          let updated = Inventory.update(updateInventory, state);
         };
-        let updated = Inventory.update(updateInventory, state);
         return #ok("Success");
       };
     };
   };
+
+
+  // Stash
+  public shared ({ caller }) func createStash(userId : Text,seedId : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsSeed = state.seeds.get(seedId);
+    switch rsSeed {
+      case null {
+        return #err(#NotFound);
+      };
+      case (?seed) {
+        var rsStash : Bool = false;
+        for ((K, stash) in state.stashes.entries()) {
+          if (stash.userId == userId and stash.usableItemId == seed.harvestedProductId) {
+            let updateStash : Types.Stash = {
+              id = stash.id;
+              userId = stash.userId;
+              usableItemId = stash.usableItemId;
+              quality = stash.quality;
+              amount = stash.amount + Float.toInt(await Random.randomNumber(Float.fromInt(seed.minAmount),Float.fromInt(seed.maxAmount)));
+            };
+            let updated = Stash.update(updateStash,state);
+            rsStash := true;
+          };
+        };
+      };
+    };
+    #ok("Success");
+  };
+
+
+  public type StashInfo = {
+    id : Text;
+    userId : Text;
+    usableItemId : Text;
+    usableItemName : Text;
+    amount : Int;
+  };
+
+  public shared query ({ caller }) func listStash() : async Response<[StashInfo]> {
+    var list : [StashInfo] = [];
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    for ((_, stash) in state.stashes.entries()) {
+      if (stash.userId == Principal.toText(caller)) {
+        let rsUsableItem = state.usableItems.get(stash.usableItemId);
+        switch (rsUsableItem) {
+          case null {};
+          case (?usableItem) {
+            let stashInfo : StashInfo = {
+              id = stash.id;
+              userId = stash.userId;
+              usableItemId = stash.usableItemId;
+              usableItemName = usableItem.name;
+              amount = stash.amount;
+            };
+            list := Array.append<StashInfo>(list, [stashInfo]);
+          };
+        };
+      };
+    };
+    #ok((list));
+  };
+
 
   // convert utm2lonlat
   public shared func utm2lonlat(easting : Float, northing : Float, zoneNum : Int32, zoneLetter : Text) : async (Float, Float) {
@@ -4521,12 +4600,73 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
         };
       };
     };
-
   };
 
   public query func plantedTreesCounter() : async Response<Nat> {
     #ok(state.plants.size());
   };
+
+  // Harvest Tree
+  public shared ({ caller }) func harvestTree(tileId : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+
+    let rsTile = state.tiles.get(tileId);
+    switch (rsTile) {
+      case null {
+        #err(#NotFound);
+      };
+      case (?tile) {
+        // update plant: status to newlyPlanted and plantingTime to Now
+        let plantId = tile.objectId;
+        let rsPlant = state.plants.get(plantId);
+        switch (rsPlant) {
+          case null {
+          };
+          case (?plant) {
+            let updatePlant : Types.Plant = {
+              id = plant.id;
+              seedId = plant.seedId;
+              hasEffectId = plant.hasEffectId;
+              status = "newlyPlanted";
+              plantTime = Time.now();
+            };
+            let updated = Plant.update(updatePlant,state);
+            // add harvested product to user's Stash
+            ignore await createStash(Principal.toText(caller),plant.seedId);
+          };
+        };
+        #ok("Success");
+      };
+    };
+  };
+
+  // Remove Tree
+  public shared ({ caller }) func removeTree(tileId : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsTile = state.tiles.get(tileId);
+    switch (rsTile) {
+      case (null) { #err(#NotFound) };
+      case (?V) {
+        let plantId = V.objectId;
+        let rsPlant = state.plants.get(plantId);
+        switch (rsPlant) {
+          case null {
+          };
+          case (?plant) {
+            let deletedPlant = state.plants.delete(plantId);
+          };
+        };
+        let deletedTile = state.tiles.delete(tileId);
+        #ok("Success");
+      };
+    };
+  };
+
+
 
   // Tile
   public shared ({ caller }) func createTile(landId : Text, indexRow : Nat, indexColumn : Nat, objectId : Text) : async Response<Text> {

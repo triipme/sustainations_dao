@@ -283,6 +283,8 @@ module {
     amount : Int;
   };
 
+
+
   // Land
   //--------------------- Land Config -------------------//
   public type LandConfig = {
@@ -349,7 +351,17 @@ module {
     j : Nat;
     coordinates: [[[Float]]];
   };
-//-------------------------Farm------------------------------//
+// Farm
+//--------------------- Stash ---------------------//
+public type Stash = {
+  id : Text;
+  userId : Text;
+  usableItemId : Text;
+  quality : Text;
+  amount : Int; 
+};
+
+//-------------------------Tile------------------------------//
   public type Tile = {
     id : Text;
     landSlotId : Text;
@@ -358,6 +370,7 @@ module {
     objectId : Text;
   };
 
+//--------------------- Farm Object ---------------------//
   public type FarmObject = {
     id : Text;
     landSlotId : Text;
@@ -368,6 +381,7 @@ module {
     remainingTime : Int;
   };
 
+//--------------------- Seed ---------------------//
   public type Seed = {
     id : Text;
     harvestedProductId : Text;
@@ -383,6 +397,7 @@ module {
     maxAmount : Int;
   };
 
+//--------------------- Plant ---------------------//
   public type Plant = {
     id : Text;
     seedId : Text;
