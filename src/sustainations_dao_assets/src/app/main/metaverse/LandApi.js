@@ -48,6 +48,15 @@ function listCharacters() {
 //   return result;
 // };
 
+// list Stash
+function listStash() {
+  return new Promise((resolve, reject) => {
+    const { user } = store.getState();
+    const rs = user.actor.listStash();
+    resolve(rs).ok;
+  });
+};
+
 
 // buy LandSlot
 async function buyLandSlot() {
@@ -289,17 +298,36 @@ async function loadUserLandSlots() {
 
 };
 // Plant Tree
-// async function plantTree(landId, indexRow, indexColumn, materialId) {
-//   const { user } = store.getState();
-//   const func = await user.actor.plantTree(landId, indexRow, indexColumn, materialId);
-//   const result = func?.ok;
-//   return result;
-// }
+async function plantTree(landId, indexRow, indexColumn, materialId) {
+  const { user } = store.getState();
+  const func = await user.actor.plantTree(landId, indexRow, indexColumn, materialId);
+  const result = func?.ok;
+  return result;
+}
+
+// Harvest Tree
+async function harvestTree(tileId) {
+  const { user } = store.getState();
+  const func = await user.actor.harvestTree(tileId);
+  const result = func?.ok;
+  return result;
+}
+
+// Remove Tree
+async function removeTree(tileId) {
+  const { user } = store.getState();
+  const func = await user.actor.removeTree(tileId);
+  const result = func?.ok;
+  return result;
+}
+
+
 
 export {
   getUserInfo,
   // listInventory,
   // subtractInventory,
+  listStash,
   listCharacters,
   randomLandSlot,
   createLandSlot,
@@ -314,5 +342,7 @@ export {
   // loadNation,
   unionLandSlots,
   // plantTree,
-  loadUserLandSlots,
+  harvestTree,
+  removeTree,
+  loadUserLandSlots
 }
