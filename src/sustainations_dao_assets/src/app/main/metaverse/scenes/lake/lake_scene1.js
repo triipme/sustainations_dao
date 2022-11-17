@@ -5,7 +5,8 @@ import {
   loadEventOptions,
   updateCharacterStats,
   listCharacterSelectsItems,
-  createCharacterCollectsMaterials
+  createCharacterCollectsMaterials,
+  listCharacterCollectsMaterials
 } from '../../GameApi';
 import { settings } from '../settings';
 import { func } from 'prop-types';
@@ -226,7 +227,7 @@ export default class lake_scene1 extends BaseScene {
         this.options[idx].setFrame(2);
       }
 
-      this.options[idx].on('pointerdown', () => {
+      this.options[idx].on('pointerdown', async () => {
         if (takeable) {
           this.triggerContinue();
           this.clickSound.play();

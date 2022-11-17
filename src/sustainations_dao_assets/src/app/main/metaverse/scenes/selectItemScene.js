@@ -8,7 +8,9 @@ import {
   loadItemUrl,
   resetCharacter,
   loadCharacterAwait,
-  resetCharacterCollectsMaterials
+  resetCharacterCollectsMaterials,
+  listSceneQuests,
+  loadQuestItemEngines
 } from '../GameApi';
 import { throws } from 'assert';
 
@@ -62,17 +64,44 @@ class selectItemScene extends BaseScene {
         successCallback();
       });
     }, this);
+
+    //For Engine
     this.load.rexAwait(function (successCallback, failureCallback) {
-      loadQuestItems(this.map).then((result) => {
-        this.questItems = result;
-        for (const index in result) {
-          this.itemNames.push(result[index].name);
-          this.itemStrength.push(result[index].strengthRequire);
-          this.load.image(result[index].name, loadItemUrl(result[index].images));
-        };
+      listSceneQuests("engine").then((result) => { // for test
+        this.listScene = result;
         successCallback();
       });
-    }, this);
+    }, this)
+
+    if  (this.map == "engine"){
+      this.load.rexAwait(function (successCallback, failureCallback) {
+        loadQuestItemEngines(this.map).then((result) => {
+          if (result != []){}
+          this.questItems = result;
+          console.log("result: ", result);
+          for (const index in result) {
+            this.itemNames.push(result[index].name);
+            this.itemStrength.push(result[index].strengthRequire);
+            this.load.image(result[index].name, loadItemUrl(result[index].images));
+          };
+          successCallback();
+        });
+      }, this)
+    }
+    else {
+      this.load.rexAwait(function (successCallback, failureCallback) {
+        loadQuestItems(this.map).then((result) => {
+          if (result != []){}
+          this.questItems = result;
+          for (const index in result) {
+            this.itemNames.push(result[index].name);
+            this.itemStrength.push(result[index].strengthRequire);
+            this.load.image(result[index].name, loadItemUrl(result[index].images));
+          };
+          successCallback();
+        });
+      }, this)
+    }
 
     //preload
     this.clearCache();
@@ -189,8 +218,10 @@ class selectItemScene extends BaseScene {
     });
     this.btnGo.on('pointerout', () => {
       this.btnGo.setFrame(0);
+
     });
-    this.btnGo.on('pointerdown', () => {
+
+    this.btnGo.on('pointerdown', async () => {
       this.clickSound.play();
       switch (data.map) {
         case 'catalonia1':
@@ -205,8 +236,9 @@ class selectItemScene extends BaseScene {
         case 'lake':
           this.scene.start('lake_scene1');
           break;
-        case 'city':
-          this.scene.start('city_scene1');
+        case 'engine':
+          // this.scene.start('BaseEngine', {  listScene: await listSceneQuests("qe1")});
+          this.scene.start('Engine', { listScene: this.listScene });
           break;
         default:
           console.log('invalid map name');

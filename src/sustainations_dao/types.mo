@@ -59,7 +59,9 @@ module {
   public type Vote = { #no; #yes };
   public type VoteArgs = { vote : Vote; proposalId : Text };
   public type Voter = {
-    uid : Principal; vote : Vote; timestamp : Time.Time
+    uid : Principal;
+    vote : Vote;
+    timestamp : Time.Time;
   };
   public type ProposalType = {
     #project;
@@ -159,9 +161,9 @@ module {
 
   public type CharacterCollectsMaterials = {
     id : Text;
-    characterId: Text;
-    materialId: Text;
-    amount: Int;
+    characterId : Text;
+    materialId : Text;
+    amount : Int;
   };
 
   //--------------------- Quest ---------------------//
@@ -171,6 +173,28 @@ module {
     price : Nat64;
     description : Text;
     images : Text;
+  };
+
+  //--------------------- Quest Engine---------------------//
+  public type QuestEngine = {
+    id : Text;
+    name : Text;
+    price : Nat64;
+    description : Text;
+    images : Text;
+    isActive : Bool;
+    dateCreate : Time.Time;
+    listScene : [Text];
+  };
+
+  //--------------------- Scene ---------------------//
+  public type Scene = {
+    id : Text;
+    idEvent : Text;
+    front : Text;
+    mid : Text;
+    back : Text;
+    obstacle : Text;
   };
 
   //--------------------- Item ---------------------//
@@ -428,11 +452,15 @@ module {
   ];
 
   public let refillProductCategories = [
-    "Food", "Spices", "Body Care", "Household Goods"
+    "Food",
+    "Spices",
+    "Body Care",
+    "Household Goods"
   ];
 
   public let proposalFundingTypes = [
-    "100% Funded", "Partially Funded"
+    "100% Funded",
+    "Partially Funded"
   ];
 
   // Refill Stations

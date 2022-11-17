@@ -1,8 +1,7 @@
 import Phaser from 'phaser';
-import BaseScene from './BaseScene'
+import BaseScene from './BaseScene';
 
 import {
-  gainCharacterExp,
   openInventory,
   createInventory,
   loadCharacter,
@@ -24,6 +23,10 @@ class thanks extends BaseScene {
     this.addLoadingScreen();
     this.clearSceneCache();
     this.load.image('bg', bg);
+<<<<<<< HEAD
+=======
+
+>>>>>>> 61347680eb328b061e40ee62e8376887498dd87b
     this.load.rexAwait(function (successCallback, failureCallback) {
       loadCharacter().then((result) => {
         this.characterData = result.ok[1];
@@ -45,11 +48,11 @@ class thanks extends BaseScene {
         this.pregameSound.stop();
         this.scene.start('selectMap');
       });
+
     createInventory(this.characterData.id);
     resetCharacterCollectsMaterials(this.characterData.id);
     gainCharacterExp(this.characterData);
-    this.inventory = await openInventory(this.characterData.id);
+    this.inventory = openInventory(this.characterData.id);
   }
-
 }
 export default thanks;

@@ -32,6 +32,12 @@ module {
       players : Map<Text, Types.MemoryCardEnginePlayer>;
       rewards : Map<Text, Types.MemoryCardEngineReward>;
     };
+    questEngine : {
+      quests : TrieMap.TrieMap<Text, Types.QuestEngine>;
+      events : TrieMap.TrieMap<Text, Types.Event>;
+      scenes : TrieMap.TrieMap<Text, Types.Scene>;
+      eventOptions : TrieMap.TrieMap<Text, Types.EventOption>;
+    };
     characterClasses : Map<Text, Types.CharacterClass>;
     characters : Map<Text, Types.Character>;
     characterTakesOptions : Map<Text, Types.CharacterTakesOption>;
@@ -45,8 +51,8 @@ module {
     arItems : Map<Text, Types.ARItem>;
     events : Map<Text, Types.Event>;
     eventOptions : Map<Text, Types.EventOption>;
-    gears : Map<Text,Types.Gear>;
-    gearClasses : Map<Text,Types.GearClass>;
+    gears : Map<Text, Types.Gear>;
+    gearClasses : Map<Text, Types.GearClass>;
     gearRarities : Map<Text, Types.GearRarity>;
     gearSubstats : Map<Text, Types.GearSubstat>;
     materials : Map<Text, Types.Material>;
@@ -78,12 +84,18 @@ module {
         products = TrieMap.TrieMap<Text, Types.RBProduct>(Text.equal, Text.hash);
         orders = TrieMap.TrieMap<Text, Types.RBOrder>(Text.equal, Text.hash);
       };
-      memoryCardEngine  = {
+      memoryCardEngine = {
         games = TrieMap.TrieMap<Text, Types.MemoryCardEngineGame>(Text.equal, Text.hash);
         stages = TrieMap.TrieMap<Text, Types.MemoryCardEngineStage>(Text.equal, Text.hash);
         cards = TrieMap.TrieMap<Text, Types.MemoryCardEngineCard>(Text.equal, Text.hash);
         players = TrieMap.TrieMap<Text, Types.MemoryCardEnginePlayer>(Text.equal, Text.hash);
         rewards = TrieMap.TrieMap<Text, Types.MemoryCardEngineReward>(Text.equal, Text.hash);
+      };
+      questEngine = {
+        quests = TrieMap.TrieMap<Text, Types.QuestEngine>(Text.equal, Text.hash);
+        events = TrieMap.TrieMap<Text, Types.Event>(Text.equal, Text.hash);
+        scenes = TrieMap.TrieMap<Text, Types.Scene>(Text.equal, Text.hash);
+        eventOptions = TrieMap.TrieMap<Text, Types.EventOption>(Text.equal, Text.hash);
       };
       characterClasses = TrieMap.TrieMap<Text, Types.CharacterClass>(Text.equal, Text.hash);
       characters = TrieMap.TrieMap<Text, Types.Character>(Text.equal, Text.hash);

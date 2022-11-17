@@ -4,16 +4,13 @@ import {
   getUserInfo,
   loadEventItem,
   useHpPotion,
-  loadEventOptions,
   loadCharacter,
-  updateCharacterStats,
   getCharacterStatus,
   characterTakeOption,
-  listCharacterSelectsItems,
   characterCollectsMaterials,
   listCharacterCollectsMaterials,
-  getHpPotion
 } from '../GameApi';
+import { remove } from "lodash";
 
 class BaseScene extends Phaser.Scene {
   constructor(key) {
@@ -86,7 +83,6 @@ class BaseScene extends Phaser.Scene {
 
     //player
     this.player = this.physics.add.sprite(-50, 500, "hero-running").setScale(0.67);
-    // this.player = this.physics.add.sprite(-50, 500, "hero-running").setScale(0.67);
 
     this.anims.create({
       key: "running-anims",
@@ -289,7 +285,6 @@ class BaseScene extends Phaser.Scene {
         fill: fill1
       }).setOrigin(0).setScrollFactor(0);
     }
-
   }
 
   clearSceneCache(textures_list) {
