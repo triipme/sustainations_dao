@@ -327,7 +327,6 @@ export {
   createLandSlot,
   loadLandTransferHistories,
   buyLandSlot,
-  // updateLandBuyingStatus,
   loadLandBuyingStatus,
   loadNationsfromCenter,
   loadLandSlotsfromCenter,

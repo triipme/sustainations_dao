@@ -78,7 +78,6 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
     const interval = setInterval(async () => {
       setTime(Date.now());
       let tile = await loadTileSlots(landSlotProperties);
-      console.log(tile)
       setTileplant(tile);
     }, 10000);
 

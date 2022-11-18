@@ -4716,10 +4716,21 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
+    
     let rsTile = state.tiles.get(tileId);
     switch (rsTile) {
       case (null) { #err(#NotFound) };
       case (?tile) {
+        // update Farm Effect
+        let rsLand = state.landSlots.get(tile.landSlotId);
+        switch (rsLand) {
+          case null {
+          };
+          case (?landSlot) {
+            ignore await  createUserHasFarmEffect(tile.indexRow,tile.indexColumn,tile.objectId,landSlot,true); 
+          }
+        }; 
+
         let plantId = tile.objectId;
         let rsPlant = state.plants.get(plantId);
         switch (rsPlant) {
@@ -4730,17 +4741,9 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
             let deletedPlant = state.plants.delete(plantId);
           };
         };
+         
         // delete Tile
         let deletedTile = state.tiles.delete(tileId);
-        // update Farm Effect
-        let rsLand = state.landSlots.get(tile.landSlotId);
-        switch (rsLand) {
-          case null {
-          };
-          case (?landSlot) {
-            ignore await  createUserHasFarmEffect(tile.indexRow,tile.indexColumn,tile.objectId,landSlot,true); 
-          }
-        };  
         #ok("Success");
       };
     };
@@ -4960,15 +4963,21 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
         return #err(#NotFound);
       };
       case (?plant) {
-        let plantsInLandSlot : [Types.FarmObject] = await LandSlot.listFarmObjectsFromLandSlot( landSlot.indexRow, landSlot.indexColumn, state);
+        var plantsInLandSlot : [Types.FarmObject] = await LandSlot.listFarmObjectsFromLandSlot( landSlot.indexRow, landSlot.indexColumn, state);
         var farmObjects : [Types.FarmObject] = await Tile.getFarmObjectsFromFarmObject( indexTileRow, indexTileColumn, plant.seedId, plantsInLandSlot);
         
-        // if this function is used in removeTree, remove the deleted Tile in tilesWithSamePlant
+        // if this function is used in removeTree, remove the deleted farmObject in farmObjects
         if (isRemoveTree==true) {
-          farmObjects:=Array.filter<Types.FarmObject> (
-            farmObjects, 
-            func(val: Types.FarmObject) : Bool { ((val.indexRow != indexTileRow) and (val.indexColumn != indexTileColumn)) }
-          );
+          let rsFarmObject = Array.find<Types.FarmObject>(farmObjects, func (val : Types.FarmObject) : Bool {val.indexRow == indexTileRow and val.indexColumn == indexTileColumn});
+          switch (rsFarmObject) {
+            case null {};
+            case (?V) {
+              farmObjects := Array.filter<Types.FarmObject> (
+                farmObjects, 
+                func(val: Types.FarmObject) : Bool { val != V }
+              );
+            };
+          };
         };
         // if list of farmObjects is not Empty
         if (farmObjects!=[]) {
@@ -5013,7 +5022,8 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
                   case (?plant) {
                     // delete old Farm Effect that user has
                     let deleted = state.hasFarmEffects.delete(plant.hasEffectId);
-
+                    
+                    // update hasEffectId in plant of tile
                     let updatePlant : Types.Plant = {
                       id = plant.id;
                       seedId = plant.seedId;
