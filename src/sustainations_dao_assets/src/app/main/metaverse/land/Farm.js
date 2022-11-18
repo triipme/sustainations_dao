@@ -4,14 +4,17 @@ import { selectUser } from "app/store/userSlice";
 import { GeoJSON, useMap, useMapEvents, ImageOverlay, MapContainer } from "react-leaflet";
 import "./styles.css";
 import UIFarm from "./FarmUI";
-import { subtractInventory, loadTileSlots, listInventory, plantTree, loadUserLandSlots } from "../LandApi";
+import {
+  loadTileSlots,
+  listStash
+} from "../LandApi";
 import Land from "./Land";
 import BigMap from "./BigMap";
 import Loading from "./loading";
 import Back from "./Back"
 import { useLocation, useNavigate } from "react-router-dom";
 
-var inventoryStatus = { dig: false };
+var inventoryStatus = {};
 var positionTree = -1
 const Farm = ({ mapFeatures, landSlotProperties }) => {
   const user = useSelector(selectUser);
@@ -19,17 +22,33 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
   const [inventory, setInventory] = useState([]);
   const [characterId, setChacterId] = useState("");
   const [loading, setLoading] = useState(false)
+  const [carrot, setCarrot] = useState(0)
+  const [wheat, setWheat] = useState(0)
+  const [tomato, setTomato] = useState(0)
   const map = useMap();
   const navigate = useNavigate();
-  // console.log("mapFeatures, landSlotProperties", mapFeatures, landSlotProperties)
+
+  // const numPlantHarvest = (arr) => {
+  //   return arr.reduce((previousValue, currentValue) => previousValue + Number(currentValue.amount), 0)
+  // }
   useEffect(() => {
     const load = async () => {
       const characterid = await user.actor.readCharacter();
       setChacterId(characterid.ok[0]);
-      // console.log(characterid.ok[0])
+      const inv = await user.actor.listInventory(characterid.ok[0]);
+      const listStash = (await user.actor.listStash()).ok
+      console.log(listStash)
 
-      const inv = await listInventory(characterid.ok[0]);
-      // console.log(inv.ok)
+      const defineAmount = (item, usableItemName) => {
+        if(usableItemName === "Carrot") {
+          setCarrot(Number(item.amount))
+        } else if (usableItemName === "Wheat") {
+          setWheat(Number(item.amount))
+        } else {
+          setTomato(Number(item.amount))
+        }
+      }
+      listStash.forEach(item => defineAmount(item, item.usableItemName))
       setInventory(inv.ok);
     };
     load();
@@ -42,7 +61,8 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
     );
   }, []);
   useEffect(() => {
-    const loadinventoryStatus = async () => {
+    const loadinventoryStatus = () => {
+      inventoryStatus["dig"] = false;
       for (let i = 0; i < inventory.length; i++) {
         if (inventory[i].materialName !== "wood" && inventory[i].materialName !== "seed") {
           inventoryStatus[inventory[i].materialName] = false;
@@ -83,38 +103,56 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
       fillOpacity: "0.1"
     });
     layer.on({
-      click: async e => {
-        // console.log(inventory, inventoryStatus)
-        for (let i = 0; i < inventory.length; i++) {
 
-          if (
+      click: async e => {
+        for (let i = 0; i < inventory.length; i++) {
+          // Harvest
+          if (country.properties.status === "fullGrown" && inventoryStatus["dig"] === false && loading === false) {
+            setLoading(true)
+            console.log("Harvest", await user.actor.harvestTree(country.properties.tileId))
+            setTileplant(await loadTileSlots(landSlotProperties));
+            const listStash = (await user.actor.listStash()).ok
+            const defineAmount = (item, usableItemName) => {
+              if(usableItemName === "Carrot") {
+                setCarrot(Number(item.amount))
+              } else if (usableItemName === "Wheat") {
+                setWheat(Number(item.amount))
+              } else {
+                setTomato(Number(item.amount))
+              }
+            }
+            listStash.forEach(item => defineAmount(item, item.usableItemName))
+            setLoading(false)
+            break;
+          }
+          // Planting
+          else if (
             inventoryStatus[inventory[i].materialName] === true &&
             country.properties.name === "None" &&
             inventory[i].amount > 0 && loading === false
           ) {
             setLoading(true)
             positionTree = country.properties.i * 10 + country.properties.j
-            // console.log("Country: ", country.properties.landId,
-            //   country.properties.i,
-            //   country.properties.j,
-            //   inventory[i].materialId)
 
             console.log(
               "Plant tree status: ",
-              await plantTree(
+              await user.actor.plantTree(
                 country.properties.landId,
                 country.properties.i,
                 country.properties.j,
                 inventory[i].materialId
               )
             );
-            await subtractInventory(inventory[i].id);
-            let tile = await loadTileSlots(landSlotProperties);
-            let inv = await listInventory(characterId);
-            setTileplant(tile);
-            setInventory(inv.ok);
+            await user.actor.subtractInventory(inventory[i].id);
+            setTileplant(await loadTileSlots(landSlotProperties));
+            setInventory((await user.actor.listInventory(characterId)).ok);
             setLoading(false)
             positionTree = -1
+          } else if (inventoryStatus["dig"] === true && loading === false) { // Remove
+            setLoading(true)
+            console.log("Remove: ", await user.actor.removeTree(country.properties.tileId))
+            setTileplant(await loadTileSlots(landSlotProperties));
+            setLoading(false)
           }
         }
       }
@@ -128,17 +166,11 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
         onEachFeature={onEachLandSlot}
       />
       <CreateBound {...{ latlng, tileplant, loading }}></CreateBound>
-      <UIFarm></UIFarm>
+      <UIFarm Carrot={carrot} Wheat={wheat} Tomato={tomato}></UIFarm>
       <Inventory inventory={inventory}></Inventory>
       {/* <ShowPlant inventory={inventory}></ShowPlant> */}
-      <button
-        className="button-85"
-        style={{ top: "250px" }}
-        onClick={() => {
-          navigate("/metaverse/land");
-        }}>
-        Go to map mode
-      </button>
+
+
     </>
   );
 };
@@ -169,7 +201,6 @@ const Inventory = ({ inventory }) => {
         <>
           {inventory.map((value, i) => {
             if (value.materialName !== "wood" && value.materialName !== "seed") {
-              let bgColor
 
               let pathItem = path + value.materialName + '-icon.png'
               return (
@@ -202,16 +233,13 @@ const CreateBound = ({ latlng, tileplant, loading }) => {
     <>
       {tileplant.map((tag, value) => {
         let pathItem = path + tag.properties.status + "-" + tag.properties.name + ".png"
-        if (loading === true && positionTree == tag.properties.i * 10 + tag.properties.j) {
+        if (tag.properties.name === "None") {
           return (
             <>
-              <ImageOverlay key={value + 100} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm-Tiles-05.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} />
-              <ImageOverlay key={value + 200} url={'metaverse/Ripple-loading.gif'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} />
+              <ImageOverlay key={value} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm-Tiles-05.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} />
+              {loading === true && positionTree == tag.properties.i * 10 + tag.properties.j ? <ImageOverlay key={value + 200} url={'metaverse/Ripple-loading.gif'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} /> : <></>}
             </>
           )
-        }
-        else if (tag.properties.name === "None") {
-          return <ImageOverlay key={value} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm-Tiles-05.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} />
         }
         else if (tag.properties.status === "newlyPlanted") {
           return <ImageOverlay key={value} url={'metaverse/farm/Sustaination_farm/farm-object/PNG/newlyPlanted.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} />
@@ -225,42 +253,33 @@ const CreateBound = ({ latlng, tileplant, loading }) => {
 };
 
 function FarmContainer() {
+  const user = useSelector(selectUser);
   const { state: properties } = useLocation();
   const [farmFeatures, setFarmFeatures] = useState();
   const [farmProperties, setFarmProperties] = useState(properties);
+  const [indexFarm, setIndexFarm] = useState(0)
   const [isDone, setIsDone] = useState(false)
-  // console.log("properties", properties)
+  const [listFarm, setListFarm] = useState(0)
   useEffect(() => {
     (async () => {
-      if (farmProperties) {
-        let myFarmProperties = farmProperties;
-        setFarmProperties(myFarmProperties);
-        setFarmFeatures(await loadTileSlots(myFarmProperties));
-        setIsDone(true)
-      } else {
-        let myFarmProperties = await loadUserLandSlots()
-        // console.log("run")
-        // console.log("myFarmProperties ", myFarmProperties)
-        if (myFarmProperties) {
-          let myFarm = {
-            id: myFarmProperties[0].id,
-            zoneNumber: myFarmProperties[0].zoneNumber,
-            zoneLetter: myFarmProperties[0].zoneLetter,
-            i: myFarmProperties[0].indexRow,
-            j: myFarmProperties[0].indexColumn,
-          };
-          setFarmProperties(myFarm);
-          // console.log("run")
-
-          setFarmFeatures(await loadTileSlots(myFarm));
-          // console.log("run")
-
-        }
-        setIsDone(true)
+      let myFarmProperties = (await user.actor.listUserLandSlots())?.ok
+      if (myFarmProperties) {
+        let myFarm = {
+          id: myFarmProperties[indexFarm].id,
+          zoneNumber: myFarmProperties[indexFarm].zoneNumber,
+          zoneLetter: myFarmProperties[indexFarm].zoneLetter,
+          i: myFarmProperties[indexFarm].indexRow,
+          j: myFarmProperties[indexFarm].indexColumn,
+        };
+        setFarmProperties(myFarm);
+        setFarmFeatures(await loadTileSlots(myFarm));
+        setListFarm(Object.keys(myFarmProperties).length)
       }
+      setIsDone(true)
+      // }
     })();
-  }, []);
-  // console.log("is done: ", isDone)
+  }, [indexFarm]);
+
   return (
     <Land>
       {isDone === true ? (
@@ -268,6 +287,25 @@ function FarmContainer() {
           {farmFeatures ? <>
             <BigMap />
             <Back />
+
+            {indexFarm > 0 ? <button
+              className="btn-farm"
+              style={{ top: "250px", left: "50px" }}
+              onClick={() => {
+                setIsDone(false)
+                setIndexFarm(indexFarm - 1)
+              }}>
+              Previous Farm
+            </button> : <></>}
+            {indexFarm < listFarm - 1 ? <button
+              className="btn-farm"
+              style={{ top: "250px", right: "50px" }}
+              onClick={() => {
+                setIsDone(false)
+                setIndexFarm(indexFarm + 1)
+              }}>
+              Next Farm
+            </button> : <></>}
             <Farm mapFeatures={farmFeatures} landSlotProperties={farmProperties} />
           </> : (
             <div style={{

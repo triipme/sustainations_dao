@@ -51,6 +51,7 @@ module {
     gearSubstats : Map<Text, Types.GearSubstat>;
     materials : Map<Text, Types.Material>;
     inventories : Map<Text, Types.Inventory>;
+    stashes : Map<Text, Types.Stash>;
     landSlots : Map<Text,Types.LandSlot>;
     landTransferHistories : Map<Text,Types.LandTransferHistory>;
     landBuyingStatuses : Map<Text,Types.LandBuyingStatus>;
@@ -106,6 +107,7 @@ module {
       gearSubstats = TrieMap.TrieMap<Text, Types.GearSubstat>(Text.equal, Text.hash);
       materials = TrieMap.TrieMap<Text, Types.Material>(Text.equal, Text.hash);
       inventories = TrieMap.TrieMap<Text, Types.Inventory>(Text.equal, Text.hash);
+      stashes = TrieMap.TrieMap<Text, Types.Stash>(Text.equal, Text.hash);
       landSlots = TrieMap.TrieMap<Text,Types.LandSlot>(Text.equal,Text.hash);
       landTransferHistories = TrieMap.TrieMap<Text,Types.LandTransferHistory>(Text.equal,Text.hash);
       landBuyingStatuses = TrieMap.TrieMap<Text,Types.LandBuyingStatus>(Text.equal,Text.hash);
