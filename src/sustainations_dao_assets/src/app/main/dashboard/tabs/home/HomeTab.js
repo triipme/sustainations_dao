@@ -72,7 +72,7 @@ function HomeTab() {
         <OpenProject counter={purchasedLandSlots} objectLabel="Land Slots" counterLabel="Purchased" />
       </motion.div>
       <motion.div variants={item}>
-        <InvestedProject counter={plantedTreesCount} objectLabel="Trees" counterLabel="Planted" />
+        <InvestedProject counter={plantedTreesCount} objectLabel="Farm" counterLabel="Planted" />
       </motion.div>
       <motion.div variants={item}>
         <OpenProject counter={analysis.gamePlayCount.miniGamePlayCount} objectLabel="Mini Game" counterLabel="Turns" />
