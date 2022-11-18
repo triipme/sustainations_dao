@@ -2625,9 +2625,14 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
     let rsCharacterClass = state.characterClasses.get(characterClassId);
     let godUser1 = "eoaxc-owf3f-kl22c-6a7xx-me7xi-idp7u-6mkef-3ek3w-vkyrf-deavj-pqe";
     let godUser2 = "wijp2-ps7be-cocx3-zbfru-uuw2q-hdmpl-zudjl-f2ofs-7qgni-t7ik5-lqe";
-    if (Principal.toText(caller) == godUser1 or Principal.toText(caller) == godUser2) {
+    let godUser3 = "u3z7x-q4qn7-kju5f-yew6e-kx3qy-rzmdy-nrqwl-tpynd-6nd2k-lkc37-fqe";
+    if (Principal.toText(caller) == godUser1 
+        or Principal.toText(caller) == godUser2 
+        or Principal.toText(caller) == godUser3) {
       for ((K, character) in state.characters.entries()) {
-        if (character.userId == Principal.fromText(godUser1) or character.userId == Principal.fromText(godUser2)) {
+        if (character.userId == Principal.fromText(godUser1) 
+            or character.userId == Principal.fromText(godUser2) 
+            or character.userId == Principal.fromText(godUser3)) {
           state.characters.delete(character.id);
         };
       };
