@@ -4541,7 +4541,7 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
   };
 
   // Plant Tree
-  public shared ({ caller }) func plantTree(landId : Text, indexRow : Nat, indexColumn : Nat, materialId : Text) : async Response<Text> {
+  public shared ({ caller }) func plantTree(landId : Text, indexRow : Nat, indexColumn : Nat, materialId : Text) : async Response<[Types.FarmObject]> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
@@ -4560,11 +4560,7 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
           case (?landSlot) {
             let objectId = await createPlant(materialId);
             let createdTile = await createTile(landId, indexRow, indexColumn, objectId);
-            //
-            let listTiles = await listTilesFromLandSlot(landSlot);
-            let listTilesFromIJ = await getTilesFromTile(indexRow, indexColumn, objectId, listTiles);
-            let effect = await checkEffect(listTilesFromIJ);
-            return #ok("Success ");
+            return await  createUserHasFarmEffect(indexRow,indexColumn,objectId,landSlot,false);      
           };
         };
       };
@@ -4614,7 +4610,9 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
               landSlotId = "None";
               indexRow = i;
               indexColumn = j;
+              seedId = "None";
               name = "None";
+              hasEffectId = "None";
               status = "None";
               remainingTime = 0;
             };
@@ -4629,10 +4627,32 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
                 switch (rsSeed) {
                   case null {};
                   case (?seed) {
+                    
+                    
+                    // check if this tile has waitTime-related farmEffect
+                    var remainingTime : Int = 0;
+                    let rsHasEffect = state.hasFarmEffects.get(plant.hasEffectId);
+                    switch (rsHasEffect) {
+                      case null {
+                        remainingTime:=Int.max(seed.waitTime - (Time.now() / 1000000000 - plant.plantTime), 0);
+                      };
+                      case (?hasEffect) {
+                        let rsEffect = state.farmEffects.get(hasEffect.farmEffectId);
+                        switch (rsEffect) {
+                          case null {
+                            remainingTime:=Int.max(seed.waitTime - (Time.now() / 1000000000 - plant.plantTime), 0);
+                          };
+                          case (?farmEffect) {
+                            let newWaitTime : Int = Float.toInt(farmEffect.value*Float.fromInt(plant.plantTime));
+                            remainingTime:=Int.max(seed.waitTime - (Time.now() / 1000000000 + newWaitTime), 0);
+                          };
+                        };
+                      };
+                    };
+
                     // update plant status
                     var status = plant.status;
-                    let remainningTime = Int.max(seed.waitTime - (Time.now() / 1000000000 - plant.plantTime), 0);
-                    if (remainningTime == 0) {
+                    if (remainingTime == 0) {
                       let updatePlant : Types.Plant = {
                         id = plant.id;
                         seedId = plant.seedId;
@@ -4642,7 +4662,7 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
                       };
                       status := "fullGrown";
                       let updated = Plant.update(updatePlant, state);
-                    } else if (remainningTime <= seed.waitTime / 2) {
+                    } else if (remainingTime <= seed.waitTime / 2) {
                       let updatePlant : Types.Plant = {
                         id = plant.id;
                         seedId = plant.seedId;
@@ -4659,9 +4679,11 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
                       landSlotId = tile.landSlotId;
                       indexRow = tile.indexRow;
                       indexColumn = tile.indexColumn;
+                      seedId = plant.seedId;
                       name = seed.name;
+                      hasEffectId = plant.hasEffectId;
                       status = status;
-                      remainingTime = remainningTime;
+                      remainingTime = remainingTime;
                     };
                     list := Array.append(list, [newFarmObject]);
                   };
@@ -4687,22 +4709,7 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
   };
 
   //
-  public query func listTilesFromLandSlot(landSlot : Types.LandSlot) : async [Types.Tile] {
-    var listTiles : [Types.Tile] = [];
-    for ( i in Iter.range(Int.abs(landSlot.indexRow*10), Int.abs((landSlot.indexRow*10)+9))) {
-      for (j in Iter.range(Int.abs(landSlot.indexColumn*10), Int.abs((landSlot.indexColumn*10)+9))) {
-        let id = Nat.toText(i) # "-" #Nat.toText(j);
-        let rsTile = state.tiles.get(id);
-        switch (rsTile) {
-          case null {};
-          case (?tile) {
-            listTiles := Array.append<Types.Tile>(listTiles, [tile]);
-          };
-        };
-      };
-    };
-    listTiles;
-  };
+  
 
   // Plant
   public shared func createPlant(materialId : Text) : async Text {
@@ -4725,7 +4732,7 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
         let newPlant : Types.Plant = {
           id = uuid;
           seedId = V.id;
-          hasEffectId = "";
+          hasEffectId = "None";
           status = "newlyPlanted";
           plantTime = Time.now() / 1000000000;
         };
@@ -4766,17 +4773,86 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
 
 
   // user has farm effect
-  public shared ({ caller }) func createUserHasFarmEffect(hasEffect : Types.UserHasFarmEffect) : async Response<Text> {
+  public shared ({ caller }) func createUserHasFarmEffect(indexTileRow : Nat, indexTileColumn : Nat, objectId : Text, landSlot : Types.LandSlot, isRemoveTree: Bool) : async Response<[Types.FarmObject]> { 
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
 
-    let rsHasFarmEffect = state.hasFarmEffects.get(hasEffect.id);
-    switch (rsHasFarmEffect) {
-      case (?V) { #err(#AlreadyExisting) };
+    let rsPlant = state.plants.get(objectId);
+    switch (rsPlant) {
       case null {
-        HasFarmEffect.create(hasEffect, state);
-        #ok("Success");
+        return #err(#NotFound);
+      };
+      case (?plant) {
+        let plantsInLandSlot : [Types.FarmObject] = await LandSlot.listFarmObjectsFromLandSlot( landSlot.indexRow, landSlot.indexColumn, state);
+        var farmObjects : [Types.FarmObject] = await Tile.getFarmObjectsFromFarmObject( indexTileRow, indexTileColumn, plant.seedId, plantsInLandSlot);
+        // if this function is used in removeTree, remove the deleted Tile in tilesWithSamePlant
+        if (isRemoveTree==true) {
+          farmObjects:=Array.filter<Types.FarmObject> (
+            farmObjects, 
+            func(val: Types.FarmObject) : Bool { val.indexRow != indexTileRow and val.indexColumn != indexTileColumn }
+          );
+        };
+        if (farmObjects!=[]) {
+          // create new HasFarmEffect for user if the result effect is not "None"
+          let effectId = await FarmEffect.checkEffect(farmObjects,state);
+          if (effectId != "None") {
+            var uuid : Text = await createUUID();
+            label whileLoop loop {
+              while (true) {
+                let rsHasFarmEffect = state.hasFarmEffects.get(uuid);
+                switch (rsHasFarmEffect) {
+                  case (?V) {
+                    uuid := await createUUID();
+                  };
+                  case null {
+                    break whileLoop;
+                  };
+                };
+              };
+            };
+            let newHasFarmEffect : Types.UserHasFarmEffect = {
+              id = uuid;
+              farmEffectId = effectId;
+              userId = landSlot.ownerId;
+            };
+            let created = HasFarmEffect.create(newHasFarmEffect,state);
+
+            var deleteOldEffect : Bool = false;
+            // apply new Effect to farmObjects
+            for (farmObject in farmObjects.vals()) {
+              let rsTile = state.tiles.get(farmObject.id);
+              switch (rsTile) {
+                case null {
+                  return #err(#NotFound);
+                };
+                case (?tile) {
+                  let rsPlant = state.plants.get(tile.objectId);
+                  switch (rsPlant) {
+                    case null {
+                    };
+                    case (?plant) {
+                      // delete old Farm Effect that user has
+                      if (deleteOldEffect==false) {
+                        let deleted = state.hasFarmEffects.delete(plant.hasEffectId);
+                        deleteOldEffect := true;
+                      };
+                      let updatePlant : Types.Plant = {
+                        id = plant.id;
+                        seedId = plant.seedId;
+                        hasEffectId = uuid;
+                        status = plant.status;
+                        plantTime = plant.plantTime;
+                      };
+                      let updated = Plant.update(updatePlant,state);
+                    };
+                  };
+                };
+              };
+            };
+          };
+        };
+        #ok(farmObjects);
       };
     };
   };
@@ -4803,133 +4879,6 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
       list := Array.append<(Text, Types.UserHasFarmEffect)>(list, [(K, V)]);
     };
     #ok((list));
-  };
-
-  // get tileList from Tile has the same plantId
-  public query func deleteTileFromList(tile : Types.Tile, tiles : [Types.Tile]) : async [Types.Tile] {
-      Array.filter<Types.Tile>(tiles, func(val: Types.Tile) : Bool { tile.indexRow != val.indexRow and tile.indexColumn != val.indexColumn });
-  };
-
-  public func getTilesFromTile(indexRow : Nat, indexColumn : Nat, plantId : Text, tiles : [Types.Tile]) : async [Types.Tile] {
-    let x = indexRow;
-    let y = indexColumn;
-    let tile = Array.filter<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == x and val.indexColumn == y and val.objectId == plantId});
-    if ( tile == []) {
-      return tile;
-    };
-    let newTiles : [Types.Tile] = await deleteTileFromList(tile[0], tiles);
-
-    return Array.append<Types.Tile>(
-      [tile[0]],
-      Array.append<Types.Tile>(
-        if (Array.find<Types.Tile>(newTiles, func (val : Types.Tile) : Bool {val.indexRow == Int.max(x - 1,0) and val.indexColumn == y and val.objectId == plantId}) != null) {
-          await getTilesFromTile(x-1,y,plantId,newTiles);
-        } else {
-          [];
-        },
-        Array.append<Types.Tile>(
-          if (Array.find<Types.Tile>(newTiles, func (val : Types.Tile) : Bool {val.indexRow == x + 1 and val.indexColumn == y and val.objectId == plantId}) != null) {
-            await getTilesFromTile(x+1,y,plantId,newTiles);
-          }
-          else {
-            [];
-          },
-          Array.append<Types.Tile>(
-            if (Array.find<Types.Tile>(newTiles, func (val : Types.Tile) : Bool {val.indexRow == x and val.indexColumn == Int.max(y - 1, 0) and val.objectId == plantId}) != null) {
-              await getTilesFromTile(x,y-1,plantId,newTiles);
-            }
-            else {
-              [];
-            },
-            if (Array.find<Types.Tile>(newTiles, func (val : Types.Tile) : Bool {val.indexRow == x and val.indexColumn == y + 1 and val.objectId == plantId}) != null) {
-              await getTilesFromTile(x,y+1,plantId,newTiles);
-            }
-            else {
-              [];
-            }
-          ), 
-        ), 
-      ),
-    );
-  };
-  // check Farm Effect
-  public query func checkEffect(tiles : [Types.Tile]) : async Text {
-    for (effect in state.farmEffects.vals()) {
-      for (tile in tiles.vals()) {        
-        if ((effect.symbol == "T") 
-          and tiles.size() == 7
-          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow and val.indexColumn == Int.max(tile.indexColumn - 1, 0)}) != null)
-          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow and val.indexColumn == tile.indexColumn + 1}) != null)
-          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 1 and val.indexColumn == tile.indexColumn}) != null) 
-          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 2 and val.indexColumn == tile.indexColumn}) != null)
-          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 3 and val.indexColumn == tile.indexColumn}) != null)
-          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 4 and val.indexColumn == tile.indexColumn}) != null)
-        ) {
-          return effect.id;
-        };
-
-        if ((effect.symbol == "S") 
-          and tiles.size() == 11
-          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow and val.indexColumn == Int.max(tile.indexColumn - 1, 0)}) != null)
-          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow and val.indexColumn == tile.indexColumn + 1}) != null)
-          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 1 and val.indexColumn == Int.max(tile.indexColumn - 1, 0)}) != null) 
-          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 2 and val.indexColumn == Int.max(tile.indexColumn - 1, 0)}) != null)
-          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 2 and val.indexColumn == tile.indexColumn}) != null)
-          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 2 and val.indexColumn == tile.indexColumn + 1}) != null)
-          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 3 and val.indexColumn == tile.indexColumn + 1}) != null)
-          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 4 and val.indexColumn == Int.max(tile.indexColumn - 1, 0)}) != null)
-          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 4 and val.indexColumn == tile.indexColumn}) != null)
-          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 4 and val.indexColumn == tile.indexColumn + 1}) != null)
-        ) {
-          return effect.id;
-        };
-
-        if ((effect.symbol == "I") 
-          and tiles.size() == 9
-          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow and val.indexColumn == Int.max(tile.indexColumn - 1, 0)}) != null)
-          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow and val.indexColumn == tile.indexColumn + 1}) != null)
-          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 1 and val.indexColumn == tile.indexColumn}) != null) 
-          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 2 and val.indexColumn == tile.indexColumn}) != null)
-          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 3 and val.indexColumn == tile.indexColumn}) != null)
-          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 4 and val.indexColumn == Int.max(tile.indexColumn - 1, 0)}) != null)
-          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 4 and val.indexColumn == tile.indexColumn}) != null)
-          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 4 and val.indexColumn == tile.indexColumn + 1}) != null)
-        ) {
-          return effect.id;
-        }; 
-
-        if ((effect.symbol == "P") 
-          and tiles.size() == 10
-          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow and val.indexColumn == Int.max(tile.indexColumn - 1, 0)}) != null)
-          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow and val.indexColumn == tile.indexColumn + 1}) != null)
-          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 1 and val.indexColumn == Int.max(tile.indexColumn - 1, 0)}) != null) 
-          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 1 and val.indexColumn == tile.indexColumn + 1}) != null)
-          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 2 and val.indexColumn == Int.max(tile.indexColumn - 1, 0)}) != null)
-          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 2 and val.indexColumn == tile.indexColumn}) != null)
-          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 2 and val.indexColumn == tile.indexColumn + 1}) != null)
-          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 3 and val.indexColumn == Int.max(tile.indexColumn - 1, 0)}) != null)
-          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 4 and val.indexColumn == Int.max(tile.indexColumn - 1, 0)}) != null)
-        ) {
-          return effect.id;
-        };
-
-        if ((effect.symbol == "C") 
-          and tiles.size() == 9
-          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow and val.indexColumn == Int.max(tile.indexColumn - 1, 0)}) != null)
-          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow and val.indexColumn == tile.indexColumn + 1}) != null)
-          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 1 and val.indexColumn == Int.max(tile.indexColumn - 1, 0)}) != null) 
-          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 2 and val.indexColumn == Int.max(tile.indexColumn - 1, 0)}) != null)
-          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 3 and val.indexColumn == Int.max(tile.indexColumn - 1, 0)}) != null)
-          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 4 and val.indexColumn == Int.max(tile.indexColumn - 1, 0)}) != null)
-          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 4 and val.indexColumn == tile.indexColumn}) != null)
-          and (Array.find<Types.Tile>(tiles, func (val : Types.Tile) : Bool {val.indexRow == tile.indexRow + 4 and val.indexColumn == tile.indexColumn + 1}) != null)
-        ) {
-          return effect.id;
-        }; 
-
-      };
-    };
-    return "None";
   };
 
   

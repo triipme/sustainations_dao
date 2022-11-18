@@ -1,4 +1,6 @@
 import Option "mo:base/Option";
+import Array "mo:base/Array";
+import Int "mo:base/Int";
 import Types "../types";
 import State "../state";
 
@@ -7,6 +9,8 @@ module FarmEffect {
     let newFarmEffect : Types.FarmEffect = {
       id = farmEffect.id;
       symbol = farmEffect.symbol;
+      value = farmEffect.value;
+      effect = farmEffect.effect;
       description = farmEffect.description;
     };
     return newFarmEffect;
@@ -18,5 +22,36 @@ module FarmEffect {
 
   public func update(farmEffect : Types.FarmEffect, state : State.State) {
     state.farmEffects.put(farmEffect.id, getData(farmEffect));
+  };
+
+  // check Farm Effect
+  public func checkEffect(farmObjects : [Types.FarmObject], state : State.State) : async Text {
+    for (effect in state.farmEffects.vals()) {
+      for (farmObject in farmObjects.vals()) {        
+        if ((effect.symbol == "T") 
+          and farmObjects.size() == 7
+          and (Array.find<Types.FarmObject>(farmObjects, func (val : Types.FarmObject) : Bool {val.indexRow == farmObject.indexRow and val.indexColumn == Int.max(farmObject.indexColumn - 1, 0)}) != null)
+          and (Array.find<Types.FarmObject>(farmObjects, func (val : Types.FarmObject) : Bool {val.indexRow == farmObject.indexRow and val.indexColumn == farmObject.indexColumn + 1}) != null)
+          and (Array.find<Types.FarmObject>(farmObjects, func (val : Types.FarmObject) : Bool {val.indexRow == farmObject.indexRow + 1 and val.indexColumn == farmObject.indexColumn}) != null) 
+          and (Array.find<Types.FarmObject>(farmObjects, func (val : Types.FarmObject) : Bool {val.indexRow == farmObject.indexRow + 2 and val.indexColumn == farmObject.indexColumn}) != null)
+          and (Array.find<Types.FarmObject>(farmObjects, func (val : Types.FarmObject) : Bool {val.indexRow == farmObject.indexRow + 3 and val.indexColumn == farmObject.indexColumn}) != null)
+          and (Array.find<Types.FarmObject>(farmObjects, func (val : Types.FarmObject) : Bool {val.indexRow == farmObject.indexRow + 4 and val.indexColumn == farmObject.indexColumn}) != null)
+        ) {
+          return effect.id;
+        };
+
+        if ((effect.symbol == "-") 
+          and farmObjects.size() == 5
+          and (Array.find<Types.FarmObject>(farmObjects, func (val : Types.FarmObject) : Bool {val.indexRow == farmObject.indexRow and val.indexColumn == farmObject.indexColumn + 1}) != null)
+          and (Array.find<Types.FarmObject>(farmObjects, func (val : Types.FarmObject) : Bool {val.indexRow == farmObject.indexRow and val.indexColumn == farmObject.indexColumn + 2}) != null)
+          and (Array.find<Types.FarmObject>(farmObjects, func (val : Types.FarmObject) : Bool {val.indexRow == farmObject.indexRow and val.indexColumn == farmObject.indexColumn + 3}) != null) 
+          and (Array.find<Types.FarmObject>(farmObjects, func (val : Types.FarmObject) : Bool {val.indexRow == farmObject.indexRow and val.indexColumn == farmObject.indexColumn + 4}) != null)
+          ) {
+          return effect.id;
+        };
+        
+      };
+    };
+    return "None";
   };
 }

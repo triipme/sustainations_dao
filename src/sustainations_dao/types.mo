@@ -363,7 +363,9 @@ module {
     landSlotId : Text;
     indexRow : Nat;
     indexColumn : Nat;
+    seedId : Text;
     name : Text;
+    hasEffectId : Text;
     status : Text;
     remainingTime : Int;
   };
@@ -395,6 +397,8 @@ module {
   public type FarmEffect = {
     id : Text;
     symbol : Text;
+    value : Float;
+    effect : Text;
     description : Text;
   };
 

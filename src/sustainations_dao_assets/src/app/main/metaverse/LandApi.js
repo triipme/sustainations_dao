@@ -243,6 +243,7 @@ async function loadTileSlots(properties) {
         "landId": landId,
         "tileId": tile.id,
         "name": tile.name,
+        "hasEffectId": tile.hasEffectId,
         "status": tile.status,
         "remainingTime": Number(tile.remainingTime)
       },
