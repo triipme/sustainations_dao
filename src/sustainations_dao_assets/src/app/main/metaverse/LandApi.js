@@ -27,20 +27,33 @@ function listCharacters() {
 };
 
 // list Inventory
-function listInventory(characterId) {
-  return new Promise((resolve, reject) => {
-    const { user } = store.getState();
-    const rs = user.actor.listInventory(characterId);
-    resolve(rs).ok;
-  });
-};
+// function listInventory(characterId) {
+//   return new Promise((resolve, reject) => {
+//     const { user } = store.getState();
+//     const rs = user.actor.listInventory(characterId);
+//     resolve(rs).ok;
+//   });
+// };
 
 // list Inventory
-function subtractInventory(inventoryId) {
+// async function subtractInventory(inventoryId) {
+// return new Promise((resolve, reject) => {
+//   const { user } = store.getState();
+//   const rs = user.actor.subtractInventory(inventoryId);
+//   resolve(rs);
+// });
+//   const { user } = store.getState();
+//   const func = await user.actor.subtractInventory(inventoryId);
+//   const result = func?.ok;
+//   return result;
+// };
+
+// list Stash
+function listStash() {
   return new Promise((resolve, reject) => {
     const { user } = store.getState();
-    const rs = user.actor.subtractInventory(inventoryId);
-    resolve(rs);
+    const rs = user.actor.listStash();
+    resolve(rs).ok;
   });
 };
 
@@ -48,8 +61,8 @@ function subtractInventory(inventoryId) {
 // buy LandSlot
 async function buyLandSlot() {
   const { user } = store.getState();
-  const func = async () => await user.actor.buyLandSlot();
-  const result = (await func()).ok;
+  const func = await user.actor.buyLandSlot();
+  const result = func?.ok;
   return result;
 }
 
@@ -57,7 +70,7 @@ async function buyLandSlot() {
 async function randomLandSlot() {
   const { user } = store.getState();
   const func = await user.actor.randomLandSlot()
-  const result = func?.ok; 
+  const result = func?.ok;
   console.log(func);
   let feature = {
     type: "Feature",
@@ -73,14 +86,15 @@ async function randomLandSlot() {
 // create LandSlot
 async function createLandSlot(i, j, nationUTMS) {
   const { user } = store.getState();
-  const func = async () => await user.actor.createLandSlot(parseInt(i), parseInt(j), nationUTMS, 20, "N", 1000);
-  const result = (await func()).ok;
+  const func = await user.actor.createLandSlot(parseInt(i), parseInt(j), nationUTMS, 20, "N", 1000);
+  const result = func?.ok;
   return result;
 };
 
 
 async function loadNationsfromCenter(x, y) {
   const { user } = store.getState();
+  const { principal } = user;
   const func = await user.actor.loadNationsArea(
     x - 100, y - 100, x + 100, y + 100
   );
@@ -94,18 +108,24 @@ async function loadNationsfromCenter(x, y) {
       let feature = {
         type: "Feature",
         properties: {
-          "id":nation.id,
-          "zoneNumber": nation.zoneNumber, 
-          "zoneLetter": nation.zoneLetter, 
-          "i": nation.i, 
+          "id": nation.id,
+          "zoneNumber": nation.zoneNumber,
+          "zoneLetter": nation.zoneLetter,
+          "i": nation.i,
           "j": nation.j
         },
         geometry: {
           type: "Polygon", coordinates: nation.coordinates,
         }
       }
-      result.features.push(feature)
+      if (nation.id !== principal) {
+        result.features.push(feature)
+      } else {
+        result.features = [feature].concat(result.features)
+      }
     }
+
+
   }
   console.log(result.features)
   return nations ? result.features : [];
@@ -171,25 +191,17 @@ function getLandIndex(latlng, landData) {
 // load LandTransferHistories
 async function loadLandTransferHistories() {
   const { user } = store.getState();
-  const listLandTransferHistories = async () => await user.actor.listLandTransferHistories();
-  const landTransferHistories = (await listLandTransferHistories()).ok;
+  const listLandTransferHistories = await user.actor.listLandTransferHistories();
+  const landTransferHistories = listLandTransferHistories?.ok;
   return landTransferHistories;
 };
 
-// update LandBuyingStatus
-async function updateLandBuyingStatus(indexRow, indexColumn, randomTimes) {
-  const { user } = store.getState();
-  const func = async () => await user.actor.updateLandBuyingStatus(parseInt(indexRow), parseInt(indexColumn), randomTimes);
-  const result = (await func()).ok;
-  return result;
-
-};
 
 // load LandBuyingStatuses
 async function loadLandBuyingStatus() {
   const { user } = store.getState();
-  const readLandBuyingStatus = async () => await user.actor.readLandBuyingStatus();
-  const landBuyingStatus = (await readLandBuyingStatus()).ok;
+  const readLandBuyingStatus = await user.actor.readLandBuyingStatus();
+  const landBuyingStatus = readLandBuyingStatus?.ok;
   var feature = undefined
   if (landBuyingStatus != undefined) {
     feature = {
@@ -223,8 +235,8 @@ async function loadTileSlots(properties) {
   let y = Number(properties.j) * 10
 
   const { user } = store.getState();
-  const func = async () => await user.actor.loadTilesArea(x, y, x + 9, y + 9);
-  const tiles = (await func()).ok;
+  const func = await user.actor.loadTilesArea(x, y, x + 9, y + 9);
+  const tiles = func?.ok;
 
   var result = {
     features: []
@@ -263,52 +275,66 @@ async function loadTileSlots(properties) {
   return result.features
 }
 
-async function loadNation() {
-  const { user } = store.getState();
-  const func = async () => await user.actor.readNation();
-  const result = (await func()).ok;
-  return result;
-};
+// async function loadNation() {
+//   const { user } = store.getState();
+//   const func = await user.actor.readNation();
+//   const result = func?.ok;
+//   return result;
+// };
 
 async function loadUserLandSlots() {
   const { user } = store.getState();
   const func = await user.actor.listUserLandSlots();
   const result = func?.ok;
   return result;
-  
+
 };
 // Plant Tree
-async function plantTree(landId, indexRow, indexColumn, materialId) {
+// async function plantTree(landId, indexRow, indexColumn, materialId) {
+//   const { user } = store.getState();
+//   const func = await user.actor.plantTree(landId, indexRow, indexColumn, materialId);
+//   const result = func?.ok;
+//   return result;
+// }
+
+// Harvest Tree
+async function harvestTree(tileId) {
   const { user } = store.getState();
-  const func = await user.actor.plantTree(landId, indexRow, indexColumn, materialId);
+  const func = await user.actor.harvestTree(tileId);
   const result = func?.ok;
   return result;
 }
 
-// async function readCharacter() {
-//   const { user } = store.getState();
+// Remove Tree
+async function removeTree(tileId) {
+  const { user } = store.getState();
+  const func = await user.actor.removeTree(tileId);
+  const result = func?.ok;
+  return result;
+}
 
-// }
-// Draw polygon 
 
 
 export {
   getUserInfo,
-  listInventory,
-  subtractInventory,
+  // listInventory,
+  // subtractInventory,
+  listStash,
   listCharacters,
   randomLandSlot,
   createLandSlot,
   loadLandTransferHistories,
   buyLandSlot,
-  updateLandBuyingStatus,
+  // updateLandBuyingStatus,
   loadLandBuyingStatus,
   loadNationsfromCenter,
   loadLandSlotsfromCenter,
   getLandIndex,
   loadTileSlots,
-  loadNation,
+  // loadNation,
   unionLandSlots,
-  plantTree,
+  // plantTree,
+  harvestTree,
+  removeTree,
   loadUserLandSlots
 }
