@@ -1,22 +1,51 @@
 import "./styles.css";
 
-const UIFarm = () => {
+const UIFarm = ({ Carrot, Wheat, Tomato }) => {
   return (
     <>
-      <ul style={{ zIndex: 10000, position: "fixed", width: "80vw", margin: "2vh", top: -20 }}>
+      <ul style={{ zIndex: 10000, position: "relative", width: "80vw" }}>
         <li>
-          <div>
-          <img src="metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-27.png"></img>
+          <div style={{ scale: 0.8 }}>
+            <img src="metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-27.png"></img>
+          </div>
+        </li>
+        
+        
+        <li>
+          <div className="container" style={{ scale: 0.8 }}>
+            <img src="metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-29.png" />
+            <div style={{
+              position: "absolute",
+              top: "50%",
+              left: "4em",
+              fontSize: "1.5vw",
+              transform: "translate(-50%, -50%)"
+            }}>{Wheat}</div>
           </div>
         </li>
         <li>
+          <div className="container" style={{ scale: 0.8 }}>
             <img src="metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-28.png"></img>
+            <div style={{
+              position: "absolute",
+              top: "50%",
+              left: "4em",
+              fontSize: "1.5vw",
+              transform: "translate(-50%, -50%)"
+            }}>{Carrot}</div>
+          </div>
         </li>
         <li>
-          <img src="metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-29.png"></img>
-        </li>
-        <li>
-          <img src="metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-30.png"></img>
+          <div className="container" style={{ scale: 0.8 }}>
+            <img src="metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-30.png"></img>
+            <div style={{
+              position: "absolute",
+              top: "50%",
+              left: "4em",
+              fontSize: "1.5vw",
+              transform: "translate(-50%, -50%)"
+            }}>{Tomato}</div>
+          </div>
         </li>
         {/* <li>
           <img src="metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-31.png"></img>

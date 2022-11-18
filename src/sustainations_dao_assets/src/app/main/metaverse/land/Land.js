@@ -17,6 +17,7 @@ function Land({ children }) {
         style={{ height: "100%" }}
         center={center}
         minZoom={2}
+        maxZoom={18}
         zoom={zoom}
         scrollWheelZoom={true}
         doubleClickZoom={false}

@@ -3980,6 +3980,17 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
             rsStash := true;
           };
         };
+
+        if (rsStash==false) {
+          let newStash : Types.Stash = {
+            id = await createUUID();
+            userId = userId;
+            usableItemId = seed.harvestedProductId;
+            quality = "Good";
+            amount = Float.toInt(await Random.randomNumber(Float.fromInt(seed.minAmount),Float.fromInt(seed.maxAmount)));
+          };
+          let created = Stash.create(newStash,state);
+        };
       };
     };
     #ok("Success");
@@ -4169,6 +4180,7 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
                 };
               };
             };
+            ignore await updateLandBuyingStatus(caller,Int.abs(i),Int.abs(j));
             return #ok(
               await landSlotToGeometry(Int.abs(i), Int.abs(j))
             );
@@ -4185,6 +4197,8 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
             let adjacentLandSlots = await getAdjacentLandSlots(nation.landSlotIds, LandConfig);
             let index = await randomIndex(0.0, Float.fromInt(adjacentLandSlots.size() -1));
             let result = adjacentLandSlots[Int.abs(index)];
+
+            ignore await updateLandBuyingStatus(caller,Int.abs(result.i), Int.abs(result.j));
             return #ok(
               await landSlotToGeometry(Int.abs(result.i), Int.abs(result.j))
             );
@@ -4485,25 +4499,30 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
   };
 
   // Land Buying Status
-  public shared ({ caller }) func updateLandBuyingStatus(indexRow : Nat, indexColumn : Nat, randomTimes : Nat) : async Response<Text> {
+  public shared ({ caller }) func updateLandBuyingStatus(userId: Principal, indexRow : Nat, indexColumn : Nat) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
 
     let newGeometry = await landSlotToGeometry(indexRow, indexColumn);
 
-    let newLandBuyingStatus : Types.LandBuyingStatus = {
-      id = caller;
-      geometry = newGeometry;
-      randomTimes = randomTimes;
-    };
-    let principalId = Principal.toText(caller);
+    let principalId = Principal.toText(userId);
     let rsLandBuyingStatus = state.landBuyingStatuses.get(principalId);
     switch (rsLandBuyingStatus) {
       case (?V) {
-        let updated = LandBuyingStatus.update(newLandBuyingStatus, state);
+        let updateLandBuyingStatus : Types.LandBuyingStatus = {
+          id = userId;
+          geometry = newGeometry;
+          randomTimes = V.randomTimes-1;
+        };
+        let updated = LandBuyingStatus.update(updateLandBuyingStatus, state);
       };
       case null {
+        let newLandBuyingStatus : Types.LandBuyingStatus = {
+          id = userId;
+          geometry = newGeometry;
+          randomTimes = 2;
+        };
         let created = LandBuyingStatus.create(newLandBuyingStatus, state);
       };
     };

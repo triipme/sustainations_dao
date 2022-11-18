@@ -196,14 +196,6 @@ async function loadLandTransferHistories() {
   return landTransferHistories;
 };
 
-// update LandBuyingStatus
-// async function updateLandBuyingStatus(indexRow, indexColumn, randomTimes) {
-//   const { user } = store.getState();
-//   const func = await user.actor.updateLandBuyingStatus(parseInt(indexRow), parseInt(indexColumn), randomTimes);
-//   const result = func?.ok;
-//   return result;
-
-// };
 
 // load LandBuyingStatuses
 async function loadLandBuyingStatus() {

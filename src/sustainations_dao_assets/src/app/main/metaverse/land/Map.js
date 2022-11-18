@@ -147,7 +147,6 @@ const Map = () => {
     setLoading("purchased")
     let landBuyingStatus = await loadLandBuyingStatus()
     if (landBuyingStatus != undefined) {
-      // let landBuyingStatus = await loadLandBuyingStatus()
       numRandom = Number(landBuyingStatus.properties.randomTimes)
       map.setView([Number(landBuyingStatus.geometry.coordinates[0][0][1]), Number(landBuyingStatus.geometry.coordinates[0][0][0])], 13)
       landSlotRand = landBuyingStatus

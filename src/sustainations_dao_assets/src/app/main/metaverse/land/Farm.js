@@ -6,6 +6,7 @@ import "./styles.css";
 import UIFarm from "./FarmUI";
 import {
   loadTileSlots,
+  listStash
 } from "../LandApi";
 import Land from "./Land";
 import BigMap from "./BigMap";
@@ -21,16 +22,33 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
   const [inventory, setInventory] = useState([]);
   const [characterId, setChacterId] = useState("");
   const [loading, setLoading] = useState(false)
+  const [carrot, setCarrot] = useState(0)
+  const [wheat, setWheat] = useState(0)
+  const [tomato, setTomato] = useState(0)
   const map = useMap();
   const navigate = useNavigate();
+
+  // const numPlantHarvest = (arr) => {
+  //   return arr.reduce((previousValue, currentValue) => previousValue + Number(currentValue.amount), 0)
+  // }
   useEffect(() => {
     const load = async () => {
       const characterid = await user.actor.readCharacter();
       setChacterId(characterid.ok[0]);
-      // console.log(characterid.ok[0])
-
       const inv = await user.actor.listInventory(characterid.ok[0]);
-      // console.log(inv.ok)
+      const listStash = (await user.actor.listStash()).ok
+      console.log(listStash)
+
+      const defineAmount = (item, usableItemName) => {
+        if(usableItemName === "Carrot") {
+          setCarrot(Number(item.amount))
+        } else if (usableItemName === "Wheat") {
+          setWheat(Number(item.amount))
+        } else {
+          setTomato(Number(item.amount))
+        }
+      }
+      listStash.forEach(item => defineAmount(item, item.usableItemName))
       setInventory(inv.ok);
     };
     load();
@@ -60,7 +78,6 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
     const interval = setInterval(async () => {
       setTime(Date.now());
       let tile = await loadTileSlots(landSlotProperties);
-
       setTileplant(tile);
     }, 10000);
 
@@ -87,14 +104,27 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
     layer.on({
 
       click: async e => {
-        console.log(country)
         for (let i = 0; i < inventory.length; i++) {
+          // Harvest
           if (country.properties.status === "fullGrown" && inventoryStatus["dig"] === false && loading === false) {
             setLoading(true)
             console.log("Harvest", await user.actor.harvestTree(country.properties.tileId))
-            // setTileplant(await loadTileSlots(landSlotProperties));
+            setTileplant(await loadTileSlots(landSlotProperties));
+            const listStash = (await user.actor.listStash()).ok
+            const defineAmount = (item, usableItemName) => {
+              if(usableItemName === "Carrot") {
+                setCarrot(Number(item.amount))
+              } else if (usableItemName === "Wheat") {
+                setWheat(Number(item.amount))
+              } else {
+                setTomato(Number(item.amount))
+              }
+            }
+            listStash.forEach(item => defineAmount(item, item.usableItemName))
             setLoading(false)
+            break;
           }
+          // Planting
           else if (
             inventoryStatus[inventory[i].materialName] === true &&
             country.properties.name === "None" &&
@@ -117,18 +147,16 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
             setInventory((await user.actor.listInventory(characterId)).ok);
             setLoading(false)
             positionTree = -1
-          } else if (inventoryStatus["dig"] === true && loading === false) {
+          } else if (inventoryStatus["dig"] === true && loading === false) { // Remove
             setLoading(true)
             console.log("Remove: ", await user.actor.removeTree(country.properties.tileId))
-            // setTileplant(await loadTileSlots(landSlotProperties));
+            setTileplant(await loadTileSlots(landSlotProperties));
             setLoading(false)
           }
         }
       }
     });
   };
-  console.log("inventoryStatus", inventoryStatus)
-
   return (
     <>
       <GeoJSON
@@ -137,7 +165,7 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
         onEachFeature={onEachLandSlot}
       />
       <CreateBound {...{ latlng, tileplant, loading }}></CreateBound>
-      <UIFarm></UIFarm>
+      <UIFarm Carrot={carrot} Wheat={wheat} Tomato={tomato}></UIFarm>
       <Inventory inventory={inventory}></Inventory>
       {/* <ShowPlant inventory={inventory}></ShowPlant> */}
 

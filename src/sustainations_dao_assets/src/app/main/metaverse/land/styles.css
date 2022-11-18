@@ -273,3 +273,16 @@ li {
   top: -7px;
   right: 0px;
 }
+
+.container {
+  position: sticky;
+  text-align: center;
+  color: white;
+  top: 2vh;
+}
+
+.bottom-left {
+  position: absolute;
+  bottom: 8px;
+  left: 16px;
+}
