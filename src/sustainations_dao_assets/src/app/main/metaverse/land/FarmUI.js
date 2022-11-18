@@ -9,8 +9,6 @@ const UIFarm = ({ Carrot, Wheat, Tomato }) => {
             <img src="metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-27.png"></img>
           </div>
         </li>
-        
-        
         <li>
           <div className="container" style={{ scale: 0.8 }}>
             <img src="metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-29.png" />
