@@ -12,7 +12,8 @@ import {
   listCharacterSelectsItems,
   characterCollectsMaterials,
   listCharacterCollectsMaterials,
-  getHpPotion
+  getHpPotion,
+  listStash
 } from '../GameApi';
 
 class BaseScene extends Phaser.Scene {
@@ -155,10 +156,27 @@ class BaseScene extends Phaser.Scene {
       this.isHadPotion = false;
     }
     //Test
-    //UI
+    this.itemSlot = [];
+    this.landItem = await listStash();
+    console.log("Land Item is " + this.landItem[0].usableItemName);
     console.log("HAD POTION ", this.isHadPotion);
     this.isUsedPotion = false;
-    this.itemSlot = [];
+    let imgLandItem = "";
+    // console.log("Random is " + this.landItem.random().usableItemName)
+    switch (this.landItem[1].usableItemName) {
+      case "Tomato":
+        imgLandItem = "item_tomato";
+        break;
+      case "Carrot":
+        imgLandItem = "item_carrot";
+        break;
+      case "Wheet":
+        imgLandItem = "item_wheat";
+        break;
+      default:
+        imgLandItem = "";
+    }
+
     if (this.isHadPotion) {
       this.itemSlot[0] = this.add.image(55, 550, "UI_Utility_Sprite")
         .setOrigin(0).setScrollFactor(0).setScale(0.5).setFrame(1);
@@ -171,12 +189,13 @@ class BaseScene extends Phaser.Scene {
         this.isUsedPotion = true;
         console.log("Used potion => ", useHpPotion(this.characterData.id));
       });
-    } else {
-      // this.itemSlot[0] = this.add.image(55, 550, "UI_Utility_Sprite").setOrigin(0).setScrollFactor(0).setScale(0.5);
+    } else if (this.landItem != null) {
       this.itemSlot[0] = this.add.image(55, 550, "UI_Utility_Sprite")
         .setOrigin(0).setScrollFactor(0).setScale(0.5).setFrame(1);
-      this.potion = this.add.image(68, 563, "item_tomato")
+      this.potion = this.add.image(68, 563, imgLandItem)
         .setOrigin(0).setInteractive().setScrollFactor(0).setScale(0.5);
+    } else {
+      this.itemSlot[0] = this.add.image(55, 550, "UI_Utility_Sprite").setOrigin(0).setScrollFactor(0).setScale(0.5);
     }
     this.itemSlot[1] = this.add.image(125, 505, "UI_Utility_Sprite").setOrigin(0).setScrollFactor(0).setScale(0.5);
     this.itemSlot[2] = this.add.image(195, 550, "UI_Utility_Sprite").setOrigin(0).setScrollFactor(0).setScale(0.5);

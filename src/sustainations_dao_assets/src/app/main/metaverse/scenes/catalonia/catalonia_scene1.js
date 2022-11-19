@@ -27,6 +27,7 @@ const UI_Utility_Sprite = 'metaverse/scenes/UI_Utility_Sprite.png'
 const item_potion = 'metaverse/scenes/item_ingame_HP.png'
 const item_carrot = 'metaverse/scenes/item_ingame_carrot.png'
 const item_tomato = 'metaverse/scenes/item_ingame_tomato.png'
+const item_wheat = 'metaverse/scenes/item_ingame_wheat.png'
 
 const popupWindo = 'metaverse/selectMap/Catalonia_popup.png';
 const popupClose = 'metaverse/selectMap/UI_ingame_close.png';
@@ -71,6 +72,7 @@ export default class catalonia_scene1 extends BaseScene {
     this.load.image("item_potion", item_potion);
     this.load.image("item_carrot", item_carrot);
     this.load.image("item_tomato", item_tomato);
+    this.load.image("item_wheat", item_wheat);
 
     //Popup
     this.load.spritesheet('popupWindo', popupWindo, { frameWidth: 980, frameHeight: 799 });
