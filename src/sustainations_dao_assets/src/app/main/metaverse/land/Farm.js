@@ -126,6 +126,17 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
           setLoading(false)
           positionTree = -1
         }
+        else if (inventoryStatus["dig"] === true && loading === false) { // Remove
+          setLoading(true)
+          positionTree = country.properties.i * 10 + country.properties.j
+          console.log("Remove: ", await user.actor.removeTree(country.properties.tileId))
+          setTileplant(await loadTileSlots(landSlotProperties));
+          setLoading(false)
+          positionTree = -1
+        }
+        else if (currentSeed.length === 0) {
+          console.log("Do nothing")
+        }
         // Planting
         else if (
           inventoryStatus[currentSeed[0].materialName] === true &&
@@ -147,13 +158,6 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
           await user.actor.subtractInventory(currentSeed[0].id);
           setTileplant(await loadTileSlots(landSlotProperties));
           setInventory((await user.actor.listInventory(characterId)).ok);
-          setLoading(false)
-          positionTree = -1
-        } else if (inventoryStatus["dig"] === true && loading === false) { // Remove
-          setLoading(true)
-          positionTree = country.properties.i * 10 + country.properties.j
-          console.log("Remove: ", await user.actor.removeTree(country.properties.tileId))
-          setTileplant(await loadTileSlots(landSlotProperties));
           setLoading(false)
           positionTree = -1
         }
