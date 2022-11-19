@@ -157,7 +157,7 @@ const Map = () => {
       if (isBuy !== undefined) {
         numRandom -= 1
         landSlotRand = await randomLandSlot()
-        await user.actor.updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom)
+        // await user.actor.updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom)
         map.setView([landSlotRand.geometry.coordinates[0][0][1], landSlotRand.geometry.coordinates[0][0][0]], 13)
       } else {
         // if not having enough ICP
@@ -208,7 +208,7 @@ const Map = () => {
     // await user.actor.updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom)
     map.setView([landSlotRand.geometry.coordinates[0][0][1], landSlotRand.geometry.coordinates[0][0][0]], 13)
     numRandom -= 1
-    await user.actor.updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom)
+    // await user.actor.updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom)
     setLoading("none")
   }
   return (
