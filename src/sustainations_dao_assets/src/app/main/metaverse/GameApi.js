@@ -11,6 +11,8 @@ function getUserInfo(){
   });
 };
 
+
+
 // character
 const characterClassId = "cc1";
 
@@ -199,6 +201,13 @@ async function createInventory(characterId) {
 async function openInventory(characterId){
   const { user } = store.getState();
   const func = async () => await user.actor.listInventory(characterId);
+  const rs = (await func()).ok;
+  return rs;
+};
+
+async function listStash(characterId){
+  const { user } = store.getState();
+  const func = async () => await user.actor.listStash();
   const rs = (await func()).ok;
   return rs;
 };
