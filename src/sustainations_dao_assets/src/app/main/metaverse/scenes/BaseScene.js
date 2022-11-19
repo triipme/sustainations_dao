@@ -154,6 +154,7 @@ class BaseScene extends Phaser.Scene {
     } else {
       this.isHadPotion = false;
     }
+    //Test
     //UI
     console.log("HAD POTION ", this.isHadPotion);
     this.isUsedPotion = false;
@@ -171,7 +172,11 @@ class BaseScene extends Phaser.Scene {
         console.log("Used potion => ", useHpPotion(this.characterData.id));
       });
     } else {
-      this.itemSlot[0] = this.add.image(55, 550, "UI_Utility_Sprite").setOrigin(0).setScrollFactor(0).setScale(0.5);
+      // this.itemSlot[0] = this.add.image(55, 550, "UI_Utility_Sprite").setOrigin(0).setScrollFactor(0).setScale(0.5);
+      this.itemSlot[0] = this.add.image(55, 550, "UI_Utility_Sprite")
+        .setOrigin(0).setScrollFactor(0).setScale(0.5).setFrame(1);
+      this.potion = this.add.image(68, 563, "item_tomato")
+        .setOrigin(0).setInteractive().setScrollFactor(0).setScale(0.5);
     }
     this.itemSlot[1] = this.add.image(125, 505, "UI_Utility_Sprite").setOrigin(0).setScrollFactor(0).setScale(0.5);
     this.itemSlot[2] = this.add.image(195, 550, "UI_Utility_Sprite").setOrigin(0).setScrollFactor(0).setScale(0.5);
@@ -341,34 +346,34 @@ class BaseScene extends Phaser.Scene {
       })
   }
 
-  playerLogicEngine(locationStop, locationInteract, nextScene){
-      //new player logic
-      if (this.player.body.touching.down && this.isInteracting == false) {
-        this.player.setVelocityX(settings.movementSpeed);
-      }
-  
-      if (this.player.x > locationStop) { //5100
-        console.log(this.sum)
-        this.pregameSound.stop();
-        this.sfx_char_footstep.stop();
-  
-        if (this.listScene.length === 0) this.scene.start("thanks", { isUsedPotion: this.isUsedPotion });
-        else this.scene.start(nextScene, { isUsedPotion: this.isUsedPotion, listScene: this.listScene });
-      }
-  
-      if (this.player.x > locationInteract && this.isInteracted == false) { //4200
-  
-        this.premiumPopupWindow.setVisible(true);
-        this.premiumPopupCloseBtn.setVisible(true);
-        this.des.setVisible(true);
-        this.sfx_char_footstep.stop();
-        this.player.setVelocityX(0);
-        this.player.play('idle-anims');
-        this.player.stop();
-      }
+  playerLogicEngine(locationStop, locationInteract, nextScene) {
+    //new player logic
+    if (this.player.body.touching.down && this.isInteracting == false) {
+      this.player.setVelocityX(settings.movementSpeed);
+    }
+
+    if (this.player.x > locationStop) { //5100
+      console.log(this.sum)
+      this.pregameSound.stop();
+      this.sfx_char_footstep.stop();
+
+      if (this.listScene.length === 0) this.scene.start("thanks", { isUsedPotion: this.isUsedPotion });
+      else this.scene.start(nextScene, { isUsedPotion: this.isUsedPotion, listScene: this.listScene });
+    }
+
+    if (this.player.x > locationInteract && this.isInteracted == false) { //4200
+
+      this.premiumPopupWindow.setVisible(true);
+      this.premiumPopupCloseBtn.setVisible(true);
+      this.des.setVisible(true);
+      this.sfx_char_footstep.stop();
+      this.player.setVelocityX(0);
+      this.player.play('idle-anims');
+      this.player.stop();
+    }
   }
 
-  scrollTexture(speedBack, speedMid, speedObstacle, speedFront){
+  scrollTexture(speedBack, speedMid, speedObstacle, speedFront) {
     this.bg_1.tilePositionX = this.myCam.scrollX * speedBack;
     this.bg_2.tilePositionX = this.myCam.scrollX * speedMid;
     this.obstacle.tilePositionX = this.myCam.scrollX * speedObstacle;

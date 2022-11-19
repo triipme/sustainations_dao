@@ -25,6 +25,8 @@ const BtnExit = 'metaverse/scenes/UI_exit.png'
 const UI_Utility = 'metaverse/scenes/UI-utility.png'
 const UI_Utility_Sprite = 'metaverse/scenes/UI_Utility_Sprite.png'
 const item_potion = 'metaverse/scenes/item_ingame_HP.png'
+const item_carrot = 'metaverse/scenes/item_ingame_carrot.png'
+const item_tomato = 'metaverse/scenes/item_ingame_tomato.png'
 
 const popupWindo = 'metaverse/selectMap/Catalonia_popup.png';
 const popupClose = 'metaverse/selectMap/UI_ingame_close.png';
@@ -67,6 +69,8 @@ export default class catalonia_scene1 extends BaseScene {
     this.load.image("BtnExit", BtnExit);
     this.load.spritesheet('UI_Utility_Sprite', UI_Utility_Sprite, { frameWidth: 192, frameHeight: 192 });
     this.load.image("item_potion", item_potion);
+    this.load.image("item_carrot", item_carrot);
+    this.load.image("item_tomato", item_tomato);
 
     //Popup
     this.load.spritesheet('popupWindo', popupWindo, { frameWidth: 980, frameHeight: 799 });

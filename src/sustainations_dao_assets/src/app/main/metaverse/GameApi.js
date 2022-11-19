@@ -255,6 +255,13 @@ async function addAllInventory(characterId, amount) {
   });
 };
 
+async function listStash() {
+  const { user } = store.getState();
+  const func = async () => await user.actor.listStash();
+  const result = (await func()).ok;
+  return result;
+};
+
 
 
 
@@ -288,5 +295,6 @@ export {
   payQuest,
   readEvent,
   listSceneQuests,
-  addAllInventory
+  addAllInventory,
+  listStash
 }
