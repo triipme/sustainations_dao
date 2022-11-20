@@ -6,7 +6,9 @@ import {
   updateCharacterStats,
   listCharacterSelectsItems,
   createCharacterCollectsMaterials,
-  readEvent
+  readEvent,
+  loadCharacter,
+  useUsableItem
 } from '../../GameApi';
 import { settings } from '../settings';
 import { func } from 'prop-types';
@@ -32,6 +34,11 @@ export default class catalonia_scene13 extends BaseScene {
     super('catalonia_scene13');
   }
 
+  init(data) {
+    this.isHealedPreviously = data.isUsedPotion;
+    this.isUsedUsableItem = data.isUsedUsableItem;
+  }
+
   clearSceneCache() {
     const textures_list = ['bg', 'UI_strength', 'effect', 'player', 'pickItemText',
       'itembox', 'btnGo', 'btnClear', 'ground', 'background1', 'background2',
@@ -43,7 +50,26 @@ export default class catalonia_scene13 extends BaseScene {
 
   preload() {
     this.addLoadingScreen();
-    this.initialLoad("e22");
+    if (this.isUsedUsableItem[0]){
+      this.load.rexAwait(function (successCallback, failureCallback) {
+        loadCharacter().then((result) => {
+          this.characterData = result.ok[1];
+
+          this.load.rexAwait(function (successCallback, failureCallback) {
+            useUsableItem(this.characterData.id, this.isUsedUsableItem[1]).then((result) => {
+              successCallback();
+              this.initialLoad("e22");
+            });
+          }, this);
+
+          this.initialLoad("e22");
+          successCallback();
+        });
+      }, this);
+    }
+    else {
+      this.initialLoad("e22");
+    }
 
     //Preload
     this.clearSceneCache();

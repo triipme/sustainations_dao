@@ -6,7 +6,9 @@ import {
   updateCharacterStats,
   listCharacterSelectsItems,
   createCharacterCollectsMaterials,
-  readEvent
+  readEvent,
+  loadCharacter,
+  useUsableItem
 } from '../../GameApi';
 import { settings } from '../settings';
 import { ThemeProvider } from '@mui/styles';
@@ -25,7 +27,7 @@ export default class catalonia_scene5_1 extends BaseScene {
 
   init(data) {
     this.isHealedPreviously = data.isUsedPotion;
-    console.log('healed', this.isHealedPreviously);
+    this.isUsedUsableItem = data.isUsedUsableItem;
   }
 
   clearSceneCache() {
@@ -38,7 +40,26 @@ export default class catalonia_scene5_1 extends BaseScene {
 
   preload() {
     this.addLoadingScreen();
-    this.initialLoad("e13");
+    if (this.isUsedUsableItem[0]){
+      this.load.rexAwait(function (successCallback, failureCallback) {
+        loadCharacter().then((result) => {
+          this.characterData = result.ok[1];
+
+          this.load.rexAwait(function (successCallback, failureCallback) {
+            useUsableItem(this.characterData.id,this.isUsedUsableItem[1]).then((result) => {
+              successCallback();
+              this.initialLoad("e13");
+            });
+          }, this);
+
+          this.initialLoad("e13");
+          successCallback();
+        });
+      }, this);
+    }
+    else {
+      this.initialLoad("e13");
+    }
 
     //Preload
     this.clearSceneCache();
@@ -206,7 +227,7 @@ export default class catalonia_scene5_1 extends BaseScene {
     if (this.player.x > 3631) {
       this.ingameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start('catalonia_scene5_2', { isUsedPotion: this.isUsedPotion });
+      this.scene.start('catalonia_scene5_2', { isUsedPotion: this.isUsedPotion, isUsedUsableItem: this.isUsedUsableItem });
     }
 
     if (this.player.x > 2900 && this.isInteracted == false) {

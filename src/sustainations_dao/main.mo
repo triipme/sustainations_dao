@@ -2661,13 +2661,9 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     let godUser1 = "eoaxc-owf3f-kl22c-6a7xx-me7xi-idp7u-6mkef-3ek3w-vkyrf-deavj-pqe";
     let godUser2 = "wijp2-ps7be-cocx3-zbfru-uuw2q-hdmpl-zudjl-f2ofs-7qgni-t7ik5-lqe";
     let godUser3 = "u3z7x-q4qn7-kju5f-yew6e-kx3qy-rzmdy-nrqwl-tpynd-6nd2k-lkc37-fqe";
-    if (Principal.toText(caller) == godUser1 
-        or Principal.toText(caller) == godUser2 
-        or Principal.toText(caller) == godUser3) {
+    if (Principal.toText(caller) == godUser1 or Principal.toText(caller) == godUser2 or Principal.toText(caller) == godUser3) {
       for ((K, character) in state.characters.entries()) {
-        if (character.userId == Principal.fromText(godUser1) 
-            or character.userId == Principal.fromText(godUser2) 
-            or character.userId == Principal.fromText(godUser3)) {
+        if (character.userId == Principal.fromText(godUser1) or character.userId == Principal.fromText(godUser2) or character.userId == Principal.fromText(godUser3)) {
           state.characters.delete(character.id);
         };
       };
@@ -3573,13 +3569,49 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
             id = usableItem.id;
             name = usableItem.name;
             image = usableItem.image;
-            increaseStat = usableItem.increaseStat;
+            increaseStamina = usableItem.increaseStamina;
+            increaseHP = usableItem.increaseHP;
+            increaseMorale = usableItem.increaseMorale;
+            increaseMana = usableItem.increaseMana;
             effect = usableItem.effect;
           }
         );
         #ok("Success");
       };
     };
+  };
+
+  public shared query ({ caller }) func readUsableItem(id : Text) : async Response<Types.UsableItem> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rs = state.usableItems.get(id);
+    return Result.fromOption(rs, #NotFound);
+  };
+
+  public shared ({ caller }) func deleteUsableItem(id : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rs = state.usableItems.get(id);
+    switch (rs) {
+      case (null) { #err(#NotFound) };
+      case (?V) {
+        let deleted = state.usableItems.delete(id);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared query ({ caller }) func listUsableItem() : async Response<[Types.UsableItem]> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    var list : [Types.UsableItem] = [];
+    for ((_, usableItem) in state.usableItems.entries()) {
+          list := Array.append<Types.UsableItem>(list, [usableItem]);
+    };
+    #ok((list));
   };
 
   public shared query ({ caller }) func getHpPotion() : async Response<Types.UsableItem> {
@@ -3589,6 +3621,105 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     let rs = state.usableItems.get("ui1");
     return Result.fromOption(rs, #NotFound);
   };
+
+  public shared ({caller}) func getUsableItem() : async Response<Types.UsableItem>{
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    for (stash in state.stashes.vals()) {
+      if (stash.userId == Principal.toText(caller)) {
+        let rsUsableItem = state.usableItems.get(stash.usableItemId);
+        return Result.fromOption(rsUsableItem, #NotFound);
+      };
+    };
+    #err(#NotFound);
+  };
+
+  public shared ({ caller }) func useUsableItem(characterId : Text, stashId: Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let userId = Principal.toText(caller);
+    let rsCharacter = state.characters.get(characterId);
+    switch (rsCharacter) {
+      case (null) { #err(#NotFound) };
+      case (?character) {
+        let rsStash = state.stashes.get(stashId);
+        switch (rsStash) {
+          case null #err(#NotFound);
+          case (?stash) {
+            let rsUsable = await readUsableItem(stash.usableItemId);
+            switch (rsUsable) {
+              case (#err(err)) return #err(#NotFound);
+              case (#ok(usable)) {
+                let newCharacter : Types.Character = {
+                  userId = character.userId;
+                  id = character.id;
+                  name = character.name;
+                  level = character.level;
+                  currentExp = character.currentExp;
+                  temporaryExp = character.temporaryExp;
+                  levelUpExp = character.levelUpExp;
+                  status = character.status;
+                  strength = character.strength;
+                  intelligence = character.intelligence;
+                  vitality = character.vitality;
+                  luck = character.luck;
+                  currentHP = Float.min(character.currentHP+usable.increaseHP, character.maxHP);
+                  maxHP = character.maxHP;
+                  currentMana = Float.min(character.currentMana+usable.increaseMana, character.maxMana);
+                  maxMana = character.maxMana;
+                  currentStamina = Float.min(character.currentStamina+usable.increaseStamina, character.maxStamina);
+                  maxStamina = character.maxStamina;
+                  currentMorale = Float.min(character.currentMorale+usable.increaseMorale, character.maxMorale);
+                  maxMorale = character.maxMorale;
+                  classId = character.classId;
+                  gearIds : ?[Text] = Option.get(null, ?[]);
+                  inventorySize = 10;
+                  exhaustedTime = 0;
+                };
+                let updatedCharacter = state.characters.replace(character.id, newCharacter);
+
+                //substract stash
+                if (stash.amount - 1 > 0){
+                  let newStash : Types.Stash = {
+                    id = stash.id;
+                    userId = stash.userId;
+                    usableItemId = stash.usableItemId;
+                    quality = stash.quality;
+                    amount = stash.amount-1;
+                  };
+                  let updated = state.stashes.replace(stash.id, newStash);
+                }
+                else {
+                  let deletedStash = state.stashes.delete(stash.id);
+                };
+                #ok("Success");
+              };
+            }
+          }
+        }
+        
+        // switch (state.eventItems.get(userId)) {
+        //   case (null) { #err(#NotFound) };
+        //   case (?eventItem) {
+        //     for ((_, usableItem) in state.usableItems.entries()) {
+        //       if (eventItem.itemId == usableItem.id) {
+        //         let deleted = state.eventItems.delete(userId);
+        //       };
+        //     };
+        //     #ok("Success");
+        //   };
+        // };
+      };
+    };
+  };
+
+  public shared ({caller}) func getPrinciple() : async Text { //for test
+    return Principal.toText(caller);
+  };
+
+  
 
   // Event Item
   public shared ({ caller }) func canGetARItem(eventItemId : Text) : async Response<Bool> {
@@ -4394,10 +4525,9 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       };
       case (?inventory) {
         let newAmount = Int.max(inventory.amount -1, 0);
-        if  (newAmount == 0) {
+        if (newAmount == 0) {
           let deleted = state.inventories.delete(inventoryId);
-        }
-        else {
+        } else {
           let updateInventory : Types.Inventory = {
             id = inventory.id;
             characterId = inventory.characterId;
@@ -4411,9 +4541,8 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
   };
 
-
   // Stash
-  public shared ({ caller }) func createStash(userId : Text,seedId : Text) : async Response<Text> {
+  public shared ({ caller }) func createStash(userId : Text, seedId : Text) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
@@ -4431,28 +4560,27 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
               userId = stash.userId;
               usableItemId = stash.usableItemId;
               quality = stash.quality;
-              amount = stash.amount + Float.toInt(await Random.randomNumber(Float.fromInt(seed.minAmount),Float.fromInt(seed.maxAmount)));
+              amount = stash.amount + Float.toInt(await Random.randomNumber(Float.fromInt(seed.minAmount), Float.fromInt(seed.maxAmount)));
             };
-            let updated = Stash.update(updateStash,state);
+            let updated = Stash.update(updateStash, state);
             rsStash := true;
           };
         };
 
-        if (rsStash==false) {
+        if (rsStash == false) {
           let newStash : Types.Stash = {
             id = await createUUID();
             userId = userId;
             usableItemId = seed.harvestedProductId;
             quality = "Good";
-            amount = Float.toInt(await Random.randomNumber(Float.fromInt(seed.minAmount),Float.fromInt(seed.maxAmount)));
+            amount = Float.toInt(await Random.randomNumber(Float.fromInt(seed.minAmount), Float.fromInt(seed.maxAmount)));
           };
-          let created = Stash.create(newStash,state);
+          let created = Stash.create(newStash, state);
         };
       };
     };
     #ok("Success");
   };
-
 
   public type StashInfo = {
     id : Text;
@@ -4487,7 +4615,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
     #ok((list));
   };
-
 
   // convert utm2lonlat
   public shared func utm2lonlat(easting : Float, northing : Float, zoneNum : Int32, zoneLetter : Text) : async (Float, Float) {
@@ -4637,7 +4764,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
                 };
               };
             };
-            ignore await updateLandBuyingStatus(caller,Int.abs(i),Int.abs(j));
+            ignore await updateLandBuyingStatus(caller, Int.abs(i), Int.abs(j));
             return #ok(
               await landSlotToGeometry(Int.abs(i), Int.abs(j))
             );
@@ -4655,7 +4782,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
             let index = await randomIndex(0.0, Float.fromInt(adjacentLandSlots.size() -1));
             let result = adjacentLandSlots[Int.abs(index)];
 
-            ignore await updateLandBuyingStatus(caller,Int.abs(result.i), Int.abs(result.j));
+            ignore await updateLandBuyingStatus(caller, Int.abs(result.i), Int.abs(result.j));
             return #ok(
               await landSlotToGeometry(Int.abs(result.i), Int.abs(result.j))
             );
@@ -4955,7 +5082,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   };
 
   // Land Buying Status
-  public shared ({ caller }) func updateLandBuyingStatus(userId: Principal, indexRow : Nat, indexColumn : Nat) : async Response<Text> {
+  public shared ({ caller }) func updateLandBuyingStatus(userId : Principal, indexRow : Nat, indexColumn : Nat) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
@@ -4969,7 +5096,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
         let updateLandBuyingStatus : Types.LandBuyingStatus = {
           id = userId;
           geometry = newGeometry;
-          randomTimes = V.randomTimes-1;
+          randomTimes = V.randomTimes -1;
         };
         let updated = LandBuyingStatus.update(updateLandBuyingStatus, state);
       };
@@ -5130,8 +5257,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
         let plantId = tile.objectId;
         let rsPlant = state.plants.get(plantId);
         switch (rsPlant) {
-          case null {
-          };
+          case null {};
           case (?plant) {
             let updatePlant : Types.Plant = {
               id = plant.id;
@@ -5140,9 +5266,9 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
               status = "newlyPlanted";
               plantTime = Time.now() / 1000000000;
             };
-            let updated = Plant.update(updatePlant,state);
+            let updated = Plant.update(updatePlant, state);
             // add harvested product to user's Stash
-            ignore await createStash(Principal.toText(caller),plant.seedId);
+            ignore await createStash(Principal.toText(caller), plant.seedId);
           };
         };
         #ok("Success");
@@ -5162,8 +5288,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
         let plantId = V.objectId;
         let rsPlant = state.plants.get(plantId);
         switch (rsPlant) {
-          case null {
-          };
+          case null {};
           case (?plant) {
             let deletedPlant = state.plants.delete(plantId);
           };
@@ -5175,8 +5300,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       };
     };
   };
-
-
 
   // Tile
   public shared ({ caller }) func createTile(landId : Text, indexRow : Nat, indexColumn : Nat, objectId : Text) : async Response<Text> {
@@ -5320,4 +5443,15 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
     "NotFound";
   };
+
+  public shared({caller}) func addICP(uid : Text) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let reward = transferFee * 99;
+    let receipt = await refund(reward, Principal.fromText(uid));
+
+    #ok("GGFF");
+  };
+
 };

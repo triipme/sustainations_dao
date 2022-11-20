@@ -10,7 +10,7 @@ import {
   loadCharacterAwait,
   resetCharacterCollectsMaterials,
   listSceneQuests,
-  loadQuestItemEngines
+  loadQuestItemEngines,
 } from '../GameApi';
 import { throws } from 'assert';
 
@@ -73,10 +73,10 @@ class selectItemScene extends BaseScene {
       });
     }, this)
 
-    if  (this.map == "engine"){
+    if (this.map == "engine") {
       this.load.rexAwait(function (successCallback, failureCallback) {
         loadQuestItemEngines(this.map).then((result) => {
-          if (result != []){}
+          if (result != []) { }
           this.questItems = result;
           console.log("result: ", result);
           for (const index in result) {
@@ -91,7 +91,7 @@ class selectItemScene extends BaseScene {
     else {
       this.load.rexAwait(function (successCallback, failureCallback) {
         loadQuestItems(this.map).then((result) => {
-          if (result != []){}
+          if (result != []) { }
           this.questItems = result;
           for (const index in result) {
             this.itemNames.push(result[index].name);

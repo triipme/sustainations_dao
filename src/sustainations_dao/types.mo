@@ -215,7 +215,10 @@ module {
     id : Text;
     name : Text;
     image : Text;
-    increaseStat : Float;
+    increaseStamina : Float;
+    increaseHP : Float;
+    increaseMorale : Float;
+    increaseMana : Float;
     effect : Text;
   };
 
@@ -307,14 +310,12 @@ module {
     amount : Int;
   };
 
-
-
   // Land
   //--------------------- Land Config -------------------//
   public type LandConfig = {
     id : Text;
     mapWidth : Int;
-    mapHeight: Int;
+    mapHeight : Int;
   };
 
   //--------------------- Land Slot ---------------------//
@@ -329,7 +330,7 @@ module {
     zoneLetter : Text;
     easting : Nat;
     northing : Nat;
-    price: Float; 
+    price : Float;
   };
 
   public type Geometry = {
@@ -337,10 +338,10 @@ module {
     zoneLetter : Text;
     i : Nat;
     j : Nat;
-    coordinates: [[[Float]]];
+    coordinates : [[[Float]]];
   };
 
-//--------------------- Land Transfer History ---------------------//
+  //--------------------- Land Transfer History ---------------------//
   public type LandTransferHistory = {
     id : Text;
     buyerId : Principal;
@@ -350,21 +351,20 @@ module {
     price : Float;
   };
 
-
-//--------------------- Land Buying Status ---------------------//
+  //--------------------- Land Buying Status ---------------------//
   public type LandBuyingStatus = {
     id : Principal;
     geometry : Geometry;
     randomTimes : Nat;
   };
 
-//--------------------------Nation--------------------------//
+  //--------------------------Nation--------------------------//
   public type Nation = {
     id : Principal;
     landSlotIds : [Text];
     indexRow : Nat;
     indexColumn : Nat;
-    utms : [[Nat]]; 
+    utms : [[Nat]];
   };
 
   public type NationGeometry = {
@@ -373,19 +373,19 @@ module {
     zoneLetter : Text;
     i : Nat;
     j : Nat;
-    coordinates: [[[Float]]];
+    coordinates : [[[Float]]];
   };
-// Farm
-//--------------------- Stash ---------------------//
-public type Stash = {
-  id : Text;
-  userId : Text;
-  usableItemId : Text;
-  quality : Text;
-  amount : Int; 
-};
+  // Farm
+  //--------------------- Stash ---------------------//
+  public type Stash = {
+    id : Text;
+    userId : Text;
+    usableItemId : Text;
+    quality : Text;
+    amount : Int;
+  };
 
-//-------------------------Tile------------------------------//
+  //-------------------------Tile------------------------------//
   public type Tile = {
     id : Text;
     landSlotId : Text;
@@ -394,7 +394,7 @@ public type Stash = {
     objectId : Text;
   };
 
-//--------------------- Farm Object ---------------------//
+  //--------------------- Farm Object ---------------------//
   public type FarmObject = {
     id : Text;
     landSlotId : Text;
@@ -405,7 +405,7 @@ public type Stash = {
     remainingTime : Int;
   };
 
-//--------------------- Seed ---------------------//
+  //--------------------- Seed ---------------------//
   public type Seed = {
     id : Text;
     harvestedProductId : Text;
@@ -421,7 +421,7 @@ public type Stash = {
     maxAmount : Int;
   };
 
-//--------------------- Plant ---------------------//
+  //--------------------- Plant ---------------------//
   public type Plant = {
     id : Text;
     seedId : Text;

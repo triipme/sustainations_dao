@@ -25,6 +25,9 @@ const BtnExit = 'metaverse/scenes/UI_exit.png'
 const UI_Utility = 'metaverse/scenes/UI-utility.png'
 const UI_Utility_Sprite = 'metaverse/scenes/UI_Utility_Sprite.png'
 const item_potion = 'metaverse/scenes/item_ingame_HP.png'
+const item_carrot = 'metaverse/scenes/item_ingame_carrot.png'
+const item_tomato = 'metaverse/scenes/item_ingame_tomato.png'
+const item_wheat = 'metaverse/scenes/item_ingame_wheat.png'
 
 const popupWindo = 'metaverse/selectMap/Catalonia_popup.png';
 const popupClose = 'metaverse/selectMap/UI_ingame_close.png';
@@ -67,6 +70,9 @@ export default class catalonia_scene1 extends BaseScene {
     this.load.image("BtnExit", BtnExit);
     this.load.spritesheet('UI_Utility_Sprite', UI_Utility_Sprite, { frameWidth: 192, frameHeight: 192 });
     this.load.image("item_potion", item_potion);
+    this.load.image("item_carrot", item_carrot);
+    this.load.image("item_tomato", item_tomato);
+    this.load.image("item_wheat", item_wheat);
 
     //Popup
     this.load.spritesheet('popupWindo', popupWindo, { frameWidth: 980, frameHeight: 799 });
@@ -162,13 +168,13 @@ export default class catalonia_scene1 extends BaseScene {
     });
 
     // load description of event
-    this.event = await readEvent(this.eventId)
+    const event = await readEvent(this.eventId)
 
 
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
-      text: this.event.description,
+      text: "La Seu d'Urgell is a town located in the Catalan Pyrenees in Spain. \n\nLa Seu d'Urgell is also the capital of the comarca Alt Urgell.",
       origin: { x: 0.5, y: 0.5 },
       style: {
         font: 'bold 25px Arial',
@@ -243,7 +249,7 @@ export default class catalonia_scene1 extends BaseScene {
     if (this.player.x > gameConfig.scale.width * 4) {
       this.pregameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start("catalonia_scene2_1", { isUsedPotion: this.isUsedPotion });
+      this.scene.start("catalonia_scene2_1", { isUsedPotion: this.isUsedPotion, isUsedUsableItem: this.isUsedUsableItem });
     }
 
     if (this.player.x > gameConfig.scale.width * 4 - 700 && this.isInteracted == false) {

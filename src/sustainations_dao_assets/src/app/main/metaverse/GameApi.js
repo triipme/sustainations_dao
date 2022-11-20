@@ -175,6 +175,27 @@ function getHpPotion() {
   });
 };
 
+async function getUsableItem() {
+  const { user } = store.getState();
+  const func = async () => await user.actor.getUsableItem();
+  const result = (await func());
+  return result;
+};
+
+async function listStash() {
+  const { user } = store.getState();
+  const func = async () => await user.actor.listStash();
+  const result = (await func()).ok;
+  return result;
+};
+
+async function useUsableItem(characterId, stashId) {
+  const { user } = store.getState();
+  const func = async () => await user.actor.useUsableItem(characterId, stashId);
+  const result = (await func()).ok;
+  return result;
+};
+
 // get AR item
 function canGetARItemPromise(eventItemId) {
   return new Promise((resolve, reject) => {
@@ -334,6 +355,9 @@ export {
   loadEventItem,
   getHpPotion,
   useHpPotion,
+  getUsableItem,
+  listStash,
+  useUsableItem,
   gainCharacterExp,
   resetCharacterCollectsMaterials,
   createInventory,
