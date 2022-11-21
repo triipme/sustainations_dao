@@ -290,6 +290,7 @@ function FarmContainer() {
         };
         setFarmProperties(myFarm);
         setFarmFeatures(await loadTileSlots(myFarm));
+        console.log("loadTileSlots", await loadTileSlots(myFarm))
         setListFarm(Object.keys(myFarmProperties).length)
       }
       setIsDone(true)
