@@ -3639,7 +3639,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
-    let userId = Principal.toText(caller);
     let rsCharacter = state.characters.get(characterId);
     switch (rsCharacter) {
       case (null) { #err(#NotFound) };
@@ -3648,10 +3647,10 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
         switch (rsStash) {
           case null #err(#NotFound);
           case (?stash) {
-            let rsUsable = await readUsableItem(stash.usableItemId);
+            let rsUsable =  state.usableItems.get(stash.usableItemId);
             switch (rsUsable) {
-              case (#err(err)) return #err(#NotFound);
-              case (#ok(usable)) {
+              case (null) return #err(#NotFound);
+              case (?usable) {
                 let newCharacter : Types.Character = {
                   userId = character.userId;
                   id = character.id;
@@ -3674,9 +3673,9 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
                   currentMorale = Float.min(character.currentMorale+usable.increaseMorale, character.maxMorale);
                   maxMorale = character.maxMorale;
                   classId = character.classId;
-                  gearIds : ?[Text] = Option.get(null, ?[]);
-                  inventorySize = 10;
-                  exhaustedTime = 0;
+                  gearIds = character.gearIds;
+                  inventorySize = character.inventorySize;
+                  exhaustedTime = character.exhaustedTime;
                 };
                 let updatedCharacter = state.characters.replace(character.id, newCharacter);
 
@@ -3699,18 +3698,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
             }
           }
         }
-        
-        // switch (state.eventItems.get(userId)) {
-        //   case (null) { #err(#NotFound) };
-        //   case (?eventItem) {
-        //     for ((_, usableItem) in state.usableItems.entries()) {
-        //       if (eventItem.itemId == usableItem.id) {
-        //         let deleted = state.eventItems.delete(userId);
-        //       };
-        //     };
-        //     #ok("Success");
-        //   };
-        // };
       };
     };
   };
