@@ -255,15 +255,15 @@ const Map = () => {
                       fontSize: "136%",
                       margin: "2%"
                     }}
-                  >{!alert ? "Do you want to receive this land slot with 0.0002 icp ?" : "You do not have enough ICP to make this transaction !"}</h1>
+                  >{!alert ? "Do you want to receive this land slot with 0.0004 icp ?" : "You do not have enough ICP to make this transaction !"}</h1>
                 </div>
                 {!alert ? <>
                   {loading === "accept" ? <h2 className="popupAccept"
                     style={{
-                      display: purchaseBtn ? "none" : "block"
+                      display: purchaseBtn  ? "none" : "block"
                     }}><i className="fa fa-spinner fa-spin"></i> LOADING</h2> : <h2 className="popupAccept"
                       style={{
-                        display: purchaseBtn ? "none" : "block"
+                        display: purchaseBtn || loading === "try" ? "none" : "block"
                       }}
                       onClick={() => {
                         handleAccept()
@@ -277,7 +277,7 @@ const Map = () => {
                   ><i className="fa fa-spinner fa-spin"></i> LOADING</h2> : <h2 className="popupTryAgain"
                     style={{
                       // if numRandom = 0 then, turn off try again button
-                      display: purchaseBtn || numRandom <= 0 ? "none" : "block",
+                      display: purchaseBtn || numRandom <= 0 || loading === "accept" ? "none" : "block",
                     }}
                     onClick={() => {
                       handleTryAgain()
