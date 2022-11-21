@@ -22,7 +22,7 @@ module Nation {
   };
 
   public func update(nation : Types.Nation, state : State.State) {
-    state.nations.put(Principal.toText(nation.id), getData(nation));
+    let updated = state.nations.replace(Principal.toText(nation.id), getData(nation));
   };  
 
   public type LandSlot = {

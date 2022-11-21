@@ -98,9 +98,10 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
   const onEachLandSlot = (country, layer) => {
     layer.setStyle({
       color: "#FFFFFF",
-      fillColor: "#FFFFFF",
-      fillOpacity: "0.1"
+      fillColor: (country.properties.hasEffectId === "None" || country.properties.hasEffectId === "") ? "#FFFFFF" : "#f6cb1c",
+      fillOpacity: (country.properties.hasEffectId === "None" || country.properties.hasEffectId === "") ? "0.1" : "0.4",
     });
+    console.log(country)
     layer.on({
 
       click: async e => {

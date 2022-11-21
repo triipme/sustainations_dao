@@ -23,6 +23,6 @@ module Stash {
   };
 
   public func update(stash : Types.Stash, state : State.State) {
-    state.stashes.put(stash.id, getData(stash));
+    let updated = state.stashes.replace(stash.id, getData(stash));
   };
 }
