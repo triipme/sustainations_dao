@@ -32,10 +32,10 @@ module FarmEffect {
           and farmObjects.size() == 7
           and (Array.find<Types.FarmObject>(farmObjects, func (val : Types.FarmObject) : Bool {val.indexRow == farmObject.indexRow and val.indexColumn == Int.max(farmObject.indexColumn - 1, 0)}) != null)
           and (Array.find<Types.FarmObject>(farmObjects, func (val : Types.FarmObject) : Bool {val.indexRow == farmObject.indexRow and val.indexColumn == farmObject.indexColumn + 1}) != null)
-          and (Array.find<Types.FarmObject>(farmObjects, func (val : Types.FarmObject) : Bool {val.indexRow == farmObject.indexRow + 1 and val.indexColumn == farmObject.indexColumn}) != null) 
-          and (Array.find<Types.FarmObject>(farmObjects, func (val : Types.FarmObject) : Bool {val.indexRow == farmObject.indexRow + 2 and val.indexColumn == farmObject.indexColumn}) != null)
-          and (Array.find<Types.FarmObject>(farmObjects, func (val : Types.FarmObject) : Bool {val.indexRow == farmObject.indexRow + 3 and val.indexColumn == farmObject.indexColumn}) != null)
-          and (Array.find<Types.FarmObject>(farmObjects, func (val : Types.FarmObject) : Bool {val.indexRow == farmObject.indexRow + 4 and val.indexColumn == farmObject.indexColumn}) != null)
+          and (Array.find<Types.FarmObject>(farmObjects, func (val : Types.FarmObject) : Bool {val.indexRow == Int.max(farmObject.indexRow - 1, 0) and val.indexColumn == farmObject.indexColumn}) != null) 
+          and (Array.find<Types.FarmObject>(farmObjects, func (val : Types.FarmObject) : Bool {val.indexRow == Int.max(farmObject.indexRow - 2, 0) and val.indexColumn == farmObject.indexColumn}) != null)
+          and (Array.find<Types.FarmObject>(farmObjects, func (val : Types.FarmObject) : Bool {val.indexRow == Int.max(farmObject.indexRow - 3, 0) and val.indexColumn == farmObject.indexColumn}) != null)
+          and (Array.find<Types.FarmObject>(farmObjects, func (val : Types.FarmObject) : Bool {val.indexRow == Int.max(farmObject.indexRow - 4, 0) and val.indexColumn == farmObject.indexColumn}) != null)
         ) {
           return effect.id;
         };
