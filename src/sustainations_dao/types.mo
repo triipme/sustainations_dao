@@ -187,11 +187,14 @@ module {
     questId : Text;
   };
 
-  public type UsableItem = {
+public type UsableItem = {
     id : Text;
     name : Text;
     image : Text;
-    increaseStat : Float;
+    increaseStamina : Float;
+    increaseHP : Float;
+    increaseMorale : Float;
+    increaseMana : Float;
     effect : Text;
   };
 

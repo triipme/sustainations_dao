@@ -3121,11 +3121,103 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
             id = usableItem.id;
             name = usableItem.name;
             image = usableItem.image;
-            increaseStat = usableItem.increaseStat;
+            increaseStamina = usableItem.increaseStamina;
+            increaseHP = usableItem.increaseHP;
+            increaseMorale = usableItem.increaseMorale;
+            increaseMana = usableItem.increaseMana;
             effect = usableItem.effect;
           }
         );
         #ok("Success");
+      };
+    };
+  };
+
+  public shared query ({ caller }) func readUsableItem(id : Text) : async Response<Types.UsableItem> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rs = state.usableItems.get(id);
+    return Result.fromOption(rs, #NotFound);
+  };
+
+  public shared ({ caller }) func deleteUsableItem(id : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rs = state.usableItems.get(id);
+    switch (rs) {
+      case (null) { #err(#NotFound) };
+      case (?V) {
+        let deleted = state.usableItems.delete(id);
+        #ok("Success");
+      };
+    };
+  };
+
+ public shared ({ caller }) func useUsableItem(characterId : Text, stashId: Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsCharacter = state.characters.get(characterId);
+    switch (rsCharacter) {
+      case (null) { #err(#NotFound) };
+      case (?character) {
+        let rsStash = state.stashes.get(stashId);
+        switch (rsStash) {
+          case null #err(#NotFound);
+          case (?stash) {
+            let rsUsable =  state.usableItems.get(stash.usableItemId);
+            switch (rsUsable) {
+              case (null) return #err(#NotFound);
+              case (?usable) {
+                let newCharacter : Types.Character = {
+                  userId = character.userId;
+                  id = character.id;
+                  name = character.name;
+                  level = character.level;
+                  currentExp = character.currentExp;
+                  temporaryExp = character.temporaryExp;
+                  levelUpExp = character.levelUpExp;
+                  status = character.status;
+                  strength = character.strength;
+                  intelligence = character.intelligence;
+                  vitality = character.vitality;
+                  luck = character.luck;
+                  currentHP = Float.min(character.currentHP+usable.increaseHP, character.maxHP);
+                  maxHP = character.maxHP;
+                  currentMana = Float.min(character.currentMana+usable.increaseMana, character.maxMana);
+                  maxMana = character.maxMana;
+                  currentStamina = Float.min(character.currentStamina+usable.increaseStamina, character.maxStamina);
+                  maxStamina = character.maxStamina;
+                  currentMorale = Float.min(character.currentMorale+usable.increaseMorale, character.maxMorale);
+                  maxMorale = character.maxMorale;
+                  classId = character.classId;
+                  gearIds = character.gearIds;
+                  inventorySize = character.inventorySize;
+                  exhaustedTime = character.exhaustedTime;
+                };
+                let updatedCharacter = state.characters.replace(character.id, newCharacter);
+
+                //substract stash
+                if (stash.amount - 1 > 0){
+                  let newStash : Types.Stash = {
+                    id = stash.id;
+                    userId = stash.userId;
+                    usableItemId = stash.usableItemId;
+                    quality = stash.quality;
+                    amount = stash.amount-1;
+                  };
+                  let updated = state.stashes.replace(stash.id, newStash);
+                }
+                else {
+                  let deletedStash = state.stashes.delete(stash.id);
+                };
+                #ok("Success");
+              };
+            }
+          }
+        }
       };
     };
   };

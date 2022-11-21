@@ -262,6 +262,13 @@ async function listStash() {
   return result;
 };
 
+async function useUsableItem(characterId, stashId) {
+  const { user } = store.getState();
+  const func = async () => await user.actor.useUsableItem(characterId, stashId);
+  const result = (await func()).ok;
+  return result;
+};
+
 
 
 
@@ -296,5 +303,6 @@ export {
   readEvent,
   listSceneQuests,
   addAllInventory,
-  listStash
+  listStash,
+  useUsableItem
 }
