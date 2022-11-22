@@ -5001,20 +5001,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
     "NotFound";
   };
-<<<<<<< HEAD
-
-  public shared({caller}) func addICP(uid : Text) : async Response<Text> {
-    if(Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized);//isNotAuthorized
-    };
-    let reward = transferFee * 99;
-    let receipt = await refund(reward, Principal.fromText(uid));
-
-    #ok("GGFF");
-  };
-  
-=======
->>>>>>> 42878869f6e7c846b445f79e35b23c392b7ed526
 
   // Farm Effect
   public shared ({ caller }) func createFarmEffect(effect : Types.FarmEffect) : async Response<Text> {
