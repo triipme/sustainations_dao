@@ -5,7 +5,10 @@ import {
   loadEventOptions,
   updateCharacterStats,
   listCharacterSelectsItems,
-  createCharacterCollectsMaterials
+  createCharacterCollectsMaterials,
+  readEvent,
+  loadCharacter,
+  useUsableItem
 } from '../../GameApi';
 import { settings } from '../settings';
 import { isThisSecond } from 'date-fns';
@@ -25,7 +28,7 @@ export default class catalonia_scene2_3 extends BaseScene {
 
   init(data) {
     this.isHealedPreviously = data.isUsedPotion;
-    console.log('healed', this.isHealedPreviously);
+    this.isUsedUsableItem = data.isUsedUsableItem;
   }
 
   clearSceneCache() {
@@ -38,7 +41,26 @@ export default class catalonia_scene2_3 extends BaseScene {
 
   preload() {
     this.addLoadingScreen();
-    this.initialLoad("e10");
+    if (this.isUsedUsableItem[0]){
+      this.load.rexAwait(function (successCallback, failureCallback) {
+        loadCharacter().then((result) => {
+          this.characterData = result.ok[1];
+
+          this.load.rexAwait(function (successCallback, failureCallback) {
+            useUsableItem(this.characterData.id, this.isUsedUsableItem[1]).then((result) => {
+              successCallback();
+              this.initialLoad("e10");
+            });
+          }, this);
+
+          this.initialLoad("e10");
+          successCallback();
+        });
+      }, this);
+    }
+    else {
+      this.initialLoad("e10");
+    }
 
     //Preload
     this.clearSceneCache();
@@ -141,10 +163,12 @@ export default class catalonia_scene2_3 extends BaseScene {
       console.log("Hello World");
     });
 
+    this.event = await readEvent(this.eventId)
+
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
-      text: "Fórnols de Cadí or Fórnols is a hamlet located in the municipality of La Vansa i Fórnols, in Province of Lleida province, Catalonia, Spain.",
+      text: this.event.description,
       origin: { x: 0.5, y: 0.5 },
       style: {
         font: 'bold 25px Arial',
@@ -209,7 +233,7 @@ export default class catalonia_scene2_3 extends BaseScene {
     if (this.player.x > 2171) {
       this.ingameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start('catalonia_scene2_4', { isUsedPotion: this.isUsedPotion });
+      this.scene.start('catalonia_scene2_4', { isUsedPotion: this.isUsedPotion, isUsedUsableItem: this.isUsedUsableItem });
     }
 
     if (this.player.x > 1200 && this.isInteracted == false) {

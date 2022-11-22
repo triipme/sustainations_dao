@@ -5,7 +5,10 @@ import {
   loadEventOptions,
   updateCharacterStats,
   listCharacterSelectsItems,
-  createCharacterCollectsMaterials
+  createCharacterCollectsMaterials,
+  readEvent,
+  loadCharacter,
+  useUsableItem
 } from '../../GameApi';
 import { settings } from '../settings';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
@@ -26,7 +29,7 @@ export default class catalonia_scene3 extends BaseScene {
 
   init(data) {
     this.isHealedPreviously = data.isUsedPotion;
-    console.log('healed', this.isHealedPreviously);
+    this.isUsedUsableItem = data.isUsedUsableItem;
   }
 
   clearSceneCache() {
@@ -39,7 +42,26 @@ export default class catalonia_scene3 extends BaseScene {
 
   preload() {
     this.addLoadingScreen();
-    this.initialLoad("e12");
+    if (this.isUsedUsableItem[0]){
+      this.load.rexAwait(function (successCallback, failureCallback) {
+        loadCharacter().then((result) => {
+          this.characterData = result.ok[1];
+
+          this.load.rexAwait(function (successCallback, failureCallback) {
+            useUsableItem(this.characterData.id, this.isUsedUsableItem[1]).then((result) => {
+              successCallback();
+              this.initialLoad("e12");
+            });
+          }, this);
+
+          this.initialLoad("e12");
+          successCallback();
+        });
+      }, this);
+    }
+    else {
+      this.initialLoad("e12");
+    }
 
     //Preload
     this.clearSceneCache();
@@ -186,10 +208,12 @@ export default class catalonia_scene3 extends BaseScene {
       console.log("Hello World");
     });
 
+    this.event = await readEvent(this.eventId)
+
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
-      text: "Gósol is a village and municipality located in the northwest of the comarca of Berguedà in Catalonia, in the Pyrenees.\nIt is within the confines of Cadí-Moixeró Natural Park, to the west of Pedraforca.",
+      text: this.event.description,
       origin: { x: 0.5, y: 0.5 },
       style: {
         font: 'bold 25px Arial',
@@ -254,7 +278,7 @@ export default class catalonia_scene3 extends BaseScene {
     if (this.player.x > gameConfig.scale.width * 4) {
       this.ingameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start('catalonia_scene5_1', { isUsedPotion: this.isUsedPotion });
+      this.scene.start('catalonia_scene5_1', { isUsedPotion: this.isUsedPotion, isUsedUsableItem: this.isUsedUsableItem });
     }
 
     if (this.player.x > 2000 && this.isInteracted == false) {

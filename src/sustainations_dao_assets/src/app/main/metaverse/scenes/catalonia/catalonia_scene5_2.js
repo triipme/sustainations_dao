@@ -5,7 +5,10 @@ import {
   loadEventOptions,
   updateCharacterStats,
   listCharacterSelectsItems,
-  createCharacterCollectsMaterials
+  createCharacterCollectsMaterials,
+  readEvent,
+  loadCharacter,
+  useUsableItem
 } from '../../GameApi';
 import { settings } from '../settings';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
@@ -23,7 +26,7 @@ export default class catalonia_scene5_2 extends BaseScene {
 
   init(data) {
     this.isHealedPreviously = data.isUsedPotion;
-    console.log('healed', this.isHealedPreviously);
+    this.isUsedUsableItem = data.isUsedUsableItem;
   }
 
   clearSceneCache() {
@@ -36,7 +39,26 @@ export default class catalonia_scene5_2 extends BaseScene {
 
   preload() {
     this.addLoadingScreen();
-    this.initialLoad("e14");
+    if (this.isUsedUsableItem[0]){
+      this.load.rexAwait(function (successCallback, failureCallback) {
+        loadCharacter().then((result) => {
+          this.characterData = result.ok[1];
+
+          this.load.rexAwait(function (successCallback, failureCallback) {
+            useUsableItem(this.characterData.id, this.isUsedUsableItem[1]).then((result) => {
+              successCallback();
+              this.initialLoad("e14");
+            });
+          }, this);
+
+          this.initialLoad("e14");
+          successCallback();
+        });
+      }, this);
+    }
+    else {
+      this.initialLoad("e14");
+    }
 
     //Preload
     this.clearSceneCache();
@@ -116,6 +138,37 @@ export default class catalonia_scene5_2 extends BaseScene {
     this.setValue(this.mana, this.characterData.currentMana / this.characterData.maxMana * 100);
     this.setValue(this.morale, this.characterData.currentMorale / this.characterData.maxMorale * 100);
 
+    //popup
+    this.premiumPopupWindow = this.add.sprite(gameConfig.scale.width / 2, gameConfig.scale.height / 2, "popupWindo")
+      .setScale(0.5).setVisible(false).setScrollFactor(0);
+    this.premiumPopupCloseBtn = this.add.image(gameConfig.scale.width / 2 + 230, gameConfig.scale.height / 2 - 150, "popupClose")
+      .setInteractive().setScale(0.25).setVisible(false).setScrollFactor(0).setScale(0.25);
+
+    this.premiumPopupCloseBtn.on('pointerdown', () => {
+      console.log("Hello World");
+      this.clickSound.play();
+      this.isInteracted = true;
+      this.premiumPopupWindow.setVisible(false);
+      this.premiumPopupCloseBtn.setVisible(false);
+      this.des.setVisible(false);
+      this.triggerPause();
+      console.log("Hello World");
+    });
+
+    this.event = await readEvent(this.eventId)
+
+    this.des = this.make.text({
+      x: gameConfig.scale.width / 2,
+      y: gameConfig.scale.height / 2 - 10,
+      text: this.event.description,
+      origin: { x: 0.5, y: 0.5 },
+      style: {
+        font: 'bold 25px Arial',
+        fill: 'gray',
+        wordWrap: { width: 400 }
+      }
+    }).setVisible(false).setScrollFactor(0);
+
     this.options = [];
     for (const idx in this.eventOptions) {
       // can take option or not
@@ -173,7 +226,7 @@ export default class catalonia_scene5_2 extends BaseScene {
     if (this.player.x > 2300) {
       this.ingameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start('catalonia_scene6', { isUsedPotion: this.isUsedPotion });
+      this.scene.start('catalonia_scene6', { isUsedPotion: this.isUsedPotion, isUsedUsableItem: this.isUsedUsableItem });
     }
 
     if (this.player.x > 2000 && this.isInteracted == false) {

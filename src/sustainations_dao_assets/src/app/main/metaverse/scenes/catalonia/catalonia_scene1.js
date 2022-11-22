@@ -106,6 +106,8 @@ export default class catalonia_scene1 extends BaseScene {
   }
 
   async create() {
+    this.isUsedUsableItem = [false, '']
+
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
@@ -249,7 +251,7 @@ export default class catalonia_scene1 extends BaseScene {
     if (this.player.x > gameConfig.scale.width * 4) {
       this.pregameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start("catalonia_scene2_1", { isUsedPotion: this.isUsedPotion });
+      this.scene.start("catalonia_scene2_1", { isUsedPotion: this.isUsedPotion, isUsedUsableItem: this.isUsedUsableItem });
     }
 
     if (this.player.x > gameConfig.scale.width * 4 - 700 && this.isInteracted == false) {

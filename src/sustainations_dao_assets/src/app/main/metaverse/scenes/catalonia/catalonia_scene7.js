@@ -9,6 +9,9 @@ import {
   createCharacterCollectsMaterials,
   openInventory,
   createInventory,
+  readEvent,
+  loadCharacter,
+  useUsableItem
 } from '../../GameApi';
 import { settings } from '../settings';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
@@ -28,7 +31,7 @@ export default class catalonia_scene7 extends BaseScene {
 
   init(data) {
     this.isHealedPreviously = data.isUsedPotion;
-    console.log('healed', this.isHealedPreviously);
+    this.isUsedUsableItem = data.isUsedUsableItem;
   }
 
   clearSceneCache() {
@@ -41,7 +44,26 @@ export default class catalonia_scene7 extends BaseScene {
 
   preload() {
     this.addLoadingScreen();
-    this.initialLoad("e16");
+    if (this.isUsedUsableItem[0]){
+      this.load.rexAwait(function (successCallback, failureCallback) {
+        loadCharacter().then((result) => {
+          this.characterData = result.ok[1];
+
+          this.load.rexAwait(function (successCallback, failureCallback) {
+            useUsableItem(this.characterData.id, this.isUsedUsableItem[1]).then((result) => {
+              successCallback();
+              this.initialLoad("e16");
+            });
+          }, this);
+
+          this.initialLoad("e16");
+          successCallback();
+        });
+      }, this);
+    }
+    else {
+      this.initialLoad("e16");
+    }
 
     //Preload
     this.clearSceneCache();
@@ -189,10 +211,12 @@ export default class catalonia_scene7 extends BaseScene {
       console.log("Hello World");
     });
 
+    this.event = await readEvent(this.eventId)
+
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
-      text: "Bagà is a Spanish municipality located in the comarca of Berguedà, in Catalonia.\nTraditionally, Bagà is considered the capital of Alt Berguedà, the mountainous northern half of the comarca.",
+      text: this.event.description,
       origin: { x: 0.5, y: 0.5 },
       style: {
         font: 'bold 25px Arial',
@@ -260,7 +284,7 @@ export default class catalonia_scene7 extends BaseScene {
     if (this.player.x > gameConfig.scale.width * 4) {
       this.ingameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start('catalonia_scene8');
+      this.scene.start('catalonia_scene8', { isUsedPotion: this.isUsedPotion, isUsedUsableItem: this.isUsedUsableItem });
     }
 
     if (this.player.x > 3967 && this.isInteracted == false) {

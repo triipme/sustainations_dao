@@ -33,11 +33,34 @@ export default class city_scene2 extends BaseScene {
   constructor() {
     super('city_scene2');
   }
-
+  init(data) {
+    this.isHealedPreviously = data.isUsedPotion;
+    this.isUsedUsableItem = data.isUsedUsableItem;
+  }
 
   preload() {
     this.addLoadingScreen();
-    this.initialLoad("e36");
+    if (this.isUsedUsableItem[0]){
+      this.load.rexAwait(function (successCallback, failureCallback) {
+        loadCharacter().then((result) => {
+          this.characterData = result.ok[1];
+
+          this.load.rexAwait(function (successCallback, failureCallback) {
+            useUsableItem(this.characterData.id, this.isUsedUsableItem[1]).then((result) => {
+              successCallback();
+              this.initialLoad("e36");
+            });
+          }, this);
+
+          this.initialLoad("e36");
+          successCallback();
+        });
+      }, this);
+    }
+    else {
+      this.initialLoad("e36");
+    }
+   
 
     //Preload
     this.clearSceneCache(['bg', 'UI_strength', 'effect', 'player', 'pickItemText',
@@ -230,7 +253,7 @@ export default class city_scene2 extends BaseScene {
     if (this.player.x > 5100) {
       this.pregameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start("city_scene3", { isUsedPotion: this.isUsedPotion });
+      this.scene.start("city_scene3", { isUsedPotion: this.isUsedPotion , isUsedUsableItem: this.isUsedUsableItem});
     }
 
     if (this.player.x > 4200 && this.isInteracted == false) {
