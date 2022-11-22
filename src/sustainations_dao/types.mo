@@ -187,11 +187,14 @@ module {
     questId : Text;
   };
 
-  public type UsableItem = {
+public type UsableItem = {
     id : Text;
     name : Text;
     image : Text;
-    increaseStat : Float;
+    increaseStamina : Float;
+    increaseHP : Float;
+    increaseMorale : Float;
+    increaseMana : Float;
     effect : Text;
   };
 
@@ -376,7 +379,9 @@ public type Stash = {
     landSlotId : Text;
     indexRow : Nat;
     indexColumn : Nat;
+    seedId : Text;
     name : Text;
+    hasEffectId : Text;
     status : Text;
     remainingTime : Int;
   };
@@ -404,6 +409,21 @@ public type Stash = {
     hasEffectId : Text;
     status : Text;
     plantTime : Int;
+  };
+
+  // Farm Effect
+  public type FarmEffect = {
+    id : Text;
+    symbol : Text;
+    value : Float;
+    effect : Text;
+    description : Text;
+  };
+
+  public type UserHasFarmEffect = {
+    id : Text;
+    farmEffectId : Text;
+    userId : Principal;
   };
 
   // Error codes

@@ -49,9 +49,11 @@ fn randomnumber(begin : f64, end: f64) -> u64 {
     let start = time();
     set_seeds(start as u64);
     let ru = Rnum::newu64();
-    let num = ru.rannum_in(begin, end).getu64();
-    return num.unwrap();
+    let number = ru.rannum_in(begin, end).getu64();
+    ic_cdk::print(format!("{:?}", number));
+    return number.unwrap();
 }
+
 
 #[ic_cdk_macros::query]
 fn randompair(begin : f64, end: f64) -> (u64,u64) {
