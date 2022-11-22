@@ -20,7 +20,6 @@ import {
   // loadTileSlots,
   getLandIndex,
   // getUserInfo,
-  // updateLandBuyingStatus,
   // loadNation,
   unionLandSlots,
 } from '../LandApi'
@@ -205,7 +204,6 @@ const Map = () => {
   const handleTryAgain = async () => {
     setLoading("try")
     landSlotRand = await randomLandSlot()
-    // await user.actor.updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom)
     map.setView([landSlotRand.geometry.coordinates[0][0][1], landSlotRand.geometry.coordinates[0][0][0]], 13)
     numRandom -= 1
     // await user.actor.updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom)

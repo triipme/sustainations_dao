@@ -379,7 +379,9 @@ public type Stash = {
     landSlotId : Text;
     indexRow : Nat;
     indexColumn : Nat;
+    seedId : Text;
     name : Text;
+    hasEffectId : Text;
     status : Text;
     remainingTime : Int;
   };
@@ -407,6 +409,21 @@ public type Stash = {
     hasEffectId : Text;
     status : Text;
     plantTime : Int;
+  };
+
+  // Farm Effect
+  public type FarmEffect = {
+    id : Text;
+    symbol : Text;
+    value : Float;
+    effect : Text;
+    description : Text;
+  };
+
+  public type UserHasFarmEffect = {
+    id : Text;
+    farmEffectId : Text;
+    userId : Principal;
   };
 
   // Error codes

@@ -18,6 +18,6 @@ module LandConfig {
   };
 
   public func update(landConfig : Types.LandConfig, state : State.State) {
-    state.landConfigs.put(landConfig.id, getData(landConfig));
+    let updated = state.landConfigs.replace(landConfig.id, getData(landConfig));
   };  
 }

@@ -235,16 +235,19 @@ async function loadTileSlots(properties) {
   let y = Number(properties.j) * 10
 
   const { user } = store.getState();
-  const func = await user.actor.loadTilesArea(x, y, x + 9, y + 9);
-  const tiles = func?.ok;
+  const func = async () => await user.actor.loadTilesArea(x, y, x + 9, y + 9);
+  const tiles = (await func()).ok;
+  
 
   var result = {
     features: []
   };
+  // console.log("tiles", tiles)
   for (let tile of tiles) {
     let latlng1 = utm2lonlat(d * Number(tile.indexColumn), d * Number(tile.indexRow));
     let latlng2 = utm2lonlat(d * (Number(tile.indexColumn) + 1), d * (Number(tile.indexRow) + 1));
     let landId = properties.i.toString() + "-" + properties.j.toString();
+    
     let feature = {
       type: "Feature",
       properties: {
@@ -254,8 +257,10 @@ async function loadTileSlots(properties) {
         "landId": landId,
         "tileId": tile.id,
         "name": tile.name,
+        "hasEffectId": tile.hasEffectId,
         "status": tile.status,
-        "remainingTime": Number(tile.remainingTime)
+        "remainingTime": Number(tile.remainingTime),
+        "hasEffectId": tile.hasEffectId, 
       },
       geometry: {
         type: "Polygon", coordinates: [
@@ -325,7 +330,6 @@ export {
   createLandSlot,
   loadLandTransferHistories,
   buyLandSlot,
-  // updateLandBuyingStatus,
   loadLandBuyingStatus,
   loadNationsfromCenter,
   loadLandSlotsfromCenter,
