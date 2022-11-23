@@ -29,7 +29,7 @@ module LandSlot {
   };
 
   public func update(landSlot : Types.LandSlot, state : State.State) {
-    state.landSlots.put(landSlot.id, getData(landSlot));
+    let updated = state.landSlots.replace(landSlot.id, getData(landSlot));
   };
 
   // 

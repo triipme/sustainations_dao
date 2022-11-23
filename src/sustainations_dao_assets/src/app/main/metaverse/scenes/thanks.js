@@ -10,6 +10,7 @@ import {
 } from '../GameApi';
 
 const bg = 'metaverse/UI_finish.png';
+const popupWindow = 'metaverse/selectMap/Catalonia_popup.png';
 
 class thanks extends BaseScene {
   constructor() {
@@ -17,7 +18,7 @@ class thanks extends BaseScene {
   }
 
   clearSceneCache() {
-    this.textures.remove('bg');
+    this.textures.remove('bg', 'popupWindow');
   }
 
   preload() {

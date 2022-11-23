@@ -21,7 +21,7 @@ module Tile {
   };
 
   public func update(tile : Types.Tile, state : State.State) {
-    state.tiles.put(tile.id, getData(tile));
+    let updated = state.tiles.replace(tile.id, getData(tile));
   };
 
   public func deleteFarmObjectFromList(farmObject : Types.FarmObject, farmObjects : [Types.FarmObject]) : async [Types.FarmObject] {

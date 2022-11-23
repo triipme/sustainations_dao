@@ -20,7 +20,7 @@ module LandSlotHistory {
   };
 
   public func update(landTransferHistory : Types.LandTransferHistory, state : State.State) {
-    state.landTransferHistories.put(landTransferHistory.id, getData(landTransferHistory));
+    let updated = state.landTransferHistories.replace(landTransferHistory.id, getData(landTransferHistory));
   };
 
 }
