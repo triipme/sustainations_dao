@@ -265,6 +265,14 @@ async function addAllInventory(characterId, amount) {
 };
 
 
+async function useUsableItem(characterId, stashId) {
+  const { user } = store.getState();
+  const func = async () => await user.actor.useUsableItem(characterId, stashId);
+  const result = (await func()).ok;
+  return result;
+};
+
+
 
 
 
@@ -297,5 +305,7 @@ export {
   payQuest,
   readEvent,
   listSceneQuests,
-  addAllInventory
+  addAllInventory,
+  listStash,
+  useUsableItem
 }

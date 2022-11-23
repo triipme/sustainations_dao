@@ -5,11 +5,13 @@ import {
   loadEventOptions,
   updateCharacterStats,
   listCharacterSelectsItems,
-  createCharacterCollectsMaterials
+  createCharacterCollectsMaterials,
+  readEvent,
+  loadCharacter,
+  useUsableItem
 } from '../../GameApi';
 import { settings } from '../settings';
 import { func } from 'prop-types';
-import { readEvent } from '../../GameApi';
 
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
@@ -33,6 +35,11 @@ export default class catalonia_scene11 extends BaseScene {
     super('catalonia_scene11');
   }
 
+  init(data) {
+    this.isHealedPreviously = data.isUsedPotion;
+    this.isUsedUsableItem = data.isUsedUsableItem;
+  }
+
   clearSceneCache() {
     const textures_list = ['bg', 'UI_strength', 'effect', 'player', 'pickItemText',
       'itembox', 'btnGo', 'btnClear', 'ground', 'background1', 'background2',
@@ -44,7 +51,26 @@ export default class catalonia_scene11 extends BaseScene {
 
   preload() {
     this.addLoadingScreen();
-    this.initialLoad("e20");
+    if (this.isUsedUsableItem[0]){
+      this.load.rexAwait(function (successCallback, failureCallback) {
+        loadCharacter().then((result) => {
+          this.characterData = result.ok[1];
+
+          this.load.rexAwait(function (successCallback, failureCallback) {
+            useUsableItem(this.characterData.id, this.isUsedUsableItem[1]).then((result) => {
+              successCallback();
+              this.initialLoad("e20");
+            });
+          }, this);
+
+          this.initialLoad("e20");
+          successCallback();
+        });
+      }, this);
+    }
+    else {
+      this.initialLoad("e20");
+    }
 
     //Preload
     this.clearSceneCache();
@@ -159,13 +185,13 @@ export default class catalonia_scene11 extends BaseScene {
     });
 
     // load description of event
-    const event = await readEvent(this.eventId)
+    this.event = await readEvent(this.eventId)
 
 
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
-      text: "The pharmacy of Llívia, one of the oldest in Europe, reveals this mystery. It was already in existence in 1415.",
+      text: this.event.description,
       origin: { x: 0.5, y: 0.5 },
       style: {
         font: 'bold 25px Arial',
@@ -241,7 +267,7 @@ export default class catalonia_scene11 extends BaseScene {
     if (this.player.x > 3800) {
       this.pregameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start("catalonia_scene12", { isUsedPotion: this.isUsedPotion });
+      this.scene.start("catalonia_scene12", { isUsedPotion: this.isUsedPotion, isUsedUsableItem: this.isUsedUsableItem });
     }
 
     if (this.player.x > 2940 && this.isInteracted == false) {

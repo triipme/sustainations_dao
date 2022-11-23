@@ -5,7 +5,9 @@ import {
   loadEventOptions,
   updateCharacterStats,
   listCharacterSelectsItems,
-  createCharacterCollectsMaterials
+  createCharacterCollectsMaterials,
+  loadCharacter,
+  useUsableItem
 } from '../../GameApi';
 import { settings } from '../settings';
 import { func } from 'prop-types';
@@ -42,9 +44,34 @@ export default class lava_scene4 extends BaseScene {
     }
   }
 
+  init(data) {
+    this.isHealedPreviously = data.isUsedPotion;
+    this.isUsedUsableItem = data.isUsedUsableItem;
+  }
+
   preload() {
     this.addLoadingScreen();
-    this.initialLoad("e34");
+    if (this.isUsedUsableItem[0]){
+      this.load.rexAwait(function (successCallback, failureCallback) {
+        loadCharacter().then((result) => {
+          this.characterData = result.ok[1];
+
+          this.load.rexAwait(function (successCallback, failureCallback) {
+            useUsableItem(this.characterData.id, this.isUsedUsableItem[1]).then((result) => {
+              successCallback();
+              this.initialLoad("e34");
+            });
+          }, this);
+
+          this.initialLoad("e34");
+          successCallback();
+        });
+      }, this);
+    }
+    else {
+      this.initialLoad("e34");
+    }
+   
 
     //Preload
     this.clearSceneCache();
@@ -254,7 +281,7 @@ export default class lava_scene4 extends BaseScene {
     if (this.player.x > 5100) {
       this.pregameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start("lava_scene5", { isUsedPotion: this.isUsedPotion });
+      this.scene.start("lava_scene5", { isUsedPotion: this.isUsedPotion, isUsedUsableItem: this.isUsedUsableItem });
     }
 
     if (this.player.x > 4550 && this.isInteracted == false) {

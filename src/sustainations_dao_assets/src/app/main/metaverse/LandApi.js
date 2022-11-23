@@ -241,10 +241,12 @@ async function loadTileSlots(properties) {
   var result = {
     features: []
   };
+  // console.log("tiles", tiles)
   for (let tile of tiles) {
     let latlng1 = utm2lonlat(d * Number(tile.indexColumn), d * Number(tile.indexRow));
     let latlng2 = utm2lonlat(d * (Number(tile.indexColumn) + 1), d * (Number(tile.indexRow) + 1));
     let landId = properties.i.toString() + "-" + properties.j.toString();
+    
     let feature = {
       type: "Feature",
       properties: {
@@ -256,7 +258,8 @@ async function loadTileSlots(properties) {
         "name": tile.name,
         "hasEffectId": tile.hasEffectId,
         "status": tile.status,
-        "remainingTime": Number(tile.remainingTime)
+        "remainingTime": Number(tile.remainingTime),
+        "hasEffectId": tile.hasEffectId, 
       },
       geometry: {
         type: "Polygon", coordinates: [
