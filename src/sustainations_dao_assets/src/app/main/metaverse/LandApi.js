@@ -35,7 +35,7 @@ function listCharacters() {
 //   });
 // };
 
-// list Inventory
+// subtract Inventory
 // async function subtractInventory(inventoryId) {
 // return new Promise((resolve, reject) => {
 //   const { user } = store.getState();
@@ -96,7 +96,7 @@ async function loadNationsfromCenter(x, y) {
   const { user } = store.getState();
   const { principal } = user;
   const func = await user.actor.loadNationsArea(
-    x - 100, y - 100, x + 100, y + 100
+    x,y,11
   );
   const nations = func?.ok;
   // let zone = 20
@@ -138,54 +138,53 @@ function utm2lonlat(utmX, utmY) {
   let result = proj4Src(firstProj, secondProj, [utmX, utmY])
   return result
 };
+
+function lonlat2utm(lon, lat) {
+  let zoneNumber = 20
+  var firstProj = "+proj=utm +ellps=WGS84 +zone=" + zoneNumber.toString() + " +units=m"
+  var secondProj = "+proj=longlat +ellps=WGS84 +datum=WGS84"
+  let result = proj4Src(secondProj, firstProj, [lon, lat])
+  return result
+};
 // load LandSLot from Center
-async function loadLandSlotsfromCenter(x, y) {
-  let d = 1000
-  let zone = 20
-  let result = {
-    features: []
-  };
-
-  for (let i = Math.max(x - 100, 0); i <= Math.min(x + 100, 1500 - 1); i++) {
-    for (let j = Math.max(y - 100, 0); j <= Math.min(y + 100, 1500 - 1); j++) {
-
-      let xIndex = Number(i)
-      let yIndex = Number(j)
-      let latlng1 = utm2lonlat(d * yIndex, d * xIndex);
-      let latlng2 = utm2lonlat(d * (yIndex + 1), d * (xIndex + 1));
-      let feature = {
-        type: "Feature",
-        properties: { "zone": zone, "i": xIndex, "j": yIndex },
-        geometry: {
-          type: "Polygon", coordinates: [
-            [
-              [latlng1[0], latlng1[1]],
-              [latlng2[0], latlng1[1]],
-              [latlng2[0], latlng2[1]],
-              [latlng1[0], latlng2[1]],
-              [latlng1[0], latlng1[1]]
-            ]
-          ]
-        }
-      };
-      result.features.push(feature)
-    }
-  }
-  return result.features
-}
+// async function loadLandSlotsfromCenter(x, y) {
+//   let d = 1000
+//   let zone = 20
+//   let result = {
+//     features: []
+//   };
+//   for (let i = Math.max(x - 100, 0); i <= Math.min(x + 100, 1500 - 1); i++) {
+//     for (let j = Math.max(y - 100, 0); j <= Math.min(y + 100, 1500 - 1); j++) {
+//       let xIndex = Number(i)
+//       let yIndex = Number(j)
+//       let latlng1 = utm2lonlat(d * yIndex, d * xIndex);
+//       let latlng2 = utm2lonlat(d * (yIndex + 1), d * (xIndex + 1));
+//       let feature = {
+//         type: "Feature",
+//         properties: { "zone": zone, "i": xIndex, "j": yIndex },
+//         geometry: {
+//           type: "Polygon", coordinates: [
+//             [
+//               [latlng1[0], latlng1[1]],
+//               [latlng2[0], latlng1[1]],
+//               [latlng2[0], latlng2[1]],
+//               [latlng1[0], latlng2[1]],
+//               [latlng1[0], latlng1[1]]
+//             ]
+//           ]
+//         }
+//       };
+//       result.features.push(feature)
+//     }
+//   }
+//   return result.features
+// }
 
 // get LandIndex based on long and lat value of center point on the screen
-function getLandIndex(latlng, landData) {
-  for (let i in landData) {
-    let coordinates = landData[i].geometry.coordinates[0]
-    let minlng = coordinates[0][0]
-    let maxlng = coordinates[2][0]
-    let minlat = coordinates[0][1]
-    let maxlat = coordinates[2][1]
-    if (latlng.lat >= minlat && latlng.lat <= maxlat && latlng.lng >= minlng && latlng.lng <= maxlng) {
-      return [landData[i].properties.i, landData[i].properties.j]
-    }
-  }
+function getLandIndex(latlng) {
+  let temp = lonlat2utm(latlng.lng, latlng.lat)
+  console.log([parseInt(temp[1]/1000), parseInt(temp[0]/1000)])
+  return [parseInt(temp[1]/1000), parseInt(temp[0]/1000)]
 }
 
 // load LandTransferHistories
@@ -332,7 +331,7 @@ export {
   buyLandSlot,
   loadLandBuyingStatus,
   loadNationsfromCenter,
-  loadLandSlotsfromCenter,
+  //loadLandSlotsfromCenter,
   getLandIndex,
   loadTileSlots,
   // loadNation,
