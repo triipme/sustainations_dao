@@ -101,7 +101,6 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
       fillColor: (country.properties.hasEffectId === "None" || country.properties.hasEffectId === "") ? "#FFFFFF" : "#f6cb1c",
       fillOpacity: (country.properties.hasEffectId === "None" || country.properties.hasEffectId === "") ? "0.1" : "0.4",
     });
-    console.log(country)
     layer.on({
 
       click: async e => {
