@@ -377,12 +377,27 @@ class BaseScene extends Phaser.Scene {
         stat = "+" + stat;
       }
 
-      this.add.text(x, y, stat, {
+      this.statText =this.add.text(x, y, stat, {
         font: 'bold 13px Arial',
         fill: fill1
       }).setOrigin(0).setScrollFactor(0);
-    }
 
+      this.tweens.add({
+        targets: this.statText,
+        alpha: 0,
+        duration: 6000,
+        ease: 'Power2'
+      }, this);
+    }
+  }
+
+  showColorLossAllStat(character_before, character_after){
+    let loss_stat = this.showLossStat(character_before, character_after)
+    this.showColorLossStat(423, 65, loss_stat[0]);
+    this.showColorLossStat(460 + 200, 65, loss_stat[1]);
+    this.showColorLossStat(470 + 200 * 2 + 20, 65, loss_stat[2]);
+    this.showColorLossStat(490 + 200 * 3 + 35, 65, loss_stat[3]);
+    console.log(loss_stat)
   }
 
   clearSceneCache(textures_list) {
