@@ -45,16 +45,15 @@ export default class catalonia_scene2_2 extends BaseScene {
       this.load.rexAwait(function (successCallback, failureCallback) {
         loadCharacter().then((result) => {
           this.characterData = result.ok[1];
-
+          this.characterBefore = this.characterData;
           this.load.rexAwait(function (successCallback, failureCallback) {
             useUsableItem(this.characterData.id, this.isUsedUsableItem[1]).then((result) => {
-              successCallback();
-              this.initialLoad("e9");
+              this.initialLoad("e9");     
+              successCallback();         
             });
           }, this);
-
-          this.initialLoad("e9");
           successCallback();
+       
         });
       }, this);
     }
@@ -178,6 +177,10 @@ export default class catalonia_scene2_2 extends BaseScene {
 
     // load event options
     this.options = [];
+    if(this.characterBefore != undefined){
+      this.showColorLossAllStat(this.characterBefore, this.characterData)
+    }
+
     for (const idx in this.eventOptions) {
       // option that can take or not
       const takeable = this.eventOptions[idx][0];

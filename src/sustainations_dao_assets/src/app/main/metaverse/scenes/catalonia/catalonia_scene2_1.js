@@ -49,7 +49,6 @@ export default class catalonia_scene2_1 extends BaseScene {
         loadCharacter().then((result) => {
           this.characterData = result.ok[1];
           this.characterBefore = this.characterData;
-          console.log(this.characterData, "before")
           this.load.rexAwait(function (successCallback, failureCallback) {
             useUsableItem(this.characterData.id, this.isUsedUsableItem[1]).then((result) => {
               this.initialLoad("e8");     
@@ -183,7 +182,9 @@ export default class catalonia_scene2_1 extends BaseScene {
 
     // load event options
     this.options = [];
-    this.showColorLossAllStat(this.characterBefore, this.characterData)
+    if(this.characterBefore != undefined){
+      this.showColorLossAllStat(this.characterBefore, this.characterData)
+    }
 
     for (const idx in this.eventOptions) {
       // can take option or not

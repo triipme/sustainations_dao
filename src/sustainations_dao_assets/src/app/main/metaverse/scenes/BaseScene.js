@@ -126,6 +126,7 @@ class BaseScene extends Phaser.Scene {
     this.bg_3 = this.add.tileSprite(0, 0, gameConfig.scale.width, gameConfig.scale.height, "background3");
     this.bg_3.setOrigin(0, 0);
     this.bg_3.setScrollFactor(0);
+
   }
 
   async createUIElements(isDisabled = false) {
