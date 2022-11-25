@@ -63,7 +63,7 @@ module LandSlot {
                       remainingTime = 0;
                     };
                     list := Array.append<Types.FarmObject>(list, [farmObject]);
-                  }
+                  };
                 };
               };
             };

@@ -4866,11 +4866,11 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   };
 
   // Remove Tree
-  public shared ({ caller }) func removeTree(tileId : Text) : async Response<Text> {
+  public shared ({ caller }) func removeTree(tileId : Text) : async Response<[Types.FarmObject]> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
-    
+    var result : Response<[Types.FarmObject]> = #ok([]);
     let rsTile = state.tiles.get(tileId);
     switch (rsTile) {
       case (null) { #err(#NotFound) };
@@ -4881,7 +4881,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
           case null {
           };
           case (?landSlot) {
-            ignore await  createUserHasFarmEffect(tile.indexRow,tile.indexColumn,tile.objectId,landSlot,true); 
+            result := await  createUserHasFarmEffect(tile.indexRow,tile.indexColumn,tile.objectId,landSlot,true); 
           }
         }; 
 
@@ -4897,7 +4897,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
          
         // delete Tile
         let deletedTile = state.tiles.delete(tileId);
-        #ok("Success");
+        result;
       };
     };
   };
@@ -5103,7 +5103,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
 
 
   // user has farm effect
-  public shared ({ caller }) func createUserHasFarmEffect(indexTileRow : Nat, indexTileColumn : Nat, objectId : Text, landSlot : Types.LandSlot, isRemoveTree: Bool) : async Response<Text> { 
+  public shared ({ caller }) func createUserHasFarmEffect(indexTileRow : Nat, indexTileColumn : Nat, objectId : Text, landSlot : Types.LandSlot, isRemoveTree: Bool) : async Response<[Types.FarmObject]> { 
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
@@ -5119,7 +5119,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
         
         // if this function is used in removeTree, remove the deleted farmObject in farmObjects
         if (isRemoveTree==true) {
-          let rsFarmObject = Array.find<Types.FarmObject>(farmObjects, func (val : Types.FarmObject) : Bool {val.indexRow == indexTileRow and val.indexColumn == indexTileColumn});
+          let rsFarmObject = Array.find<Types.FarmObject>(farmObjects, func (val : Types.FarmObject) : Bool {val.indexRow == indexTileRow and val.indexColumn == indexTileColumn and val.seedId == plant.seedId});
           switch (rsFarmObject) {
             case null {};
             case (?V) {
@@ -5189,7 +5189,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
             };
           };
         };
-        #ok("Success");
+        #ok(farmObjects);
       };
     };
   };
