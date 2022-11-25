@@ -127,7 +127,7 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
           setLoading(false)
           positionTree = -1
         }
-        else if (inventoryStatus["dig"] === true && loading === false) { // Remove
+        else if (inventoryStatus["dig"] === true && loading === false && country.properties.name !== "None") { // Remove
           setLoading(true)
           positionTree = country.properties.i * 10 + country.properties.j
           console.log("Remove: ", await user.actor.removeTree(country.properties.tileId))
