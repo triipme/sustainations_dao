@@ -48,23 +48,21 @@ export default class catalonia_scene2_1 extends BaseScene {
       this.load.rexAwait(function (successCallback, failureCallback) {
         loadCharacter().then((result) => {
           this.characterData = result.ok[1];
-
+          this.characterBefore = this.characterData;
           this.load.rexAwait(function (successCallback, failureCallback) {
             useUsableItem(this.characterData.id, this.isUsedUsableItem[1]).then((result) => {
-              successCallback();
-              this.initialLoad("e8");
+              this.initialLoad("e8");     
+              successCallback();         
             });
           }, this);
-
-          this.initialLoad("e8");
           successCallback();
+       
         });
       }, this);
     }
     else {
       this.initialLoad("e8");
     }
-    // await this.useUsableItem(this.characterData.id, this.isUsedUsableItemPreviously[1]);
 
     //Preload
     this.clearSceneCache();
@@ -109,6 +107,8 @@ export default class catalonia_scene2_1 extends BaseScene {
   }
 
   async create() {
+    console.log("before: ", this.characterBefore)
+    console.log("after: ", this.characterData)
     this.isExhausted();
     this.listMaterial();
     this.hoverSound = this.sound.add('hoverSound');
@@ -182,6 +182,10 @@ export default class catalonia_scene2_1 extends BaseScene {
 
     // load event options
     this.options = [];
+    if(this.characterBefore != undefined){
+      this.showColorLossAllStat(this.characterBefore, this.characterData)
+    }
+
     for (const idx in this.eventOptions) {
       // can take option or not
       const takeable = this.eventOptions[idx][0];
@@ -214,12 +218,7 @@ export default class catalonia_scene2_1 extends BaseScene {
           this.setValue(this.mana, this.characterTakeOptions[idx].currentMana / this.characterTakeOptions[idx].maxMana * 100);
           this.setValue(this.morale, this.characterTakeOptions[idx].currentMorale / this.characterTakeOptions[idx].maxMorale * 100);
 
-          //HP, Stamina, mana, morele in col       
-          let loss_stat = this.showLossStat(this.characterData, this.characterTakeOptions[idx])
-          this.showColorLossStat(423, 65, loss_stat[0]);
-          this.showColorLossStat(460 + 200, 65, loss_stat[1]);
-          this.showColorLossStat(470 + 200 * 2 + 20, 65, loss_stat[2]);
-          this.showColorLossStat(490 + 200 * 3 + 35, 65, loss_stat[3]);
+          this.showColorLossAllStat(this.characterData, this.characterTakeOptions[idx])
           // update character after choose option
           updateCharacterStats(this.characterTakeOptions[idx]);
           // create charactercollectsmaterials after choose option
