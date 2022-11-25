@@ -51,7 +51,7 @@ const Map = () => {
   const navigate = useNavigate()
   // get lnglat center
   const [position, setPosition] = useState(() => map.getCenter())
-
+  const [hasEffect, setHasEffect] = useState(false)
   mapZoom = map.getZoom()
   // position is value coord center screen
   useEffect(() => {
@@ -65,6 +65,9 @@ const Map = () => {
           await loadNations(Number(country.indexRow), Number(country.indexColumn));
           map.setView([Number(nationData[0].geometry.coordinates[0][0][1]), Number(nationData[0].geometry.coordinates[0][0][0])], 13)
           setLoading("none")
+        }
+        if ((await user.actor.readUserHasLandEffect())?.ok) {
+          setHasEffect(true)
         }
       }
     }
@@ -103,11 +106,19 @@ const Map = () => {
   const onEachLandSlot = (country, layer) => {
     // set style for each poligon
     if (country.properties.id === principal) {
-      layer.setStyle({
-        color: "#002E5E",
-        fillColor: "#002E5E",
-        fillOpacity: ".75"
-      })
+      if (!hasEffect) {
+        layer.setStyle({
+          color: "#002E5E",
+          fillColor: "#002E5E",
+          fillOpacity: ".75"
+        })
+      } else {
+        layer.setStyle({
+          color: "yellow",
+          fillColor: "#002E5E",
+          fillOpacity: ".75"
+        })
+      }
     } else {
       layer.setStyle({
         color: "#48c3c8",
@@ -127,10 +138,14 @@ const Map = () => {
           console.log("country: ", user.profile.username)
         }
       },
-      
+
       mouseover: async (e) => {
-        let userName = (await user.actor.getProfileByPrincipal(country.properties.id)).ok.username[0]
-        layer.bindPopup(`<p> USER : <b>${userName || "Unknow Username"}</b><p/>`).openPopup();
+        if (country.properties.id === principal) {
+          layer.bindPopup(`<p><b>${"Your LandSlot"}</b><p/>`).openPopup();
+        } else {
+          let userName = (await user.actor.getProfileByPrincipal(country.properties.id)).ok.username[0]
+          layer.bindPopup(`<p> USER : <b>${userName || "Unknow Username"}</b><p/>`).openPopup();
+        }
       },
 
       mouseout: (e) => {
@@ -197,10 +212,15 @@ const Map = () => {
         [(Number(landBuyingStatus.properties.i) + 1) * 1000, Number(landBuyingStatus.properties.j) * 1000],
       ]]
     )
-    await user.actor.createLandSlot(landBuyingStatus.properties.i, landBuyingStatus.properties.j, nationUTMS[0][0],  20, "N", 1000)
+    await user.actor.createLandSlot(landBuyingStatus.properties.i, landBuyingStatus.properties.j, nationUTMS[0][0], 20, "N", 1000)
     numRandom = 3
     landSlotRand = []
     await loadNations(Number(landBuyingStatus.properties.i), Number(landBuyingStatus.properties.j))
+    let checkEffect = (await user.actor.readUserHasLandEffect())?.ok
+    console.log("checkEffect", checkEffect)
+    if (checkEffect) {
+      setHasEffect(true)
+    }
     map.setView([Number(landBuyingStatus.geometry.coordinates[0][0][1]), Number(landBuyingStatus.geometry.coordinates[0][0][0])], 13)
     setLoading("none")
     setPurchaseBtn(true)
@@ -263,7 +283,7 @@ const Map = () => {
                 {!alert ? <>
                   {loading === "accept" ? <h2 className="popupAccept"
                     style={{
-                      display: purchaseBtn  ? "none" : "block"
+                      display: purchaseBtn ? "none" : "block"
                     }}><i className="fa fa-spinner fa-spin"></i> LOADING</h2> : <h2 className="popupAccept"
                       style={{
                         display: purchaseBtn || loading === "try" ? "none" : "block"

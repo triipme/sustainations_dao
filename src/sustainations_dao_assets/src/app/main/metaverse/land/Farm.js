@@ -54,8 +54,8 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
     load();
     map.setView(
       [
-        Number(tileplant[0].geometry.coordinates[0][0][1]),
-        Number(tileplant[0].geometry.coordinates[0][0][0])
+        Number(tileplant[55].geometry.coordinates[0][0][1]),
+        Number(tileplant[55].geometry.coordinates[0][0][0])
       ],
       17
     );
