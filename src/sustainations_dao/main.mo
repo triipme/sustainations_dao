@@ -3130,6 +3130,13 @@ shared({caller = owner}) actor class SustainationsDAO() = this {
     };
   };
 
+  public shared ({ caller }) func listUItem() : async Response<[(Text, Types.UsableItem)]> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    #ok(Iter.toArray(state.usableItems.entries()));
+  };
+
   public shared query ({ caller }) func getHpPotion() : async Response<Types.UsableItem> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
