@@ -286,6 +286,13 @@ async function loadTileSlots(properties) {
 //   return result;
 // };
 
+async function loadUserHasLandEffect() {
+  const { user } = store.getState();
+  const func = await user.actor.readUserHasLandEffect();
+  const result = func?.ok;
+  return result;
+};
+
 async function loadUserLandSlots() {
   const { user } = store.getState();
   const func = await user.actor.listUserLandSlots();
@@ -335,6 +342,7 @@ export {
   getLandIndex,
   loadTileSlots,
   // loadNation,
+  loadUserHasLandEffect,
   unionLandSlots,
   // plantTree,
   harvestTree,

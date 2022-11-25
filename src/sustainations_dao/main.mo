@@ -4826,6 +4826,22 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
   };
 
+
+  public shared query ({ caller }) func readUserHasLandEffect() : async Response<(Types.UserHasLandEffect)> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let id = Principal.toText(caller);
+    let rsHasLandEffect = state.userHasLandEffects.get(id);
+    switch (rsHasLandEffect) {
+      case null { return #err(#NotFound) };
+      case (?hasLandEffect) {
+        return #ok(hasLandEffect);
+      };
+    };
+  };
+  
+
   public shared query ({ caller }) func listAllUserHasLandEffects() : async Response<[(Text, Types.UserHasLandEffect)]> {
     var list : [(Text, Types.UserHasLandEffect)] = [];
     if (Principal.toText(caller) == "2vxsx-fae") {
@@ -5336,5 +5352,4 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
     #ok((list));
   };
-
 };
