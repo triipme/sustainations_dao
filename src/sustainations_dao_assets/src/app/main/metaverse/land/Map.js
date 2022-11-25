@@ -83,9 +83,9 @@ const Map = () => {
 
   useEffect(() => {
     map.on('move', onMove)
-    if (index != undefined) {
-      loadNations(index[0], index[1])
-    }
+    // if (index != undefined) {
+    //   loadNations(index[0], index[1])
+    // }
     return () => {
       map.off('move', onMove)
     }

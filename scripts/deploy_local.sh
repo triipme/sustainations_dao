@@ -52,5 +52,5 @@ dfx canister call ledger transfer "(record { amount = record { e8s = 10_000_000_
 dfx canister call sustainations_dao getSystemBalance
 
 # dfx canister call sustainations_dao withdraw '(100000)'
-# dfx deploy frontend
+dfx deploy frontend
 # yarn start

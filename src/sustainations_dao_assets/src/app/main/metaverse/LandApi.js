@@ -96,7 +96,7 @@ async function loadNationsfromCenter(x, y) {
   const { user } = store.getState();
   const { principal } = user;
   const func = await user.actor.loadNationsArea(
-    x,y,11
+    x,y,101
   );
   const nations = func?.ok;
   // let zone = 20
@@ -127,7 +127,7 @@ async function loadNationsfromCenter(x, y) {
 
 
   }
-  console.log(result.features)
+  // console.log(result.features)
   return nations ? result.features : [];
 }
 
