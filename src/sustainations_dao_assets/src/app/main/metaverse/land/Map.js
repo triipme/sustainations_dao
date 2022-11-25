@@ -1,4 +1,3 @@
-import mapData from "./data/pangea-1.json";
 import { useSelector } from "react-redux";
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { GeoJSON, useMap } from "react-leaflet";
@@ -16,7 +15,7 @@ import {
   // createLandSlot,
   loadLandBuyingStatus,
   loadNationsfromCenter,
-  loadLandSlotsfromCenter,
+  //loadLandSlotsfromCenter,
   // loadTileSlots,
   getLandIndex,
   // getUserInfo,
@@ -40,9 +39,7 @@ const Map = () => {
   const user = useSelector(selectUser)
   const { principal } = user;
   const loadNations = async (i, j) => {
-    landData = await loadLandSlotsfromCenter(i, j);
     nationData = await loadNationsfromCenter(i, j);
-    // (await plantTree("97-1249", 97, 1249, "m3tomato_seed"));
   }
   const map = useMap()
   const [purchaseBtn, setPurchaseBtn] = useState(true)
@@ -75,7 +72,7 @@ const Map = () => {
     initial()
   }, [])
 
-  let index = getLandIndex(position, landData)
+  let index = getLandIndex(position)
 
   const onMove = useCallback(async () => {
     setPosition(map.getCenter())

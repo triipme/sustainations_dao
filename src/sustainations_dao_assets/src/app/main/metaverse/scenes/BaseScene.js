@@ -126,6 +126,7 @@ class BaseScene extends Phaser.Scene {
     this.bg_3 = this.add.tileSprite(0, 0, gameConfig.scale.width, gameConfig.scale.height, "background3");
     this.bg_3.setOrigin(0, 0);
     this.bg_3.setScrollFactor(0);
+
   }
 
   async createUIElements(isDisabled = false) {
@@ -180,12 +181,12 @@ class BaseScene extends Phaser.Scene {
     this.isUsedPotion = false;
     let imgLandItem = "";
     let usableItemName = '';
-    if (this.landItem.length != 0){
+    if (this.landItem.length != 0) {
       let randomItem = Math.floor(Math.random() * (this.landItem.length));
       this.stashRandom = this.landItem[randomItem];
       usableItemName = this.stashRandom?.usableItemName
       console.log("this.isUsedUsableItem: ", this.isUsedUsableItem)
-      if (this.isUsedUsableItem?.[2] == true){
+      if (this.isUsedUsableItem?.[2] == true) {
         this.isHadUsableItem = false
         this.isUsedUsableItem[0] = false;
       }
@@ -229,13 +230,40 @@ class BaseScene extends Phaser.Scene {
         .setOrigin(0).setScrollFactor(0).setScale(0.5).setFrame(1);
       this.potion = this.add.image(68, 563, imgLandItem)
         .setOrigin(0).setInteractive().setScrollFactor(0).setScale(0.5);
-        this.potion.on('pointerdown', () => {
-          this.clickSound.play();
-          this.itemSlot[0].setFrame(0);
-          this.potion.setVisible(false);
-          this.isUsedUsableItem = [true, this.stashRandom.id, true];
-          console.log("Used Usable Item => ");
-        });
+      this.potion.on('pointerdown', () => {
+        this.clickSound.play();
+        this.itemSlot[0].setFrame(0);
+        this.potion.setVisible(false);
+        this.isUsedUsableItem = [true, this.stashRandom.id, true];
+        this.itemnotice = this.add.image(gameConfig.scale.width / 2, gameConfig.scale.height / 2, "itemnotice").setScrollFactor(0).setScale(0.5).setOrigin(0.5);
+        this.textnotice = this.make.text({
+          x: gameConfig.scale.width / 2,
+          y: gameConfig.scale.height / 2 - 10,
+          text: "Your stats will be increased in the next scene.",
+          origin: { x: 0.5, y: 0.5 },
+          style: {
+            font: 'bold 15px Arial',
+            fill: 'black',
+            wordWrap: { width: 400 }
+          }
+        }).setScrollFactor(0).setOrigin(0.5)
+
+        this.tweens.add({
+          targets: this.textnotice,
+          alpha: 0,
+          duration: 10000,
+          ease: 'Power2'
+        }, this);
+
+        this.tweens.add({
+          targets: this.itemnotice,
+          alpha: 0,
+          duration: 10000,
+          ease: 'Power2'
+        }, this);
+
+        console.log("Used Usable Item => ");
+      });
     } else {
       this.itemSlot[0] = this.add.image(55, 550, "UI_Utility_Sprite").setOrigin(0).setScrollFactor(0).setScale(0.5);
     }
@@ -350,12 +378,27 @@ class BaseScene extends Phaser.Scene {
         stat = "+" + stat;
       }
 
-      this.add.text(x, y, stat, {
+      this.statText =this.add.text(x, y, stat, {
         font: 'bold 13px Arial',
         fill: fill1
       }).setOrigin(0).setScrollFactor(0);
-    }
 
+      this.tweens.add({
+        targets: this.statText,
+        alpha: 0,
+        duration: 6000,
+        ease: 'Power2'
+      }, this);
+    }
+  }
+
+  showColorLossAllStat(character_before, character_after){
+    let loss_stat = this.showLossStat(character_before, character_after)
+    this.showColorLossStat(423, 65, loss_stat[0]);
+    this.showColorLossStat(460 + 200, 65, loss_stat[1]);
+    this.showColorLossStat(470 + 200 * 2 + 20, 65, loss_stat[2]);
+    this.showColorLossStat(490 + 200 * 3 + 35, 65, loss_stat[3]);
+    console.log(loss_stat)
   }
 
   clearSceneCache(textures_list) {
@@ -418,7 +461,7 @@ class BaseScene extends Phaser.Scene {
       this.pregameSound.stop();
       this.sfx_char_footstep.stop();
 
-      if (this.listScene.length === 0) this.scene.start("thanks", { isUsedPotion: this.isUsedPotion});
+      if (this.listScene.length === 0) this.scene.start("thanks", { isUsedPotion: this.isUsedPotion });
       else this.scene.start(nextScene, { isUsedPotion: this.isUsedPotion, listScene: this.listScene });
     }
 

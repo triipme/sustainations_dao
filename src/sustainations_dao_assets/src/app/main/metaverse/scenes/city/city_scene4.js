@@ -42,20 +42,19 @@ export default class city_scene4 extends BaseScene {
 
   preload() {
     this.addLoadingScreen();
-    if (this.isUsedUsableItem[0]){
+    if (this.isUsedUsableItem[0]) {
       this.load.rexAwait(function (successCallback, failureCallback) {
         loadCharacter().then((result) => {
           this.characterData = result.ok[1];
-
+          this.characterBefore = this.characterData;
           this.load.rexAwait(function (successCallback, failureCallback) {
             useUsableItem(this.characterData.id, this.isUsedUsableItem[1]).then((result) => {
-              successCallback();
               this.initialLoad("e36");
+              successCallback();
             });
           }, this);
-
-          this.initialLoad("e36");
           successCallback();
+
         });
       }, this);
     }
@@ -188,6 +187,9 @@ export default class city_scene4 extends BaseScene {
         }
 
       })
+    if (this.characterBefore != undefined) {
+      this.showColorLossAllStat(this.characterBefore, this.characterData)
+    }
 
     for (const idx in this.eventOptions) {
 

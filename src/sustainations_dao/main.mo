@@ -4379,11 +4379,81 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     #ok((list));
   };
 
-  public shared ({ caller }) func loadNationsArea(beginX : Int, beginY : Int, endX : Int, endY : Int) : async Response<[Types.NationGeometry]> {
+  // public shared ({ caller }) func loadNationsArea(beginX : Int, beginY : Int, endX : Int, endY : Int) : async Response<[Types.NationGeometry]> {
+  //   var list : [Types.Nation] = [];
+  //   if (Principal.toText(caller) == "2vxsx-fae") {
+  //     return #err(#NotAuthorized); //isNotAuthorized
+  //   };
+  //   let id = Principal.toText(Principal.fromActor(this));
+  //   let rsLandConfig = state.landConfigs.get(id);
+  //   switch (rsLandConfig) {
+  //     case null {
+  //       return #err(#NotFound);
+  //     };
+  //     case (?landConfig) {
+  //       let iterI = Iter.range(
+  //         Int.abs(Int.max(beginX, 0)),
+  //         Int.abs(Int.min(endX, landConfig.mapHeight -1))
+  //       );
+  //       for (i in iterI) {
+  //         let iterJ = Iter.range(
+  //           Int.abs(Int.max(beginY, 0)),
+  //           Int.abs(Int.min(endY, landConfig.mapWidth -1))
+  //         );
+  //         for (j in iterJ) {
+  //           let id = Nat.toText(i) # "-" #Nat.toText(j);
+  //           let rsLandSlot = state.landSlots.get(id);
+  //           switch (rsLandSlot) {
+  //             case (null) {};
+  //             case (?landSlot) {
+  //               let rsNation = state.nations.get(Principal.toText(landSlot.ownerId));
+  //               switch (rsNation) {
+  //                 case null {};
+  //                 case (?nation) {
+  //                   if (
+  //                     Array.find<Types.Nation>(
+  //                       list,
+  //                       func(val : Types.Nation) : Bool {
+  //                         val == nation;
+  //                       }
+  //                     ) == null
+  //                   ) {
+  //                     list := Array.append<Types.Nation>(list, [nation]);
+  //                   };
+  //                 };
+  //               };
+  //             };
+  //           };
+  //         };
+  //       };
+
+  //       var geometries : [Types.NationGeometry] = [];
+  //       for (value in list.vals()) {
+  //         var coordinates : [[Float]] = [];
+  //         for (utm in value.utms.vals()) {
+  //           let lonlat = await utm2lonlat(Float.fromInt(utm[1]), Float.fromInt(utm[0]), 20, "N");
+  //           coordinates := Array.append(coordinates, [[lonlat.0, lonlat.1]]);
+  //         };
+  //         let newGeometry : Types.NationGeometry = {
+  //           id = Principal.toText(value.id);
+  //           zoneLetter = "N";
+  //           zoneNumber = 20;
+  //           i = value.indexRow;
+  //           j = value.indexColumn;
+  //           coordinates = [coordinates];
+  //         };
+  //         geometries := Array.append(geometries, [newGeometry]);
+  //       };
+
+  //       return #ok((geometries));
+  //     };
+  //   };
+  // };
+
+
+  public shared ({ caller }) func loadNationsArea(centerX: Nat, centerY: Nat, nearbyUsers: Nat) : async Response<[Types.NationGeometry]> {
     var list : [Types.Nation] = [];
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized); //isNotAuthorized
-    };
+
     let id = Principal.toText(Principal.fromActor(this));
     let rsLandConfig = state.landConfigs.get(id);
     switch (rsLandConfig) {
@@ -4391,42 +4461,45 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
         return #err(#NotFound);
       };
       case (?landConfig) {
-        let iterI = Iter.range(
-          Int.abs(Int.max(beginX, 0)),
-          Int.abs(Int.min(endX, landConfig.mapHeight -1))
-        );
-        for (i in iterI) {
-          let iterJ = Iter.range(
-            Int.abs(Int.max(beginY, 0)),
-            Int.abs(Int.min(endY, landConfig.mapWidth -1))
+
+        // get nearby nations
+        if (state.nations.size()<=nearbyUsers) {
+          list := Iter.toArray(state.nations.vals());
+        }
+        else {
+          // caculate euclid distance from center Point to all Nations and store to a distance list 
+          var distanceList : [(Text,Float)] = [];
+          for (nation in state.nations.vals()) {
+            let distance = Float.sqrt(
+              (Float.fromInt(centerX)-Float.fromInt(nation.indexRow))**2
+              +
+              (Float.fromInt(centerY)-Float.fromInt(nation.indexColumn))**2
+            );
+            distanceList := Array.append<(Text,Float)>(distanceList,[(Principal.toText(nation.id),distance)]);
+          };
+          // sort distance list
+          distanceList := Array.sort<(Text,Float)>(
+            distanceList,
+            func (x: (Text,Float), y: (Text,Float)) : { #less; #equal; #greater } {
+              if (x.1 < y.1) { #less }
+              else if (x.1 == y.1) { #equal }
+              else { #greater }
+            }
           );
-          for (j in iterJ) {
-            let id = Nat.toText(i) # "-" #Nat.toText(j);
-            let rsLandSlot = state.landSlots.get(id);
-            switch (rsLandSlot) {
-              case (null) {};
-              case (?landSlot) {
-                let rsNation = state.nations.get(Principal.toText(landSlot.ownerId));
-                switch (rsNation) {
-                  case null {};
-                  case (?nation) {
-                    if (
-                      Array.find<Types.Nation>(
-                        list,
-                        func(val : Types.Nation) : Bool {
-                          val == nation;
-                        }
-                      ) == null
-                    ) {
-                      list := Array.append<Types.Nation>(list, [nation]);
-                    };
-                  };
-                };
+          // get n nearest nations based on sorted distance list
+          for (index in Iter.range(0,nearbyUsers-1)) {
+            let rsNation=state.nations.get(distanceList[index].0);
+            switch (rsNation) {
+              case null {
+              };
+              case (?nation) {
+                list := Array.append<Types.Nation>(list,[nation]);
               };
             };
           };
         };
 
+        // return geometries list
         var geometries : [Types.NationGeometry] = [];
         for (value in list.vals()) {
           var coordinates : [[Float]] = [];
@@ -4444,7 +4517,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
           };
           geometries := Array.append(geometries, [newGeometry]);
         };
-
         return #ok((geometries));
       };
     };
@@ -5145,7 +5217,5 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
     #ok((list));
   };
-
-  
 
 };
