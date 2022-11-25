@@ -31,7 +31,6 @@ module LandSlot {
   public func update(landSlot : Types.LandSlot, state : State.State) {
     let updated = state.landSlots.replace(landSlot.id, getData(landSlot));
   };
-
   // 
   public func listFarmObjectsFromLandSlot(indexRow : Nat, indexColumn : Nat, state : State.State) : async [Types.FarmObject] {
     var list : [Types.FarmObject] = [];
@@ -73,4 +72,6 @@ module LandSlot {
     };
     list;
   };
+
+
 }

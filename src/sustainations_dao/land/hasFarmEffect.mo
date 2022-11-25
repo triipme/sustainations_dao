@@ -2,7 +2,7 @@ import Option "mo:base/Option";
 import Types "../types";
 import State "../state";
 
-module FarmEffect {
+module UserHasFarmEffect {
   public func getData(hasFarmEffect : Types.UserHasFarmEffect) : Types.UserHasFarmEffect {
     let newHasFarmEffect : Types.UserHasFarmEffect = {
       id = hasFarmEffect.id;
