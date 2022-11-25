@@ -218,12 +218,6 @@ export default class catalonia_scene2_1 extends BaseScene {
           this.setValue(this.mana, this.characterTakeOptions[idx].currentMana / this.characterTakeOptions[idx].maxMana * 100);
           this.setValue(this.morale, this.characterTakeOptions[idx].currentMorale / this.characterTakeOptions[idx].maxMorale * 100);
 
-          //HP, Stamina, mana, morele in col       
-          // let loss_stat = this.showLossStat(this.characterData, this.characterTakeOptions[idx])
-          // this.showColorLossStat(423, 65, loss_stat[0]);
-          // this.showColorLossStat(460 + 200, 65, loss_stat[1]);
-          // this.showColorLossStat(470 + 200 * 2 + 20, 65, loss_stat[2]);
-          // this.showColorLossStat(490 + 200 * 3 + 35, 65, loss_stat[3]);
           this.showColorLossAllStat(this.characterData, this.characterTakeOptions[idx])
           // update character after choose option
           updateCharacterStats(this.characterTakeOptions[idx]);
