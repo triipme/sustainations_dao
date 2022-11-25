@@ -29,7 +29,6 @@ import { useNavigate } from "react-router-dom";
 
 var country = null
 var numRandom = 3
-var landData = []
 var nationData = []
 var landSlotRand = null
 export var mapZoom = 0

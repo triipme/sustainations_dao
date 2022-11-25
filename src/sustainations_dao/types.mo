@@ -354,6 +354,19 @@ public type UsableItem = {
     j : Nat;
     coordinates: [[[Float]]];
   };
+//--------------------------Land Effect-------------//
+  public type LandEffect = {
+    id : Text;
+    symbol : Text;
+    value : Float;
+    effect : Text;
+    description : Text;
+  };
+
+  public type UserHasLandEffect = {
+    id : Principal;
+    landEffectId : Text;
+  };
 // Farm
 //--------------------- Stash ---------------------//
 public type Stash = {
@@ -410,8 +423,7 @@ public type Stash = {
     status : Text;
     plantTime : Int;
   };
-
-  // Farm Effect
+//--------------------- Farm Effect -------------//
   public type FarmEffect = {
     id : Text;
     symbol : Text;
