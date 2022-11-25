@@ -105,7 +105,8 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
 
       click: async e => {
         let currentSeed = inventory.filter((item) => inventoryStatus[item.materialName] === true)
-        // Harvest
+        
+        console.log(country)// Harvest
         if (country.properties.status === "fullGrown" && inventoryStatus["dig"] === false && loading === false) {
           setLoading(true)
           positionTree = country.properties.i * 10 + country.properties.j
@@ -127,7 +128,7 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
           setLoading(false)
           positionTree = -1
         }
-        else if (inventoryStatus["dig"] === true && loading === false) { // Remove
+        else if (inventoryStatus["dig"] === true && loading === false && country.properties.name !== "None") { // Remove
           setLoading(true)
           positionTree = country.properties.i * 10 + country.properties.j
           console.log("Remove: ", await user.actor.removeTree(country.properties.tileId))
@@ -190,7 +191,7 @@ const Inventory = ({ inventory }) => {
     }
   }
   const [color, setColor] = useState(-1)
-
+  const [render, setRender] = useState(false)
   let path = "/metaverse/farm/Sustaination_farm/farm-object/PNG/"
   return (
     <div className="farmItem">
@@ -202,6 +203,7 @@ const Inventory = ({ inventory }) => {
           onClick={() => {
             inventoryStatus["dig"] = !inventoryStatus["dig"]
             initialInventory("dig")
+            setRender(!render)
           }}
           src={"/metaverse/farm/Sustaination_farm/farm-object/PNG/shovel.png"}
           alt=""

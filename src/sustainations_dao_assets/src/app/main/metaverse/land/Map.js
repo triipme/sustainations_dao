@@ -125,9 +125,18 @@ const Map = () => {
           setModeBtn(true)
           setPurchaseBtn(false)
           setFarmProperties(country.properties)
-          // console.log("country: ", country.properties)
+          console.log("country: ", user.profile.username)
         }
-      }
+      },
+      
+      mouseover: async (e) => {
+        let userName = (await user.actor.getProfileByPrincipal(country.properties.id)).ok.username[0]
+        layer.bindPopup(`<p> USER : <b>${userName || "Unknow Username"}</b><p/>`).openPopup();
+      },
+
+      mouseout: (e) => {
+        layer.closePopup();
+      },
     });
     // handle click on poligon
   }
