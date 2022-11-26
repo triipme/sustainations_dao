@@ -3175,7 +3175,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
   };
 
- public shared ({ caller }) func useUsableItem(characterId : Text, stashId: Text) : async Response<Text> {
+  public shared ({ caller }) func useUsableItem(characterId : Text, stashId: Text) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
