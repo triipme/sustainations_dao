@@ -11,6 +11,8 @@ function getUserInfo(){
   });
 };
 
+
+
 // character
 const characterClassId = "cc1";
 
@@ -203,6 +205,13 @@ async function openInventory(characterId){
   return rs;
 };
 
+async function listStash(characterId){
+  const { user } = store.getState();
+  const func = async () => await user.actor.listStash();
+  const rs = (await func()).ok;
+  return rs;
+};
+
 async function getRemainingTime(waitingTime, character) {
   const { user } = store.getState();
   const getRemainingTime = async () => await user.actor.getRemainingTime(waitingTime, character);
@@ -256,6 +265,14 @@ async function addAllInventory(characterId, amount) {
 };
 
 
+async function useUsableItem(characterId, stashId) {
+  const { user } = store.getState();
+  const func = async () => await user.actor.useUsableItem(characterId, stashId);
+  const result = (await func()).ok;
+  return result;
+};
+
+
 
 
 
@@ -288,5 +305,7 @@ export {
   payQuest,
   readEvent,
   listSceneQuests,
-  addAllInventory
+  addAllInventory,
+  listStash,
+  useUsableItem
 }

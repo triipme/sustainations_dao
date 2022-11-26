@@ -6,6 +6,9 @@ import {
   updateCharacterStats,
   listCharacterSelectsItems,
   createCharacterCollectsMaterials,
+  readEvent,
+  loadCharacter,
+  useUsableItem
 } from '../../GameApi';
 import { settings } from '../settings';
 import { isThisSecond } from 'date-fns';
@@ -27,7 +30,8 @@ export default class catalonia_scene2_1 extends BaseScene {
   }
   init(data) {
     this.isHealedPreviously = data.isUsedPotion;
-    console.log('healed', this.isHealedPreviously);
+    this.isUsedUsableItem = data.isUsedUsableItem;
+    console.log(data)
   }
   clearSceneCache() {
     const textures_list = ['ground', 'background1', 'background2',
@@ -39,7 +43,28 @@ export default class catalonia_scene2_1 extends BaseScene {
 
   preload() {
     this.addLoadingScreen();
-    this.initialLoad("e8");
+
+    if (this.isUsedUsableItem[0]){
+      this.load.rexAwait(function (successCallback, failureCallback) {
+        loadCharacter().then((result) => {
+          this.characterData = result.ok[1];
+
+          this.load.rexAwait(function (successCallback, failureCallback) {
+            useUsableItem(this.characterData.id, this.isUsedUsableItem[1]).then((result) => {
+              successCallback();
+              this.initialLoad("e8");
+            });
+          }, this);
+
+          this.initialLoad("e8");
+          successCallback();
+        });
+      }, this);
+    }
+    else {
+      this.initialLoad("e8");
+    }
+    // await this.useUsableItem(this.characterData.id, this.isUsedUsableItemPreviously[1]);
 
     //Preload
     this.clearSceneCache();
@@ -86,8 +111,6 @@ export default class catalonia_scene2_1 extends BaseScene {
   async create() {
     this.isExhausted();
     this.listMaterial();
-
-    // add audios
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
     this.ingameSound = this.sound.add('ingameSound', { loop: true });
@@ -143,12 +166,12 @@ export default class catalonia_scene2_1 extends BaseScene {
     });
 
     // load description of event
-    // const event = await readEvent(this.eventId)
+    this.event = await readEvent(this.eventId)
 
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
-      text: "El Ges is a hamlet in Lleida and has about 14 residents. El Ges is situated nearby to la Clota, and close to la Creu.",
+      text: this.event.description,
       origin: { x: 0.5, y: 0.5 },
       style: {
         font: 'bold 25px Arial',
@@ -215,7 +238,7 @@ export default class catalonia_scene2_1 extends BaseScene {
     if (this.player.x > 2779) {
       this.ingameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start('catalonia_scene2_2', { isUsedPotion: this.isUsedPotion });
+      this.scene.start('catalonia_scene2_2', { isUsedPotion: this.isUsedPotion, isUsedUsableItem: this.isUsedUsableItem});
     }
 
     if (this.player.x > 1400 && this.isInteracted == false) {

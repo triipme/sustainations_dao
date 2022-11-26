@@ -5,7 +5,10 @@ import {
   loadEventOptions,
   updateCharacterStats,
   listCharacterSelectsItems,
-  createCharacterCollectsMaterials
+  createCharacterCollectsMaterials,
+  readEvent,
+  loadCharacter,
+  useUsableItem
 } from '../../GameApi';
 import { settings } from '../settings';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
@@ -24,7 +27,7 @@ export default class catalonia_scene2_4 extends BaseScene {
 
   init(data) {
     this.isHealedPreviously = data.isUsedPotion;
-    console.log('healed', this.isHealedPreviously);
+    this.isUsedUsableItem = data.isUsedUsableItem;
   }
 
   clearSceneCache() {
@@ -37,7 +40,26 @@ export default class catalonia_scene2_4 extends BaseScene {
 
   preload() {
     this.addLoadingScreen();
-    this.initialLoad("e11");
+    if (this.isUsedUsableItem[0]){
+      this.load.rexAwait(function (successCallback, failureCallback) {
+        loadCharacter().then((result) => {
+          this.characterData = result.ok[1];
+
+          this.load.rexAwait(function (successCallback, failureCallback) {
+            useUsableItem(this.characterData.id, this.isUsedUsableItem[1]).then((result) => {
+              successCallback();
+              this.initialLoad("e11");
+            });
+          }, this);
+
+          this.initialLoad("e11");
+          successCallback();
+        });
+      }, this);
+    }
+    else {
+      this.initialLoad("e11");
+    }
 
     //Preload
     this.clearSceneCache();
@@ -138,10 +160,12 @@ export default class catalonia_scene2_4 extends BaseScene {
       console.log("Hello World");
     });
 
+    this.event = await readEvent(this.eventId)
+
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
-      text: "Tuixent is a village in the municipality of Josa i Tuixén, in Catalonia, Spain, and an independent municipality until 1973, when it was merged with Josa de Cadí.",
+      text: this.event.description,
       origin: { x: 0.5, y: 0.5 },
       style: {
         font: 'bold 25px Arial',
@@ -207,7 +231,7 @@ export default class catalonia_scene2_4 extends BaseScene {
     if (this.player.x > 2204) {
       this.ingameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start('catalonia_scene3', { isUsedPotion: this.isUsedPotion });
+      this.scene.start('catalonia_scene3', { isUsedPotion: this.isUsedPotion, isUsedUsableItem: this.isUsedUsableItem });
     }
 
     if (this.player.x > 1100 && this.isInteracted == false) {
