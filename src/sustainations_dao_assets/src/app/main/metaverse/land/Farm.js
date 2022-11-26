@@ -54,8 +54,8 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
     load();
     map.setView(
       [
-        Number(tileplant[0].geometry.coordinates[0][0][1]),
-        Number(tileplant[0].geometry.coordinates[0][0][0])
+        Number(tileplant[55].geometry.coordinates[0][0][1]),
+        Number(tileplant[55].geometry.coordinates[0][0][0])
       ],
       17
     );
@@ -78,6 +78,7 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
     const interval = setInterval(async () => {
       setTime(Date.now());
       let tile = await loadTileSlots(landSlotProperties);
+      console.log(tile)
       setTileplant(tile);
     }, 10000);
 
@@ -105,7 +106,8 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
 
       click: async e => {
         let currentSeed = inventory.filter((item) => inventoryStatus[item.materialName] === true)
-        // Harvest
+        
+        console.log(country)// Harvest
         if (country.properties.status === "fullGrown" && inventoryStatus["dig"] === false && loading === false) {
           setLoading(true)
           positionTree = country.properties.i * 10 + country.properties.j
@@ -190,7 +192,7 @@ const Inventory = ({ inventory }) => {
     }
   }
   const [color, setColor] = useState(-1)
-
+  const [render, setRender] = useState(false)
   let path = "/metaverse/farm/Sustaination_farm/farm-object/PNG/"
   return (
     <div className="farmItem">
@@ -202,6 +204,7 @@ const Inventory = ({ inventory }) => {
           onClick={() => {
             inventoryStatus["dig"] = !inventoryStatus["dig"]
             initialInventory("dig")
+            setRender(!render)
           }}
           src={"/metaverse/farm/Sustaination_farm/farm-object/PNG/shovel.png"}
           alt=""

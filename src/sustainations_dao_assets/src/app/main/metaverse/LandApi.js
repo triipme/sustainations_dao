@@ -96,7 +96,7 @@ async function loadNationsfromCenter(x, y) {
   const { user } = store.getState();
   const { principal } = user;
   const func = await user.actor.loadNationsArea(
-    x,y,11
+    x,y,101
   );
   const nations = func?.ok;
   // let zone = 20
@@ -127,7 +127,7 @@ async function loadNationsfromCenter(x, y) {
 
 
   }
-  console.log(result.features)
+  // console.log(result.features)
   return nations ? result.features : [];
 }
 
@@ -183,7 +183,7 @@ function lonlat2utm(lon, lat) {
 // get LandIndex based on long and lat value of center point on the screen
 function getLandIndex(latlng) {
   let temp = lonlat2utm(latlng.lng, latlng.lat)
-  console.log([parseInt(temp[1]/1000), parseInt(temp[0]/1000)])
+  // console.log([parseInt(temp[1]/1000), parseInt(temp[0]/1000)])
   return [parseInt(temp[1]/1000), parseInt(temp[0]/1000)]
 }
 
@@ -286,6 +286,13 @@ async function loadTileSlots(properties) {
 //   return result;
 // };
 
+async function loadUserHasLandEffect() {
+  const { user } = store.getState();
+  const func = await user.actor.readUserHasLandEffect();
+  const result = func?.ok;
+  return result;
+};
+
 async function loadUserLandSlots() {
   const { user } = store.getState();
   const func = await user.actor.listUserLandSlots();
@@ -335,6 +342,7 @@ export {
   getLandIndex,
   loadTileSlots,
   // loadNation,
+  loadUserHasLandEffect,
   unionLandSlots,
   // plantTree,
   harvestTree,
