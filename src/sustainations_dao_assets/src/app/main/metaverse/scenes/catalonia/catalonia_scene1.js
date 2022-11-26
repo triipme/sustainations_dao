@@ -159,14 +159,12 @@ export default class catalonia_scene1 extends BaseScene {
       .setInteractive().setScale(0.25).setVisible(false).setScrollFactor(0).setScale(0.25);
 
     this.premiumPopupCloseBtn.on('pointerdown', () => {
-      console.log("Hello World");
       this.clickSound.play();
       this.isInteracted = true;
       this.premiumPopupWindow.setVisible(false);
       this.premiumPopupCloseBtn.setVisible(false);
       this.des.setVisible(false);
       this.triggerPause();
-      console.log("Hello World");
     });
 
     // load description of event
@@ -224,14 +222,7 @@ export default class catalonia_scene1 extends BaseScene {
           this.setValue(this.mana, this.characterTakeOptions[idx].currentMana / this.characterTakeOptions[idx].maxMana * 100);
           this.setValue(this.morale, this.characterTakeOptions[idx].currentMorale / this.characterTakeOptions[idx].maxMorale * 100);
 
-          let loss_stat = this.showLossStat(this.characterData, this.characterTakeOptions[idx])
-
-          //HP, Stamina, mana, morele in col
-          this.showColorLossStat(423, 65, loss_stat[0]);
-          this.showColorLossStat(460 + 200, 65, loss_stat[1]);
-          this.showColorLossStat(470 + 200 * 2 + 20, 65, loss_stat[2]);
-          this.showColorLossStat(490 + 200 * 3 + 35, 65, loss_stat[3]);
-
+          this.showColorLossAllStat(this.characterData, this.characterTakeOptions[idx])
 
           // update character after choose option
           updateCharacterStats(this.characterTakeOptions[idx]);
