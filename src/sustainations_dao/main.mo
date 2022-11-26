@@ -1,4 +1,5 @@
 import Array "mo:base/Array";
+import Blob "mo:base/Blob";
 import AsyncSource "mo:uuid/async/SourceV4";
 import Debug "mo:base/Debug";
 import Float "mo:base/Float";
@@ -17,6 +18,7 @@ import Text "mo:base/Text";
 import Time "mo:base/Time";
 import TrieMap "mo:base/TrieMap";
 import UUID "mo:uuid/UUID";
+import Object "./utils/object";
 
 import Account "./plugins/Account";
 import Moment "./plugins/Moment";
@@ -345,6 +347,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   type Response<Ok> = Result.Result<Ok, Types.Error>;
   private let ledger : Ledger.Interface = actor (Env.LEDGER_ID);
   private let georust : GeoRust.Interface = actor (Env.GEORUST_ID);
+  private let ic : Types.IC = actor("aaaaa-aa");
 
   private func createUUID() : async Text {
     var ae = AsyncSource.Source();
@@ -5364,5 +5367,57 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       list := Array.append<(Text, Types.UserHasFarmEffect)>(list, [(K, V)]);
     };
     #ok((list));
+  };
+
+  /* Http Request */
+  public query func transform(raw : Types.HttpResponsePayload) : async Types.HttpResponsePayload {
+    let transformed : Types.HttpResponsePayload = {
+      status = raw.status;
+      body = raw.body;
+      headers = [
+        {
+          name = "Content-Security-Policy";
+          value = "default-src 'self'";
+        },
+        { name = "Referrer-Policy"; value = "strict-origin" },
+        { name = "Permissions-Policy"; value = "geolocation=(self)" },
+        {
+          name = "Strict-Transport-Security";
+          value = "max-age=63072000";
+        },
+        { name = "X-Frame-Options"; value = "DENY" },
+        { name = "X-Content-Type-Options"; value = "nosniff" },
+      ];
+    };
+    transformed;
+  };
+
+  public func fetchRandomRange(min: Nat, max: Nat) : async ?Text {
+    let url = "https://www.random.org/integers/?num=1&min="# Nat.toText(min) #"&max="# Nat.toText(max) #"&col=1&base=10&format=plain&rnd=new";
+    let request : Types.HttpRequestOptions = {
+      url = url;
+      max_response_bytes = null;
+      headers = [];
+      body = null;
+      method = #get;
+      transform = ?(#function(transform));
+    };
+    let response : Types.HttpResponsePayload = await ic.http_request(request);
+    return Text.decodeUtf8(Blob.fromArray(response.body));
+  };
+
+  public func fetchPriceCoin(id: Text, currency: Text) : async Text {
+    let url = "https://api.coingecko.com/api/v3/simple/price?ids="# id #"&vs_currencies=" # currency;
+    let request : Types.HttpRequestOptions = {
+      url = url;
+      max_response_bytes = null;
+      headers = [];
+      body = null;
+      method = #get;
+      transform = ?(#function(transform));
+    };
+    Debug.print(url);
+    let response : Types.HttpResponsePayload = await ic.http_request(request);
+    return Object.getValue(Option.get(Text.decodeUtf8(Blob.fromArray(response.body)), ""), "usd");
   };
 };
