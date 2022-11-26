@@ -102,7 +102,6 @@ async function loadNationsfromCenter(x, y) {
   //   x,y,101
   // );
   const nations = func?.ok;
-  // let zone = 20
   var result = {
     features: []
   };
@@ -130,7 +129,7 @@ async function loadNationsfromCenter(x, y) {
 
 
   }
-  console.log(result.features)
+  // console.log(result.features)
   return nations ? result.features : [];
 }
 
@@ -186,7 +185,7 @@ function lonlat2utm(lon, lat) {
 // get LandIndex based on long and lat value of center point on the screen
 function getLandIndex(latlng) {
   let temp = lonlat2utm(latlng.lng, latlng.lat)
-  console.log([parseInt(temp[1]/1000), parseInt(temp[0]/1000)])
+  // console.log([parseInt(temp[1]/1000), parseInt(temp[0]/1000)])
   return [parseInt(temp[1]/1000), parseInt(temp[0]/1000)]
 }
 

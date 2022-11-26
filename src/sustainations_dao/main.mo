@@ -4070,6 +4070,19 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
   };
 
+  // Get user profile by principal
+  public shared query ({ caller }) func getProfileByPrincipal(principalText : Text) : async Response<Types.Profile> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    switch(state.profiles.get(Principal.fromText(principalText))){
+      case null { #err(#NotFound); };
+      case (?v) {
+        #ok(v);
+      };
+    };
+  };
+  
   // Stash
   public shared ({ caller }) func createStash(userId : Text, seedId : Text) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
