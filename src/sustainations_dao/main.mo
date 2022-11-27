@@ -18,6 +18,7 @@ import Text "mo:base/Text";
 import Time "mo:base/Time";
 import TrieMap "mo:base/TrieMap";
 import UUID "mo:uuid/UUID";
+import Prim "mo:prim";
 import Object "./utils/object";
 
 import Account "./plugins/Account";
@@ -5392,22 +5393,23 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     transformed;
   };
 
-  public func fetchRandomRange(min: Nat, max: Nat) : async ?Text {
-    let url = "https://www.random.org/integers/?num=1&min="# Nat.toText(min) #"&max="# Nat.toText(max) #"&col=1&base=10&format=plain&rnd=new";
-    let request : Types.HttpRequestOptions = {
-      url = url;
-      max_response_bytes = null;
-      headers = [];
-      body = null;
-      method = #get;
-      transform = ?(#function(transform));
-    };
-    let response : Types.HttpResponsePayload = await ic.http_request(request);
-    return Text.decodeUtf8(Blob.fromArray(response.body));
-  };
+  // public func fetchRandomRange(min: Nat, max: Nat) : async ?Text {
+  //   let url = "https://www.random.org/integers/?num=1&min="# Nat.toText(min) #"&max="# Nat.toText(max) #"&col=1&base=10&format=plain&rnd=new";
+  //   let request : Types.HttpRequestOptions = {
+  //     url = url;
+  //     max_response_bytes = null;
+  //     headers = [];
+  //     body = null;
+  //     method = #get;
+  //     transform = ?(#function(transform));
+  //   };
+  //   let response : Types.HttpResponsePayload = await ic.http_request(request);
+  //   return Text.decodeUtf8(Blob.fromArray(response.body));
+  // };
 
-  public func fetchPriceCoin(id: Text, currency: Text) : async Text {
-    let url = "https://api.coingecko.com/api/v3/simple/price?ids="# id #"&vs_currencies=" # currency;
+  public func fetchPriceCoin(coinName: Text, amount: Float) : async Float {
+    let id = Text.map(coinName , Prim.charToLower);
+    let url = "https://api.coingecko.com/api/v3/simple/price?ids="# id #"&vs_currencies=usd";
     let request : Types.HttpRequestOptions = {
       url = url;
       max_response_bytes = null;
@@ -5416,8 +5418,11 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       method = #get;
       transform = ?(#function(transform));
     };
-    Debug.print(url);
+    Debug.print(debug_show (url));
     let response : Types.HttpResponsePayload = await ic.http_request(request);
-    return Object.getValue(Option.get(Text.decodeUtf8(Blob.fromArray(response.body)), ""), "usd");
+    Debug.print(debug_show (response.body));
+    let priceText = Object.getValue(Option.get(Text.decodeUtf8(Blob.fromArray(response.body)), ""), "usd");
+    Debug.print(debug_show (priceText));
+    return amount * Object.textToFloat(priceText);
   };
 };

@@ -22,6 +22,7 @@ src/declarations
 src/sustainations_dao_assets/src/styles/app.css
 
 scripts/test.sh
+scripts/upgrade_dfx_12.sh
 target/
 
 src/sustainations_dao/.env.mo
