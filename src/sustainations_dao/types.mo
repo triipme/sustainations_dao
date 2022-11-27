@@ -527,4 +527,41 @@ public type Stash = {
     questCompletedCount : Nat;
     // purchasedLandSlotsCount : ?Nat;
   };
+
+  /* HTTP REQUEST */
+  public type HttpHeader = {
+    name : Text;
+    value : Text;
+  };
+
+  public type HttpMethod = {
+    #get;
+    #post;
+    #head;
+  };
+
+  public type TransformType = {
+    #function : shared HttpResponsePayload -> async HttpResponsePayload;
+  };
+
+  public type HttpRequestOptions = {
+    url : Text;
+    max_response_bytes : ?Nat64;
+    headers : [HttpHeader];
+    body : ?[Nat8];
+    method : HttpMethod;
+    transform : ?{
+        #function : shared query HttpResponsePayload -> async HttpResponsePayload;
+    };
+  };
+
+  public type HttpResponsePayload = {
+    status : Nat;
+    headers : [HttpHeader];
+    body : [Nat8];
+  };
+
+  public type IC = actor {
+    http_request : HttpRequestOptions -> async HttpResponsePayload;
+  };
 };

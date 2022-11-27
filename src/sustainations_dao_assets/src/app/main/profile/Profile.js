@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import {
   Avatar,
   Button,
@@ -13,12 +14,22 @@ import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 import { useSelector } from "react-redux";
 import { selectUser } from 'app/store/userSlice';
 import QRCode from "react-qr-code";
-import { fICP } from '../../utils/NumberFormat';
+import { fCurrency, fICP } from '../../utils/NumberFormat';
 import { walletAddressLink } from '../../utils/TextFormat';
 
 const Profile = () => {
+  const [usdPrice, setUsdPrice] = useState();
   const user = useSelector(selectUser);
   const { profile } = user;
+
+  useEffect(() => {
+    async function loadUsdPrice() {
+      const amount = parseInt(user.balance) / 1e8;
+      const res = await user.actor.fetchPriceCoin('internet-computer', amount);
+      setUsdPrice(res)
+    }
+    loadUsdPrice();
+  }, [user]);
 
   if (!user) {
     return (<FuseLoading />)
@@ -65,6 +76,16 @@ const Profile = () => {
                 className="mr-12 mb-12"
                 size="small"
               />
+              {usdPrice && (
+                <>
+                  <span className='mr-12 mb-12'>~</span>
+                  <Chip
+                    label={fCurrency(usdPrice, 'USD')}
+                    className="mr-12 mb-12"
+                    size="small"
+                  />
+                </>
+              )}
             </div>
 
             <Divider className="mt-16 mb-24" />
