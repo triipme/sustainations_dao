@@ -23,7 +23,6 @@
         "entrypoint": "src/sustainations_dao_assets/src/index.html"
       },
       "source": [
-        "src/sustainations_dao_assets/assets",
         "dist/sustainations_dao_assets/"
       ],
       "type": "assets"
