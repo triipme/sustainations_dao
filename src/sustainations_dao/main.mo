@@ -348,7 +348,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   type Response<Ok> = Result.Result<Ok, Types.Error>;
   private let ledger : Ledger.Interface = actor (Env.LEDGER_ID);
   private let georust : GeoRust.Interface = actor (Env.GEORUST_ID);
-  private let ic : Types.IC = actor("aaaaa-aa");
 
   private func createUUID() : async Text {
     var ae = AsyncSource.Source();
@@ -5370,59 +5369,9 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     #ok((list));
   };
 
-  /* Http Request */
-  public query func transform(raw : Types.HttpResponsePayload) : async Types.HttpResponsePayload {
-    let transformed : Types.HttpResponsePayload = {
-      status = raw.status;
-      body = raw.body;
-      headers = [
-        {
-          name = "Content-Security-Policy";
-          value = "default-src 'self'";
-        },
-        { name = "Referrer-Policy"; value = "strict-origin" },
-        { name = "Permissions-Policy"; value = "geolocation=(self)" },
-        {
-          name = "Strict-Transport-Security";
-          value = "max-age=63072000";
-        },
-        { name = "X-Frame-Options"; value = "DENY" },
-        { name = "X-Content-Type-Options"; value = "nosniff" },
-      ];
-    };
-    transformed;
-  };
-
-  // public func fetchRandomRange(min: Nat, max: Nat) : async ?Text {
-  //   let url = "https://www.random.org/integers/?num=1&min="# Nat.toText(min) #"&max="# Nat.toText(max) #"&col=1&base=10&format=plain&rnd=new";
-  //   let request : Types.HttpRequestOptions = {
-  //     url = url;
-  //     max_response_bytes = null;
-  //     headers = [];
-  //     body = null;
-  //     method = #get;
-  //     transform = ?(#function(transform));
-  //   };
-  //   let response : Types.HttpResponsePayload = await ic.http_request(request);
-  //   return Text.decodeUtf8(Blob.fromArray(response.body));
-  // };
-
   public func fetchPriceCoin(coinName: Text, amount: Float) : async Float {
     let id = Text.map(coinName , Prim.charToLower);
-    let url = "https://api.coingecko.com/api/v3/simple/price?ids="# id #"&vs_currencies=usd";
-    let request : Types.HttpRequestOptions = {
-      url = url;
-      max_response_bytes = null;
-      headers = [];
-      body = null;
-      method = #get;
-      transform = ?(#function(transform));
-    };
-    Debug.print(debug_show (url));
-    let response : Types.HttpResponsePayload = await ic.http_request(request);
-    Debug.print(debug_show (response.body));
-    let priceText = Object.getValue(Option.get(Text.decodeUtf8(Blob.fromArray(response.body)), ""), "usd");
-    Debug.print(debug_show (priceText));
-    return amount * Object.textToFloat(priceText);
+    let priceCoin = await georust.fetch_coin_price(id);
+    return amount * priceCoin;
   };
 };
