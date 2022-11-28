@@ -121,10 +121,6 @@ fn transform(raw: TransformArgs) -> HttpResponse {
     ];
     sanitized
 }
-#[query]
-fn test() {
-    ic_cdk::api::print("Hello World");
-}
 
 #[update]
 async fn fetch_coin_price(id: String) -> f64 {

@@ -1,4 +1,3 @@
-import Result "mo:base/Result";
 module {
   public type Interface = actor {
     greet : () -> async ();

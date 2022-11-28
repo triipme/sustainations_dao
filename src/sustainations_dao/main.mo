@@ -5369,21 +5369,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     #ok((list));
   };
 
-  /* Http Request */
-  // public func fetchRandomRange(min: Nat, max: Nat) : async ?Text {
-  //   let url = "https://www.random.org/integers/?num=1&min="# Nat.toText(min) #"&max="# Nat.toText(max) #"&col=1&base=10&format=plain&rnd=new";
-  //   let request : Types.HttpRequestOptions = {
-  //     url = url;
-  //     max_response_bytes = null;
-  //     headers = [];
-  //     body = null;
-  //     method = #get;
-  //     transform = ?(#function(transform));
-  //   };
-  //   let response : Types.HttpResponsePayload = await ic.http_request(request);
-  //   return Text.decodeUtf8(Blob.fromArray(response.body));
-  // };
-
   public func fetchPriceCoin(coinName: Text, amount: Float) : async Float {
     let id = Text.map(coinName , Prim.charToLower);
     let priceCoin = await georust.fetch_coin_price(id);
