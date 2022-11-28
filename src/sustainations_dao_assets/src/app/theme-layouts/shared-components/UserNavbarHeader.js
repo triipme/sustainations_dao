@@ -4,7 +4,7 @@ import Typography from '@mui/material/Typography';
 import { useSelector } from 'react-redux';
 import { selectUser } from 'app/store/userSlice';
 import QRCode from "react-qr-code";
-import { fICP } from '../../utils/NumberFormat';
+import { fCurrency, fICP } from '../../utils/NumberFormat';
 import { walletAddressLink } from '../../utils/TextFormat';
 
 const Root = styled('div')(({ theme }) => ({
@@ -48,6 +48,8 @@ function UserNavbarHeader(_props) {
       </Typography>
       <Typography className="username text-14 truncate font-medium text-center w-full">
         {fICP(user.balance)}
+        <br/>
+        &nbsp;~&nbsp;{fCurrency(parseInt(user.balanceUsd) / 1e8, 'USD')}
       </Typography>
     </Root>
   );

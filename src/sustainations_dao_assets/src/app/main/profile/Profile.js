@@ -18,18 +18,8 @@ import { fCurrency, fICP } from '../../utils/NumberFormat';
 import { walletAddressLink } from '../../utils/TextFormat';
 
 const Profile = () => {
-  const [usdPrice, setUsdPrice] = useState(null);
   const user = useSelector(selectUser);
   const { profile } = user;
-
-  useEffect(() => {
-    async function loadUsdPrice() {
-      const amount = parseInt(user.balance) / 1e8;
-      const res = await user.actor.fetchPriceCoin('internet-computer', amount);
-      setUsdPrice(res)
-    }
-    loadUsdPrice();
-  }, [user]);
 
   if (!user) {
     return (<FuseLoading />)
@@ -76,16 +66,12 @@ const Profile = () => {
                 className="mr-12 mb-12"
                 size="small"
               />
-              {usdPrice != null && (
-                <>
-                  <span className='mr-12 mb-12'>~</span>
-                  <Chip
-                    label={fCurrency(usdPrice, 'USD')}
-                    className="mr-12 mb-12"
-                    size="small"
-                  />
-                </>
-              )}
+              <span className='mr-12 mb-12'>~</span>
+              <Chip
+                label={fCurrency(parseInt(user.balanceUsd) / 1e8, 'USD')}
+                className="mr-12 mb-12"
+                size="small"
+              />
             </div>
 
             <Divider className="mt-16 mb-24" />
