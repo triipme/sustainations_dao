@@ -11,7 +11,7 @@ import { Link, NavLink } from 'react-router-dom';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 import { selectUser } from 'app/store/userSlice';
 import QRCode from "react-qr-code";
-import { fCurrency, fICP } from '../../utils/NumberFormat';
+import { fICP } from '../../utils/NumberFormat';
 import _ from 'lodash';
 
 function UserMenu(_props) {
@@ -51,8 +51,6 @@ function UserMenu(_props) {
           </Typography>
           <Typography className="text-11 font-medium capitalize" color="text.secondary">
             {fICP(user.balance)}
-            <br/>
-            &nbsp;~&nbsp;{fCurrency(parseInt(user.balanceUsd) / 1e8, 'USD')}
           </Typography>
         </div>
 

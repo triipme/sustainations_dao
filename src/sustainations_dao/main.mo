@@ -537,7 +537,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   type UserInfo = {
     depositAddress : Text;
     balance : Nat64;
-    balanceUsd : Float;
     agreement : Bool;
     profile : ?Types.Profile;
     brandId : ?Text;
@@ -547,7 +546,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
-    let icpPrice = await georust.fetch_coin_price("internet-computer");
     let accountId = Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(caller));
     let balance = await ledger.account_balance({ account = accountId });
     let agreement = switch (state.userAgreements.get(caller)) {
@@ -566,7 +564,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
         Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(caller))
       );
       balance = balance.e8s;
-      balanceUsd = Float.fromInt64(Int64.fromNat64(balance.e8s)) * icpPrice;
       agreement;
       profile;
       brandId;
@@ -5370,11 +5367,5 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       list := Array.append<(Text, Types.UserHasFarmEffect)>(list, [(K, V)]);
     };
     #ok((list));
-  };
-
-  public func fetchPriceCoin(coinName: Text, amount: Float) : async Float {
-    let id = Text.map(coinName , Prim.charToLower);
-    let priceCoin = await georust.fetch_coin_price(id);
-    return amount * priceCoin;
   };
 };
