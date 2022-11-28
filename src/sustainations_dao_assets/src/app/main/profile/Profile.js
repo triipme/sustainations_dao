@@ -18,7 +18,7 @@ import { fCurrency, fICP } from '../../utils/NumberFormat';
 import { walletAddressLink } from '../../utils/TextFormat';
 
 const Profile = () => {
-  const [usdPrice, setUsdPrice] = useState();
+  const [usdPrice, setUsdPrice] = useState(null);
   const user = useSelector(selectUser);
   const { profile } = user;
 
@@ -76,7 +76,7 @@ const Profile = () => {
                 className="mr-12 mb-12"
                 size="small"
               />
-              {usdPrice && (
+              {usdPrice != null && (
                 <>
                   <span className='mr-12 mb-12'>~</span>
                   <Chip
