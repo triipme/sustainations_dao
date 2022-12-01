@@ -106,7 +106,7 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
 
       click: async e => {
         let currentSeed = inventory.filter((item) => inventoryStatus[item.materialName] === true)
-        
+
         console.log(country)// Harvest
         if (country.properties.status === "fullGrown" && inventoryStatus["dig"] === false && loading === false) {
           setLoading(true)
@@ -114,7 +114,7 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
 
           console.log("Harvest", await user.actor.harvestTree(country.properties.tileId))
           setTileplant(await loadTileSlots(landSlotProperties));
-          
+
           const listStash = (await user.actor.listStash()).ok
           const defineAmount = (item, usableItemName) => {
             if (usableItemName === "Carrot") {
@@ -226,6 +226,7 @@ const Inventory = ({ inventory }) => {
                     onClick={() => {
                       inventoryStatus[value.materialName] = !inventoryStatus[value.materialName]
                       initialInventory(value.materialName)
+                      setRender(!render)
                       setColor(i)
                     }}
                     src={pathItem}
