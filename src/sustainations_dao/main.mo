@@ -4166,15 +4166,28 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     let result = await georust.proj(easting, northing, zoneNum, zoneLetter);
     return result;
   };
-  public shared func randomIndex(begin : Float, end : Float) : async Int {
-    let result = await georust.randomnumber(begin, end);
-    return Nat64.toNat(result);
+  // public shared func randomIndex(begin : Float, end : Float) : async Int {
+  //   let result = await georust.randomnumber(begin, end);
+  //   return Nat64.toNat(result);
+  // };
+
+  // public shared func randomPair(begin : Float, end : Float) : async (Int, Int) {
+  //   let result = await georust.randompair(begin, end);
+  //   return (Nat64.toNat(result.0), Nat64.toNat(result.1));
+  // };
+
+  public query func randomIndex(min : Float, max : Float) : async Int {
+    let n = Float.toInt(max) - Float.toInt(min) + 1;
+    let x = (Time.now() * Time.now() * Time.now()) % 2038074743;
+    return Float.toInt(min) + x % n;
   };
 
-  public shared func randomPair(begin : Float, end : Float) : async (Int, Int) {
-    let result = await georust.randompair(begin, end);
-    return (Nat64.toNat(result.0), Nat64.toNat(result.1));
+  public query func randomPair(min : Float, max : Float) : async (Int,Int) {
+    let n = Float.toInt(max) - Float.toInt(min) + 1;
+    let x = (Time.now() * Time.now() * Time.now()) % 2038074743;
+    return (Float.toInt(min) + x % n,Float.toInt(min) + x*2 % n);
   };
+
 
   // convert i,j to geometry with lat,lng
   public shared func landSlotToGeometry(i : Nat, j : Nat) : async Types.Geometry {
@@ -4216,6 +4229,14 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
         #ok("Success");
       };
     };
+  };
+
+  public shared ({ caller }) func readLandConfig() : async Response<Types.LandConfig> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsLandConfig = state.landConfigs.get(Principal.toText(Principal.fromActor(this)));
+    return Result.fromOption(rsLandConfig, #NotFound);
   };
 
   // Land Slot
@@ -4279,7 +4300,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
   };
 
-  public shared ({ caller }) func randomLandSlot() : async Response<Types.Geometry> {
+public shared ({ caller }) func randomLandSlot() : async Response<Types.Geometry> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
@@ -4339,6 +4360,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       };
     };
   };
+
 
   public shared query ({ caller }) func getAdjacentLandSlots(landSlotIds : [Text], landConfig : Types.LandConfig) : async [{
     i : Int;
