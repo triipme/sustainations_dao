@@ -14,7 +14,7 @@ import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 import { useSelector } from "react-redux";
 import { selectUser } from 'app/store/userSlice';
 import QRCode from "react-qr-code";
-import { fCurrency, fICP } from '../../utils/NumberFormat';
+import { fICP } from '../../utils/NumberFormat';
 import { walletAddressLink } from '../../utils/TextFormat';
 
 const Profile = () => {
@@ -63,12 +63,6 @@ const Profile = () => {
             <div className="flex flex-wrap items-center mt-8">
               <Chip
                 label={fICP(user.balance)}
-                className="mr-12 mb-12"
-                size="small"
-              />
-              <span className='mr-12 mb-12'>~</span>
-              <Chip
-                label={fCurrency(parseInt(user.balanceUsd) / 1e8, 'USD')}
                 className="mr-12 mb-12"
                 size="small"
               />
