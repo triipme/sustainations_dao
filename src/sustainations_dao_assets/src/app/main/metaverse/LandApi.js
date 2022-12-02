@@ -95,11 +95,13 @@ async function createLandSlot(i, j, nationUTMS) {
 async function loadNationsfromCenter(x, y) {
   const { user } = store.getState();
   const { principal } = user;
+  // const func = await user.actor.loadNationsArea(
+  //   x - 100, y - 100, x + 100, y + 100
+  // );
   const func = await user.actor.loadNationsArea(
     x,y,4
   );
   const nations = func?.ok;
-  // let zone = 20
   var result = {
     features: []
   };
