@@ -94,7 +94,6 @@ class BaseScene extends Phaser.Scene {
         this.characterTakeOptions = result.ok.characterTakeOption;
         this.characterStatus = result.ok.characterStatus;
         this.characterCollectMaterials = result.ok.characterCollectsMaterials;
-        console.log("CCCCCCCharacterCollectMaterials", this.characterCollectMaterials)
         this.listStash = result.ok.stashInfo;
         successCallback();
       });
