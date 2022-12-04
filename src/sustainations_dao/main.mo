@@ -4073,6 +4073,80 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
   };
 
+  public type QuestGameInfo = {
+    userProfile : Types.Profile;
+    characterData : [(Text, Types.Character)];
+    characterTakeOption : [Types.Character];
+    characterStatus : Text;
+    characterCollectsMaterials : [Types.CharacterCollectsMaterials];
+    stashInfo : [StashInfo];
+  };
+
+  public shared ({ caller }) func getQuestGameInfo(eventId : Text) : async Response<QuestGameInfo> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    var characterData : [(Text, Types.Character)] = [];
+    var characterTakeOption : [Types.Character] = [];
+    var characterStatus : Text = "";
+    var characterCollectsMaterials : [Types.CharacterCollectsMaterials] = [];
+    var stashInfo : [StashInfo] = [];
+    switch(state.profiles.get(caller)){
+      case null { #err(#NotFound); };
+      case (?userProfile) {
+        for ((key, character) in state.characters.entries()) {
+          if (character.userId == caller) {
+            characterStatus := character.status;
+            for ((K, eventOption) in state.eventOptions.entries()) {
+              if (eventOption.eventId == eventId) {
+                let characterCollectMaterial = await CharacterCollectsMaterials.collectsMaterials(character.id, eventOption, state);
+                characterCollectsMaterials := Array.append<Types.CharacterCollectsMaterials>(
+                  characterCollectsMaterials, [characterCollectMaterial]
+                );
+                var strengthRequire : Float = 0;
+                for (item in state.items.vals()) {
+                  if (item.id == eventOption.requireItemId) {
+                    strengthRequire := item.strengthRequire;
+                  };
+                };
+                characterTakeOption := Array.append<Types.Character>(characterTakeOption, 
+                [await Character.takeOption(character, strengthRequire, eventOption, state)]);
+              };
+            };
+            characterData := Array.append<(Text, Types.Character)>(characterData, [(key, character)]);
+          };
+        };
+        for ((_, stash) in state.stashes.entries()) {
+          if (stash.userId == Principal.toText(caller)) {
+            let rsUsableItem = state.usableItems.get(stash.usableItemId);
+            switch (rsUsableItem) {
+              case null {};
+              case (?usableItem) {
+                let newStashInfo : StashInfo = {
+                  id = stash.id;
+                  userId = stash.userId;
+                  usableItemId = stash.usableItemId;
+                  usableItemName = usableItem.name;
+                  amount = stash.amount;
+                };
+                stashInfo := Array.append<StashInfo>(stashInfo, [newStashInfo]);
+              };
+            };
+          };
+        };
+        let result : QuestGameInfo = {
+          userProfile = userProfile;
+          characterData = characterData;
+          characterTakeOption = characterTakeOption;
+          characterStatus = characterStatus;
+          characterCollectsMaterials = characterCollectsMaterials;
+          stashInfo = stashInfo;
+        };
+        #ok(result);
+      };
+    };
+  };
+
   // Get user profile by principal
   public shared query ({ caller }) func getProfileByPrincipal(principalText : Text) : async Response<Types.Profile> {
     if (Principal.toText(caller) == "2vxsx-fae") {

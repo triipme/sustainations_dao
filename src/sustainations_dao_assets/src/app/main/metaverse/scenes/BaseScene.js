@@ -14,7 +14,8 @@ import {
   listCharacterCollectsMaterials,
   getHpPotion,
   getUsableItem,
-  useUsableItem
+  useUsableItem,
+  getQuestGameInfo
 } from '../GameApi';
 
 import { listStash } from '../LandApi';
@@ -26,48 +27,48 @@ class BaseScene extends Phaser.Scene {
 
   initialLoad(eventID) {
     this.eventId = eventID;
-    this.load.rexAwait(function (successCallback, failureCallback) {
-      getUserInfo().then((result) => {
-        this.userInfo = result.ok;
-        successCallback();
-      });
-    }, this);
-    // load character
-    this.load.rexAwait(function (successCallback, failureCallback) {
-      loadCharacter().then((result) => {
-        this.characterData = result.ok[1];
-        console.log(this.characterData);
-        successCallback();
-      });
-    }, this);
+    // this.load.rexAwait(function (successCallback, failureCallback) {
+    //   getUserInfo().then((result) => {
+    //     this.userInfo = result.ok;
+    //     successCallback();
+    //   });
+    // }, this);
+    // // load character
+    // this.load.rexAwait(function (successCallback, failureCallback) {
+    //   loadCharacter().then((result) => {
+    //     this.characterData = result.ok[1];
+    //     console.log(this.characterData);
+    //     successCallback();
+    //   });
+    // }, this);
 
-    this.load.rexAwait(function (successCallback, failureCallback) {
-      characterTakeOption(this.eventId).then((result) => {
-        this.characterTakeOptions = result;
-        successCallback();
-      });
-    }, this);
+    // this.load.rexAwait(function (successCallback, failureCallback) {
+    //   characterTakeOption(this.eventId).then((result) => {
+    //     this.characterTakeOptions = result;
+    //     successCallback();
+    //   });
+    // }, this);
 
-    this.load.rexAwait(function (successCallback, failureCallback) {
-      getCharacterStatus().then((result) => {
-        this.characterStatus = result.ok;
-        successCallback();
-      });
-    }, this);
+    // this.load.rexAwait(function (successCallback, failureCallback) {
+    //   getCharacterStatus().then((result) => {
+    //     this.characterStatus = result.ok;
+    //     successCallback();
+    //   });
+    // }, this);
 
-    this.load.rexAwait(function (successCallback, failureCallback) {
-      characterCollectsMaterials(this.eventId).then((result) => {
-        this.characterCollectMaterials = result;
-        successCallback();
-      });
-    }, this);
+    // this.load.rexAwait(function (successCallback, failureCallback) {
+    //   characterCollectsMaterials(this.eventId).then((result) => {
+    //     this.characterCollectMaterials = result;
+    //     successCallback();
+    //   });
+    // }, this);
 
-    this.load.rexAwait(function (successCallback, failureCallback) {
-      getHpPotion().then((result) => {
-        this.hpPotion = result.ok;
-        successCallback();
-      });
-    }, this);
+    // this.load.rexAwait(function (successCallback, failureCallback) {
+    //   getHpPotion().then((result) => {
+    //     this.hpPotion = result.ok;
+    //     successCallback();
+    //   });
+    // }, this);
     // this.load.rexAwait(function (successCallback, failureCallback) {
     //   getUsableItem().then((result) => {
     //     this.usableItem = result.ok;
@@ -76,10 +77,24 @@ class BaseScene extends Phaser.Scene {
     //   });
     // }, this);
 
+    // this.load.rexAwait(function (successCallback, failureCallback) {
+    //   listStash().then((result) => {
+    //     this.listStash = result.ok;
+    //     console.log("this.listStash: ", this.listStash);
+    //     successCallback();
+    //   });
+    // }, this);
+
     this.load.rexAwait(function (successCallback, failureCallback) {
-      listStash().then((result) => {
-        this.listStash = result.ok;
-        console.log("this.listStash: ", this.listStash);
+      getQuestGameInfo(this.eventId).then((result) => {
+        this.questGameInfo = result.ok;
+        console.log("GET QUEST GAME INFO",result.ok);
+        this.userInfo = result.ok.userProfile.username[0];
+        this.characterData = result.ok.characterData[0][1];
+        this.characterTakeOptions = result.ok.characterTakeOption;
+        this.characterStatus = result.ok.characterStatus;
+        this.characterCollectMaterials = result.ok.characterCollectsMaterials;
+        this.listStash = result.ok.stashInfo;
         successCallback();
       });
     }, this);
@@ -133,7 +148,7 @@ class BaseScene extends Phaser.Scene {
     //UI
     this.add.image(20, 30, "UI_NameCard").setOrigin(0).setScrollFactor(0);
     this.add.text(90, 47, 'Trekker', { fill: '#000', align: 'center', fontSize: '9px', font: 'Arial' }).setScrollFactor(0);
-    this.add.text(90, 65, this.userInfo.profile[0].username, { fill: '#000', align: 'center', font: '15px Arial' }).setScrollFactor(0);
+    this.add.text(90, 65, this.userInfo, { fill: '#000', align: 'center', font: '15px Arial' }).setScrollFactor(0);
     this.add.image(255, 30, "UI_HP").setOrigin(0).setScrollFactor(0);
     this.add.image(490, 30, "UI_Mana").setOrigin(0).setScrollFactor(0);
     this.add.image(725, 30, "UI_Stamina").setOrigin(0).setScrollFactor(0);
