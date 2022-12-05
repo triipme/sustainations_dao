@@ -14,7 +14,8 @@ import {
   listCharacterCollectsMaterials,
   getHpPotion,
   getUsableItem,
-  useUsableItem
+  useUsableItem,
+  getQuestGameInfo
 } from '../GameApi';
 
 import { listStash } from '../LandApi';
@@ -26,48 +27,48 @@ class BaseScene extends Phaser.Scene {
 
   initialLoad(eventID) {
     this.eventId = eventID;
-    this.load.rexAwait(function (successCallback, failureCallback) {
-      getUserInfo().then((result) => {
-        this.userInfo = result.ok;
-        successCallback();
-      });
-    }, this);
-    // load character
-    this.load.rexAwait(function (successCallback, failureCallback) {
-      loadCharacter().then((result) => {
-        this.characterData = result.ok[1];
-        console.log(this.characterData);
-        successCallback();
-      });
-    }, this);
+    // this.load.rexAwait(function (successCallback, failureCallback) {
+    //   getUserInfo().then((result) => {
+    //     this.userInfo = result.ok;
+    //     successCallback();
+    //   });
+    // }, this);
+    // // load character
+    // this.load.rexAwait(function (successCallback, failureCallback) {
+    //   loadCharacter().then((result) => {
+    //     this.characterData = result.ok[1];
+    //     console.log(this.characterData);
+    //     successCallback();
+    //   });
+    // }, this);
 
-    this.load.rexAwait(function (successCallback, failureCallback) {
-      characterTakeOption(this.eventId).then((result) => {
-        this.characterTakeOptions = result;
-        successCallback();
-      });
-    }, this);
+    // this.load.rexAwait(function (successCallback, failureCallback) {
+    //   characterTakeOption(this.eventId).then((result) => {
+    //     this.characterTakeOptions = result;
+    //     successCallback();
+    //   });
+    // }, this);
 
-    this.load.rexAwait(function (successCallback, failureCallback) {
-      getCharacterStatus().then((result) => {
-        this.characterStatus = result.ok;
-        successCallback();
-      });
-    }, this);
+    // this.load.rexAwait(function (successCallback, failureCallback) {
+    //   getCharacterStatus().then((result) => {
+    //     this.characterStatus = result.ok;
+    //     successCallback();
+    //   });
+    // }, this);
 
-    this.load.rexAwait(function (successCallback, failureCallback) {
-      characterCollectsMaterials(this.eventId).then((result) => {
-        this.characterCollectMaterials = result;
-        successCallback();
-      });
-    }, this);
+    // this.load.rexAwait(function (successCallback, failureCallback) {
+    //   characterCollectsMaterials(this.eventId).then((result) => {
+    //     this.characterCollectMaterials = result;
+    //     successCallback();
+    //   });
+    // }, this);
 
-    this.load.rexAwait(function (successCallback, failureCallback) {
-      getHpPotion().then((result) => {
-        this.hpPotion = result.ok;
-        successCallback();
-      });
-    }, this);
+    // this.load.rexAwait(function (successCallback, failureCallback) {
+    //   getHpPotion().then((result) => {
+    //     this.hpPotion = result.ok;
+    //     successCallback();
+    //   });
+    // }, this);
     // this.load.rexAwait(function (successCallback, failureCallback) {
     //   getUsableItem().then((result) => {
     //     this.usableItem = result.ok;
@@ -76,10 +77,24 @@ class BaseScene extends Phaser.Scene {
     //   });
     // }, this);
 
+    // this.load.rexAwait(function (successCallback, failureCallback) {
+    //   listStash().then((result) => {
+    //     this.listStash = result.ok;
+    //     console.log("this.listStash: ", this.listStash);
+    //     successCallback();
+    //   });
+    // }, this);
+
     this.load.rexAwait(function (successCallback, failureCallback) {
-      listStash().then((result) => {
-        this.listStash = result.ok;
-        console.log("this.listStash: ", this.listStash);
+      getQuestGameInfo(this.eventId).then((result) => {
+        this.questGameInfo = result.ok;
+        console.log("GET QUEST GAME INFO",result.ok);
+        this.userInfo = result.ok.userProfile.username[0];
+        this.characterData = result.ok.characterData[0][1];
+        this.characterTakeOptions = result.ok.characterTakeOption;
+        this.characterStatus = result.ok.characterStatus;
+        this.characterCollectMaterials = result.ok.characterCollectsMaterials;
+        this.listStash = result.ok.stashInfo;
         successCallback();
       });
     }, this);
@@ -126,13 +141,14 @@ class BaseScene extends Phaser.Scene {
     this.bg_3 = this.add.tileSprite(0, 0, gameConfig.scale.width, gameConfig.scale.height, "background3");
     this.bg_3.setOrigin(0, 0);
     this.bg_3.setScrollFactor(0);
+
   }
 
   async createUIElements(isDisabled = false) {
     //UI
     this.add.image(20, 30, "UI_NameCard").setOrigin(0).setScrollFactor(0);
     this.add.text(90, 47, 'Trekker', { fill: '#000', align: 'center', fontSize: '9px', font: 'Arial' }).setScrollFactor(0);
-    this.add.text(90, 65, this.userInfo.profile[0].username, { fill: '#000', align: 'center', font: '15px Arial' }).setScrollFactor(0);
+    this.add.text(90, 65, this.userInfo, { fill: '#000', align: 'center', font: '15px Arial' }).setScrollFactor(0);
     this.add.image(255, 30, "UI_HP").setOrigin(0).setScrollFactor(0);
     this.add.image(490, 30, "UI_Mana").setOrigin(0).setScrollFactor(0);
     this.add.image(725, 30, "UI_Stamina").setOrigin(0).setScrollFactor(0);
@@ -180,12 +196,12 @@ class BaseScene extends Phaser.Scene {
     this.isUsedPotion = false;
     let imgLandItem = "";
     let usableItemName = '';
-    if (this.landItem.length != 0){
+    if (this.landItem.length != 0) {
       let randomItem = Math.floor(Math.random() * (this.landItem.length));
       this.stashRandom = this.landItem[randomItem];
       usableItemName = this.stashRandom?.usableItemName
       console.log("this.isUsedUsableItem: ", this.isUsedUsableItem)
-      if (this.isUsedUsableItem?.[2] == true){
+      if (this.isUsedUsableItem?.[2] == true) {
         this.isHadUsableItem = false
         this.isUsedUsableItem[0] = false;
       }
@@ -229,13 +245,40 @@ class BaseScene extends Phaser.Scene {
         .setOrigin(0).setScrollFactor(0).setScale(0.5).setFrame(1);
       this.potion = this.add.image(68, 563, imgLandItem)
         .setOrigin(0).setInteractive().setScrollFactor(0).setScale(0.5);
-        this.potion.on('pointerdown', () => {
-          this.clickSound.play();
-          this.itemSlot[0].setFrame(0);
-          this.potion.setVisible(false);
-          this.isUsedUsableItem = [true, this.stashRandom.id, true];
-          console.log("Used Usable Item => ");
-        });
+      this.potion.on('pointerdown', () => {
+        this.clickSound.play();
+        this.itemSlot[0].setFrame(0);
+        this.potion.setVisible(false);
+        this.isUsedUsableItem = [true, this.stashRandom.id, true];
+        this.itemnotice = this.add.image(gameConfig.scale.width / 2, gameConfig.scale.height / 2, "itemnotice").setScrollFactor(0).setScale(0.5).setOrigin(0.5);
+        this.textnotice = this.make.text({
+          x: gameConfig.scale.width / 2,
+          y: gameConfig.scale.height / 2 - 10,
+          text: "Your stats will be increased in the next scene.",
+          origin: { x: 0.5, y: 0.5 },
+          style: {
+            font: 'bold 15px Arial',
+            fill: 'black',
+            wordWrap: { width: 400 }
+          }
+        }).setScrollFactor(0).setOrigin(0.5)
+
+        this.tweens.add({
+          targets: this.textnotice,
+          alpha: 0,
+          duration: 10000,
+          ease: 'Power2'
+        }, this);
+
+        this.tweens.add({
+          targets: this.itemnotice,
+          alpha: 0,
+          duration: 10000,
+          ease: 'Power2'
+        }, this);
+
+        console.log("Used Usable Item => ");
+      });
     } else {
       this.itemSlot[0] = this.add.image(55, 550, "UI_Utility_Sprite").setOrigin(0).setScrollFactor(0).setScale(0.5);
     }
@@ -350,12 +393,27 @@ class BaseScene extends Phaser.Scene {
         stat = "+" + stat;
       }
 
-      this.add.text(x, y, stat, {
+      this.statText =this.add.text(x, y, stat, {
         font: 'bold 13px Arial',
         fill: fill1
       }).setOrigin(0).setScrollFactor(0);
-    }
 
+      this.tweens.add({
+        targets: this.statText,
+        alpha: 0,
+        duration: 6000,
+        ease: 'Power2'
+      }, this);
+    }
+  }
+
+  showColorLossAllStat(character_before, character_after){
+    let loss_stat = this.showLossStat(character_before, character_after)
+    this.showColorLossStat(423, 65, loss_stat[0]);
+    this.showColorLossStat(460 + 200, 65, loss_stat[1]);
+    this.showColorLossStat(470 + 200 * 2 + 20, 65, loss_stat[2]);
+    this.showColorLossStat(490 + 200 * 3 + 35, 65, loss_stat[3]);
+    console.log(loss_stat)
   }
 
   clearSceneCache(textures_list) {
@@ -418,7 +476,7 @@ class BaseScene extends Phaser.Scene {
       this.pregameSound.stop();
       this.sfx_char_footstep.stop();
 
-      if (this.listScene.length === 0) this.scene.start("thanks", { isUsedPotion: this.isUsedPotion});
+      if (this.listScene.length === 0) this.scene.start("thanks", { isUsedPotion: this.isUsedPotion });
       else this.scene.start(nextScene, { isUsedPotion: this.isUsedPotion, listScene: this.listScene });
     }
 

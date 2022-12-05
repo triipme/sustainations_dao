@@ -23,7 +23,6 @@
         "entrypoint": "src/sustainations_dao_assets/src/index.html"
       },
       "source": [
-        "src/sustainations_dao_assets/assets",
         "dist/sustainations_dao_assets/"
       ],
       "type": "assets"
@@ -38,10 +37,10 @@
       "subnet_type":"system"
     }
   },
-  "dfx": "0.10.1",
+  "dfx": "0.12.0",
   "networks": {
     "local": {
-      "bind": "127.0.0.1:8000",
+      "bind": "127.0.0.1:8080",
       "type": "ephemeral"
     }
   },

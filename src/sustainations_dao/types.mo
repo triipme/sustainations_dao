@@ -211,7 +211,7 @@ module {
     questId : Text;
   };
 
-  public type UsableItem = {
+public type UsableItem = {
     id : Text;
     name : Text;
     image : Text;
@@ -373,17 +373,30 @@ module {
     zoneLetter : Text;
     i : Nat;
     j : Nat;
-    coordinates : [[[Float]]];
+    coordinates: [[[Float]]];
   };
-  // Farm
-  //--------------------- Stash ---------------------//
-  public type Stash = {
+//--------------------------Land Effect-------------//
+  public type LandEffect = {
     id : Text;
-    userId : Text;
-    usableItemId : Text;
-    quality : Text;
-    amount : Int;
+    symbol : Text;
+    value : Float;
+    effect : Text;
+    description : Text;
   };
+
+  public type UserHasLandEffect = {
+    id : Principal;
+    landEffectId : Text;
+  };
+// Farm
+//--------------------- Stash ---------------------//
+public type Stash = {
+  id : Text;
+  userId : Text;
+  usableItemId : Text;
+  quality : Text;
+  amount : Int; 
+};
 
   //-------------------------Tile------------------------------//
   public type Tile = {
@@ -400,7 +413,9 @@ module {
     landSlotId : Text;
     indexRow : Nat;
     indexColumn : Nat;
+    seedId : Text;
     name : Text;
+    hasEffectId : Text;
     status : Text;
     remainingTime : Int;
   };
@@ -428,6 +443,20 @@ module {
     hasEffectId : Text;
     status : Text;
     plantTime : Int;
+  };
+//--------------------- Farm Effect -------------//
+  public type FarmEffect = {
+    id : Text;
+    symbol : Text;
+    value : Float;
+    effect : Text;
+    description : Text;
+  };
+
+  public type UserHasFarmEffect = {
+    id : Text;
+    farmEffectId : Text;
+    userId : Principal;
   };
 
   // Error codes

@@ -19,6 +19,6 @@ module Plant {
   };
 
   public func update(plant : Types.Plant, state : State.State) {
-    state.plants.put(plant.id, getData(plant));
+    let updated = state.plants.replace(plant.id, getData(plant));
   };
 }

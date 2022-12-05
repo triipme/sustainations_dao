@@ -11,7 +11,7 @@ const UIFarm = ({ Carrot, Wheat, Tomato }) => {
         </li>
         <li>
           <div className="container" style={{ scale: 0.8 }}>
-            <img src="metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-29.png" />
+            <img src="metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-35.png" />
             <div style={{
               position: "absolute",
               top: "50%",
@@ -23,7 +23,7 @@ const UIFarm = ({ Carrot, Wheat, Tomato }) => {
         </li>
         <li>
           <div className="container" style={{ scale: 0.8 }}>
-            <img src="metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-28.png"></img>
+            <img src="metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-34.png"></img>
             <div style={{
               position: "absolute",
               top: "50%",
@@ -35,7 +35,7 @@ const UIFarm = ({ Carrot, Wheat, Tomato }) => {
         </li>
         <li>
           <div className="container" style={{ scale: 0.8 }}>
-            <img src="metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-30.png"></img>
+            <img src="metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-33.png"></img>
             <div style={{
               position: "absolute",
               top: "50%",
@@ -49,12 +49,12 @@ const UIFarm = ({ Carrot, Wheat, Tomato }) => {
           <img src="metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-31.png"></img>
         </li> */}
       </ul>
-      <div className="navBar">
+      {/* <div className="navBar">
         <img src="metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-32.png"></img>
-      </div>
-      <div className="messengerBox">
+      </div> */}
+      {/* <div className="messengerBox">
         <img src="metaverse/farm/Sustaination_farm/decor-object/PNG/email.png"></img>
-      </div>
+      </div> */}
     </>
   )
 }

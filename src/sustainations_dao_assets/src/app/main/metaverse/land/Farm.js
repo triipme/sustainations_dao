@@ -40,7 +40,7 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
       console.log(listStash)
 
       const defineAmount = (item, usableItemName) => {
-        if(usableItemName === "Carrot") {
+        if (usableItemName === "Carrot") {
           setCarrot(Number(item.amount))
         } else if (usableItemName === "Wheat") {
           setWheat(Number(item.amount))
@@ -54,8 +54,8 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
     load();
     map.setView(
       [
-        Number(tileplant[0].geometry.coordinates[0][0][1]),
-        Number(tileplant[0].geometry.coordinates[0][0][0])
+        Number(tileplant[55].geometry.coordinates[0][0][1]),
+        Number(tileplant[55].geometry.coordinates[0][0][0])
       ],
       17
     );
@@ -78,6 +78,7 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
     const interval = setInterval(async () => {
       setTime(Date.now());
       let tile = await loadTileSlots(landSlotProperties);
+      console.log(tile)
       setTileplant(tile);
     }, 10000);
 
@@ -85,74 +86,85 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
       clearInterval(interval);
     };
   }, []);
-  const latlng = useMemo(
-    () =>
-      tileplant?.map(feature => {
-        return feature.geometry.coordinates[0].map(item => {
-          return [item[1], item[0]];
-        });
-      }),
-    []
-  );
+  // const latlng = useMemo(
+  //   () =>
+  //     tileplant?.map(feature => {
+  //       return feature.geometry.coordinates[0].map(item => {
+  //         return [item[1], item[0]];
+  //       });
+  //     }),
+  //   []
+  // );
 
   const onEachLandSlot = (country, layer) => {
     layer.setStyle({
       color: "#FFFFFF",
-      fillColor: "#FFFFFF",
-      fillOpacity: "0.1"
+      fillColor: (country.properties.hasEffectId === "None" || country.properties.hasEffectId === "") ? "#FFFFFF" : "#f6cb1c",
+      fillOpacity: (country.properties.hasEffectId === "None" || country.properties.hasEffectId === "") ? "0.1" : "0.4",
     });
     layer.on({
 
       click: async e => {
-        for (let i = 0; i < inventory.length; i++) {
-          // Harvest
-          if (country.properties.status === "fullGrown" && inventoryStatus["dig"] === false && loading === false) {
-            setLoading(true)
-            console.log("Harvest", await user.actor.harvestTree(country.properties.tileId))
-            setTileplant(await loadTileSlots(landSlotProperties));
-            const listStash = (await user.actor.listStash()).ok
-            const defineAmount = (item, usableItemName) => {
-              if(usableItemName === "Carrot") {
-                setCarrot(Number(item.amount))
-              } else if (usableItemName === "Wheat") {
-                setWheat(Number(item.amount))
-              } else {
-                setTomato(Number(item.amount))
-              }
-            }
-            listStash.forEach(item => defineAmount(item, item.usableItemName))
-            setLoading(false)
-            break;
-          }
-          // Planting
-          else if (
-            inventoryStatus[inventory[i].materialName] === true &&
-            country.properties.name === "None" &&
-            inventory[i].amount > 0 && loading === false
-          ) {
-            setLoading(true)
-            positionTree = country.properties.i * 10 + country.properties.j
+        let currentSeed = inventory.filter((item) => inventoryStatus[item.materialName] === true)
+        
+        console.log(country)// Harvest
+        if (country.properties.status === "fullGrown" && inventoryStatus["dig"] === false && loading === false) {
+          setLoading(true)
+          positionTree = country.properties.i * 10 + country.properties.j
 
-            console.log(
-              "Plant tree status: ",
-              await user.actor.plantTree(
-                country.properties.landId,
-                country.properties.i,
-                country.properties.j,
-                inventory[i].materialId
-              )
-            );
-            await user.actor.subtractInventory(inventory[i].id);
-            setTileplant(await loadTileSlots(landSlotProperties));
-            setInventory((await user.actor.listInventory(characterId)).ok);
-            setLoading(false)
-            positionTree = -1
-          } else if (inventoryStatus["dig"] === true && loading === false) { // Remove
-            setLoading(true)
-            console.log("Remove: ", await user.actor.removeTree(country.properties.tileId))
-            setTileplant(await loadTileSlots(landSlotProperties));
-            setLoading(false)
+          console.log("Harvest", await user.actor.harvestTree(country.properties.tileId))
+          setTileplant(await loadTileSlots(landSlotProperties));
+          
+          const listStash = (await user.actor.listStash()).ok
+          const defineAmount = (item, usableItemName) => {
+            if (usableItemName === "Carrot") {
+              setCarrot(Number(item.amount))
+            } else if (usableItemName === "Wheat") {
+              setWheat(Number(item.amount))
+            } else {
+              setTomato(Number(item.amount))
+            }
           }
+          listStash.forEach(item => defineAmount(item, item.usableItemName))
+          setLoading(false)
+          positionTree = -1
+        }
+        else if (inventoryStatus["dig"] === true && loading === false && country.properties.name !== "None") { // Remove
+          setLoading(true)
+          positionTree = country.properties.i * 10 + country.properties.j
+          console.log("Remove: ", await user.actor.removeTree(country.properties.tileId))
+          setTileplant(await loadTileSlots(landSlotProperties));
+          setInventory((await user.actor.listInventory(characterId)).ok);
+
+          setLoading(false)
+          positionTree = -1
+        }
+        else if (currentSeed.length === 0) {
+          console.log("Do nothing")
+        }
+        // Planting
+        else if (
+          inventoryStatus[currentSeed[0].materialName] === true &&
+          country.properties.name === "None" &&
+          currentSeed[0].amount > 0 && loading === false
+        ) {
+          setLoading(true)
+          positionTree = country.properties.i * 10 + country.properties.j
+
+          console.log(
+            "Plant tree status: ",
+            await user.actor.plantTree(
+              country.properties.landId,
+              country.properties.i,
+              country.properties.j,
+              currentSeed[0].materialId
+            )
+          );
+          await user.actor.subtractInventory(currentSeed[0].id);
+          setTileplant(await loadTileSlots(landSlotProperties));
+          setInventory((await user.actor.listInventory(characterId)).ok);
+          setLoading(false)
+          positionTree = -1
         }
       }
     });
@@ -164,12 +176,9 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
         data={tileplant}
         onEachFeature={onEachLandSlot}
       />
-      <CreateBound {...{ latlng, tileplant, loading }}></CreateBound>
+      <CreateBound {...{ tileplant, loading }}></CreateBound>
       <UIFarm Carrot={carrot} Wheat={wheat} Tomato={tomato}></UIFarm>
       <Inventory inventory={inventory}></Inventory>
-      {/* <ShowPlant inventory={inventory}></ShowPlant> */}
-
-
     </>
   );
 };
@@ -177,20 +186,25 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
 const Inventory = ({ inventory }) => {
   function initialInventory(item) {
     for (const property in inventoryStatus) {
+      console.log("property:", property)
       if (property !== item)
         inventoryStatus[property] = false
     }
   }
   const [color, setColor] = useState(-1)
-
+  const [render, setRender] = useState(false)
   let path = "/metaverse/farm/Sustaination_farm/farm-object/PNG/"
   return (
     <div className="farmItem">
-      <div className="imgItem" key={101}>
+      <div className="imgItem" style={{
+        border: inventoryStatus["dig"] == true ? "2px" : "0px",
+        borderStyle: inventoryStatus["dig"] == true ? "dashed dashed dashed dashed" : "none"
+      }}>
         <img
           onClick={() => {
             inventoryStatus["dig"] = !inventoryStatus["dig"]
             initialInventory("dig")
+            setRender(!render)
           }}
           src={"/metaverse/farm/Sustaination_farm/farm-object/PNG/shovel.png"}
           alt=""
@@ -203,9 +217,12 @@ const Inventory = ({ inventory }) => {
 
               let pathItem = path + value.materialName + '-icon.png'
               return (
-                <div className="imgItem" key={i} >
+                <div className="imgItem" key={i} style={{
+                  border: i == color && inventoryStatus[value.materialName] == true ? "2px" : "0px",
+                  borderStyle: i == color && inventoryStatus[value.materialName] == true ? "dashed dashed dashed dashed" : "none"
+                }}>
                   <img
-                    style={{ backgroundColor: i == color && inventoryStatus[value.materialName] == true ? "#FFF" : "#FFF" }}
+
                     onClick={() => {
                       inventoryStatus[value.materialName] = !inventoryStatus[value.materialName]
                       initialInventory(value.materialName)
@@ -226,7 +243,7 @@ const Inventory = ({ inventory }) => {
   )
 }
 
-const CreateBound = ({ latlng, tileplant, loading }) => {
+const CreateBound = ({ tileplant, loading }) => {
   let path = "metaverse/farm/Sustaination_farm/farm-object/PNG/";
   return (
     <>
@@ -241,10 +258,21 @@ const CreateBound = ({ latlng, tileplant, loading }) => {
           )
         }
         else if (tag.properties.status === "newlyPlanted") {
-          return <ImageOverlay key={value} url={'metaverse/farm/Sustaination_farm/farm-object/PNG/newlyPlanted.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} />
+          return (
+            <>
+              <ImageOverlay key={value} url={'metaverse/farm/Sustaination_farm/farm-object/PNG/newlyPlanted.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} />
+              {loading === true && positionTree == tag.properties.i * 10 + tag.properties.j ? <ImageOverlay key={value + 200} url={'metaverse/Ripple-loading.gif'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} /> : <></>}
+
+            </>
+          )
         }
         else {
-          return <ImageOverlay key={value} url={pathItem} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} />
+          return (
+            <>
+              <ImageOverlay key={value} url={pathItem} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} />
+              {loading === true && positionTree == tag.properties.i * 10 + tag.properties.j ? <ImageOverlay key={value + 200} url={'metaverse/Ripple-loading.gif'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} /> : <></>}
+            </>
+          )
         }
       })}
     </>
@@ -272,6 +300,7 @@ function FarmContainer() {
         };
         setFarmProperties(myFarm);
         setFarmFeatures(await loadTileSlots(myFarm));
+        console.log("loadTileSlots", await loadTileSlots(myFarm))
         setListFarm(Object.keys(myFarmProperties).length)
       }
       setIsDone(true)

@@ -1,4 +1,3 @@
-import mapData from "./data/pangea-1.json";
 import { useSelector } from "react-redux";
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { GeoJSON, useMap } from "react-leaflet";
@@ -16,11 +15,10 @@ import {
   // createLandSlot,
   loadLandBuyingStatus,
   loadNationsfromCenter,
-  loadLandSlotsfromCenter,
+  //loadLandSlotsfromCenter,
   // loadTileSlots,
   getLandIndex,
   // getUserInfo,
-  // updateLandBuyingStatus,
   // loadNation,
   unionLandSlots,
 } from '../LandApi'
@@ -31,7 +29,6 @@ import { useNavigate } from "react-router-dom";
 
 var country = null
 var numRandom = 3
-var landData = []
 var nationData = []
 var landSlotRand = null
 export var mapZoom = 0
@@ -41,9 +38,7 @@ const Map = () => {
   const user = useSelector(selectUser)
   const { principal } = user;
   const loadNations = async (i, j) => {
-    landData = await loadLandSlotsfromCenter(i, j);
     nationData = await loadNationsfromCenter(i, j);
-    // (await plantTree("97-1249", 97, 1249, "m3tomato_seed"));
   }
   const map = useMap()
   const [purchaseBtn, setPurchaseBtn] = useState(true)
@@ -56,7 +51,7 @@ const Map = () => {
   const navigate = useNavigate()
   // get lnglat center
   const [position, setPosition] = useState(() => map.getCenter())
-
+  const [hasEffect, setHasEffect] = useState(false)
   mapZoom = map.getZoom()
   // position is value coord center screen
   useEffect(() => {
@@ -71,12 +66,15 @@ const Map = () => {
           map.setView([Number(nationData[0].geometry.coordinates[0][0][1]), Number(nationData[0].geometry.coordinates[0][0][0])], 13)
           setLoading("none")
         }
+        if ((await user.actor.readUserHasLandEffect())?.ok) {
+          setHasEffect(true)
+        }
       }
     }
     initial()
   }, [])
 
-  let index = getLandIndex(position, landData)
+  let index = getLandIndex(position)
 
   const onMove = useCallback(async () => {
     setPosition(map.getCenter())
@@ -85,9 +83,9 @@ const Map = () => {
 
   useEffect(() => {
     map.on('move', onMove)
-    if (index != undefined) {
-      loadNations(index[0], index[1])
-    }
+    // if (index != undefined) {
+    //   loadNations(index[0], index[1])
+    // }
     return () => {
       map.off('move', onMove)
     }
@@ -108,11 +106,19 @@ const Map = () => {
   const onEachLandSlot = (country, layer) => {
     // set style for each poligon
     if (country.properties.id === principal) {
-      layer.setStyle({
-        color: "#002E5E",
-        fillColor: "#002E5E",
-        fillOpacity: ".75"
-      })
+      if (!hasEffect) {
+        layer.setStyle({
+          color: "#002E5E",
+          fillColor: "#002E5E",
+          fillOpacity: ".75"
+        })
+      } else {
+        layer.setStyle({
+          color: "yellow",
+          fillColor: "#002E5E",
+          fillOpacity: ".75"
+        })
+      }
     } else {
       layer.setStyle({
         color: "#48c3c8",
@@ -129,9 +135,22 @@ const Map = () => {
           setModeBtn(true)
           setPurchaseBtn(false)
           setFarmProperties(country.properties)
-          // console.log("country: ", country.properties)
+          console.log("country: ", user.profile.username)
         }
-      }
+      },
+
+      mouseover: async (e) => {
+        if (country.properties.id === principal) {
+          layer.bindPopup(`<p><b>${"Your LandSlot"}</b><p/>`).openPopup();
+        } else {
+          let userName = (await user.actor.getProfileByPrincipal(country.properties.id)).ok.username[0]
+          layer.bindPopup(`<p> USER : <b>${userName || "Unknow Username"}</b><p/>`).openPopup();
+        }
+      },
+
+      mouseout: (e) => {
+        layer.closePopup();
+      },
     });
     // handle click on poligon
   }
@@ -157,7 +176,7 @@ const Map = () => {
       if (isBuy !== undefined) {
         numRandom -= 1
         landSlotRand = await randomLandSlot()
-        await user.actor.updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom)
+        // await user.actor.updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom)
         map.setView([landSlotRand.geometry.coordinates[0][0][1], landSlotRand.geometry.coordinates[0][0][0]], 13)
       } else {
         // if not having enough ICP
@@ -193,10 +212,15 @@ const Map = () => {
         [(Number(landBuyingStatus.properties.i) + 1) * 1000, Number(landBuyingStatus.properties.j) * 1000],
       ]]
     )
-    await user.actor.createLandSlot(landBuyingStatus.properties.i, landBuyingStatus.properties.j, nationUTMS[0][0],  20, "N", 1000)
+    await user.actor.createLandSlot(landBuyingStatus.properties.i, landBuyingStatus.properties.j, nationUTMS[0][0], 20, "N", 1000)
     numRandom = 3
     landSlotRand = []
     await loadNations(Number(landBuyingStatus.properties.i), Number(landBuyingStatus.properties.j))
+    let checkEffect = (await user.actor.readUserHasLandEffect())?.ok
+    console.log("checkEffect", checkEffect)
+    if (checkEffect) {
+      setHasEffect(true)
+    }
     map.setView([Number(landBuyingStatus.geometry.coordinates[0][0][1]), Number(landBuyingStatus.geometry.coordinates[0][0][0])], 13)
     setLoading("none")
     setPurchaseBtn(true)
@@ -205,10 +229,9 @@ const Map = () => {
   const handleTryAgain = async () => {
     setLoading("try")
     landSlotRand = await randomLandSlot()
-    // await user.actor.updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom)
     map.setView([landSlotRand.geometry.coordinates[0][0][1], landSlotRand.geometry.coordinates[0][0][0]], 13)
     numRandom -= 1
-    await user.actor.updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom)
+    // await user.actor.updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom)
     setLoading("none")
   }
   return (
@@ -255,7 +278,7 @@ const Map = () => {
                       fontSize: "136%",
                       margin: "2%"
                     }}
-                  >{!alert ? "Do you want to receive this land slot with 0.0002 icp ?" : "You do not have enough ICP to make this transaction !"}</h1>
+                  >{!alert ? "Do you want to receive this land slot with 0.0004 icp ?" : "You do not have enough ICP to make this transaction !"}</h1>
                 </div>
                 {!alert ? <>
                   {loading === "accept" ? <h2 className="popupAccept"
@@ -263,7 +286,7 @@ const Map = () => {
                       display: purchaseBtn ? "none" : "block"
                     }}><i className="fa fa-spinner fa-spin"></i> LOADING</h2> : <h2 className="popupAccept"
                       style={{
-                        display: purchaseBtn ? "none" : "block"
+                        display: purchaseBtn || loading === "try" ? "none" : "block"
                       }}
                       onClick={() => {
                         handleAccept()
@@ -277,7 +300,7 @@ const Map = () => {
                   ><i className="fa fa-spinner fa-spin"></i> LOADING</h2> : <h2 className="popupTryAgain"
                     style={{
                       // if numRandom = 0 then, turn off try again button
-                      display: purchaseBtn || numRandom <= 0 ? "none" : "block",
+                      display: purchaseBtn || numRandom <= 0 || loading === "accept" ? "none" : "block",
                     }}
                     onClick={() => {
                       handleTryAgain()

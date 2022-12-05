@@ -227,6 +227,42 @@ const Metaverse = () => {
     });
   };
 
+  const createFarmEffect = () => {
+    return new Promise(resolve => {
+      const farmEffects = data[9];
+      farmEffects.forEach(async farmEffect => {
+        try {
+          if (!!actor?.createFarmEffect) {
+            const rs = await actor.createFarmEffect(farmEffect);
+            console.log("Create Farm Effect");
+            console.log(rs);
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      });
+      resolve();
+    });
+  };
+
+  const createLandEffect = () => {
+    return new Promise(resolve => {
+      const landEffects = data[10];
+      landEffects.forEach(async landEffect => {
+        try {
+          if (!!actor?.createLandEffect) {
+            const rs = await actor.createLandEffect(landEffect);
+            console.log("Create Land Effect");
+            console.log(rs);
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      });
+      resolve();
+    });
+  };
+
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -239,6 +275,8 @@ const Metaverse = () => {
     await createEventOption();
     await createCharacterClass();
     await createSeed();
+    await createFarmEffect();
+    await createLandEffect();
     console.log("DONE");
     setLoading(false);
   };

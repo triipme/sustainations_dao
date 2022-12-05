@@ -3,4 +3,5 @@ service : {
     proj: (float64, float64, int32, text) -> (float64, float64) query;
     randomnumber: (float64, float64) -> (nat64) query;
     randompair: (float64, float64) -> (nat64,nat64) query;
-}
+    fetch_coin_price : (text) -> (float64);
+};

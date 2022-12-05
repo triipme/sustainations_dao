@@ -63,9 +63,13 @@ module {
     landBuyingStatuses : Map<Text,Types.LandBuyingStatus>;
     landConfigs : Map<Text,Types.LandConfig>;
     nations : Map<Text,Types.Nation>;
+    landEffects : Map<Text,Types.LandEffect>;
+    userHasLandEffects : Map<Text, Types.UserHasLandEffect>;
     tiles : Map<Text, Types.Tile>;
     seeds : Map<Text, Types.Seed>;
     plants : Map<Text, Types.Plant>;
+    farmEffects : Map<Text, Types.FarmEffect>;
+    hasFarmEffects : Map<Text, Types.UserHasFarmEffect>;
   };
 
   public func empty() : State {
@@ -123,9 +127,13 @@ module {
       landBuyingStatuses = TrieMap.TrieMap<Text,Types.LandBuyingStatus>(Text.equal,Text.hash);
       landConfigs = TrieMap.TrieMap<Text,Types.LandConfig>(Text.equal,Text.hash);
       nations = TrieMap.TrieMap<Text, Types.Nation>(Text.equal,Text.hash);
+      landEffects = TrieMap.TrieMap<Text, Types.LandEffect>(Text.equal,Text.hash);
+      userHasLandEffects = TrieMap.TrieMap<Text, Types.UserHasLandEffect>(Text.equal,Text.hash);
       tiles = TrieMap.TrieMap<Text, Types.Tile>(Text.equal,Text.hash);
       seeds = TrieMap.TrieMap<Text, Types.Seed>(Text.equal,Text.hash);
       plants = TrieMap.TrieMap<Text, Types.Plant>(Text.equal,Text.hash);
+      farmEffects = TrieMap.TrieMap<Text, Types.FarmEffect>(Text.equal,Text.hash);
+      hasFarmEffects = TrieMap.TrieMap<Text, Types.UserHasFarmEffect>(Text.equal,Text.hash);
     };
   };
 };

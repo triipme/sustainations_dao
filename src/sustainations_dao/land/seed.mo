@@ -26,6 +26,6 @@ module Seed {
   };
 
   public func update(seed : Types.Seed, state : State.State) {
-    state.seeds.put(seed.id, getData(seed));
+    let updated = state.seeds.replace(seed.id, getData(seed));
   };
 }

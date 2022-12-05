@@ -11,6 +11,14 @@ function getUserInfo() {
   });
 };
 
+function getQuestGameInfo(eventId){
+  return new Promise((resolve, reject) => {
+    const { user } = store.getState();
+    const rs = user.actor.getQuestGameInfo(eventId);
+    resolve(rs);
+  });
+};
+
 // character
 const characterClassId = "cc1";
 
@@ -225,9 +233,9 @@ async function openInventory(characterId) {
   return rs;
 };
 
-async function listItemInventory(characterId) {
+async function listStash(characterId){
   const { user } = store.getState();
-  const func = async () => await user.actor.listItemInventory(characterId);
+  const func = async () => await user.actor.listStash();
   const rs = (await func()).ok;
   return rs;
 };
@@ -306,12 +314,6 @@ async function addAllInventory(characterId, amount) {
   });
 };
 
-async function readScene(eventId) {
-  const { user } = store.getState();
-  const func = async () => await user.actor.readScene(eventId);
-  const scene = (await func()).ok;
-  return scene;
-}
 
 async function loadQuestItemEngines(idQuest) {
   const { user } = store.getState();
@@ -319,6 +321,14 @@ async function loadQuestItemEngines(idQuest) {
   const scene = (await func()).ok;
   return scene;
 }
+async function useUsableItem(characterId, stashId) {
+  const { user } = store.getState();
+  const func = async () => await user.actor.useUsableItem(characterId, stashId);
+  const result = (await func()).ok;
+  return result;
+};
+
+
 
 async function characterTakeOptionEngine(eventId) {
   const { user } = store.getState();
@@ -327,12 +337,6 @@ async function characterTakeOptionEngine(eventId) {
   return result;
 };
 
-async function characterCollectsMaterialEngines(eventId) {
-  const { user } = store.getState();
-  const collectsMaterialEngines = async () => await user.actor.collectsMaterialEngines(eventId);
-  const result = (await collectsMaterialEngines()).ok;
-  return result;
-};
 
 export {
   getUserInfo,
@@ -367,12 +371,7 @@ export {
   readEvent,
   listSceneQuests,
   addAllInventory,
-  loadEventOptionEngines,
-  readEventEngine,
-  readScene,
-  loadQuestItemEngines,
-  characterTakeOptionEngine,
-  characterCollectsMaterialEngines,
-  listItemInventory,
-  createQuestEngine
+  listStash,
+  useUsableItem,
+  getQuestGameInfo
 }

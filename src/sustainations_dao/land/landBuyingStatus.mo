@@ -18,6 +18,6 @@ module LandBuyingStatus {
   };
 
   public func update(landBuyingStatus : Types.LandBuyingStatus, state : State.State) {
-    state.landBuyingStatuses.put(Principal.toText(landBuyingStatus.id), getData(landBuyingStatus));
+    let updated = state.landBuyingStatuses.replace(Principal.toText(landBuyingStatus.id), getData(landBuyingStatus));
   };
 }

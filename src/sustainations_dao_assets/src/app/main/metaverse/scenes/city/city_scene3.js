@@ -5,7 +5,9 @@ import {
   loadEventOptions,
   updateCharacterStats,
   listCharacterSelectsItems,
-  createCharacterCollectsMaterials
+  createCharacterCollectsMaterials,
+  loadCharacter,
+  useUsableItem
 } from '../../GameApi';
 import { settings } from '../settings';
 import { func } from 'prop-types';
@@ -34,10 +36,31 @@ export default class city_scene3 extends BaseScene {
     super('city_scene3');
   }
 
-
+  init(data) {
+    this.isHealedPreviously = data.isUsedPotion;
+    this.isUsedUsableItem = data.isUsedUsableItem;
+  }
   preload() {
     this.addLoadingScreen();
-    this.initialLoad("e36");
+    if (this.isUsedUsableItem[0]) {
+      this.load.rexAwait(function (successCallback, failureCallback) {
+        loadCharacter().then((result) => {
+          this.characterData = result.ok[1];
+          this.characterBefore = this.characterData;
+          this.load.rexAwait(function (successCallback, failureCallback) {
+            useUsableItem(this.characterData.id, this.isUsedUsableItem[1]).then((result) => {
+              this.initialLoad("e36");
+              successCallback();
+            });
+          }, this);
+          successCallback();
+
+        });
+      }, this);
+    }
+    else {
+      this.initialLoad("e36");
+    }
 
     //Preload
     this.clearSceneCache(['bg', 'UI_strength', 'effect', 'player', 'pickItemText',
@@ -164,6 +187,9 @@ export default class city_scene3 extends BaseScene {
         }
 
       })
+    if (this.characterBefore != undefined) {
+      this.showColorLossAllStat(this.characterBefore, this.characterData)
+    }
 
     for (const idx in this.eventOptions) {
 
@@ -230,7 +256,7 @@ export default class city_scene3 extends BaseScene {
     if (this.player.x > 5100) {
       this.pregameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start("city_scene4", { isUsedPotion: this.isUsedPotion });
+      this.scene.start("city_scene4", { isUsedPotion: this.isUsedPotion, isUsedUsableItem: this.isUsedUsableItem });
     }
 
     if (this.player.x > 4200 && this.isInteracted == false) {
