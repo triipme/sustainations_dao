@@ -56,6 +56,10 @@ import Seed "./land/seed";
 import Plant "./land/plant";
 import FarmEffect "./land/farmEffect";
 import HasFarmEffect "./land/hasFarmEffect";
+import AlchemyRecipe "./land/alchemyRecipe";
+import AlchemyRecipeDetail "./land/alchemyRecipeDetail";
+import Construction "./land/construction";
+import Building "./land/building";
 import Env ".env";
 
 shared ({ caller = owner }) actor class SustainationsDAO() = this {
@@ -126,6 +130,10 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   private stable var plants : [(Text, Types.Plant)] = [];
   private stable var farmEffects : [(Text, Types.FarmEffect)] = [];
   private stable var hasFarmEffects : [(Text, Types.UserHasFarmEffect)] = [];
+  private stable var alchemyRecipes : [(Text, Types.AlchemyRecipe)] = [];
+  private stable var alchemyRecipeDetails : [(Text, Types.AlchemyRecipeDetail)] = [];
+  private stable var constructions : [(Text, Types.Construction)] = [];
+  private stable var buildings : [(Text, Types.Building)] = [];
 
   system func preupgrade() {
     Debug.print("Begin preupgrade");
@@ -183,6 +191,10 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     plants := Iter.toArray(state.plants.entries());
     farmEffects := Iter.toArray(state.farmEffects.entries());
     hasFarmEffects := Iter.toArray(state.hasFarmEffects.entries());
+    alchemyRecipes := Iter.toArray(state.alchemyRecipes.entries());
+    alchemyRecipeDetails := Iter.toArray(state.alchemyRecipeDetails.entries());
+    constructions := Iter.toArray(state.constructions.entries());
+    buildings := Iter.toArray(state.buildings.entries());
     Debug.print("End preupgrade");
   };
 
@@ -337,6 +349,18 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
     for ((k, v) in Iter.fromArray(hasFarmEffects)) {
       state.hasFarmEffects.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(alchemyRecipes)) {
+      state.alchemyRecipes.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(alchemyRecipeDetails)) {
+      state.alchemyRecipeDetails.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(constructions)) {
+      state.constructions.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(buildings)) {
+      state.buildings.put(k, v);
     };
     Debug.print("End postupgrade");
   };
@@ -3156,6 +3180,20 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
   };
 
+  public shared ({ caller }) func updateUsableItem(usableItem : Types.UsableItem) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsUsableItem = state.usableItems.get(usableItem.id);
+    switch (rsUsableItem) {
+      case null { #err(#NotFound) };
+      case (?V) {
+        let updated = state.usableItems.replace(usableItem.id, usableItem);
+        #ok("Success");
+      };
+    };
+  };
+
   public shared query ({ caller }) func readUsableItem(id : Text) : async Response<Types.UsableItem> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
@@ -4191,8 +4229,8 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
 
   // convert i,j to geometry with lat,lng
   public shared func landSlotToGeometry(i : Nat, j : Nat) : async Types.Geometry {
-    let latlng1 = await utm2lonlat(Float.fromInt(1000 * j), Float.fromInt(1000 * i), 20, "N");
-    let latlng2 = await utm2lonlat(Float.fromInt(1000 * (j + 1)), Float.fromInt(1000 * (i + 1)), 20, "N");
+    let latlng1 = await georust.proj(Float.fromInt(1000 * j), Float.fromInt(1000 * i), 20, "N");
+    let latlng2 = await georust.proj(Float.fromInt(1000 * (j + 1)), Float.fromInt(1000 * (i + 1)), 20, "N");
     let coordinates = [[
       [latlng1.0, latlng1.1],
       [latlng2.0, latlng1.1],
@@ -4208,6 +4246,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       coordinates = coordinates;
     };
     return geometry;
+
   };
 
   // Land Config
@@ -4280,7 +4319,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
-
     switch (await deposit(30000, caller)) {
       case (#ok(bIndex)) {
         await recordTransaction(
@@ -4728,7 +4766,7 @@ public shared ({ caller }) func randomLandSlot() : async Response<Types.Geometry
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
-
+    
     let newGeometry = await landSlotToGeometry(indexRow, indexColumn);
 
     let principalId = Principal.toText(userId);
@@ -5211,9 +5249,6 @@ public shared ({ caller }) func randomLandSlot() : async Response<Types.Geometry
     #ok((list));
   };
 
-  //
-  
-
   // Plant
   public shared func createPlant(materialId : Text) : async Text {
     for ((K, V) in state.seeds.entries()) {
@@ -5387,6 +5422,108 @@ public shared ({ caller }) func randomLandSlot() : async Response<Types.Geometry
     };
     for ((K, V) in state.hasFarmEffects.entries()) {
       list := Array.append<(Text, Types.UserHasFarmEffect)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+
+  // alchemyRecipe
+  public shared ({ caller }) func createAlchemyRecipe(alchemyRecipe : Types.AlchemyRecipe) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsAlchemyRecipe = state.alchemyRecipes.get(alchemyRecipe.id);
+    switch (rsAlchemyRecipe) {
+      case (?V) { #err(#AlreadyExisting) };
+      case null {
+        AlchemyRecipe.create(alchemyRecipe, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared query ({ caller }) func readAlchemyRecipe(id : Text) : async Response<(Types.AlchemyRecipe)> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsAlchemyRecipe = state.alchemyRecipes.get(id);
+    return Result.fromOption(rsAlchemyRecipe, #NotFound);
+  };
+
+  public shared query ({ caller }) func listAlchemyRecipes() : async Response<[(Text, Types.AlchemyRecipe)]> {
+    var list : [(Text, Types.AlchemyRecipe)] = [];
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    for ((K, V) in state.alchemyRecipes.entries()) {
+      list := Array.append<(Text, Types.AlchemyRecipe)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+
+  // alchemyRecipeDetail
+    public shared ({ caller }) func createAlchemyRecipeDetail(alchemyRecipeDetail : Types.AlchemyRecipeDetail) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsAlchemyRecipeDetail = state.alchemyRecipeDetails.get(alchemyRecipeDetail.id);
+    switch (rsAlchemyRecipeDetail) {
+      case (?V) { #err(#AlreadyExisting) };
+      case null {
+        AlchemyRecipeDetail.create(alchemyRecipeDetail, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared query ({ caller }) func readAlchemyRecipeDetail(id : Text) : async Response<(Types.AlchemyRecipeDetail)> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsAlchemyRecipeDetail = state.alchemyRecipeDetails.get(id);
+    return Result.fromOption(rsAlchemyRecipeDetail, #NotFound);
+  };
+
+  public shared query ({ caller }) func listAlchemyRecipeDetails() : async Response<[(Text, Types.AlchemyRecipeDetail)]> {
+    var list : [(Text, Types.AlchemyRecipeDetail)] = [];
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    for ((K, V) in state.alchemyRecipeDetails.entries()) {
+      list := Array.append<(Text, Types.AlchemyRecipeDetail)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+
+  // Construction
+  public shared ({ caller }) func createConstruction(construction : Types.Construction) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsConstruction = state.constructions.get(construction.id);
+    switch (rsConstruction) {
+      case (?V) { #err(#AlreadyExisting) };
+      case null {
+        Construction.create(construction, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared query ({ caller }) func readConstruction(id : Text) : async Response<(Types.Construction)> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsConstruction = state.constructions.get(id);
+    return Result.fromOption(rsConstruction, #NotFound);
+  };
+
+  public shared query ({ caller }) func listConstructions() : async Response<[(Text, Types.Construction)]> {
+    var list : [(Text, Types.Construction)] = [];
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    for ((K, V) in state.constructions.entries()) {
+      list := Array.append<(Text, Types.Construction)>(list, [(K, V)]);
     };
     #ok((list));
   };

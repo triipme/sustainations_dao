@@ -1,4 +1,3 @@
-import Option "mo:base/Option";
 import Iter "mo:base/Iter";
 import Int "mo:base/Int";
 import Array "mo:base/Array";

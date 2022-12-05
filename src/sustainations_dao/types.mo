@@ -438,6 +438,46 @@ public type Stash = {
     userId : Principal;
   };
 
+//--------------------- Alchemy Recipe -------------//
+  public type AlchemyRecipe = {
+    id : Text;
+    resultUsableItemId : Text;
+    description : Text;
+  };
+
+  public type AlchemyRecipeDetail = {
+    id : Text;
+    recipeId : Text;
+    usableItemId: Text;
+    amount: Int;
+  };
+
+//--------------------- Contructions -------------//
+  public type Construction = {
+    id : Text;
+    name : Text;
+    price : Float;    
+    rowSize : Nat;
+    columnSize : Nat;
+    buildWaitTime : Int;
+    usableItemId : Text;
+    resultUsableItemId: Text;
+    description : Text;
+    produceWaitTime : Int;
+    minAmount : Int;
+    maxAmount : Int;
+  };
+
+//--------------------- Building -------------//
+  public type Building = {
+    id : Text;
+    constructionId : Text;
+    status : Text;
+    buildTime : Text;
+    startProducingTime : Text;
+  };
+
+
   // Error codes
   public type Error = {
     #BalanceLow;

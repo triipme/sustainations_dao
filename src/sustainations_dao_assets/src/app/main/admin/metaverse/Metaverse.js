@@ -263,6 +263,60 @@ const Metaverse = () => {
     });
   };
 
+  const createAlchemyRecipe = () => {
+    return new Promise(resolve => {
+      const alchemyRecipes = data[11];
+      alchemyRecipes.forEach(async alchemyRecipe => {
+        try {
+          if (!!actor?.createAlchemyRecipe) {
+            const rs = await actor.createAlchemyRecipe(alchemyRecipe);
+            console.log("Create Alchemy Recipe");
+            console.log(rs);
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      });
+      resolve();
+    });
+  };
+
+  const createAlchemyRecipeDetail = () => {
+    return new Promise(resolve => {
+      const alchemyRecipeDetails = data[12];
+      alchemyRecipeDetails.forEach(async alchemyRecipeDetail => {
+        try {
+          if (!!actor?.createAlchemyRecipeDetail) {
+            const rs = await actor.createAlchemyRecipeDetail(alchemyRecipeDetail);
+            console.log("Create Alchemy Recipe Detail");
+            console.log(rs);
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      });
+      resolve();
+    });
+  };
+
+  const createConstruction = () => {
+    return new Promise(resolve => {
+      const constructions = data[13];
+      constructions.forEach(async construction => {
+        try {
+          if (!!actor?.createConstruction) {
+            const rs = await actor.createConstruction(construction);
+            console.log("Create Construction");
+            console.log(rs);
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      });
+      resolve();
+    });
+  };
+
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -277,6 +331,9 @@ const Metaverse = () => {
     await createSeed();
     await createFarmEffect();
     await createLandEffect();
+    await createAlchemyRecipe();
+    await createAlchemyRecipeDetail();
+    await createConstruction();
     console.log("DONE");
     setLoading(false);
   };

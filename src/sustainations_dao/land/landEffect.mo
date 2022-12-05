@@ -1,4 +1,3 @@
-import Option "mo:base/Option";
 import Array "mo:base/Array";
 import Int "mo:base/Int";
 import Types "../types";
