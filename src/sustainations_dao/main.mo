@@ -5484,7 +5484,16 @@ public shared ({ caller }) func randomLandSlot() : async Response<Types.Geometry
     #ok((list));
   };
 
-  public shared ({ caller }) func test_mid_canister() : async Int {
-    return await mid_canister.randomIndex(1.0, 1499.0);
+  public shared ({ caller }) func randomIndex_mid_canister(begin : Float, end : Float) : async Int {
+    return await mid_canister.randomIndex(begin, end);
+  };
+
+  public shared ({ caller }) func randomPair_mid_canister(begin : Float, end : Float) : async (Int, Int) {
+    return await mid_canister.randomPair(begin, end);
+  };
+
+  public shared ({ caller }) func utm2lonlat_mid_canister(
+    easting : Float, northing : Float, zoneNum : Int32, zoneLetter : Text) : async (Float, Float) {
+    return await mid_canister.utm2lonlat(easting, northing, zoneNum, zoneLetter);
   };
 };
