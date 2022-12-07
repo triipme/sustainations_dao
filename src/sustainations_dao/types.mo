@@ -178,6 +178,7 @@ module {
   //--------------------- Quest Engine---------------------//
   public type QuestEngine = {
     id : Text;
+    userId: Principal;
     name : Text;
     price : Nat64;
     description : Text;
