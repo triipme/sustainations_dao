@@ -11,13 +11,21 @@ function getUserInfo(){
   });
 };
 
-function getQuestGameInfo(eventId){
+export function getQuestGameInfo(eventId){
   return new Promise((resolve, reject) => {
     const { user } = store.getState();
     const rs = user.actor.getQuestGameInfo(eventId);
     resolve(rs);
   });
 };
+
+// export function getCharacterActions(eventId){
+//   return new Promise((resolve, reject) => {
+//     const { user } = store.getState();
+//     const rs = user.actor.getCharacterActions(eventId);
+//     resolve(rs);
+//   });
+// };
 
 // character
 const characterClassId = "cc1";
@@ -313,6 +321,5 @@ export {
   listSceneQuests,
   addAllInventory,
   listStash,
-  useUsableItem,
-  getQuestGameInfo
+  useUsableItem
 }
