@@ -58,6 +58,8 @@ import FarmEffect "./land/farmEffect";
 import HasFarmEffect "./land/hasFarmEffect";
 import Env ".env";
 
+import mid_canister "canister:mid_canister";
+
 shared ({ caller = owner }) actor class SustainationsDAO() = this {
   stable var transferFee : Nat64 = 10_000;
   stable var createProposalFee : Nat64 = 20_000;
@@ -5480,5 +5482,9 @@ public shared ({ caller }) func randomLandSlot() : async Response<Types.Geometry
       list := Array.append<(Text, Types.UserHasFarmEffect)>(list, [(K, V)]);
     };
     #ok((list));
+  };
+
+  public shared ({ caller }) func test_mid_canister() : async Int {
+    return await mid_canister.randomIndex(1.0, 1499.0);
   };
 };

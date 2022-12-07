@@ -13,7 +13,11 @@
     "sustainations_dao": {
       "main": "src/sustainations_dao/main.mo",
       "type": "motoko",
-      "dependencies": ["ledger", "georust"]
+      "dependencies": ["ledger", "georust", "mid_canister"]
+    },
+    "mid_canister": {
+      "main": "src/mid_canister/main.mo",
+      "type": "motoko"
     },
     "frontend": {
       "dependencies": [
