@@ -57,12 +57,12 @@ class BaseScene extends Phaser.Scene {
     //   });
     // }, this);
 
-    // this.load.rexAwait(function (successCallback, failureCallback) {
-    //   characterCollectsMaterials(this.eventId).then((result) => {
-    //     this.characterCollectMaterials = result;
-    //     successCallback();
-    //   });
-    // }, this);
+    this.load.rexAwait(function (successCallback, failureCallback) {
+      characterCollectsMaterials(this.eventId).then((result) => {
+        this.characterCollectMaterials = result;
+        successCallback();
+      });
+    }, this);
 
     // this.load.rexAwait(function (successCallback, failureCallback) {
     //   getHpPotion().then((result) => {
@@ -89,23 +89,23 @@ class BaseScene extends Phaser.Scene {
     this.load.rexAwait(function (successCallback, failureCallback) {
       getQuestGameInfo(this.eventId).then((result) => {
         this.questGameInfo = result.ok;
-        console.log("GET QUEST GAME INFO",result.ok);
         this.userInfo = result.ok.userProfile.username[0];
         this.characterData = result.ok.characterData[0][1];
         this.characterStatus = result.ok.characterStatus;
+        this.characterTakeOptions = result.ok.characterTakesOption;
         this.listStash = result.ok.stashInfo;
         successCallback();
       });
     }, this);
 
-    this.load.rexAwait(function (successCallback, failureCallback) {
-      getCharacterActions(this.eventId).then((result) => {
-        console.log("GET CHARACTER ACTIONS",result.ok);
-        this.characterTakeOptions = result.ok.characterTakeOption;
-        this.characterCollectMaterials = result.ok.characterCollectsMaterials;
-        successCallback();
-      });
-    }, this);
+    // this.load.rexAwait(function (successCallback, failureCallback) {
+    //   getCharacterActions(this.eventId).then((result) => {
+    //     console.log("GET CHARACTER ACTIONS",result.ok);
+    //     this.characterTakeOptions = result.ok.characterTakeOption;
+    //     this.characterCollectMaterials = result.ok.characterCollectsMaterials;
+    //     successCallback();
+    //   });
+    // }, this);
   }
 
   createSceneLayers() {

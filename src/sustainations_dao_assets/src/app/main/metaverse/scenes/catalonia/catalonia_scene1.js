@@ -183,7 +183,7 @@ export default class catalonia_scene1 extends BaseScene {
       }
     }).setVisible(false).setScrollFactor(0);
 
-
+    console.log("LOGGGGG", this.characterTakeOptions);
     for (const idx in this.eventOptions) {
 
       // can take option or not
