@@ -27,6 +27,7 @@ import Types "types";
 import State "state";
 import Ledger "./plugins/Ledger";
 import GeoRust "./plugins/GeoRust";
+import MidCanister "./plugins/MidCanister";
 import RS "./models/RefillStation";
 import CharacterClass "./game/characterClass";
 import Character "./game/character";
@@ -57,8 +58,6 @@ import Plant "./land/plant";
 import FarmEffect "./land/farmEffect";
 import HasFarmEffect "./land/hasFarmEffect";
 import Env ".env";
-
-import mid_canister "canister:mid_canister";
 
 shared ({ caller = owner }) actor class SustainationsDAO() = this {
   stable var transferFee : Nat64 = 10_000;
@@ -350,6 +349,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   type Response<Ok> = Result.Result<Ok, Types.Error>;
   private let ledger : Ledger.Interface = actor (Env.LEDGER_ID);
   private let georust : GeoRust.Interface = actor (Env.GEORUST_ID);
+  private let mid_canister : MidCanister.Interface = actor (Env.MID_CANISTER_ID);
 
   private func createUUID() : async Text {
     var ae = AsyncSource.Source();
