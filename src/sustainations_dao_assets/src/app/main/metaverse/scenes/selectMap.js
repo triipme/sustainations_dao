@@ -237,9 +237,9 @@ class selectMap extends BaseScene {
       else {
         resetCharacter();
         this.scene.start('selectItemScene', { map: 'jungle' });
+        // pay for jungle quest
+        await payQuest("jungle");
       };
-      // pay for jungle quest
-      await payQuest("jungle");
     });
   }
 

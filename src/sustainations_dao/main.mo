@@ -2779,28 +2779,28 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     #ok("Success");
   };
 
-  public shared ({ caller }) func takeOption(eventId : Text) : async Response<[Types.Character]> {
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized); //isNotAuthorized
-    };
-    var result : [Types.Character] = [];
-    for ((K, character) in state.characters.entries()) {
-      if (character.userId == caller) {
-        for ((K, eventOption) in state.eventOptions.entries()) {
-          if (eventOption.eventId == eventId) {
-            var strengthRequire : Float = 0;
-            for (item in state.items.vals()) {
-              if (item.id == eventOption.requireItemId) {
-                strengthRequire := item.strengthRequire;
-              };
-            };
-            result := Array.append<Types.Character>(result, [await Character.takeOption(character, strengthRequire, eventOption, state)]);
-          };
-        };
-      };
-    };
-    #ok(result);
-  };
+  // public shared ({ caller }) func takeOption(eventId : Text) : async Response<[Types.Character]> {
+  //   if (Principal.toText(caller) == "2vxsx-fae") {
+  //     return #err(#NotAuthorized); //isNotAuthorized
+  //   };
+  //   var result : [Types.Character] = [];
+  //   for ((K, character) in state.characters.entries()) {
+  //     if (character.userId == caller) {
+  //       for ((K, eventOption) in state.eventOptions.entries()) {
+  //         if (eventOption.eventId == eventId) {
+  //           var strengthRequire : Float = 0;
+  //           for (item in state.items.vals()) {
+  //             if (item.id == eventOption.requireItemId) {
+  //               strengthRequire := item.strengthRequire;
+  //             };
+  //           };
+  //           result := Array.append<Types.Character>(result, [await Character.takeOption(character, strengthRequire, eventOption, state)]);
+  //         };
+  //       };
+  //     };
+  //   };
+  //   #ok(result);
+  // };
 
   public shared ({ caller }) func gainCharacterExp(character : Types.Character) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
@@ -4076,43 +4076,38 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   public type QuestGameInfo = {
     userProfile : Types.Profile;
     characterData : [(Text, Types.Character)];
-    characterTakeOption : [Types.Character];
     characterStatus : Text;
-    characterCollectsMaterials : [Types.CharacterCollectsMaterials];
     stashInfo : [StashInfo];
+    characterTakesOption : [Types.Character];
   };
 
-  public shared ({ caller }) func getQuestGameInfo(eventId : Text) : async Response<QuestGameInfo> {
+  public query ({ caller }) func getQuestGameInfo(eventId : Text) : async Response<QuestGameInfo> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
     var characterData : [(Text, Types.Character)] = [];
-    var characterTakeOption : [Types.Character] = [];
     var characterStatus : Text = "";
-    var characterCollectsMaterials : [Types.CharacterCollectsMaterials] = [];
     var stashInfo : [StashInfo] = [];
+    var characterTakesOption : [Types.Character] = [];
+
     switch(state.profiles.get(caller)){
       case null { #err(#NotFound); };
       case (?userProfile) {
         for ((key, character) in state.characters.entries()) {
           if (character.userId == caller) {
-            characterStatus := character.status;
             for ((K, eventOption) in state.eventOptions.entries()) {
               if (eventOption.eventId == eventId) {
-                let characterCollectMaterial = await CharacterCollectsMaterials.collectsMaterials(character.id, eventOption, state);
-                characterCollectsMaterials := Array.append<Types.CharacterCollectsMaterials>(
-                  characterCollectsMaterials, [characterCollectMaterial]
-                );
                 var strengthRequire : Float = 0;
                 for (item in state.items.vals()) {
                   if (item.id == eventOption.requireItemId) {
                     strengthRequire := item.strengthRequire;
                   };
                 };
-                characterTakeOption := Array.append<Types.Character>(characterTakeOption, 
-                [await Character.takeOption(character, strengthRequire, eventOption, state)]);
+                characterTakesOption := Array.append<Types.Character>(characterTakesOption, 
+                [Character.takeOption(character, strengthRequire, eventOption, state)]);
               };
             };
+            characterStatus := character.status;
             characterData := Array.append<(Text, Types.Character)>(characterData, [(key, character)]);
           };
         };
@@ -4137,10 +4132,9 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
         let result : QuestGameInfo = {
           userProfile = userProfile;
           characterData = characterData;
-          characterTakeOption = characterTakeOption;
           characterStatus = characterStatus;
-          characterCollectsMaterials = characterCollectsMaterials;
           stashInfo = stashInfo;
+          characterTakesOption = characterTakesOption;
         };
         #ok(result);
       };
