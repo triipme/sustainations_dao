@@ -67,6 +67,7 @@ module {
     alchemyRecipes : Map<Text, Types.AlchemyRecipe>;
     alchemyRecipeDetails : Map<Text, Types.AlchemyRecipeDetail>;
     constructions : Map<Text, Types.Construction>;
+    constructionBuyingHistories : Map<Text,Types.ConstructionBuyingHistory>;
     buildings : Map<Text, Types.Building>;
   };
 
@@ -129,6 +130,7 @@ module {
       alchemyRecipes = TrieMap.TrieMap<Text, Types.AlchemyRecipe>(Text.equal,Text.hash);
       alchemyRecipeDetails = TrieMap.TrieMap<Text, Types.AlchemyRecipeDetail>(Text.equal,Text.hash);
       constructions = TrieMap.TrieMap<Text, Types.Construction>(Text.equal,Text.hash);
+      constructionBuyingHistories = TrieMap.TrieMap<Text, Types.ConstructionBuyingHistory>(Text.equal,Text.hash);
       buildings = TrieMap.TrieMap<Text, Types.Building>(Text.equal,Text.hash);
     };
   };

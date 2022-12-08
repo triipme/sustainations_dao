@@ -6,7 +6,7 @@ import "./styles.css";
 import UIFarm from "./FarmUI";
 import {
   loadTileSlots,
-  listStash
+  listStash,
 } from "../LandApi";
 import Land from "./Land";
 import BigMap from "./BigMap";

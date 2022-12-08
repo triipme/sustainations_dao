@@ -54,7 +54,9 @@ module LandSlot {
                       landSlotId = tile.landSlotId;
                       indexRow = tile.indexRow;
                       indexColumn = tile.indexColumn;
-                      seedId = plant.seedId;
+                      rowSize = seed.rowSize;
+                      columnSize = seed.columnSize;
+                      objectId = plant.seedId;
                       name = seed.name;
                       hasEffectId = plant.hasEffectId;
                       status = "";

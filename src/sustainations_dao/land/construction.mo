@@ -10,12 +10,12 @@ module Construction {
       rowSize = construction.rowSize;
       columnSize = construction.columnSize;
       buildWaitTime = construction.buildWaitTime;
-      usableItemId = construction.usableItemId;
-      resultUsableItemId = construction.resultUsableItemId;
+      // usableItemId = construction.usableItemId;
+      // resultUsableItemId = construction.resultUsableItemId;
       description = construction.description;
-      produceWaitTime = construction.produceWaitTime;
-      minAmount = construction.minAmount;
-      maxAmount = construction.maxAmount;
+      // produceWaitTime = construction.produceWaitTime;
+      // minAmount = construction.minAmount;
+      // maxAmount = construction.maxAmount;
     };
     return newConstruction;
   };

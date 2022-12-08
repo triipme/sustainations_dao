@@ -372,7 +372,7 @@ public type UsableItem = {
 public type Stash = {
   id : Text;
   userId : Text;
-  usableItemId : Text;
+  usableItemId : Text; // this is now objectId (either usableItem or a construction)
   quality : Text;
   amount : Int; 
 };
@@ -392,7 +392,9 @@ public type Stash = {
     landSlotId : Text;
     indexRow : Nat;
     indexColumn : Nat;
-    seedId : Text;
+    rowSize : Nat;
+    columnSize : Nat;
+    objectId : Text;
     name : Text;
     hasEffectId : Text;
     status : Text;
@@ -443,6 +445,7 @@ public type Stash = {
     id : Text;
     resultUsableItemId : Text;
     description : Text;
+    craftingTime : Int;
   };
 
   public type AlchemyRecipeDetail = {
@@ -452,7 +455,7 @@ public type Stash = {
     amount: Int;
   };
 
-//--------------------- Contructions -------------//
+//--------------------- Contruction -------------//
   public type Construction = {
     id : Text;
     name : Text;
@@ -460,21 +463,31 @@ public type Stash = {
     rowSize : Nat;
     columnSize : Nat;
     buildWaitTime : Int;
-    usableItemId : Text;
-    resultUsableItemId: Text;
+    // usableItemId : Text;
+    // resultUsableItemId: Text;
     description : Text;
-    produceWaitTime : Int;
-    minAmount : Int;
-    maxAmount : Int;
+    // produceWaitTime : Int;
+    // minAmount : Int;
+    // maxAmount : Int;
+  };
+
+//--------------------ConstructionBuyingHistory----------//
+  public type ConstructionBuyingHistory = {
+    id : Text;
+    buyerId : Principal;
+    constructionId : Text;
+    buyTime : Int;
+    price : Float;
   };
 
 //--------------------- Building -------------//
   public type Building = {
     id : Text;
     constructionId : Text;
+    resultUsableItemId : Text;
     status : Text;
-    buildTime : Text;
-    startProducingTime : Text;
+    buildTime : Int;
+    startProducingTime : Int;
   };
 
 

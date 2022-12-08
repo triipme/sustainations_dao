@@ -6,6 +6,7 @@ module Building {
     let newBuilding : Types.Building = {
       id = building.id;
       constructionId = building.constructionId;
+      resultUsableItemId = building.resultUsableItemId;
       status = building.status;
       buildTime = building.buildTime;
       startProducingTime = building.startProducingTime;

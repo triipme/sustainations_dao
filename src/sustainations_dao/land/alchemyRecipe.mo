@@ -7,6 +7,7 @@ module AlchemyRecipe {
       id = alchemyRecipe.id;
       resultUsableItemId = alchemyRecipe.resultUsableItemId;
       description = alchemyRecipe.description;
+      craftingTime = alchemyRecipe.craftingTime;
     };
     return newAlchemyRecipe;
   };
