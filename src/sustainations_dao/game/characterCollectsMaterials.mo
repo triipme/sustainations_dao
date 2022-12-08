@@ -13,8 +13,9 @@ import RandomMethod "../utils/random";
 module CharacterCollectsMaterials {
   public func collectsMaterials(characterId : Text,eventOption : Types.EventOption, state: State.State) : async Types.CharacterCollectsMaterials {
     var ae = AsyncSource.Source();
-    let id = await ae.new();
-    let uuid : Text = UUID.toText(id);
+    // let id = await ae.new();
+    let uuid = characterId#eventOption.id;
+    // let uuid : Text = UUID.toText(id);
     let rsCharacter = state.characters.get(characterId);
     
     let randomPercent = RandomMethod.randomPercent();
