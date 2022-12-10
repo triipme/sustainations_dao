@@ -63,6 +63,7 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
   useEffect(() => {
     const loadinventoryStatus = () => {
       inventoryStatus["dig"] = false;
+      inventoryStatus["factory"] = false;
       for (let i = 0; i < inventory.length; i++) {
         if (inventory[i].materialName !== "wood" && inventory[i].materialName !== "seed") {
           inventoryStatus[inventory[i].materialName] = false;
@@ -210,6 +211,22 @@ const Inventory = ({ inventory }) => {
           alt=""
         />
       </div>
+      {/* <div className="imgItem" style={{
+        border: inventoryStatus["factory"] == true ? "2px" : "0px",
+        borderStyle: inventoryStatus["factory"] == true ? "dashed dashed dashed dashed" : "none",
+        width: "65px",
+        height: "65px"
+      }}>
+        <img
+          onClick={() => {
+            inventoryStatus["factory"] = !inventoryStatus["factory"]
+            initialInventory("factory")
+            setRender(!render)
+          }}
+          src={"/metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-05.png"}
+          alt=""
+        />
+      </div> */}
       {inventory.length > 0 ?
         <>
           {inventory.map((value, i) => {
