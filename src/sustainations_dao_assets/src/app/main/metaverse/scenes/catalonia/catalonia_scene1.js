@@ -133,7 +133,7 @@ export default class catalonia_scene1 extends BaseScene {
     this.createUIElements();
     this.defineCamera(gameConfig.scale.width * 4, gameConfig.scale.height);
     this.createPauseScreen();
-
+    console.log("CATALONIA S1",this.characterData);
     // load selected items ids
     this.selectedItemsIds = await listCharacterSelectsItems(this.characterData.id);
     console.log(this.selectedItemsIds);
@@ -170,7 +170,7 @@ export default class catalonia_scene1 extends BaseScene {
     // load description of event
     const event = await readEvent(this.eventId)
 
-
+    console.log("characterCollectMaterialsSSSSSSS",this.characterCollectMaterials)
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
@@ -183,7 +183,7 @@ export default class catalonia_scene1 extends BaseScene {
       }
     }).setVisible(false).setScrollFactor(0);
 
-
+    console.log("LOGGGGG", this.characterTakeOptions);
     for (const idx in this.eventOptions) {
 
       // can take option or not
