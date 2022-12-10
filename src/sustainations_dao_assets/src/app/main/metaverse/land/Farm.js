@@ -7,6 +7,7 @@ import UIFarm from "./FarmUI";
 import {
   loadTileSlots,
   listStash,
+  buildConstruction
 } from "../LandApi";
 import Land from "./Land";
 import BigMap from "./BigMap";
@@ -37,7 +38,7 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
       setChacterId(characterid.ok[0]);
       const inv = await user.actor.listInventory(characterid.ok[0]);
       const listStash = (await user.actor.listStash()).ok
-      console.log(listStash)
+      console.log(inv)
 
       const defineAmount = (item, productName) => {
         if (productName === "Carrot") {
@@ -108,7 +109,7 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
       click: async e => {
         let currentSeed = inventory.filter((item) => inventoryStatus[item.materialName] === true)
 
-        console.log(country)// Harvest
+        console.log(inventory)// Harvest
         if (country.properties.status === "fullGrown" && inventoryStatus["dig"] === false && loading === false) {
           setLoading(true)
           positionTree = country.properties.i * 10 + country.properties.j
@@ -134,6 +135,16 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
           setLoading(true)
           positionTree = country.properties.i * 10 + country.properties.j
           console.log("Remove: ", await user.actor.removeTree(country.properties.tileId))
+          setTileplant(await loadTileSlots(landSlotProperties));
+          setInventory((await user.actor.listInventory(characterId)).ok);
+
+          setLoading(false)
+          positionTree = -1
+        }
+        else if (inventoryStatus["factory"] === true && loading === false && country.properties.name === "None") { // build factory
+          setLoading(true)
+          positionTree = country.properties.i * 10 + country.properties.j
+          console.log("Build Factory: ", (await user.actor.buildConstruction(country.properties.tileId, country.properties.i, country.properties.j, "c1"))?.ok)
           setTileplant(await loadTileSlots(landSlotProperties));
           setInventory((await user.actor.listInventory(characterId)).ok);
 
@@ -170,6 +181,7 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
       }
     });
   };
+  console.log("inventoryStatus: ", inventoryStatus)
   return (
     <>
       <GeoJSON
@@ -211,7 +223,7 @@ const Inventory = ({ inventory }) => {
           alt=""
         />
       </div>
-      {/* <div className="imgItem" style={{
+      <div className="imgItem" style={{
         border: inventoryStatus["factory"] == true ? "2px" : "0px",
         borderStyle: inventoryStatus["factory"] == true ? "dashed dashed dashed dashed" : "none",
         width: "65px",
@@ -223,10 +235,10 @@ const Inventory = ({ inventory }) => {
             initialInventory("factory")
             setRender(!render)
           }}
-          src={"/metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-05.png"}
+          src={"/metaverse/farm/Sustaination_farm/farm-object/PNG/factory_UI.png"}
           alt=""
         />
-      </div> */}
+      </div>
       {inventory.length > 0 ?
         <>
           {inventory.map((value, i) => {

@@ -299,7 +299,7 @@ const Metaverse = () => {
     });
   };
 
-  const createConstruction = () => {
+  const createBuildingType = () => {
     return new Promise(resolve => {
       const constructions = data[13];
       constructions.forEach(async construction => {
@@ -351,7 +351,7 @@ const Metaverse = () => {
     await createLandEffect();
     await createAlchemyRecipe();
     await createAlchemyRecipeDetail();
-    await createConstruction();
+    await createBuildingType();
     await createProduct();
     console.log("DONE");
     setLoading(false);
