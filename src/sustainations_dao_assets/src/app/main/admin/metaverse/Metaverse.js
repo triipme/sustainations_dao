@@ -299,14 +299,14 @@ const Metaverse = () => {
     });
   };
 
-  const createConstruction = () => {
+  const createBuildingType = () => {
     return new Promise(resolve => {
-      const constructions = data[13];
-      constructions.forEach(async construction => {
+      const buildingTypes = data[13];
+      buildingTypes.forEach(async buildingType => {
         try {
-          if (!!actor?.createConstruction) {
-            const rs = await actor.createConstruction(construction);
-            console.log("Create Construction");
+          if (!!actor?.createBuildingType) {
+            const rs = await actor.createBuildingType(buildingType);
+            console.log("Create Building Type");
             console.log(rs);
           }
         } catch (error) {
@@ -351,7 +351,7 @@ const Metaverse = () => {
     await createLandEffect();
     await createAlchemyRecipe();
     await createAlchemyRecipeDetail();
-    await createConstruction();
+    await createBuildingType();
     await createProduct();
     console.log("DONE");
     setLoading(false);
