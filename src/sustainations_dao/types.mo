@@ -368,14 +368,22 @@ public type UsableItem = {
     landEffectId : Text;
   };
 // Farm
+
+//--------------------- Product ---------------------//
+  public type Product = {
+    id : Text;
+    name : Text;
+    description : Text;
+  };
+
 //--------------------- Stash ---------------------//
-public type Stash = {
-  id : Text;
-  userId : Text;
-  usableItemId : Text; // this is now objectId (either usableItem or a construction)
-  quality : Text;
-  amount : Int; 
-};
+  public type Stash = {
+    id : Text;
+    userId : Text;
+    productId : Text;
+    quality : Text;
+    amount : Int; 
+  };
 
 //-------------------------Tile------------------------------//
   public type Tile = {
@@ -425,6 +433,19 @@ public type Stash = {
     status : Text;
     plantTime : Int;
   };
+//------------------ Plant Penalty Time-------------------//
+  public type PlantPenaltyTime = {
+    id : Text;
+    penaltyTime : Int;
+  };
+//--------------------- Plant Harvesting History ---------------------//
+  public type PlantHarvestingHistory = {
+    id : Text;
+    harvesterId : Principal;
+    plantId : Text;
+    harvestTime : Int;
+  };
+
 //--------------------- Farm Effect -------------//
   public type FarmEffect = {
     id : Text;
@@ -443,7 +464,7 @@ public type Stash = {
 //--------------------- Alchemy Recipe -------------//
   public type AlchemyRecipe = {
     id : Text;
-    resultUsableItemId : Text;
+    usableItemId : Text;
     description : Text;
     craftingTime : Int;
   };
@@ -451,12 +472,12 @@ public type Stash = {
   public type AlchemyRecipeDetail = {
     id : Text;
     recipeId : Text;
-    usableItemId: Text;
+    productId: Text;
     amount: Int;
   };
 
-//--------------------- Contruction -------------//
-  public type Construction = {
+//--------------------- BuildingType -------------//
+  public type BuildingType = {
     id : Text;
     name : Text;
     price : Float;    
@@ -471,8 +492,8 @@ public type Stash = {
     // maxAmount : Int;
   };
 
-//--------------------ConstructionBuyingHistory----------//
-  public type ConstructionBuyingHistory = {
+//--------------------BuildingBuyingHistory----------//
+  public type BuildingBuyingHistory = {
     id : Text;
     buyerId : Principal;
     constructionId : Text;
@@ -483,7 +504,7 @@ public type Stash = {
 //--------------------- Building -------------//
   public type Building = {
     id : Text;
-    constructionId : Text;
+    buildingTypeId : Text;
     resultUsableItemId : Text;
     status : Text;
     buildTime : Int;

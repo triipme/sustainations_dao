@@ -317,6 +317,24 @@ const Metaverse = () => {
     });
   };
 
+  const createProduct = () => {
+    return new Promise(resolve => {
+      const products = data[14];
+      products.forEach(async product => {
+        try {
+          if (!!actor?.createProduct) {
+            const rs = await actor.createProduct(product);
+            console.log("Create Product");
+            console.log(rs);
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      });
+      resolve();
+    });
+  };
+
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -334,6 +352,7 @@ const Metaverse = () => {
     await createAlchemyRecipe();
     await createAlchemyRecipeDetail();
     await createConstruction();
+    await createProduct();
     console.log("DONE");
     setLoading(false);
   };

@@ -5,7 +5,7 @@ module AlchemyRecipe {
   public func getData(alchemyRecipe : Types.AlchemyRecipe) : Types.AlchemyRecipe {
     let newAlchemyRecipe : Types.AlchemyRecipe = {
       id = alchemyRecipe.id;
-      resultUsableItemId = alchemyRecipe.resultUsableItemId;
+      usableItemId = alchemyRecipe.usableItemId;
       description = alchemyRecipe.description;
       craftingTime = alchemyRecipe.craftingTime;
     };

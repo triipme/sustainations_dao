@@ -6,7 +6,7 @@ module AlchemyRecipeDetail {
     let newAlchemyRecipeDetail : Types.AlchemyRecipeDetail = {
       id = alchemyRecipeDetail.id;
       recipeId = alchemyRecipeDetail.recipeId;
-      usableItemId = alchemyRecipeDetail.usableItemId;
+      productId = alchemyRecipeDetail.productId;
       amount = alchemyRecipeDetail.amount;
     };
     return newAlchemyRecipeDetail;

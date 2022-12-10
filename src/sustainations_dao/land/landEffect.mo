@@ -23,7 +23,7 @@ module LandEffect {
     state.landEffects.put(landEffect.id, getData(landEffect));
   };
 
-  public func checkEffect(landSlots : [Types.LandSlot], state : State.State) : async Text {
+  public func checkEffect(landSlots : [Types.LandSlot], state : State.State) : Text {
     for (effect in state.landEffects.vals()) {
       for (landSlot in landSlots.vals()) {        
         if ((effect.symbol == "-") 

@@ -5,7 +5,7 @@ module Building {
   public func getData(building : Types.Building) : Types.Building {
     let newBuilding : Types.Building = {
       id = building.id;
-      constructionId = building.constructionId;
+      buildingTypeId = building.buildingTypeId;
       resultUsableItemId = building.resultUsableItemId;
       status = building.status;
       buildTime = building.buildTime;

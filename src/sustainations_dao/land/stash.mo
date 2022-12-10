@@ -6,7 +6,7 @@ module Stash {
     let newStash : Types.Stash = {
       id = stash.id;
       userId = stash.userId;
-      usableItemId = stash.usableItemId;
+      productId = stash.productId;
       quality = stash.quality;
       amount = stash.amount;
     };

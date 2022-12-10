@@ -24,7 +24,7 @@ module FarmEffect {
   };
 
   // check Farm Effect
-  public func checkEffect(farmObjects : [Types.FarmObject], state : State.State) : async Text {
+  public func checkEffect(farmObjects : [Types.FarmObject], state : State.State) : Text {
     for (effect in state.farmEffects.vals()) {
       for (farmObject in farmObjects.vals()) {        
         if ((effect.symbol == "T") 
