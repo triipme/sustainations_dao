@@ -1,4 +1,3 @@
-import Option "mo:base/Option";
 import Iter "mo:base/Iter";
 import Int "mo:base/Int";
 import Array "mo:base/Array";
@@ -32,7 +31,7 @@ module LandSlot {
     let updated = state.landSlots.replace(landSlot.id, getData(landSlot));
   };
   // 
-  public func listFarmObjectsFromLandSlot(indexRow : Nat, indexColumn : Nat, state : State.State) : async [Types.FarmObject] {
+  public func listFarmObjectsFromLandSlot(indexRow : Nat, indexColumn : Nat, state : State.State) : [Types.FarmObject] {
     var list : [Types.FarmObject] = [];
     for ( i in Iter.range(Int.abs(indexRow*10), Int.abs((indexRow*10)+9))) {
       for (j in Iter.range(Int.abs(indexColumn*10), Int.abs((indexColumn*10)+9))) {
@@ -55,7 +54,9 @@ module LandSlot {
                       landSlotId = tile.landSlotId;
                       indexRow = tile.indexRow;
                       indexColumn = tile.indexColumn;
-                      seedId = plant.seedId;
+                      rowSize = seed.rowSize;
+                      columnSize = seed.columnSize;
+                      objectId = plant.seedId;
                       name = seed.name;
                       hasEffectId = plant.hasEffectId;
                       status = "";

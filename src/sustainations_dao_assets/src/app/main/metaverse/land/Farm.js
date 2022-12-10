@@ -6,7 +6,7 @@ import "./styles.css";
 import UIFarm from "./FarmUI";
 import {
   loadTileSlots,
-  listStash
+  listStash,
 } from "../LandApi";
 import Land from "./Land";
 import BigMap from "./BigMap";
@@ -39,16 +39,16 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
       const listStash = (await user.actor.listStash()).ok
       console.log(listStash)
 
-      const defineAmount = (item, usableItemName) => {
-        if (usableItemName === "Carrot") {
+      const defineAmount = (item, productName) => {
+        if (productName === "Carrot") {
           setCarrot(Number(item.amount))
-        } else if (usableItemName === "Wheat") {
+        } else if (productName === "Wheat") {
           setWheat(Number(item.amount))
         } else {
           setTomato(Number(item.amount))
         }
       }
-      listStash.forEach(item => defineAmount(item, item.usableItemName))
+      listStash.forEach(item => defineAmount(item, item.productName))
       setInventory(inv.ok);
     };
     load();
@@ -117,16 +117,16 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
           setTileplant(await loadTileSlots(landSlotProperties));
 
           const listStash = (await user.actor.listStash()).ok
-          const defineAmount = (item, usableItemName) => {
-            if (usableItemName === "Carrot") {
+          const defineAmount = (item, productName) => {
+            if (productName === "Carrot") {
               setCarrot(Number(item.amount))
-            } else if (usableItemName === "Wheat") {
+            } else if (productName === "Wheat") {
               setWheat(Number(item.amount))
             } else {
               setTomato(Number(item.amount))
             }
           }
-          listStash.forEach(item => defineAmount(item, item.usableItemName))
+          listStash.forEach(item => defineAmount(item, item.productName))
           setLoading(false)
           positionTree = -1
         }
