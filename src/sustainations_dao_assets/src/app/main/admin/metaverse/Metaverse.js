@@ -263,6 +263,79 @@ const Metaverse = () => {
     });
   };
 
+  //Engine
+  const createQuestEngine = () => {
+    return new Promise(resolve => {
+      const questEngines = data[11];
+      questEngines.forEach(async questEnigne => {
+        try {
+          if (!!actor?.createQuestEngine) {
+            const rs = await actor.createQuestEngine(questEnigne);
+            console.log("Create Quest Engine");
+            console.log(rs);
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      });
+      resolve();
+    });
+  };
+
+  const createEventEngine = () => {
+    return new Promise(resolve => {
+      const eventEngines = data[12];
+      eventEngines.forEach(async eventEnigne => {
+        try {
+          if (!!actor?.createEventEngine) {
+            const rs = await actor.createEventEngine(eventEnigne);
+            console.log("Create Event Engine");
+            console.log(rs);
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      });
+      resolve();
+    });
+  };
+
+  const createEventOptionEngine = () => {
+    return new Promise(resolve => {
+      const eventOptionEngines = data[13];
+      eventOptionEngines.forEach(async eventOptionEngine => {
+        try {
+          if (!!actor?.createEventOptionEngine) {
+            const rs = await actor.createEventOptionEngine(eventOptionEngine);
+            console.log("Create Event Option Engine");
+            console.log(rs);
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      });
+      resolve();
+    });
+  };
+
+  const createScene = () => {
+    return new Promise(resolve => {
+      const scenes = data[14];
+      scenes.forEach(async scene => {
+        try {
+          if (!!actor?.createScene) {
+            const rs = await actor.createScene(scene);
+            console.log("Create Scene Engine");
+            console.log(rs);
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      });
+      resolve();
+    });
+  };
+
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -277,6 +350,10 @@ const Metaverse = () => {
     await createSeed();
     await createFarmEffect();
     await createLandEffect();
+    await createQuestEngine();
+    await createEventEngine();
+    await createEventOptionEngine();
+    await createScene();
     console.log("DONE");
     setLoading(false);
   };

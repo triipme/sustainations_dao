@@ -286,6 +286,13 @@ async function createEventEngine(event) {
   return rs;
 }
 
+async function createEventOptionEngine(eventOption) {
+  const { user } = store.getState();
+  const func = async () => await user.actor.createEventOptionEngine(eventOption);
+  const rs = (await func()).ok;
+  return rs;
+}
+
 async function createScene(scene) {
   const { user } = store.getState();
   const func = async () => await user.actor.createScene(scene);
@@ -315,6 +322,20 @@ async function readEventEngine(eventId) {
   return event;
 }
 
+async function listIdScenes() {
+  const { user } = store.getState();
+  const func = async () => await user.actor.listIdScenes();
+  const listIdScenes = (await func()).ok;
+  return listIdScenes;
+}
+
+async function listIdEventEngine() {
+  const { user } = store.getState();
+  const func = async () => await user.actor.listIdEventEngine();
+  const listIdEventEngine = (await func()).ok;
+  return listIdEventEngine;
+}
+
 async function addAllInventory(characterId, amount) {
   return new Promise((resolve, reject) => {
     const { user } = store.getState();
@@ -323,9 +344,9 @@ async function addAllInventory(characterId, amount) {
   });
 };
 
-async function readScene(eventId) {
+async function readSceneEngine(sceneId) {
   const { user } = store.getState();
-  const func = async () => await user.actor.readScene(eventId);
+  const func = async () => await user.actor.readSceneEngine(sceneId);
   const scene = (await func()).ok;
   return scene;
 }
@@ -389,10 +410,13 @@ export {
   getQuestGameInfo,
   createQuestEngine,
   createEventEngine,
+  createEventOptionEngine,
   createScene,
   readEventEngine,
-  readScene,
+  readSceneEngine,
   loadEventOptionEngines,
   loadQuestItemEngines,
   characterTakeOptionEngine,
+  listIdScenes,
+  listIdEventEngine
 }
