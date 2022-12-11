@@ -92,20 +92,20 @@ module Character {
     else { currentStat };
   };
 
-  public func updateCurrentStat(currentStat : Float, lossStat : Float, gainStat : Float, maxStat : Float) : async Float {
+  public func updateCurrentStat(currentStat : Float, lossStat : Float, gainStat : Float, maxStat : Float) : Float {
     var lossRandomStat = lossStat;
     if(lossStat != 0) {
-      lossRandomStat := await RandomMethod.randomNumber(lossStat - 1, lossStat + 1);
+      lossRandomStat := RandomMethod.randomInRange(lossStat - 1, lossStat + 1);
     } else { lossRandomStat := 0 };
     let result = currentStat - lossRandomStat + gainStat;
     return limitStat(result, maxStat);
   };
 
-  public func takeOption(character : Types.Character, strengthRequire : Float, eventOption : Types.EventOption, state : State.State) : async Types.Character {
-    let updatedHP = await updateCurrentStat(character.currentHP, eventOption.lossHP, eventOption.gainHP, character.maxHP);
-    let updatedMana = await updateCurrentStat(character.currentMana, eventOption.lossMana, eventOption.gainMana, character.maxMana);
-    let updatedStamina = await updateCurrentStat(character.currentStamina, eventOption.lossStamina, eventOption.gainStamina, character.maxStamina);
-    let updatedMorale = await updateCurrentStat(character.currentMorale, eventOption.lossMorale, eventOption.gainMorale, character.maxMorale);
+  public func takeOption(character : Types.Character, strengthRequire : Float, eventOption : Types.EventOption, state : State.State) : Types.Character {
+    let updatedHP = updateCurrentStat(character.currentHP, eventOption.lossHP, eventOption.gainHP, character.maxHP);
+    let updatedMana = updateCurrentStat(character.currentMana, eventOption.lossMana, eventOption.gainMana, character.maxMana);
+    let updatedStamina = updateCurrentStat(character.currentStamina, eventOption.lossStamina, eventOption.gainStamina, character.maxStamina);
+    let updatedMorale = updateCurrentStat(character.currentMorale, eventOption.lossMorale, eventOption.gainMorale, character.maxMorale);
 
     let newCharacter : Types.Character = {
       userId = character.userId;
@@ -116,7 +116,7 @@ module Character {
       currentExp = character.currentExp;
       levelUpExp = character.levelUpExp;
       status = character.status;
-      strength = await updateCurrentStat(character.strength, strengthRequire, 0, character.strength);
+      strength = updateCurrentStat(character.strength, strengthRequire, 0, character.strength);
       intelligence = character.intelligence;
       vitality = character.vitality;
       luck = character.luck;

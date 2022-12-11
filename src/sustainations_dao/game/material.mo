@@ -15,8 +15,8 @@ module Material {
     return newMaterial;
   };
 
-  public func getRandomMaterial(materialList: [Text], state: State.State): async Text {
-    let randomIndex : Int = Float.toInt(await RandomMethod.randomNumber(0,Float.fromInt(materialList.size()-1)));
+  public func getRandomMaterial(materialList: [Text], state: State.State): Text {
+    let randomIndex : Int = Float.toInt(RandomMethod.randomInRange(0,Float.fromInt(materialList.size()-1)));
     for((K,material) in state.materials.entries())
     {
       if (material.name == materialList[Int.abs(randomIndex)])
