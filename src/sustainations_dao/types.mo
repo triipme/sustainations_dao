@@ -392,7 +392,9 @@ public type Stash = {
     landSlotId : Text;
     indexRow : Nat;
     indexColumn : Nat;
-    seedId : Text;
+    rowSize: Nat;
+    columnSize: Nat;
+    objectId : Text;
     name : Text;
     hasEffectId : Text;
     status : Text;

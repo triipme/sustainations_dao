@@ -5022,119 +5022,82 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
-
+    var ignoredTiles : [Text] = [];
+    // load PLants
     let iterI = Iter.range(Int.abs(beginX), Int.abs(endX));
     for (i in iterI) {
       let iterJ = Iter.range(Int.abs(beginY), Int.abs(endY));
       for (j in iterJ) {
         let id = Nat.toText(i) # "-" #Nat.toText(j);
-        let rsTile = state.tiles.get(id);
-        switch (rsTile) {
-          case (null) {
-            // add empty farm object
-            let newFarmObject : Types.FarmObject = {
-              id = "None";
-              landSlotId = "None";
-              indexRow = i;
-              indexColumn = j;
-              seedId = "None";
-              name = "None";
-              hasEffectId = "None";
-              status = "None";
-              remainingTime = 0;
+        let isIgnored = Array.find<Text>(ignoredTiles, func (val: Text) : Bool {val==id});
+        if (isIgnored == null) {
+          let rsTile = state.tiles.get(id);
+          switch (rsTile) {
+            case (null) {
+              // add empty farm object
+              let newFarmObject : Types.FarmObject = {
+                id = "None";
+                landSlotId = "None";
+                indexRow = i;
+                indexColumn = j;
+                rowSize = 1;
+                columnSize = 1;
+                objectId = "None";
+                name = "None";
+                hasEffectId = "None";
+                status = "None";
+                remainingTime = 0;
+              };
+              list := Array.append(list, [newFarmObject]);
             };
-            list := Array.append(list, [newFarmObject]);
-          };
-          case (?tile) {
-            let rsPlant = state.plants.get(tile.objectId);
-            switch (rsPlant) {
-              case null {};
-              case (?plant) {
-                let rsSeed = state.seeds.get(plant.seedId);
-                switch (rsSeed) {
-                  case null {};
-                  case (?seed) {
-                    
-                    
-                    // check if this tile has waitTime-related farmEffect
-                    var remainingTime : Int = 0;
-                    let rsHasEffect = state.hasFarmEffects.get(plant.hasEffectId);
-                    var landEffectValue = 0.0;
-                    let rsUserHasLandEffect = state.userHasLandEffects.get(Principal.toText(caller));
-                    switch (rsUserHasLandEffect) {
-                      case null {};
-                      case (?userHasLandEffect) {
-                        let rsLandEffect = state.landEffects.get(userHasLandEffect.landEffectId);
-                        switch (rsLandEffect) {
-                          case null {};
-                          case (?landEffect) {
-                            if (landEffect.effect == "waitTime") {
-                              landEffectValue := landEffect.value;
-                            };
+            case (?tile) {
+              let rsPlant = state.plants.get(tile.objectId);
+              switch (rsPlant) {
+                case null {};
+                case (?plant) {
+                  let rsSeed = state.seeds.get(plant.seedId);
+                  switch (rsSeed) {
+                    case null {};
+                    case (?seed) {
+                      // check if this tile has waitTime-related landEffect
+                      let landEffectValue : Float = LandEffect.getLandEffectTimeValue(caller,state);
+                      // check if the plant has Penalty Time
+                      let plantPenaltyTime : Int = 0;
+                      // check if this tile has waitTime-related farmEffect
+                      let farmEffectValue : Float = FarmEffect.getFarmEffectTimeValue(plant,state);
+                      
+                      let newWaitTime : Int = seed.waitTime + Float.toInt((landEffectValue+farmEffectValue)*Float.fromInt(seed.waitTime));
+                      let remainingTime : Int = Int.max(newWaitTime + plantPenaltyTime - (Time.now() / 1000000000 - plant.plantTime), 0);
+
+                      // update plant status
+                      let status : Text = Plant.updatePlantStatus(remainingTime, plant,seed,state);
+                      // add farm object
+                      let newFarmObject : Types.FarmObject = {
+                        id = tile.id;
+                        landSlotId = tile.landSlotId;
+                        indexRow = tile.indexRow;
+                        indexColumn = tile.indexColumn;
+                        rowSize = seed.rowSize;
+                        columnSize = seed.columnSize;
+                        objectId = plant.seedId;
+                        name = seed.name;
+                        hasEffectId = plant.hasEffectId;
+                        status = status;
+                        remainingTime = remainingTime;
+                      };
+                      list := Array.append(list, [newFarmObject]);
+                      // update ignored-tiles list
+                      let iterX = Iter.range(Int.abs(tile.indexRow), Int.abs(tile.indexRow+seed.rowSize-1));
+                      for (i in iterX) {
+                        let iterY = Iter.range(Int.abs(tile.indexColumn), Int.abs(tile.indexColumn+seed.columnSize-1));
+                        for (j in iterY) {
+                          let ignoredTileId = Nat.toText(i) # "-" #Nat.toText(j);
+                          if (ignoredTileId!=id) {
+                            ignoredTiles := Array.append<Text>(ignoredTiles,[ignoredTileId]);
                           };
                         };
                       };
                     };
-
-
-                    switch (rsHasEffect) {
-                      case null {
-                        remainingTime:=Int.max(seed.waitTime - (Time.now() / 1000000000 - plant.plantTime), 0);
-                      };
-                      case (?hasEffect) {
-                        let rsEffect = state.farmEffects.get(hasEffect.farmEffectId);
-                        switch (rsEffect) {
-                          case null {
-                            remainingTime:=Int.max(seed.waitTime - (Time.now() / 1000000000 - plant.plantTime), 0);
-                          };
-                          case (?farmEffect) {
-                            if (farmEffect.effect=="waitTime") {
-                              let newWaitTime : Int = seed.waitTime + Float.toInt((landEffectValue+farmEffect.value)*Float.fromInt(seed.waitTime));
-                              remainingTime:=Int.max(newWaitTime - (Time.now() / 1000000000 - plant.plantTime), 0);
-                            } else {
-                              remainingTime:=Int.max(seed.waitTime - (Time.now() / 1000000000 - plant.plantTime), 0);
-                            };
-                          };
-                        };
-                      };
-                    };
-
-                    // update plant status
-                    var status = plant.status;
-                    if (remainingTime == 0) {
-                      let updatePlant : Types.Plant = {
-                        id = plant.id;
-                        seedId = plant.seedId;
-                        hasEffectId = plant.hasEffectId;
-                        status = "fullGrown";
-                        plantTime = plant.plantTime;
-                      };
-                      status := "fullGrown";
-                      let updated = Plant.update(updatePlant, state);
-                    } else if (remainingTime <= seed.waitTime / 2) {
-                      let updatePlant : Types.Plant = {
-                        id = plant.id;
-                        seedId = plant.seedId;
-                        hasEffectId = plant.hasEffectId;
-                        status = "growing";
-                        plantTime = plant.plantTime;
-                      };
-                      status := "growing";
-                      let updated = Plant.update(updatePlant, state);
-                    };
-                    // add farm object
-                    let newFarmObject : Types.FarmObject = {
-                      id = tile.id;
-                      landSlotId = tile.landSlotId;
-                      indexRow = tile.indexRow;
-                      indexColumn = tile.indexColumn;
-                      seedId = plant.seedId;
-                      name = seed.name;
-                      hasEffectId = plant.hasEffectId;
-                      status = status;
-                      remainingTime = remainingTime;
-                    };
-                    list := Array.append(list, [newFarmObject]);
                   };
                 };
               };
@@ -5238,7 +5201,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
         
         // if this function is used in removeTree, remove the deleted farmObject in farmObjects
         if (isRemoveTree==true) {
-          let rsFarmObject = Array.find<Types.FarmObject>(farmObjects, func (val : Types.FarmObject) : Bool {val.indexRow == indexTileRow and val.indexColumn == indexTileColumn and val.seedId == plant.seedId});
+          let rsFarmObject = Array.find<Types.FarmObject>(farmObjects, func (val : Types.FarmObject) : Bool {val.indexRow == indexTileRow and val.indexColumn == indexTileColumn and val.objectId == plant.seedId});
           switch (rsFarmObject) {
             case null {};
             case (?V) {

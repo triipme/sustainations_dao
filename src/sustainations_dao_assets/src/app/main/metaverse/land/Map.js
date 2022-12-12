@@ -149,16 +149,16 @@ const Map = () => {
     }
     else {
       // if having enough ICP
-      let isBuy = (await user.actor.buyLandSlot())?.ok;
-      if (isBuy !== undefined) {
+      // let isBuy = (await user.actor.buyLandSlot())?.ok;
+      // if (isBuy !== undefined) {
         numRandom -= 1
         landSlotRand = await randomLandSlot()
         // await user.actor.updateLandBuyingStatus(landSlotRand.properties.i, landSlotRand.properties.j, numRandom)
         map.setView([landSlotRand.geometry.coordinates[0][0][1], landSlotRand.geometry.coordinates[0][0][0]], 13)
-      } else {
-        // if not having enough ICP
-        setAlert(true)
-      }
+      // } else {
+      //   // if not having enough ICP
+      //   setAlert(true)
+      // }
     }
     setPurchaseBtn(false)
     setLoading("none")

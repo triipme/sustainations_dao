@@ -41,7 +41,7 @@ module Tile {
   };
 
   public func getFarmObjectsFromFarmObject(indexRow : Nat, indexColumn : Nat, seedId : Text, farmObjects : [Types.FarmObject]) : async [Types.FarmObject] {
-    let rsFarmObject = Array.find<Types.FarmObject>(farmObjects, func (val : Types.FarmObject) : Bool {val.indexRow == indexRow and val.indexColumn == indexColumn and val.seedId == seedId});
+    let rsFarmObject = Array.find<Types.FarmObject>(farmObjects, func (val : Types.FarmObject) : Bool {val.indexRow == indexRow and val.indexColumn == indexColumn and val.objectId == seedId});
     switch (rsFarmObject) {
       case null { return [];};
       case (?farmObject) {
@@ -50,26 +50,26 @@ module Tile {
           Array.append<Types.FarmObject>(
           [farmObject],
           Array.append<Types.FarmObject>(
-            if (Array.find<Types.FarmObject>(newFarmObjects, func (val : Types.FarmObject) : Bool {val.indexRow == Int.max(indexRow - 1, 0) and val.indexColumn == indexColumn and val.seedId == seedId}) != null) {
+            if (Array.find<Types.FarmObject>(newFarmObjects, func (val : Types.FarmObject) : Bool {val.indexRow == Int.max(indexRow - 1, 0) and val.indexColumn == indexColumn and val.objectId == seedId}) != null) {
               await getFarmObjectsFromFarmObject((indexRow-1),indexColumn,seedId,newFarmObjects);
             } else {
               [];
             },
             Array.append<Types.FarmObject>(
-              if (Array.find<Types.FarmObject>(newFarmObjects, func (val : Types.FarmObject) : Bool {val.indexRow  == indexRow + 1 and val.indexColumn == indexColumn and val.seedId == seedId}) != null) {
+              if (Array.find<Types.FarmObject>(newFarmObjects, func (val : Types.FarmObject) : Bool {val.indexRow  == indexRow + 1 and val.indexColumn == indexColumn and val.objectId == seedId}) != null) {
                 await getFarmObjectsFromFarmObject((indexRow+1),indexColumn,seedId,newFarmObjects);
               }
               else {
                 [];
               },
               Array.append<Types.FarmObject>(
-                if (Array.find<Types.FarmObject>(newFarmObjects, func (val : Types.FarmObject) : Bool {val.indexRow  == indexRow and val.indexColumn == Int.max(indexColumn - 1, 0) and val.seedId == seedId}) != null) {
+                if (Array.find<Types.FarmObject>(newFarmObjects, func (val : Types.FarmObject) : Bool {val.indexRow  == indexRow and val.indexColumn == Int.max(indexColumn - 1, 0) and val.objectId == seedId}) != null) {
                   await getFarmObjectsFromFarmObject(indexRow,(indexColumn-1),seedId,newFarmObjects);
                 }
                 else {
                   [];
                 },
-                if (Array.find<Types.FarmObject>(newFarmObjects, func (val : Types.FarmObject) : Bool {val.indexRow  == indexRow and val.indexColumn == indexColumn + 1 and val.seedId == seedId}) != null) {
+                if (Array.find<Types.FarmObject>(newFarmObjects, func (val : Types.FarmObject) : Bool {val.indexRow  == indexRow and val.indexColumn == indexColumn + 1 and val.objectId == seedId}) != null) {
                   await getFarmObjectsFromFarmObject(indexRow,(indexColumn+1),seedId,newFarmObjects);
                 }
                 else {

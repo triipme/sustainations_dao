@@ -244,7 +244,7 @@ async function loadTileSlots(properties) {
   // console.log("tiles", tiles)
   for (let tile of tiles) {
     let latlng1 = utm2lonlat(d * Number(tile.indexColumn), d * Number(tile.indexRow));
-    let latlng2 = utm2lonlat(d * (Number(tile.indexColumn) + 1), d * (Number(tile.indexRow) + 1));
+    let latlng2 = utm2lonlat(d * (Number(tile.indexColumn) + Number(tile.columnSize)), d * (Number(tile.indexRow) + Number(tile.rowSize)));
     let landId = properties.i.toString() + "-" + properties.j.toString();
     
     let feature = {

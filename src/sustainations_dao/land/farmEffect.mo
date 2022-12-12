@@ -1,6 +1,7 @@
 import Option "mo:base/Option";
 import Array "mo:base/Array";
 import Int "mo:base/Int";
+import Principal "mo:base/Principal";
 import Types "../types";
 import State "../state";
 
@@ -53,5 +54,29 @@ module FarmEffect {
       };
     };
     return "None";
+  };
+
+  public func getFarmEffectTimeValue(plant : Types.Plant, state : State.State) : Float {
+    let rsHasEffect = state.hasFarmEffects.get(plant.hasEffectId);
+    switch (rsHasEffect) {
+      case null {
+        return 0.0;
+      };
+      case (?hasEffect) {
+        let rsEffect = state.farmEffects.get(hasEffect.farmEffectId);
+        switch (rsEffect) {
+          case null {
+            return 0.0;
+          };
+          case (?farmEffect) {
+            if (farmEffect.effect=="waitTime") {
+              return farmEffect.value;
+            } else {
+              return 0.0;
+            };
+          };
+        };
+      };
+    };
   };
 }

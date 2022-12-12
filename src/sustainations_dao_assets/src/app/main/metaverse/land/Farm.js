@@ -38,7 +38,7 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
       const inv = await user.actor.listInventory(characterid.ok[0]);
       const listStash = (await user.actor.listStash()).ok
       console.log(listStash)
-
+      
       const defineAmount = (item, usableItemName) => {
         if (usableItemName === "Carrot") {
           setCarrot(Number(item.amount))
