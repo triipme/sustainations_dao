@@ -15,7 +15,6 @@ module Material {
     return newProduct;
   };
 
-
   public func create(product : Types.Product, state : State.State) {
     state.products.put(product.id, getData(product));
   };

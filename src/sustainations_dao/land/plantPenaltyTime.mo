@@ -17,4 +17,12 @@ module PlantPenaltyTime {
   public func update(plantPenaltyTime : Types.PlantPenaltyTime, state : State.State) {
     let updated = state.plantPenaltyTimes.replace(plantPenaltyTime.id, getData(plantPenaltyTime));
   };
+
+  public func getPlantPenaltyTime(plant : Types.Plant, state : State.State) : Int {
+    let rsPlantPenaltyTime = state.plantPenaltyTimes.get(plant.id);
+    switch(rsPlantPenaltyTime) {
+      case null { return 0;};
+      case (?V) { return V.penaltyTime;};
+    };
+  };
 }

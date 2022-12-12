@@ -5167,7 +5167,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
           case null {};
           case (?plant) {
             // create plant's penalty time
-            createPlantPentaltyTime(plant,harvestTime);
+            createPlantPenaltyTime(plant,harvestTime,1.2,0.3);
             // update plant
             let updatePlant : Types.Plant = {
               id = plant.id;
@@ -5296,7 +5296,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
                             remainingTime = 0;
                           };
                           list := Array.append(list, [newFarmObject]);
-
                           // update ignored-tiles list
                           let iterX = Iter.range(Int.abs(tile.indexRow), Int.abs(tile.indexRow+buildingType.rowSize-1));
                           for (i in iterX) {
@@ -5319,84 +5318,18 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
                   switch (rsSeed) {
                     case null {};
                     case (?seed) {
-                      
                       // check if this tile has waitTime-related landEffect
-                      var remainingTime : Int = 0;
-                      var landEffectValue = 0.0;
-                      let rsUserHasLandEffect = state.userHasLandEffects.get(Principal.toText(caller));
-                      switch (rsUserHasLandEffect) {
-                        case null {};
-                        case (?userHasLandEffect) {
-                          let rsLandEffect = state.landEffects.get(userHasLandEffect.landEffectId);
-                          switch (rsLandEffect) {
-                            case null {};
-                            case (?landEffect) {
-                              if (landEffect.effect == "waitTime") {
-                                landEffectValue := landEffect.value;
-                              };
-                            };
-                          };
-                        };
-                      };
-
+                      let landEffectValue : Float = LandEffect.getLandEffectTimeValue(caller,state);
                       // check if the plant has Penalty Time
-                      var plantPenaltyTime : Int = 0;
-                      let rsPlantPenaltyTime = state.plantPenaltyTimes.get(plant.id);
-                      switch(rsPlantPenaltyTime) {
-                        case null {};
-                        case (?V) { plantPenaltyTime := V.penaltyTime};
-                      };
-                      
+                      let plantPenaltyTime : Int = PlantPenaltyTime.getPlantPenaltyTime(plant,state);
                       // check if this tile has waitTime-related farmEffect
-                      let rsHasEffect = state.hasFarmEffects.get(plant.hasEffectId);
-                      switch (rsHasEffect) {
-                        case null {
-                          let newWaitTime : Int = seed.waitTime + Float.toInt((landEffectValue)*Float.fromInt(seed.waitTime));
-                          remainingTime:=Int.max(newWaitTime + plantPenaltyTime - (Time.now() / 1000000000 - plant.plantTime), 0);
-                        };
-                        case (?hasEffect) {
-                          let rsEffect = state.farmEffects.get(hasEffect.farmEffectId);
-                          switch (rsEffect) {
-                            case null {
-                              let newWaitTime : Int = seed.waitTime + Float.toInt((landEffectValue)*Float.fromInt(seed.waitTime));
-                              remainingTime:=Int.max(newWaitTime + plantPenaltyTime - (Time.now() / 1000000000 - plant.plantTime), 0);
-                            };
-                            case (?farmEffect) {
-                              if (farmEffect.effect=="waitTime") {
-                                let newWaitTime : Int = seed.waitTime + Float.toInt((landEffectValue+farmEffect.value)*Float.fromInt(seed.waitTime));
-                                remainingTime:=Int.max(newWaitTime + plantPenaltyTime - (Time.now() / 1000000000 - plant.plantTime), 0);
-                              } else {
-                                let newWaitTime : Int = seed.waitTime + Float.toInt((landEffectValue)*Float.fromInt(seed.waitTime));
-                                remainingTime:=Int.max(newWaitTime + plantPenaltyTime - (Time.now() / 1000000000 - plant.plantTime), 0);
-                              };
-                            };
-                          };
-                        };
-                      };
+                      let farmEffectValue : Float = FarmEffect.getFarmEffectTimeValue(plant,state);
+                      
+                      let newWaitTime : Int = seed.waitTime + Float.toInt((landEffectValue+farmEffectValue)*Float.fromInt(seed.waitTime));
+                      let remainingTime : Int = Int.max(newWaitTime + plantPenaltyTime - (Time.now() / 1000000000 - plant.plantTime), 0);
 
                       // update plant status
-                      var status = plant.status;
-                      if (remainingTime == 0) {
-                        let updatePlant : Types.Plant = {
-                          id = plant.id;
-                          seedId = plant.seedId;
-                          hasEffectId = plant.hasEffectId;
-                          status = "fullGrown";
-                          plantTime = plant.plantTime;
-                        };
-                        status := "fullGrown";
-                        let updated = Plant.update(updatePlant, state);
-                      } else if (remainingTime <= seed.waitTime / 2) {
-                        let updatePlant : Types.Plant = {
-                          id = plant.id;
-                          seedId = plant.seedId;
-                          hasEffectId = plant.hasEffectId;
-                          status = "growing";
-                          plantTime = plant.plantTime;
-                        };
-                        status := "growing";
-                        let updated = Plant.update(updatePlant, state);
-                      };
+                      let status : Text = Plant.updatePlantStatus(remainingTime, plant,seed,state);
                       // add farm object
                       let newFarmObject : Types.FarmObject = {
                         id = tile.id;
@@ -5412,7 +5345,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
                         remainingTime = remainingTime;
                       };
                       list := Array.append(list, [newFarmObject]);
-
                       // update ignored-tiles list
                       let iterX = Iter.range(Int.abs(tile.indexRow), Int.abs(tile.indexRow+seed.rowSize-1));
                       for (i in iterX) {
@@ -5481,7 +5413,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   };
 
   // Plant Penalty Time
-  public shared func createPlantPentaltyTime(plant : Types.Plant, harvestTime : Int) : () {
+  public shared func createPlantPenaltyTime(plant : Types.Plant, harvestTime : Int, latePercent : Float, penaltyPercent : Float ) : () {
     var penaltyTime : Int = 0;
     let rsPlantPenaltyTime = state.plantPenaltyTimes.get(plant.id);
     switch (rsPlantPenaltyTime) {
@@ -5493,10 +5425,10 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     switch (rsSeed) {
       case null {};
       case (?seed) {
-        if (harvestTime-plant.plantTime - penaltyTime >= Float.toInt(Float.fromInt(seed.waitTime)*1.2)) {
+        if (harvestTime-plant.plantTime - penaltyTime >= Float.toInt(Float.fromInt(seed.waitTime)*latePercent)) {
           let plantPenaltyTime : Types.PlantPenaltyTime = {
             id = plant.id;
-            penaltyTime = Float.toInt(Float.fromInt(seed.waitTime)*0.3);
+            penaltyTime = Float.toInt(Float.fromInt(seed.waitTime)*penaltyPercent);
           };
           let updated = PlantPenaltyTime.update(plantPenaltyTime,state);
         }
