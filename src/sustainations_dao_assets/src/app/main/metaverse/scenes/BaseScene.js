@@ -90,6 +90,7 @@ class BaseScene extends Phaser.Scene {
         this.questGameInfo = result.ok;
         this.userInfo = result.ok.userProfile.username[0];
         this.characterData = result.ok.characterData[0][1];
+        console.log("character: ", this.characterData)
         this.characterStatus = result.ok.characterStatus;
         this.characterTakeOptions = result.ok.characterTakesOption;
         this.listStash = result.ok.stashInfo;

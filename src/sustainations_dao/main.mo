@@ -3190,13 +3190,70 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
   };
 
-  public shared query ({ caller }) func readEventEngine(id : Text) : async Response<(Types.Event)> {
+  private var timeStartEvent : Time.Time = 0;
+  public shared ({ caller }) func readEventEngine(id : Text) : async Response<(Types.Event, Time.Time)> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
     let rsEvent = state.questEngine.events.get(id);
-    return Result.fromOption(rsEvent, #NotFound);
+    timeStartEvent := Time.now();
+    switch (rsEvent) {
+      case (?event){
+        return #ok(event, timeStartEvent);
+      };
+      case (null) {return #err(#NotFound)};
+    };
+    // return Result.fromOption(rsEvent, #NotFound);
   };
+
+  public shared ({ caller }) func updateCharacterStatsEngine(character : Types.Character) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsCharacter = state.characters.get(character.id);
+    switch (rsCharacter) {
+      case (null) { #err(#NotFound) };
+      case (?V) {
+        let checkTime = Time.now()-timeStartEvent;
+        if (checkTime > 40_000_000_000){
+          let newCharacter : Types.Character = {
+            userId = character.userId;
+            id = character.id;
+            name = character.name;
+            level = character.level;
+            currentExp = character.currentExp;
+            temporaryExp = character.temporaryExp;
+            levelUpExp = character.levelUpExp;
+            status = "Exhausted";
+            strength = character.strength;
+            intelligence = character.intelligence;
+            vitality = character.vitality;
+            luck = character.luck;
+            currentHP = character.currentHP;
+            maxHP = character.maxHP;
+            currentMana = character.currentMana;
+            maxMana = character.maxMana;
+            currentStamina = character.currentStamina;
+            maxStamina = character.maxStamina;
+            currentMorale = character.currentMorale;
+            maxMorale = character.maxMorale;
+            classId = character.classId;
+            gearIds = character.gearIds;
+            inventorySize = character.inventorySize;
+            exhaustedTime = character.exhaustedTime;
+          };
+          // let updatedCharacter = state.characters.replace(character.id, newCharacter);
+          Character.update(newCharacter, state);
+        }
+        else {
+          Character.update(character, state);
+        };
+        #ok("Success");
+      };
+    };
+  };
+
+
 
   public shared query ({ caller }) func listEventEngines() : async Response<[(Text, Types.Event)]> {
     var list : [(Text, Types.Event)] = [];
@@ -3508,7 +3565,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
   };
 
-  public shared ({ caller }) func takeOptionEngine(eventId : Text) : async Response<[Types.Character]> {
+   public shared ({ caller }) func takeOptionEngine(eventId : Text) : async Response<[Types.Character]> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
@@ -3523,7 +3580,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
                 strengthRequire := item.strengthRequire;
               };
             };
-            result := Array.append<Types.Character>(result, [await Character.takeOption(character, strengthRequire, eventOption, state)]);
+            result := Array.append<Types.Character>(result, [Character.takeOption(character, strengthRequire, eventOption, state)]);
           };
         };
       };
@@ -3748,77 +3805,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       };
     };
     #err(#NotFound);
-  };
-
-  public shared ({ caller }) func useUsableItem(characterId : Text, stashId : Text) : async Response<Text> {
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized); //isNotAuthorized
-    };
-    let rsCharacter = state.characters.get(characterId);
-    switch (rsCharacter) {
-      case (null) { #err(#NotFound) };
-      case (?character) {
-        let rsStash = state.stashes.get(stashId);
-        switch (rsStash) {
-          case null #err(#NotFound);
-          case (?stash) {
-            let rsUsable = state.usableItems.get(stash.usableItemId);
-            switch (rsUsable) {
-              case (null) return #err(#NotFound);
-              case (?usable) {
-                let newCharacter : Types.Character = {
-                  userId = character.userId;
-                  id = character.id;
-                  name = character.name;
-                  level = character.level;
-                  currentExp = character.currentExp;
-                  temporaryExp = character.temporaryExp;
-                  levelUpExp = character.levelUpExp;
-                  status = character.status;
-                  strength = character.strength;
-                  intelligence = character.intelligence;
-                  vitality = character.vitality;
-                  luck = character.luck;
-                  currentHP = Float.min(character.currentHP +usable.increaseHP, character.maxHP);
-                  maxHP = character.maxHP;
-                  currentMana = Float.min(character.currentMana +usable.increaseMana, character.maxMana);
-                  maxMana = character.maxMana;
-                  currentStamina = Float.min(character.currentStamina +usable.increaseStamina, character.maxStamina);
-                  maxStamina = character.maxStamina;
-                  currentMorale = Float.min(character.currentMorale +usable.increaseMorale, character.maxMorale);
-                  maxMorale = character.maxMorale;
-                  classId = character.classId;
-                  gearIds = character.gearIds;
-                  inventorySize = character.inventorySize;
-                  exhaustedTime = character.exhaustedTime;
-                };
-                let updatedCharacter = state.characters.replace(character.id, newCharacter);
-
-                //substract stash
-                if (stash.amount - 1 > 0) {
-                  let newStash : Types.Stash = {
-                    id = stash.id;
-                    userId = stash.userId;
-                    usableItemId = stash.usableItemId;
-                    quality = stash.quality;
-                    amount = stash.amount -1;
-                  };
-                  let updated = state.stashes.replace(stash.id, newStash);
-                } else {
-                  let deletedStash = state.stashes.delete(stash.id);
-                };
-                #ok("Success");
-              };
-            };
-          };
-        };
-      };
-    };
-  };
-
-  public shared ({ caller }) func getPrinciple() : async Text {
-    //for test
-    return Principal.toText(caller);
   };
 
   // Event Item
@@ -5909,12 +5895,6 @@ public shared ({ caller }) func randomLandSlot() : async Response<Types.Geometry
     };
     #ok((list));
   };
-
-  // user has farm effect
-  public shared ({ caller }) func createUserHasFarmEffect(indexTileRow : Nat, indexTileColumn : Nat, objectId : Text, landSlot : Types.LandSlot, isRemoveTree : Bool) : async Response<Text> {
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized); //isNotAuthorized
-    };
 
   // user has farm effect
   public shared ({ caller }) func createUserHasFarmEffect(indexTileRow : Nat, indexTileColumn : Nat, objectId : Text, landSlot : Types.LandSlot, isRemoveTree: Bool) : async Response<Text> { 

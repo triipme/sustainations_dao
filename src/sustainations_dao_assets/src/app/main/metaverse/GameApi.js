@@ -27,13 +27,6 @@ export function getQuestGameInfo(eventId){
 //   });
 // };
 
-function getQuestGameInfo(eventId) {
-  return new Promise((resolve, reject) => {
-    const { user } = store.getState();
-    const rs = user.actor.getQuestGameInfo(eventId);
-    resolve(rs);
-  });
-};
 
 // character
 const characterClassId = "cc1";
@@ -64,6 +57,17 @@ function updateCharacterStats(character) {
   const promise = new Promise((resolve, reject) => {
     const { user } = store.getState();
     const rs = user.actor.updateCharacter(character);
+    resolve(rs);
+  })
+  promise.then((data) => {
+    return data;
+  })
+};
+
+export function updateCharacterStatsEngine(character) {
+  const promise = new Promise((resolve, reject) => {
+    const { user } = store.getState();
+    const rs = user.actor.updateCharacterStatsEngine(character);
     resolve(rs);
   })
   promise.then((data) => {
@@ -249,13 +253,6 @@ async function openInventory(characterId) {
   return rs;
 };
 
-async function listStash(characterId){
-  const { user } = store.getState();
-  const func = async () => await user.actor.listStash();
-  const rs = (await func()).ok;
-  return rs;
-};
-
 async function getRemainingTime(waitingTime, character) {
   const { user } = store.getState();
   const getRemainingTime = async () => await user.actor.getRemainingTime(waitingTime, character);
@@ -367,14 +364,6 @@ async function addAllInventory(characterId, amount) {
   });
 };
 
-
-async function useUsableItem(characterId, stashId) {
-  const { user } = store.getState();
-  const func = async () => await user.actor.useUsableItem(characterId, stashId);
-  const result = (await func()).ok;
-  return result;
-};
-
 async function readSceneEngine(sceneId) {
   const { user } = store.getState();
   const func = async () => await user.actor.readSceneEngine(sceneId);
@@ -438,7 +427,6 @@ export {
   listSceneQuests,
   addAllInventory,
   useUsableItem,
-  getQuestGameInfo,
   createQuestEngine,
   createEventEngine,
   createEventOptionEngine,
@@ -450,6 +438,4 @@ export {
   characterTakeOptionEngine,
   listIdScenes,
   listIdEventEngine,
-  listStash,
-  useUsableItem
 }
