@@ -1,4 +1,5 @@
 import Array "mo:base/Array";
+import Principal "mo:base/Principal";
 import Int "mo:base/Int";
 import Types "../types";
 import State "../state";
@@ -37,4 +38,27 @@ module LandEffect {
     };
     return "None";
   };  
+
+  public func getLandEffectTimeValue(caller : Principal, state : State.State) : Float {
+    let rsUserHasLandEffect = state.userHasLandEffects.get(Principal.toText(caller));
+    switch (rsUserHasLandEffect) {
+      case null {
+        return 0.0;
+      };
+      case (?userHasLandEffect) {
+        let rsLandEffect = state.landEffects.get(userHasLandEffect.landEffectId);
+        switch (rsLandEffect) {
+          case null {
+            return 0.0;
+          };
+          case (?landEffect) {
+            if (landEffect.effect == "waitTime") {
+              return landEffect.value;
+            };
+            return 0.0;
+          };
+        };
+      };
+    };
+  };
 }
