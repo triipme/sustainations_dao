@@ -440,6 +440,42 @@ public type Stash = {
     userId : Principal;
   };
 
+  //--------------------- BuildingType -------------//
+  public type BuildingType = {
+    id : Text;
+    name : Text;
+    price : Float;    
+    rowSize : Nat;
+    columnSize : Nat;
+    buildWaitTime : Int;
+    // usableItemId : Text;
+    // resultUsableItemId: Text;
+    description : Text;
+    // produceWaitTime : Int;
+    // minAmount : Int;
+    // maxAmount : Int;
+  };
+
+//--------------------BuildingBuyingHistory----------//
+  public type BuildingBuyingHistory = {
+    id : Text;
+    buyerId : Principal;
+    constructionId : Text;
+    buyTime : Int;
+    price : Float;
+  };
+
+//--------------------- Building -------------//
+  public type Building = {
+    id : Text;
+    buildingTypeId : Text;
+    resultUsableItemId : Text;
+    status : Text;
+    buildTime : Int;
+    startProducingTime : Int;
+  };
+  
+
   // Error codes
   public type Error = {
     #BalanceLow;

@@ -56,6 +56,9 @@ import Seed "./land/seed";
 import Plant "./land/plant";
 import FarmEffect "./land/farmEffect";
 import HasFarmEffect "./land/hasFarmEffect";
+import BuildingType "./land/buildingType";
+import BuildingBuyingHistory "./land/buildingBuyingHistory";
+import Building "./land/building";
 import Env ".env";
 
 shared ({ caller = owner }) actor class SustainationsDAO() = this {
@@ -126,6 +129,9 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   private stable var plants : [(Text, Types.Plant)] = [];
   private stable var farmEffects : [(Text, Types.FarmEffect)] = [];
   private stable var hasFarmEffects : [(Text, Types.UserHasFarmEffect)] = [];
+  private stable var buildingTypes : [(Text, Types.BuildingType)] = [];
+  private stable var buildingBuyingHistories : [(Text, Types.BuildingBuyingHistory)] = [];
+  private stable var buildings : [(Text, Types.Building)] = [];
 
   system func preupgrade() {
     Debug.print("Begin preupgrade");
@@ -183,6 +189,9 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     plants := Iter.toArray(state.plants.entries());
     farmEffects := Iter.toArray(state.farmEffects.entries());
     hasFarmEffects := Iter.toArray(state.hasFarmEffects.entries());
+    buildingTypes := Iter.toArray(state.buildingTypes.entries());
+    buildingBuyingHistories := Iter.toArray(state.buildingBuyingHistories.entries());
+    buildings := Iter.toArray(state.buildings.entries());
     Debug.print("End preupgrade");
   };
 
@@ -337,6 +346,15 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
     for ((k, v) in Iter.fromArray(hasFarmEffects)) {
       state.hasFarmEffects.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(buildingTypes)) {
+      state.buildingTypes.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(buildingBuyingHistories)) {
+      state.buildingBuyingHistories.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(buildings)) {
+      state.buildings.put(k, v);
     };
     Debug.print("End postupgrade");
   };
@@ -5035,39 +5053,10 @@ public shared ({ caller }) func randomLandSlot() : async Response<Types.Geometry
             #err(#NotFound);
           };
           case (?landSlot) {
-            let objectId = await createPlant(materialId);
+            let objectId = await createPlant(caller,materialId);
             let createdTile = await createTile(landId, indexRow, indexColumn, objectId);
             ignore await  createUserHasFarmEffect(indexRow,indexColumn,objectId,landSlot,false); 
             
-            // check land effect when plant pine seed
-            if (materialId == "m6pine_seed") {
-              let rsLandEffect = state.userHasLandEffects.get(Principal.toText(caller));
-              switch (rsLandEffect) {
-                case null {
-                  let userHasLandEffect : Types.UserHasLandEffect = {
-                    id = caller;
-                    landEffectId = "le2";
-                  };
-                  let created = UserHasLandEffect.create(userHasLandEffect, state);
-                };
-                case (?hasLandEffect) {
-                  let rsLandEffect = state.landEffects.get(hasLandEffect.landEffectId);
-                  switch (rsLandEffect) {
-                    case null {};
-                    case (?landEffect) {
-                      if (landEffect.effect == "waitTime" and landEffect.value > -0.12) {
-                        let userHasLandEffect : Types.UserHasLandEffect = {
-                          id = caller;
-                          landEffectId = "le2";
-                        };
-                        let updated = UserHasLandEffect.update(userHasLandEffect, state);
-                      };
-                    };
-                  };
-                };
-              };
-            };
-
             return #ok("Success"); 
           };
         };
@@ -5141,41 +5130,8 @@ public shared ({ caller }) func randomLandSlot() : async Response<Types.Geometry
           case (?plant) {
             // delete Plant in tile
             let deletedPlant = state.plants.delete(plantId);
-
             // delete land effect pine
-            if (plant.seedId == "s4pine") {
-              let rsNation = state.nations.get(Principal.toText(caller));
-              switch (rsNation) {
-                case null { };
-                case (?nation) {
-                  // get landSlots of user
-                  var landSlots : [Types.LandSlot] = [];
-                  for (landSlotId in nation.landSlotIds.vals()){
-                    let rsLandSlot = state.landSlots.get(landSlotId);
-                    switch (rsLandSlot) {
-                      case null {};
-                      case (?landSlot) {
-                        landSlots := Array.append(landSlots, [landSlot]);
-                      };
-                    };
-                  };
-                  let landEffectId = await LandEffect.checkEffect(landSlots, state);
-
-                  let counter = await countSeedInNation(caller, "s4pine");
-                  if (counter == 0) {
-                    if (landEffectId == "None") {
-                      let deleted = state.userHasLandEffects.delete(Principal.toText(caller));
-                    } else {
-                      let updateUserHasLandEffect : Types.UserHasLandEffect = {
-                        id = caller;
-                        landEffectId = landEffectId;
-                      };
-                      let updated = UserHasLandEffect.update(updateUserHasLandEffect, state);
-                    };
-                  };
-                };
-              };
-            };
+            deleteOneTreeLandEffect(caller,plant);
           };
         };
          
@@ -5242,7 +5198,46 @@ public shared ({ caller }) func randomLandSlot() : async Response<Types.Geometry
             case (?tile) {
               let rsPlant = state.plants.get(tile.objectId);
               switch (rsPlant) {
-                case null {};
+                case null {
+                  // if the tile is not a plant. it definitely is a construction 
+                  let rsBuilding = state.buildings.get(tile.objectId);
+                  switch (rsBuilding) {
+                    case null {};
+                    case (?building) {
+                      let rsBuildingType = state.buildingTypes.get(building.buildingTypeId);
+                      switch (rsBuildingType) {
+                        case null {};
+                        case (?buildingType) {
+                          let newFarmObject : Types.FarmObject = {
+                            id = tile.id;
+                            landSlotId = tile.landSlotId;
+                            indexRow = tile.indexRow;
+                            indexColumn = tile.indexColumn;
+                            rowSize = buildingType.rowSize;
+                            columnSize = buildingType.columnSize;
+                            objectId = building.buildingTypeId;
+                            name = buildingType.name;
+                            hasEffectId = "None";
+                            status = building.status;
+                            remainingTime = 0;
+                          };
+                          list := Array.append(list, [newFarmObject]);
+                          // update ignored-tiles list
+                          let iterX = Iter.range(Int.abs(tile.indexRow), Int.abs(tile.indexRow+buildingType.rowSize-1));
+                          for (i in iterX) {
+                            let iterY = Iter.range(Int.abs(tile.indexColumn), Int.abs(tile.indexColumn+buildingType.columnSize-1));
+                            for (j in iterY) {
+                              let ignoredTileId = Nat.toText(i) # "-" #Nat.toText(j);
+                              if (ignoredTileId!=id) {
+                                ignoredTiles := Array.append<Text>(ignoredTiles,[ignoredTileId]);
+                              };
+                            };
+                          };
+                        };
+                      };
+                    };
+                  };
+                };
                 case (?plant) {
                   let rsSeed = state.seeds.get(plant.seedId);
                   switch (rsSeed) {
@@ -5313,7 +5308,7 @@ public shared ({ caller }) func randomLandSlot() : async Response<Types.Geometry
   
 
   // Plant
-  public shared func createPlant(materialId : Text) : async Text {
+  public shared func createPlant(userId : Principal, materialId : Text) : async Text {
     for ((K, V) in state.seeds.entries()) {
       if (V.materialId == materialId) {
         var uuid : Text = await createUUID();
@@ -5337,8 +5332,10 @@ public shared ({ caller }) func randomLandSlot() : async Response<Types.Geometry
           status = "newlyPlanted";
           plantTime = Time.now() / 1000000000;
         };
-
+        // create Plant
         let created = Plant.create(newPlant, state);
+        // create one tree land effect (Pine Tree)
+        createOneTreeLandEffect(userId,newPlant);
         return uuid;
       };
     };
@@ -5489,14 +5486,180 @@ public shared ({ caller }) func randomLandSlot() : async Response<Types.Geometry
     #ok((list));
   };
 
+    // BuildingType
+  public shared ({ caller }) func createBuildingType(buildingType : Types.BuildingType) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsBuildingType = state.buildingTypes.get(buildingType.id);
+    switch (rsBuildingType) {
+      case (?V) { #err(#AlreadyExisting) };
+      case null {
+        BuildingType.create(buildingType, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared query ({ caller }) func readBuildingType(id : Text) : async Response<(Types.BuildingType)> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsBuildingType = state.buildingTypes.get(id);
+    return Result.fromOption(rsBuildingType, #NotFound);
+  };
+
+  public shared query ({ caller }) func listBuildingTypes() : async Response<[(Text, Types.BuildingType)]> {
+    var list : [(Text, Types.BuildingType)] = [];
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    for ((K, V) in state.buildingTypes.entries()) {
+      list := Array.append<(Text, Types.BuildingType)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+
+
+  public shared ({ caller }) func buildConstruction(landId : Text, indexRow : Nat, indexColumn : Nat, buildingTypeId : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+
+    let rsBuildingType = state.buildingTypes.get(buildingTypeId);
+    switch (rsBuildingType) {
+      case null {
+        #err(#NotFound);
+      };
+      case (?buildingType) {
+        let rsLandSlot = state.landSlots.get(landId);
+        switch (rsLandSlot) {
+          case null {
+            #err(#NotFound);
+          };
+          case (?landSlot) {
+            let objectId = await createBuilding(buildingTypeId);
+            ignore await createTile(landId, indexRow, indexColumn, objectId);
+            return #ok("Success"); 
+          };
+        };
+      };
+    };
+  };
+
+
+  private func createBuilding(buildingTypeId : Text) : async Text {
+    var uuid : Text = await createUUID();
+    label whileLoop loop {
+      while (true) {
+        let rsPlant = state.buildings.get(uuid);
+        switch (rsPlant) {
+          case (?V) {
+            uuid := await createUUID();
+          };
+          case null {
+            break whileLoop;
+          };
+        };
+      };
+    };
+    let newBuilding : Types.Building = {
+      id = uuid;
+      buildingTypeId = buildingTypeId;
+      resultUsableItemId = "None";
+      status = "completed";
+      buildTime = Time.now() / 1000000000;
+      startProducingTime = -1;
+    };
+
+    let created = Building.create(newBuilding, state);
+    return uuid;
+  };
+
+  public shared query ({ caller }) func listBuildings() : async Response<[(Text, Types.Building)]> {
+    var list : [(Text, Types.Building)] = [];
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    for ((K, V) in state.buildings.entries()) {
+      list := Array.append<(Text, Types.Building)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+
   // Event land effect (pine tree)
+  public shared func createOneTreeLandEffect(userId: Principal, plant: Types.Plant): () {
+    if (plant.seedId == "s4pine") {
+      let rsLandEffect = state.userHasLandEffects.get(Principal.toText(userId));
+      switch (rsLandEffect) {
+        case null {
+          let userHasLandEffect : Types.UserHasLandEffect = {
+            id = userId;
+            landEffectId = "le2";
+          };
+          let created = UserHasLandEffect.create(userHasLandEffect, state);
+        };
+        case (?hasLandEffect) {
+          let rsLandEffect = state.landEffects.get(hasLandEffect.landEffectId);
+          switch (rsLandEffect) {
+            case null {};
+            case (?landEffect) {
+              if (landEffect.effect == "waitTime" and landEffect.value > -0.12) {
+                let userHasLandEffect : Types.UserHasLandEffect = {
+                  id = userId;
+                  landEffectId = "le2";
+                };
+                let updated = UserHasLandEffect.update(userHasLandEffect, state);
+              };
+            };
+          };
+        };
+      };
+    };
+  };
+
+  public shared func deleteOneTreeLandEffect(userId: Principal, plant: Types.Plant): () {
+    if (plant.seedId == "s4pine") {
+      let rsNation = state.nations.get(Principal.toText(userId));
+      switch (rsNation) {
+        case null { };
+        case (?nation) {
+          // get landSlots of user
+          var landSlots : [Types.LandSlot] = [];
+          for (landSlotId in nation.landSlotIds.vals()){
+            let rsLandSlot = state.landSlots.get(landSlotId);
+            switch (rsLandSlot) {
+              case null {};
+              case (?landSlot) {
+                landSlots := Array.append(landSlots, [landSlot]);
+              };
+            };
+          };
+          let landEffectId = await LandEffect.checkEffect(landSlots, state);
+
+          let counter = await countSeedInNation(userId, "s4pine");
+          if (counter == 0) {
+            if (landEffectId == "None") {
+              let deleted = state.userHasLandEffects.delete(Principal.toText(userId));
+            } else {
+              let updateUserHasLandEffect : Types.UserHasLandEffect = {
+                id = userId;
+                landEffectId = landEffectId;
+              };
+              let updated = UserHasLandEffect.update(updateUserHasLandEffect, state);
+            };
+          };
+        };
+      };
+    };
+  };
+
   public shared query func countSeedInNation(userId : Principal, seedId : Text): async Nat {
     var counter : Nat = 0;
     let rsNation = state.nations.get(Principal.toText(userId));
     switch (rsNation) {
       case null { 0; };
       case (?nation) {
-
         for (landSlotId in nation.landSlotIds.vals()) {
           let rsLandSlot = state.landSlots.get(landSlotId);
           switch (rsLandSlot) {
