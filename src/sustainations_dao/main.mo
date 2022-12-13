@@ -64,7 +64,6 @@ import AlchemyRecipeDetail "./land/alchemyRecipeDetail";
 import BuildingType "./land/buildingType";
 import BuildingBuyingHistory "./land/buildingBuyingHistory";
 import Building "./land/building";
-
 import Env ".env";
 
 shared ({ caller = owner }) actor class SustainationsDAO() = this {
@@ -5307,7 +5306,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
                               };
                             };
                           };
-
                         };
                       };
                     };
@@ -5708,7 +5706,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     return Result.fromOption(rsBuildingType, #NotFound);
   };
 
-  public shared query ({ caller }) func listConstructions() : async Response<[(Text, Types.BuildingType)]> {
+  public shared query ({ caller }) func listBuildingTypes() : async Response<[(Text, Types.BuildingType)]> {
     var list : [(Text, Types.BuildingType)] = [];
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized

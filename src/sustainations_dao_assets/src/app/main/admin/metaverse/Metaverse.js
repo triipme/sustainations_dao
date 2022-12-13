@@ -263,9 +263,27 @@ const Metaverse = () => {
     });
   };
 
+  const createBuildingType = () => {
+    return new Promise(resolve => {
+      const buildingTypes = data[11];
+      buildingTypes.forEach(async buildingType => {
+        try {
+          if (!!actor?.createBuildingType) {
+            const rs = await actor.createBuildingType(buildingType);
+            console.log("Create Building Type");
+            console.log(rs);
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      });
+      resolve();
+    });
+  };
+
   const createAlchemyRecipe = () => {
     return new Promise(resolve => {
-      const alchemyRecipes = data[11];
+      const alchemyRecipes = data[12];
       alchemyRecipes.forEach(async alchemyRecipe => {
         try {
           if (!!actor?.createAlchemyRecipe) {
@@ -283,7 +301,7 @@ const Metaverse = () => {
 
   const createAlchemyRecipeDetail = () => {
     return new Promise(resolve => {
-      const alchemyRecipeDetails = data[12];
+      const alchemyRecipeDetails = data[13];
       alchemyRecipeDetails.forEach(async alchemyRecipeDetail => {
         try {
           if (!!actor?.createAlchemyRecipeDetail) {
@@ -299,23 +317,7 @@ const Metaverse = () => {
     });
   };
 
-  const createBuildingType = () => {
-    return new Promise(resolve => {
-      const buildingTypes = data[13];
-      buildingTypes.forEach(async buildingType => {
-        try {
-          if (!!actor?.createBuildingType) {
-            const rs = await actor.createBuildingType(buildingType);
-            console.log("Create Building Type");
-            console.log(rs);
-          }
-        } catch (error) {
-          console.log(error);
-        }
-      });
-      resolve();
-    });
-  };
+
 
   const createProduct = () => {
     return new Promise(resolve => {
@@ -349,9 +351,9 @@ const Metaverse = () => {
     await createSeed();
     await createFarmEffect();
     await createLandEffect();
+    await createBuildingType();
     await createAlchemyRecipe();
     await createAlchemyRecipeDetail();
-    await createBuildingType();
     await createProduct();
     console.log("DONE");
     setLoading(false);
