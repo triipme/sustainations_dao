@@ -54,23 +54,21 @@ export default class catalonia_scene13 extends BaseScene {
       this.load.rexAwait(function (successCallback, failureCallback) {
         loadCharacter().then((result) => {
           this.characterData = result.ok[1];
-
+          this.characterBefore = this.characterData;
           this.load.rexAwait(function (successCallback, failureCallback) {
             useUsableItem(this.characterData.id, this.isUsedUsableItem[1]).then((result) => {
-              successCallback();
-              this.initialLoad("e22");
+              this.initialLoad("e22");     
+              successCallback();         
             });
           }, this);
-
-          this.initialLoad("e22");
           successCallback();
+       
         });
       }, this);
     }
     else {
       this.initialLoad("e22");
     }
-
     //Preload
     this.clearSceneCache();
     this.isInteracting = false;
@@ -199,6 +197,9 @@ export default class catalonia_scene13 extends BaseScene {
       }
     }).setVisible(false).setScrollFactor(0);
 
+    if(this.characterBefore != undefined){
+      this.showColorLossAllStat(this.characterBefore, this.characterData)
+    }
 
     for (const idx in this.eventOptions) {
 

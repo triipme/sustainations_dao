@@ -1,4 +1,5 @@
 import Array "mo:base/Array";
+import Blob "mo:base/Blob";
 import AsyncSource "mo:uuid/async/SourceV4";
 import Debug "mo:base/Debug";
 import Float "mo:base/Float";
@@ -17,6 +18,8 @@ import Text "mo:base/Text";
 import Time "mo:base/Time";
 import TrieMap "mo:base/TrieMap";
 import UUID "mo:uuid/UUID";
+import Prim "mo:prim";
+import Object "./utils/object";
 
 import Account "./plugins/Account";
 import Moment "./plugins/Moment";
@@ -2776,28 +2779,28 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     #ok("Success");
   };
 
-  public shared ({ caller }) func takeOption(eventId : Text) : async Response<[Types.Character]> {
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized); //isNotAuthorized
-    };
-    var result : [Types.Character] = [];
-    for ((K, character) in state.characters.entries()) {
-      if (character.userId == caller) {
-        for ((K, eventOption) in state.eventOptions.entries()) {
-          if (eventOption.eventId == eventId) {
-            var strengthRequire : Float = 0;
-            for (item in state.items.vals()) {
-              if (item.id == eventOption.requireItemId) {
-                strengthRequire := item.strengthRequire;
-              };
-            };
-            result := Array.append<Types.Character>(result, [await Character.takeOption(character, strengthRequire, eventOption, state)]);
-          };
-        };
-      };
-    };
-    #ok(result);
-  };
+  // public shared ({ caller }) func takeOption(eventId : Text) : async Response<[Types.Character]> {
+  //   if (Principal.toText(caller) == "2vxsx-fae") {
+  //     return #err(#NotAuthorized); //isNotAuthorized
+  //   };
+  //   var result : [Types.Character] = [];
+  //   for ((K, character) in state.characters.entries()) {
+  //     if (character.userId == caller) {
+  //       for ((K, eventOption) in state.eventOptions.entries()) {
+  //         if (eventOption.eventId == eventId) {
+  //           var strengthRequire : Float = 0;
+  //           for (item in state.items.vals()) {
+  //             if (item.id == eventOption.requireItemId) {
+  //               strengthRequire := item.strengthRequire;
+  //             };
+  //           };
+  //           result := Array.append<Types.Character>(result, [await Character.takeOption(character, strengthRequire, eventOption, state)]);
+  //         };
+  //       };
+  //     };
+  //   };
+  //   #ok(result);
+  // };
 
   public shared ({ caller }) func gainCharacterExp(character : Types.Character) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
@@ -3175,7 +3178,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
   };
 
- public shared ({ caller }) func useUsableItem(characterId : Text, stashId: Text) : async Response<Text> {
+  public shared ({ caller }) func useUsableItem(characterId : Text, stashId: Text) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
@@ -4070,6 +4073,87 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
   };
 
+  public type QuestGameInfo = {
+    userProfile : Types.Profile;
+    characterData : [(Text, Types.Character)];
+    characterStatus : Text;
+    stashInfo : [StashInfo];
+    characterTakesOption : [Types.Character];
+  };
+
+  public query ({ caller }) func getQuestGameInfo(eventId : Text) : async Response<QuestGameInfo> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    var characterData : [(Text, Types.Character)] = [];
+    var characterStatus : Text = "";
+    var stashInfo : [StashInfo] = [];
+    var characterTakesOption : [Types.Character] = [];
+
+    switch(state.profiles.get(caller)){
+      case null { #err(#NotFound); };
+      case (?userProfile) {
+        for ((key, character) in state.characters.entries()) {
+          if (character.userId == caller) {
+            for ((K, eventOption) in state.eventOptions.entries()) {
+              if (eventOption.eventId == eventId) {
+                var strengthRequire : Float = 0;
+                for (item in state.items.vals()) {
+                  if (item.id == eventOption.requireItemId) {
+                    strengthRequire := item.strengthRequire;
+                  };
+                };
+                characterTakesOption := Array.append<Types.Character>(characterTakesOption, 
+                [Character.takeOption(character, strengthRequire, eventOption, state)]);
+              };
+            };
+            characterStatus := character.status;
+            characterData := Array.append<(Text, Types.Character)>(characterData, [(key, character)]);
+          };
+        };
+        for ((_, stash) in state.stashes.entries()) {
+          if (stash.userId == Principal.toText(caller)) {
+            let rsUsableItem = state.usableItems.get(stash.usableItemId);
+            switch (rsUsableItem) {
+              case null {};
+              case (?usableItem) {
+                let newStashInfo : StashInfo = {
+                  id = stash.id;
+                  userId = stash.userId;
+                  usableItemId = stash.usableItemId;
+                  usableItemName = usableItem.name;
+                  amount = stash.amount;
+                };
+                stashInfo := Array.append<StashInfo>(stashInfo, [newStashInfo]);
+              };
+            };
+          };
+        };
+        let result : QuestGameInfo = {
+          userProfile = userProfile;
+          characterData = characterData;
+          characterStatus = characterStatus;
+          stashInfo = stashInfo;
+          characterTakesOption = characterTakesOption;
+        };
+        #ok(result);
+      };
+    };
+  };
+
+  // Get user profile by principal
+  public shared query ({ caller }) func getProfileByPrincipal(principalText : Text) : async Response<Types.Profile> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    switch(state.profiles.get(Principal.fromText(principalText))){
+      case null { #err(#NotFound); };
+      case (?v) {
+        #ok(v);
+      };
+    };
+  };
+  
   // Stash
   public shared ({ caller }) func createStash(userId : Text, seedId : Text) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
@@ -4150,15 +4234,28 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     let result = await georust.proj(easting, northing, zoneNum, zoneLetter);
     return result;
   };
-  public shared func randomIndex(begin : Float, end : Float) : async Int {
-    let result = await georust.randomnumber(begin, end);
-    return Nat64.toNat(result);
+  // public shared func randomIndex(begin : Float, end : Float) : async Int {
+  //   let result = await georust.randomnumber(begin, end);
+  //   return Nat64.toNat(result);
+  // };
+
+  // public shared func randomPair(begin : Float, end : Float) : async (Int, Int) {
+  //   let result = await georust.randompair(begin, end);
+  //   return (Nat64.toNat(result.0), Nat64.toNat(result.1));
+  // };
+
+  public query func randomIndex(min : Float, max : Float) : async Int {
+    let n = Float.toInt(max) - Float.toInt(min) + 1;
+    let x = (Time.now() * Time.now() * Time.now()) % 2038074743;
+    return Float.toInt(min) + x % n;
   };
 
-  public shared func randomPair(begin : Float, end : Float) : async (Int, Int) {
-    let result = await georust.randompair(begin, end);
-    return (Nat64.toNat(result.0), Nat64.toNat(result.1));
+  public query func randomPair(min : Float, max : Float) : async (Int,Int) {
+    let n = Float.toInt(max) - Float.toInt(min) + 1;
+    let x = (Time.now() * Time.now() * Time.now()) % 2038074743;
+    return (Float.toInt(min) + x % n,Float.toInt(min) + x*2 % n);
   };
+
 
   // convert i,j to geometry with lat,lng
   public shared func landSlotToGeometry(i : Nat, j : Nat) : async Types.Geometry {
@@ -4200,6 +4297,14 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
         #ok("Success");
       };
     };
+  };
+
+  public shared ({ caller }) func readLandConfig() : async Response<Types.LandConfig> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsLandConfig = state.landConfigs.get(Principal.toText(Principal.fromActor(this)));
+    return Result.fromOption(rsLandConfig, #NotFound);
   };
 
   // Land Slot
@@ -4263,7 +4368,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
   };
 
-  public shared ({ caller }) func randomLandSlot() : async Response<Types.Geometry> {
+public shared ({ caller }) func randomLandSlot() : async Response<Types.Geometry> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
@@ -4323,6 +4428,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       };
     };
   };
+
 
   public shared query ({ caller }) func getAdjacentLandSlots(landSlotIds : [Text], landConfig : Types.LandConfig) : async [{
     i : Int;
@@ -4826,6 +4932,22 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
   };
 
+
+  public shared query ({ caller }) func readUserHasLandEffect() : async Response<(Types.UserHasLandEffect)> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let id = Principal.toText(caller);
+    let rsHasLandEffect = state.userHasLandEffects.get(id);
+    switch (rsHasLandEffect) {
+      case null { return #err(#NotFound) };
+      case (?hasLandEffect) {
+        return #ok(hasLandEffect);
+      };
+    };
+  };
+  
+
   public shared query ({ caller }) func listAllUserHasLandEffects() : async Response<[(Text, Types.UserHasLandEffect)]> {
     var list : [(Text, Types.UserHasLandEffect)] = [];
     if (Principal.toText(caller) == "2vxsx-fae") {
@@ -5299,5 +5421,4 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
     #ok((list));
   };
-
 };

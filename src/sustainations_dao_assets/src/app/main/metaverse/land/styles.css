@@ -285,3 +285,7 @@ li {
   bottom: 8px;
   left: 16px;
 }
+
+.leaflet-popup-close-button {
+  display: none; 
+}

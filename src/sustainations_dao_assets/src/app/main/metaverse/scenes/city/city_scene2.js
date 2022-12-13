@@ -46,22 +46,23 @@ export default class city_scene2 extends BaseScene {
       this.load.rexAwait(function (successCallback, failureCallback) {
         loadCharacter().then((result) => {
           this.characterData = result.ok[1];
-
+          this.characterBefore = this.characterData;
           this.load.rexAwait(function (successCallback, failureCallback) {
             useUsableItem(this.characterData.id, this.isUsedUsableItem[1]).then((result) => {
-              successCallback();
-              this.initialLoad("e36");
+              this.initialLoad("e36");     
+              successCallback();         
             });
           }, this);
-
-          this.initialLoad("e36");
           successCallback();
+       
         });
       }, this);
     }
     else {
       this.initialLoad("e36");
     }
+
+ 
    
 
     //Preload
@@ -189,6 +190,10 @@ export default class city_scene2 extends BaseScene {
         }
 
       })
+
+      if(this.characterBefore != undefined){
+        this.showColorLossAllStat(this.characterBefore, this.characterData)
+      }
 
     for (const idx in this.eventOptions) {
 

@@ -23,6 +23,7 @@ const btnBack = 'metaverse/selectItems/UI_back.png';
 const popupWindow = 'metaverse/selectMap/Jungle_popup.png';
 const popupClose = 'metaverse/selectMap/UI_ingame_close.png';
 const popupAccept = 'metaverse/selectMap/UI_ingame_popup_accept.png';
+const itemnotice = 'metaverse/selectMap/item_notice.png';
 
 class selectMap extends BaseScene {
   constructor() {
@@ -69,6 +70,7 @@ class selectMap extends BaseScene {
     this.load.spritesheet('popupWindow', popupWindow, { frameWidth: 980, frameHeight: 799 });
     this.load.image("popupClose", popupClose);
     this.load.image("popupAccept", popupAccept);
+    this.load.image("itemnotice", itemnotice);
   }
 
   async create() {
@@ -235,9 +237,9 @@ class selectMap extends BaseScene {
       else {
         resetCharacter();
         this.scene.start('selectItemScene', { map: 'jungle' });
+        // pay for jungle quest
+        await payQuest("jungle");
       };
-      // pay for jungle quest
-      await payQuest("jungle");
     });
   }
 

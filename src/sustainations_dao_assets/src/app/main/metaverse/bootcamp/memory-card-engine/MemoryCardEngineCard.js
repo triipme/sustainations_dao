@@ -39,7 +39,7 @@ function MemoryCardEngineCard({ handleChoice, flipped, disabled, ...card }) {
             variants={variants}
             initial={{ rotateY: 90, transition: { delay: 0 } }}
             animate={!flipped ? "back" : "front"}>
-            <Typography variant="subtitle2">{flipped && card[1].data}</Typography>
+            <Typography variant="subtitle2" sx={{color:"black"}}>{flipped && card[1].data}</Typography>
           </motion.div>
         )}
         {

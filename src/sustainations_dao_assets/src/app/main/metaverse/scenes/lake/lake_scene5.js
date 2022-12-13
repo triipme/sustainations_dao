@@ -50,27 +50,26 @@ export default class lake_scene5 extends BaseScene {
 
   preload() {
     this.addLoadingScreen();
-    if (this.isUsedUsableItem[0]){
+    if (this.isUsedUsableItem[0]) {
       this.load.rexAwait(function (successCallback, failureCallback) {
         loadCharacter().then((result) => {
           this.characterData = result.ok[1];
-
+          this.characterBefore = this.characterData;
           this.load.rexAwait(function (successCallback, failureCallback) {
             useUsableItem(this.characterData.id, this.isUsedUsableItem[1]).then((result) => {
-              successCallback();
               this.initialLoad("e40");
+              successCallback();
             });
           }, this);
-
-          this.initialLoad("e40");
           successCallback();
+
         });
       }, this);
     }
     else {
       this.initialLoad("e40");
     }
-  
+
 
     //Preload
     this.clearSceneCache();
@@ -202,27 +201,29 @@ export default class lake_scene5 extends BaseScene {
       }
     }).setVisible(false).setScrollFactor(0);
 
-     //scrolling
-     this.graphics = this.make.graphics();
+    //scrolling
+    this.graphics = this.make.graphics();
 
-     this.graphics.fillRect(152, 230, 900, 250).setScrollFactor(0);
- 
-     this.mask = new Phaser.Display.Masks.GeometryMask(this, this.graphics);
- 
-     this.des.setMask(this.mask);
- 
-     // //  The rectangle they can 'drag' within
-     this.add.zone(150, 230, 900, 250).setOrigin(0).setInteractive().setVisible(true).setScrollFactor(0)
-       .on('pointermove', (pointer) => {
-         if (pointer.isDown) {
-           this.des.y += (pointer.velocity.y / 10);
- 
-           this.des.y = Phaser.Math.Clamp(this.des.y, -400, 720);
-         }
- 
-       })
+    this.graphics.fillRect(152, 230, 900, 250).setScrollFactor(0);
 
+    this.mask = new Phaser.Display.Masks.GeometryMask(this, this.graphics);
 
+    this.des.setMask(this.mask);
+
+    // //  The rectangle they can 'drag' within
+    this.add.zone(150, 230, 900, 250).setOrigin(0).setInteractive().setVisible(true).setScrollFactor(0)
+      .on('pointermove', (pointer) => {
+        if (pointer.isDown) {
+          this.des.y += (pointer.velocity.y / 10);
+
+          this.des.y = Phaser.Math.Clamp(this.des.y, -400, 720);
+        }
+
+      })
+
+    if (this.characterBefore != undefined) {
+      this.showColorLossAllStat(this.characterBefore, this.characterData)
+    }
     for (const idx in this.eventOptions) {
 
       // can take option or not
