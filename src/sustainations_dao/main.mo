@@ -3304,72 +3304,72 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
   };
 
-  // public shared ({ caller }) func useUsableItem(characterId : Text, stashId: Text) : async Response<Text> {
-  //   if (Principal.toText(caller) == "2vxsx-fae") {
-  //     return #err(#NotAuthorized); //isNotAuthorized
-  //   };
-  //   let rsCharacter = state.characters.get(characterId);
-  //   switch (rsCharacter) {
-  //     case (null) { #err(#NotFound) };
-  //     case (?character) {
-  //       let rsStash = state.stashes.get(stashId);
-  //       switch (rsStash) {
-  //         case null #err(#NotFound);
-  //         case (?stash) {
-  //           let rsUsable =  state.usableItems.get(stash.usableItemId);
-  //           switch (rsUsable) {
-  //             case (null) return #err(#NotFound);
-  //             case (?usable) {
-  //               let newCharacter : Types.Character = {
-  //                 userId = character.userId;
-  //                 id = character.id;
-  //                 name = character.name;
-  //                 level = character.level;
-  //                 currentExp = character.currentExp;
-  //                 temporaryExp = character.temporaryExp;
-  //                 levelUpExp = character.levelUpExp;
-  //                 status = character.status;
-  //                 strength = character.strength;
-  //                 intelligence = character.intelligence;
-  //                 vitality = character.vitality;
-  //                 luck = character.luck;
-  //                 currentHP = Float.min(character.currentHP+usable.increaseHP, character.maxHP);
-  //                 maxHP = character.maxHP;
-  //                 currentMana = Float.min(character.currentMana+usable.increaseMana, character.maxMana);
-  //                 maxMana = character.maxMana;
-  //                 currentStamina = Float.min(character.currentStamina+usable.increaseStamina, character.maxStamina);
-  //                 maxStamina = character.maxStamina;
-  //                 currentMorale = Float.min(character.currentMorale+usable.increaseMorale, character.maxMorale);
-  //                 maxMorale = character.maxMorale;
-  //                 classId = character.classId;
-  //                 gearIds = character.gearIds;
-  //                 inventorySize = character.inventorySize;
-  //                 exhaustedTime = character.exhaustedTime;
-  //               };
-  //               let updatedCharacter = state.characters.replace(character.id, newCharacter);
+  public shared ({ caller }) func useUsableItem(characterId : Text, stashId: Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsCharacter = state.characters.get(characterId);
+    switch (rsCharacter) {
+      case (null) { #err(#NotFound) };
+      case (?character) {
+        let rsStash = state.stashes.get(stashId);
+        switch (rsStash) {
+          case null #err(#NotFound);
+          case (?stash) {
+            let rsUsable =  state.usableItems.get(stash.usableItemId);
+            switch (rsUsable) {
+              case (null) return #err(#NotFound);
+              case (?usable) {
+                let newCharacter : Types.Character = {
+                  userId = character.userId;
+                  id = character.id;
+                  name = character.name;
+                  level = character.level;
+                  currentExp = character.currentExp;
+                  temporaryExp = character.temporaryExp;
+                  levelUpExp = character.levelUpExp;
+                  status = character.status;
+                  strength = character.strength;
+                  intelligence = character.intelligence;
+                  vitality = character.vitality;
+                  luck = character.luck;
+                  currentHP = Float.min(character.currentHP+usable.increaseHP, character.maxHP);
+                  maxHP = character.maxHP;
+                  currentMana = Float.min(character.currentMana+usable.increaseMana, character.maxMana);
+                  maxMana = character.maxMana;
+                  currentStamina = Float.min(character.currentStamina+usable.increaseStamina, character.maxStamina);
+                  maxStamina = character.maxStamina;
+                  currentMorale = Float.min(character.currentMorale+usable.increaseMorale, character.maxMorale);
+                  maxMorale = character.maxMorale;
+                  classId = character.classId;
+                  gearIds = character.gearIds;
+                  inventorySize = character.inventorySize;
+                  exhaustedTime = character.exhaustedTime;
+                };
+                let updatedCharacter = state.characters.replace(character.id, newCharacter);
 
-  //               //substract stash
-  //               if (stash.amount - 1 > 0){
-  //                 let newStash : Types.Stash = {
-  //                   id = stash.id;
-  //                   userId = stash.userId;
-  //                   usableItemId = stash.usableItemId;
-  //                   quality = stash.quality;
-  //                   amount = stash.amount-1;
-  //                 };
-  //                 let updated = state.stashes.replace(stash.id, newStash);
-  //               }
-  //               else {
-  //                 let deletedStash = state.stashes.delete(stash.id);
-  //               };
-  //               #ok("Success");
-  //             };
-  //           }
-  //         }
-  //       }
-  //     };
-  //   };
-  // };
+                //substract stash
+                if (stash.amount - 1 > 0){
+                  let newStash : Types.Stash = {
+                    id = stash.id;
+                    userId = stash.userId;
+                    usableItemId = stash.usableItemId;
+                    quality = stash.quality;
+                    amount = stash.amount-1;
+                  };
+                  let updated = state.stashes.replace(stash.id, newStash);
+                }
+                else {
+                  let deletedStash = state.stashes.delete(stash.id);
+                };
+                #ok("Success");
+              };
+            }
+          }
+        }
+      };
+    };
+  };
 
   public shared query ({ caller }) func getHpPotion() : async Response<Types.UsableItem> {
     if (Principal.toText(caller) == "2vxsx-fae") {
@@ -4239,15 +4239,15 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
         };
         for ((_, stash) in state.stashes.entries()) {
           if (stash.userId == Principal.toText(caller)) {
-            let rsUsableItem = state.usableItems.get(stash.productId);
+            let rsUsableItem = state.usableItems.get(stash.usableItemId);
             switch (rsUsableItem) {
               case null {};
               case (?usableItem) {
                 let newStashInfo : StashInfo = {
                   id = stash.id;
                   userId = stash.userId;
-                  productId = stash.productId;
-                  productName = usableItem.name;
+                  usableItemId = stash.usableItemId;
+                  usableItemName = usableItem.name;
                   amount = stash.amount;
                 };
                 stashInfo := Array.append<StashInfo>(stashInfo, [newStashInfo]);
@@ -4289,11 +4289,11 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       case (?seed) {
         var rsStash : Bool = false;
         for ((K, stash) in state.stashes.entries()) {
-          if (stash.userId == userId and stash.productId == seed.harvestedProductId) {
+          if (stash.userId == userId and stash.usableItemId == seed.harvestedProductId) {
             let updateStash : Types.Stash = {
               id = stash.id;
               userId = stash.userId;
-              productId = stash.productId;
+              usableItemId = stash.usableItemId;
               quality = stash.quality;
               amount = stash.amount + Float.toInt(await Random.randomNumber(Float.fromInt(seed.minAmount), Float.fromInt(seed.maxAmount)));
             };
@@ -4306,7 +4306,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
           let newStash : Types.Stash = {
             id = await createUUID();
             userId = userId;
-            productId = seed.harvestedProductId;
+            usableItemId = seed.harvestedProductId;
             quality = "Good";
             amount = Float.toInt(await Random.randomNumber(Float.fromInt(seed.minAmount), Float.fromInt(seed.maxAmount)));
           };
@@ -4319,8 +4319,8 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   public type StashInfo = {
     id : Text;
     userId : Text;
-    productId : Text;
-    productName : Text;
+    usableItemId : Text;
+    usableItemName : Text;
     amount : Int;
   };
 
@@ -4331,15 +4331,15 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
     for ((_, stash) in state.stashes.entries()) {
       if (stash.userId == Principal.toText(caller)) {
-        let rsProduct = state.products.get(stash.productId);
-        switch (rsProduct) {
+        let rsUsableItem = state.usableItems.get(stash.usableItemId);
+        switch (rsUsableItem) {
           case null {};
-          case (?product) {
+          case (?usableItem) {
             let stashInfo : StashInfo = {
               id = stash.id;
               userId = stash.userId;
-              productId = stash.productId;
-              productName = product.name;
+              usableItemId = stash.usableItemId;
+              usableItemName = usableItem.name;
               amount = stash.amount;
             };
             list := Array.append<StashInfo>(list, [stashInfo]);
@@ -5782,6 +5782,112 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       list := Array.append<(Text, Types.Building)>(list, [(K, V)]);
     };
     #ok((list));
+  };
+
+     // Event land effect (pine tree)
+  public shared func createOneTreeLandEffect(userId: Principal, plant: Types.Plant): () {
+    if (plant.seedId == "s4pine") {
+      let rsLandEffect = state.userHasLandEffects.get(Principal.toText(userId));
+      switch (rsLandEffect) {
+        case null {
+          let userHasLandEffect : Types.UserHasLandEffect = {
+            id = userId;
+            landEffectId = "le2";
+          };
+          let created = UserHasLandEffect.create(userHasLandEffect, state);
+        };
+        case (?hasLandEffect) {
+          let rsLandEffect = state.landEffects.get(hasLandEffect.landEffectId);
+          switch (rsLandEffect) {
+            case null {};
+            case (?landEffect) {
+              if (landEffect.effect == "waitTime" and landEffect.value > -0.12) {
+                let userHasLandEffect : Types.UserHasLandEffect = {
+                  id = userId;
+                  landEffectId = "le2";
+                };
+                let updated = UserHasLandEffect.update(userHasLandEffect, state);
+              };
+            };
+          };
+        };
+      };
+    };
+  };
+
+  public shared func deleteOneTreeLandEffect(userId: Principal, plant: Types.Plant): () {
+    if (plant.seedId == "s4pine") {
+      let rsNation = state.nations.get(Principal.toText(userId));
+      switch (rsNation) {
+        case null { };
+        case (?nation) {
+          // get landSlots of user
+          var landSlots : [Types.LandSlot] = [];
+          for (landSlotId in nation.landSlotIds.vals()){
+            let rsLandSlot = state.landSlots.get(landSlotId);
+            switch (rsLandSlot) {
+              case null {};
+              case (?landSlot) {
+                landSlots := Array.append(landSlots, [landSlot]);
+              };
+            };
+          };
+          let landEffectId = LandEffect.checkEffect(landSlots, state);
+
+          let counter = await countSeedInNation(userId, "s4pine");
+          if (counter == 0) {
+            if (landEffectId == "None") {
+              let deleted = state.userHasLandEffects.delete(Principal.toText(userId));
+            } else {
+              let updateUserHasLandEffect : Types.UserHasLandEffect = {
+                id = userId;
+                landEffectId = landEffectId;
+              };
+              let updated = UserHasLandEffect.update(updateUserHasLandEffect, state);
+            };
+          };
+        };
+      };
+    };
+  };
+
+  public shared query func countSeedInNation(userId : Principal, seedId : Text): async Nat {
+    var counter : Nat = 0;
+    let rsNation = state.nations.get(Principal.toText(userId));
+    switch (rsNation) {
+      case null { 0; };
+      case (?nation) {
+        for (landSlotId in nation.landSlotIds.vals()) {
+          let rsLandSlot = state.landSlots.get(landSlotId);
+          switch (rsLandSlot) {
+            case null {};
+            case (?landSlot) {
+              let iterI = Iter.range(Int.abs(landSlot.indexRow*10), Int.abs((landSlot.indexRow*10) + 9));
+              for (i in iterI) {
+                let iterJ = Iter.range(Int.abs(landSlot.indexColumn*10), Int.abs((landSlot.indexColumn*10) + 9));
+                for (j in iterJ) {
+                  let id = Nat.toText(i) # "-" #Nat.toText(j);
+                  let rsTile = state.tiles.get(id);
+                  switch (rsTile) {
+                    case null {};
+                    case (?tile) {
+                      let rsPlant = state.plants.get(tile.objectId);
+                      switch (rsPlant) {
+                        case null {};
+                        case (?plant) {
+                          if (plant.seedId == seedId) counter := counter + 1;
+                        };
+                      };
+                    };
+                  };
+                };
+              };
+            };
+          };
+        };
+        return counter;
+      };
+    };
   };
 
   

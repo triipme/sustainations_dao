@@ -317,8 +317,6 @@ const Metaverse = () => {
     });
   };
 
-
-
   const createProduct = () => {
     return new Promise(resolve => {
       const products = data[14];
