@@ -1,8 +1,3 @@
-import AsyncSource "mo:uuid/async/SourceV4";
-import UUID "mo:uuid/UUID";
-import Int "mo:base/Int";
-
-import Option "mo:base/Option";
 import Types "../types";
 import State "../state";
 
@@ -11,7 +6,7 @@ module Stash {
     let newStash : Types.Stash = {
       id = stash.id;
       userId = stash.userId;
-      usableItemId = stash.usableItemId;
+      productId = stash.productId;
       quality = stash.quality;
       amount = stash.amount;
     };

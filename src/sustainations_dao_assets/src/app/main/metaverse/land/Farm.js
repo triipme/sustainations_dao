@@ -6,8 +6,7 @@ import "./styles.css";
 import UIFarm from "./FarmUI";
 import {
   loadTileSlots,
-  listStash,
-  buildConstruction
+  listStash
 } from "../LandApi";
 import Land from "./Land";
 import BigMap from "./BigMap";
@@ -37,8 +36,10 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
       setChacterId(characterid.ok[0]);
       const inv = await user.actor.listInventory(characterid.ok[0]);
       const listStash = (await user.actor.listStash()).ok
-      const defineAmount = (item, productName) => {
-        if (productName === "Carrot") {
+      console.log(listStash)
+
+      const defineAmount = (item, usableItemName) => {
+        if (usableItemName === "Carrot") {
           setCarrot(Number(item.amount))
         } else if (productName === "Wheat") {
           setWheat(Number(item.amount))

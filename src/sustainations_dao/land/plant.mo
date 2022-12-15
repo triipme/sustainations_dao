@@ -1,4 +1,3 @@
-import Option "mo:base/Option";
 import Types "../types";
 import State "../state";
 

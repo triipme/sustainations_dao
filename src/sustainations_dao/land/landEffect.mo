@@ -1,5 +1,5 @@
-import Option "mo:base/Option";
 import Array "mo:base/Array";
+import Principal "mo:base/Principal";
 import Int "mo:base/Int";
 import Principal "mo:base/Principal";
 import Types "../types";
@@ -25,7 +25,7 @@ module LandEffect {
     state.landEffects.put(landEffect.id, getData(landEffect));
   };
 
-  public func checkEffect(landSlots : [Types.LandSlot], state : State.State) : async Text {
+  public func checkEffect(landSlots : [Types.LandSlot], state : State.State) : Text {
     for (effect in state.landEffects.vals()) {
       for (landSlot in landSlots.vals()) {        
         if ((effect.symbol == "-") 
@@ -38,7 +38,7 @@ module LandEffect {
       };
     };
     return "None";
-  }; 
+  };  
 
   public func getLandEffectTimeValue(caller : Principal, state : State.State) : Float {
     let rsUserHasLandEffect = state.userHasLandEffects.get(Principal.toText(caller));
@@ -61,5 +61,5 @@ module LandEffect {
         };
       };
     };
-  }; 
+  };
 }

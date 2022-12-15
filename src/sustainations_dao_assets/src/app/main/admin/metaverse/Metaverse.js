@@ -263,9 +263,45 @@ const Metaverse = () => {
     });
   };
 
+  const createAlchemyRecipe = () => {
+    return new Promise(resolve => {
+      const alchemyRecipes = data[11];
+      alchemyRecipes.forEach(async alchemyRecipe => {
+        try {
+          if (!!actor?.createAlchemyRecipe) {
+            const rs = await actor.createAlchemyRecipe(alchemyRecipe);
+            console.log("Create Alchemy Recipe");
+            console.log(rs);
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      });
+      resolve();
+    });
+  };
+
+  const createAlchemyRecipeDetail = () => {
+    return new Promise(resolve => {
+      const alchemyRecipeDetails = data[12];
+      alchemyRecipeDetails.forEach(async alchemyRecipeDetail => {
+        try {
+          if (!!actor?.createAlchemyRecipeDetail) {
+            const rs = await actor.createAlchemyRecipeDetail(alchemyRecipeDetail);
+            console.log("Create Alchemy Recipe Detail");
+            console.log(rs);
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      });
+      resolve();
+    });
+  };
+
   const createBuildingType = () => {
     return new Promise(resolve => {
-      const buildingTypes = data[11];
+      const buildingTypes = data[13];
       buildingTypes.forEach(async buildingType => {
         try {
           if (!!actor?.createBuildingType) {
@@ -281,6 +317,25 @@ const Metaverse = () => {
     });
   };
 
+  const createProduct = () => {
+    return new Promise(resolve => {
+      const products = data[14];
+      products.forEach(async product => {
+        try {
+          if (!!actor?.createProduct) {
+            const rs = await actor.createProduct(product);
+            console.log("Create Product");
+            console.log(rs);
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      });
+      resolve();
+    });
+  };
+
+
   const handleSubmit = async () => {
     setLoading(true);
     await createItem();
@@ -294,7 +349,10 @@ const Metaverse = () => {
     await createSeed();
     await createFarmEffect();
     await createLandEffect();
+    await createAlchemyRecipe();
+    await createAlchemyRecipeDetail();
     await createBuildingType();
+    await createProduct();
     console.log("DONE");
     setLoading(false);
   };

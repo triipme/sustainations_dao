@@ -243,7 +243,7 @@ async function loadTileSlots(properties) {
   var result = {
     features: []
   };
-  // console.log("tiles", tiles)
+  console.log("tiles", tiles)
   for (let tile of tiles) {
     let latlng1 = utm2lonlat(d * Number(tile.indexColumn), d * Number(tile.indexRow));
     let latlng2 = utm2lonlat(d * (Number(tile.indexColumn) + Number(tile.columnSize)), d * (Number(tile.indexRow) + Number(tile.rowSize)));
@@ -326,6 +326,14 @@ async function removeTree(tileId) {
   return result;
 }
 
+// Build Construction
+  async function buildConstruction(landId, indexRow, indexColumn, constructionId) {
+  const { user } = store.getState();
+  const func = await user.actor.buildConstruction(landId, indexRow, indexColumn, constructionId);
+  const result = func?.ok;
+  return result;
+}
+
 
 
 export {
@@ -349,5 +357,6 @@ export {
   // plantTree,
   harvestTree,
   removeTree,
-  loadUserLandSlots
+  loadUserLandSlots,
+  buildConstruction
 }
