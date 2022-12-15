@@ -5130,7 +5130,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
             #err(#NotFound);
           };
           case (?landSlot) {
-            let objectId = await createPlant(materialId);
+            let objectId = await createPlant(caller,materialId);
             createTile(landId, indexRow, indexColumn, objectId);
             createUserHasFarmEffect(indexRow,indexColumn,objectId,landSlot,false);     
             return #ok("Success"); 
@@ -5212,9 +5212,10 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
           case (?plant) {
             // delete Plant in tile
             let deletedPlant = state.plants.delete(plantId);
+            // delete land effect pine
+            deleteOneTreeLandEffect(caller,plant);
           };
         };
-         
         // delete Tile
         let deletedTile = state.tiles.delete(tileId);
         #ok("Success");
@@ -5378,7 +5379,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   };
 
   // Plant
-  private func createPlant(materialId : Text) : async Text {
+  private func createPlant(userId : Principal, materialId : Text) : async Text {
     for ((K, V) in state.seeds.entries()) {
       if (V.materialId == materialId) {
         var uuid : Text = await createUUID();
@@ -5402,8 +5403,10 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
           status = "newlyPlanted";
           plantTime = Time.now() / 1000000000;
         };
-
+        // create Plant
         let created = Plant.create(newPlant, state);
+        // create one tree land effect (Pine Tree)
+        createOneTreeLandEffect(userId,newPlant);
         return uuid;
       };
     };

@@ -37,16 +37,17 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
       setChacterId(characterid.ok[0]);
       const inv = await user.actor.listInventory(characterid.ok[0]);
       const listStash = (await user.actor.listStash()).ok
-      const defineAmount = (item, productName) => {
-        if (productName === "Carrot") {
+      console.log(listStash);
+      const defineAmount = (item, usableItemName) => {
+        if (usableItemName === "Carrot") {
           setCarrot(Number(item.amount))
-        } else if (productName === "Wheat") {
+        } else if (usableItemName === "Wheat") {
           setWheat(Number(item.amount))
         } else {
           setTomato(Number(item.amount))
         }
       }
-      listStash.forEach(item => defineAmount(item, item.productName))
+      listStash.forEach(item => defineAmount(item, item.usableItemName))
       setInventory(inv.ok);
     };
     load();
@@ -130,16 +131,16 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
           setTileplant(await loadTileSlots(landSlotProperties));
 
           const listStash = (await user.actor.listStash()).ok
-          const defineAmount = (item, productName) => {
-            if (productName === "Carrot") {
+          const defineAmount = (item, usableItemName) => {
+            if (usableItemName === "Carrot") {
               setCarrot(Number(item.amount))
-            } else if (productName === "Wheat") {
+            } else if (usableItemName === "Wheat") {
               setWheat(Number(item.amount))
             } else {
               setTomato(Number(item.amount))
             }
           }
-          listStash.forEach(item => defineAmount(item, item.productName))
+          listStash.forEach(item => defineAmount(item, item.usableItemName))
           setLoading(false)
           positionTree.i = -1
           positionTree.j = -1
