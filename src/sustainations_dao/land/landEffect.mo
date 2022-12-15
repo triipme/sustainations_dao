@@ -1,7 +1,6 @@
 import Array "mo:base/Array";
 import Principal "mo:base/Principal";
 import Int "mo:base/Int";
-import Principal "mo:base/Principal";
 import Types "../types";
 import State "../state";
 

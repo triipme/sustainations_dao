@@ -380,7 +380,7 @@ public type UsableItem = {
   public type Stash = {
     id : Text;
     userId : Text;
-    productId : Text;
+    usableItemId : Text;
     quality : Text;
     amount : Int; 
   };
