@@ -32,7 +32,7 @@ const popupClose = 'metaverse/selectMap/UI_ingame_close.png';
 
 export default class Engine extends BaseScene {
   constructor() {
-    super('Engine');
+    super('Test');
   }
 
   clearSceneCache() {
@@ -128,6 +128,7 @@ export default class Engine extends BaseScene {
   }
 
   async create() {
+    this.listScene.shift()
     console.log(this.characterTakeOptions)
     // console.log(this.listScene.shift())
     // add audios
@@ -280,7 +281,6 @@ export default class Engine extends BaseScene {
         }
       });
     };
-
   }
 
   update() {
@@ -294,9 +294,9 @@ export default class Engine extends BaseScene {
       this.pregameSound.stop();
       this.sfx_char_footstep.stop();
 
-      // if (this.listEvent.length === 0) this.scene.start("thanks", { isUsedPotion: this.isUsedPotion });
-      // else this.scene.start("Engine", { isUsedPotion: this.isUsedPotion, listScene: this.listScene});
-      this.scene.start("Engine", { isUsedPotion: this.isUsedPotion, listScene: this.listScene});
+      if (this.listScene.length === 0) this.scene.start("thanks", { isUsedPotion: this.isUsedPotion });
+      else this.scene.start("Engine", { isUsedPotion: this.isUsedPotion, listScene: this.listScene});
+      // this.scene.start("Test", { isUsedPotion: this.isUsedPotion, listScene: this.listScene});
     }
 
     if (this.player.x > 600 && this.isInteracted == false) { //default 4200

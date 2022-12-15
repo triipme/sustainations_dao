@@ -49,7 +49,7 @@ const QuestEngine = () => {
       name: '',
       price: 0,
       description: '',
-      scene:{
+      scene: {
         location: '',
         destination: '',
         description: '',
@@ -59,24 +59,24 @@ const QuestEngine = () => {
           base64data: '',
           path: ''
         },
-        imageFront:{
+        imageFront: {
           base64data: '',
           path: '',
         },
-        imageMid:{
+        imageMid: {
           base64data: '',
           path: '',
         },
-        imageBack:{
+        imageBack: {
           base64data: '',
           path: '',
         },
-        imageObstacle:{
+        imageObstacle: {
           base64data: '',
           path: '',
         },
       }
-      
+
     }
   });
 
@@ -87,7 +87,7 @@ const QuestEngine = () => {
     try {
       // ========== QUEST ==========
       let quest = {
-        id: data.idQuest,
+        id: "test", //just for test
         name: data.name,
         price: data.price,
         description: data.description,
@@ -110,35 +110,35 @@ const QuestEngine = () => {
           }
         });
       }
-        // s3Bucket.putObject(dataImagQuest, function (err, dataS3) {
-        //   if (err) {
-        //     console.log('Error uploading data!');
-        //   } else {
-        //     console.log('Successfully uploaded the image!');
-        //   }
-        // });
+      // s3Bucket.putObject(dataImagQuest, function (err, dataS3) {
+      //   if (err) {
+      //     console.log('Error uploading data!');
+      //   } else {
+      //     console.log('Successfully uploaded the image!');
+      //   }
+      // });
 
       // ========== SCENE ==========
       //EVENT
       let event = {
-        id : data.idEvent,
-        questId : data.idQuest,
-        description : data.scene.description,
-        locationName : data.scene.location,
-        destinationName : data.scene.destination
+        id: data.idEvent,
+        questId: data.idQuest,
+        description: data.scene.description,
+        locationName: data.scene.location,
+        destinationName: data.scene.destination
       };
       const resultEvent = await createEventEngine(event);
 
       //SCENE
       let scene = {
-        id : data.idScene,
-        idEvent : data.idEvent,
-        front : data.scene.imageFront.path,
-        mid : data.scene.imageMid.path,
-        back : data.scene.imageBack.path,
-        obstacle : data.scene.imageObstacle.path
+        id: data.idScene,
+        idEvent: data.idEvent,
+        front: data.scene.imageFront.path,
+        mid: data.scene.imageMid.path,
+        back: data.scene.imageBack.path,
+        obstacle: data.scene.imageObstacle.path
       }
-      const resultScene = await createScene(scene);
+      const resultScene = await createScene(quest.id, scene);
 
       if ('Success' == resultScene) {
         let bufFront = Buffer.from(data.scene.imageFront.base64data, 'base64')
@@ -199,7 +199,7 @@ const QuestEngine = () => {
         });
       }
 
-      
+
       console.log("test: ", resultQuest, resultEvent, resultScene)
       // console.log("quest:", quest)
       // console.log("event:", event)
@@ -347,8 +347,8 @@ const QuestEngine = () => {
                 />
               )}
             />
-             {/* ===== location ===== */}
-             <Controller
+            {/* ===== location ===== */}
+            <Controller
               control={control}
               name="scene.location"
               render={({ field }) => (
@@ -420,8 +420,8 @@ const QuestEngine = () => {
                 </Box>
               )}
             />
-             {/* ===== MID ===== */}
-             <Controller
+            {/* ===== MID ===== */}
+            <Controller
               control={control}
               name="scene.imageMid"
               render={({ field: { onChange } }) => (
@@ -461,8 +461,8 @@ const QuestEngine = () => {
                 </Box>
               )}
             />
-             {/* ===== BACK ===== */}
-             <Controller
+            {/* ===== BACK ===== */}
+            <Controller
               control={control}
               name="scene.imageBack"
               render={({ field: { onChange } }) => (
@@ -502,8 +502,8 @@ const QuestEngine = () => {
                 </Box>
               )}
             />
-             {/* ===== OBSTACLE ===== */}
-             <Controller
+            {/* ===== OBSTACLE ===== */}
+            <Controller
               control={control}
               name="scene.imageObstacle"
               render={({ field: { onChange } }) => (
@@ -554,6 +554,20 @@ const QuestEngine = () => {
                 onClick={handleSubmit(onSubmit)}
               >
                 Save
+              </LoadingButton>
+            </Box>
+
+            <Box
+              className="flex items-center mt-40 py-14 pr-16 pl-4 sm:pr-48 sm:pl-36 border-t"
+            >
+              <LoadingButton
+                className="ml-8"
+                variant="contained"
+                color="secondary"
+                loading={loading}
+                onClick={handleSubmit(onSubmit)}
+              >
+                Test
               </LoadingButton>
             </Box>
           </CardContent>

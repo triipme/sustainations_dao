@@ -12,7 +12,8 @@ import {
   listSceneQuests,
   loadQuestItemEngines,
   listIdScenes,
-  listIdEventEngine
+  getEventEngine,
+  readQuestEngine
 } from '../GameApi';
 import { throws } from 'assert';
 
@@ -69,15 +70,15 @@ class selectItemScene extends BaseScene {
 
     //For Engine
     this.load.rexAwait(function (successCallback, failureCallback) {
-      listIdScenes().then((result) => { // for test
-        this.listScene = result;
+      readQuestEngine("test").then((result) => { // for test
+        this.listScene = result.listScene;
         successCallback();
       });
     }, this);
 
     this.load.rexAwait(function (successCallback, failureCallback) {
-      listIdEventEngine().then((result) => { // for test
-        this.listEvent = result;
+      getEventEngine().then((result) => {
+        console.log(result);
         successCallback();
       });
     }, this);
@@ -247,7 +248,7 @@ class selectItemScene extends BaseScene {
           break;
         case 'engine':
           // this.scene.start('BaseEngine', {  listScene: await listSceneQuests("qe1")});
-          this.scene.start('Engine', { listScene: this.listScene, listEvent: this.listEvent });
+          this.scene.start('Test', { listScene: this.listScene });
           break;
         default:
           console.log('invalid map name');

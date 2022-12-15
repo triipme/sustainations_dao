@@ -8,8 +8,10 @@ import {
   getRemainingTime,
   payQuest,
   getUserInfo,
-  buyLandSlot
+  buyLandSlot,
+  createGameQuestEngine
 } from '../GameApi';
+
 
 const bg = 'metaverse/selectMap/background.png';
 const text = 'metaverse/selectMap/call_to_action.png';
@@ -53,6 +55,12 @@ class selectMap extends BaseScene {
       loadCharacter().then((result) => {
         this.characterData = result.ok[1];
         console.log(this.characterData);
+        successCallback();
+      });
+    }, this);
+    this.load.rexAwait(function (successCallback, failureCallback) {
+      createGameQuestEngine().then((result) => {
+        console.log(result);
         successCallback();
       });
     }, this);
