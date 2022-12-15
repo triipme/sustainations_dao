@@ -115,12 +115,12 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
     });
 
     layer.on({
-
       click: async e => {
+        console.log(country)
         let currentSeed = inventory.filter((item) => inventoryStatus[item.materialName] === true)
 
         // console.log(country)// Harvest
-        if (country.properties.status === "fullGrown" && inventoryStatus["dig"] === false && loading === false) {
+        if (country.properties.status === "fullGrown" && inventoryStatus["dig"] === false && loading === false && country.properties.name !== "Pine_Seed") {
           setLoading(true)
           positionTree.i = country.properties.i
           positionTree.j = country.properties.j
@@ -171,6 +171,38 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
           positionTree.i = -1
           positionTree.j = -1
         }
+        // else if (inventoryStatus["market"] === true && loading === false && country.properties.name === "None") { // build factory
+        //   setLoading(true)
+        //   positionTree.i = country.properties.i
+        //   positionTree.j = country.properties.j
+        //   console.log("checkAvailablePosition: ", checkAvailablePosition(positionTree.i, positionTree.j))
+        //   if (checkAvailablePosition(positionTree.i, positionTree.j))
+        //     console.log("Build Factory: ", (await user.actor.buildConstruction(country.properties.landId, country.properties.i, country.properties.j, "c2")))
+        //   else {
+        //     setCantBuild("factory")
+        //   }
+        //   setTileplant(await loadTileSlots(landSlotProperties));
+        //   setInventory((await user.actor.listInventory(characterId))?.ok);
+        //   setLoading(false)
+        //   positionTree.i = -1
+        //   positionTree.j = -1
+        // }
+        // else if (inventoryStatus["chemistry"] === true && loading === false && country.properties.name === "None") { // build factory
+        //   setLoading(true)
+        //   positionTree.i = country.properties.i
+        //   positionTree.j = country.properties.j
+        //   console.log("checkAvailablePosition: ", checkAvailablePosition(positionTree.i, positionTree.j))
+        //   if (checkAvailablePosition(positionTree.i, positionTree.j))
+        //     console.log("Build Factory: ", (await user.actor.buildConstruction(country.properties.landId, country.properties.i, country.properties.j, "c3")))
+        //   else {
+        //     setCantBuild("factory")
+        //   }
+        //   setTileplant(await loadTileSlots(landSlotProperties));
+        //   setInventory((await user.actor.listInventory(characterId))?.ok);
+        //   setLoading(false)
+        //   positionTree.i = -1
+        //   positionTree.j = -1
+        // }
         else if (currentSeed.length === 0) {
           console.log("Do nothing")
         }
@@ -228,7 +260,7 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
           onClick={() => {
             setCantBuild("")
           }}>ACCEPT</h2>
-      </div>: null}
+      </div> : null}
       <GeoJSON
         key={Math.floor(Math.random() * 9999999)}
         data={tileplant}
@@ -282,10 +314,43 @@ const Inventory = ({ inventory }) => {
             initialInventory("factory")
             setRender(!render)
           }}
-          src={"/metaverse/farm/Sustaination_farm/farm-object/PNG/factory_UI.png"}
+          src={"/metaverse/farm/Sustaination_farm/farm-object/PNG/factory-icon.png"}
           alt=""
         />
       </div>
+       {/* <div className="imgItem" style={{
+        border: inventoryStatus["market"] == true ? "2px" : "0px",
+        borderStyle: inventoryStatus["market"] == true ? "dashed dashed dashed dashed" : "none",
+        width: "65px",
+        height: "65px"
+      }}>
+        <img
+          onClick={() => {
+            inventoryStatus["market"] = !inventoryStatus["market"]
+            initialInventory("market")
+            setRender(!render)
+          }}
+          src={"metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-50.png"}
+          alt=""
+        />
+      </div>
+      <div className="imgItem" style={{
+        border: inventoryStatus["chemistry"] == true ? "2px" : "0px",
+        borderStyle: inventoryStatus["chemistry"] == true ? "dashed dashed dashed dashed" : "none",
+        width: "65px",
+        height: "65px"
+      }}>
+        <img
+          onClick={() => {
+            inventoryStatus["chemistry"] = !inventoryStatus["chemistry"]
+            initialInventory("chemistry")
+            setRender(!render)
+          }}
+          src={"metaverse/farm/Sustaination_farm/farm-object/PNG/factory-icon.png"}
+          alt=""
+        />
+      </div> */}
+      
       {inventory.length > 0 ?
         <>
           {inventory.map((value, i) => {
@@ -334,9 +399,19 @@ const CreateBound = ({ tileplant, loading }) => {
             </>
           )
         }
+        else if (tag.properties.status === "newlyPlanted" && tag.properties.name === "Pine_Seed") {
+          return (
+            <>
+              <ImageOverlay key={value + 100} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm-Tiles-05.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} />
+              <ImageOverlay key={value} url={'metaverse/farm/Sustaination_farm/farm-object/PNG/newlyPlanted-Pine_Seed.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} />
+              {loading === true && positionTree.i == tag.properties.i && positionTree.j == tag.properties.j ? <ImageOverlay key={value + 200} url={'metaverse/Ripple-loading.gif'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} /> : <></>}
+            </>
+          )
+        }
         else if (tag.properties.status === "newlyPlanted") {
           return (
             <>
+              <ImageOverlay key={value + 100} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm-Tiles-05.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} />
               <ImageOverlay key={value} url={'metaverse/farm/Sustaination_farm/farm-object/PNG/newlyPlanted.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} />
               {loading === true && positionTree.i == tag.properties.i && positionTree.j == tag.properties.j ? <ImageOverlay key={value + 200} url={'metaverse/Ripple-loading.gif'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} /> : <></>}
             </>
@@ -346,14 +421,42 @@ const CreateBound = ({ tileplant, loading }) => {
           return (
             <>
               <ImageOverlay key={value + 100} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm-Tiles-05.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} />
-              <ImageOverlay key={value} url={'/metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-05.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} />
+              {/* <ImageOverlay key={value} url={'/metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-51.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} /> */}
+              <ImageOverlay key={value} url={'/metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-51.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} />
+              {/* <ImageOverlay key={value} url={'/metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-50.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} /> */}
+              
               {loading === true && positionTree.i == tag.properties.i && positionTree.j == tag.properties.j ? <ImageOverlay key={value + 200} url={'metaverse/Ripple-loading.gif'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} /> : <></>}
             </>
           )
         }
+        // else if (tag.properties.name === "Market") {
+        //   return (
+        //     <>
+        //       <ImageOverlay key={value + 100} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm-Tiles-05.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} />
+        //       {/* <ImageOverlay key={value} url={'/metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-51.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} /> */}
+        //       {/* <ImageOverlay key={value} url={'/metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-05.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} /> */}
+        //       <ImageOverlay key={value} url={'/metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-50.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} />
+              
+        //       {loading === true && positionTree.i == tag.properties.i && positionTree.j == tag.properties.j ? <ImageOverlay key={value + 200} url={'metaverse/Ripple-loading.gif'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} /> : <></>}
+        //     </>
+        //   )
+        // }
+        // else if (tag.properties.name === "Chemistry") {
+        //   return (
+        //     <>
+        //       <ImageOverlay key={value + 100} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm-Tiles-05.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} />
+        //       <ImageOverlay key={value} url={'/metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-51.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} />
+        //       {/* <ImageOverlay key={value} url={'/metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-05.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} /> */}
+        //       {/* <ImageOverlay key={value} url={'/metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-50.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} /> */}
+              
+        //       {loading === true && positionTree.i == tag.properties.i && positionTree.j == tag.properties.j ? <ImageOverlay key={value + 200} url={'metaverse/Ripple-loading.gif'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} /> : <></>}
+        //     </>
+        //   )
+        // }
         else {
           return (
             <>
+              <ImageOverlay key={value + 100} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm-Tiles-05.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} />
               <ImageOverlay key={value} url={pathItem} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} />
               {loading === true && positionTree.i == tag.properties.i && positionTree.j == tag.properties.j ? <ImageOverlay key={value + 200} url={'metaverse/Ripple-loading.gif'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} /> : <></>}
             </>
