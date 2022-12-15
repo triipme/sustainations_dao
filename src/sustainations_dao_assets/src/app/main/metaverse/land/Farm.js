@@ -37,7 +37,6 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
       setChacterId(characterid.ok[0]);
       const inv = await user.actor.listInventory(characterid.ok[0]);
       const listStash = (await user.actor.listStash()).ok
-      console.log(listStash);
       const defineAmount = (item, usableItemName) => {
         if (usableItemName === "Carrot") {
           setCarrot(Number(item.amount))
@@ -79,7 +78,6 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
       setTime(Date.now());
       let tile = await loadTileSlots(landSlotProperties);
       setTileplant(tile);
-      console.log(tile);
     }, 10000);
 
     return () => {
