@@ -59,6 +59,7 @@ class BaseScene extends Phaser.Scene {
     this.load.rexAwait(function (successCallback, failureCallback) {
       characterCollectsMaterials(this.eventId).then((result) => {
         this.characterCollectMaterials = result;
+        console.log(result);
         successCallback();
       });
     }, this);

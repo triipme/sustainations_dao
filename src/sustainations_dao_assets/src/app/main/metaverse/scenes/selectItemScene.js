@@ -68,20 +68,12 @@ class selectItemScene extends BaseScene {
       });
     }, this);
 
-    //For Engine
-    this.load.rexAwait(function (successCallback, failureCallback) {
-      readQuestEngine("test").then((result) => { // for test
-        this.listScene = result.listScene;
-        successCallback();
-      });
-    }, this);
-
-    this.load.rexAwait(function (successCallback, failureCallback) {
-      getEventEngine().then((result) => {
-        console.log(result);
-        successCallback();
-      });
-    }, this);
+    // this.load.rexAwait(function (successCallback, failureCallback) {
+    //   getEventEngine().then((result) => {
+    //     console.log(result);
+    //     successCallback();
+    //   });
+    // }, this);
 
     if (this.map == "engine") {
       this.load.rexAwait(function (successCallback, failureCallback) {
@@ -94,6 +86,13 @@ class selectItemScene extends BaseScene {
             this.itemStrength.push(result[index].strengthRequire);
             this.load.image(result[index].name, loadItemUrl(result[index].images));
           };
+          //For Engine
+          this.load.rexAwait(function (successCallback, failureCallback) {
+            readQuestEngine("engine").then((result) => { // for test
+              this.listScene = result.listScene;
+              successCallback();
+            });
+          }, this);
           successCallback();
         });
       }, this)
@@ -248,7 +247,7 @@ class selectItemScene extends BaseScene {
           break;
         case 'engine':
           // this.scene.start('BaseEngine', {  listScene: await listSceneQuests("qe1")});
-          this.scene.start('Test', { listScene: this.listScene });
+          this.scene.start('Engine', { listScene: this.listScene });
           break;
         default:
           console.log('invalid map name');

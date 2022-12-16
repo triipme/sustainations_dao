@@ -144,6 +144,7 @@ export default class lake_scene1 extends BaseScene {
 
     // load event options
     this.eventOptions = await loadEventOptions(this.eventId, this.selectedItemsIds);
+    console.log("test: ", this.eventOptions, this.eventId)
 
     // stats before choose option
     this.setValue(this.hp, this.characterData.currentHP / this.characterData.maxHP * 100);
