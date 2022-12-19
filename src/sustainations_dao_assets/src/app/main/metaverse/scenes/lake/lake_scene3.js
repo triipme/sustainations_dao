@@ -5,7 +5,9 @@ import {
   loadEventOptions,
   updateCharacterStats,
   listCharacterSelectsItems,
-  createCharacterCollectsMaterials
+  createCharacterCollectsMaterials,
+  loadCharacter,
+  useUsableItem
 } from '../../GameApi';
 import { settings } from '../settings';
 import { func } from 'prop-types';
@@ -28,6 +30,9 @@ const item_potion = 'metaverse/scenes/item_ingame_HP.png'
 const popupWindo = 'metaverse/selectMap/Catalonia_popup.png';
 const popupClose = 'metaverse/selectMap/UI_ingame_close.png';
 
+const flares = 'metaverse/flares.png';
+const flaresJson = 'metaverse/flares.json';
+
 export default class lake_scene3 extends BaseScene {
   constructor() {
     super('lake_scene3');
@@ -41,10 +46,33 @@ export default class lake_scene3 extends BaseScene {
       this.textures.remove(textures_list[index]);
     }
   }
+  init(data) {
+    this.isHealedPreviously = data.isUsedPotion;
+    this.isUsedUsableItem = data.isUsedUsableItem;
+  }
 
   preload() {
     this.addLoadingScreen();
-    this.initialLoad("e38");
+    if (this.isUsedUsableItem[0]){
+      this.load.rexAwait(function (successCallback, failureCallback) {
+        loadCharacter().then((result) => {
+          this.characterData = result.ok[1];
+          this.characterBefore = this.characterData;
+          this.load.rexAwait(function (successCallback, failureCallback) {
+            useUsableItem(this.characterData.id, this.isUsedUsableItem[1]).then((result) => {
+              this.initialLoad("e38");     
+              successCallback();         
+            });
+          }, this);
+          successCallback();
+       
+        });
+      }, this);
+    }
+    else {
+      this.initialLoad("e38");
+    }
+    
 
     //Preload
     this.clearSceneCache();
@@ -70,6 +98,9 @@ export default class lake_scene3 extends BaseScene {
     //Popup
     this.load.spritesheet('popupWindo', popupWindo, { frameWidth: 980, frameHeight: 799 });
     this.load.image("popupClose", popupClose);
+
+    //Rain
+    this.load.atlas('flares', flares, flaresJson);
 
   }
 
@@ -176,27 +207,57 @@ export default class lake_scene3 extends BaseScene {
       }
     }).setVisible(false).setScrollFactor(0);
 
-     //scrolling
-     this.graphics = this.make.graphics();
+    //scrolling
+    this.graphics = this.make.graphics();
 
-     this.graphics.fillRect(152, 230, 900, 250).setScrollFactor(0);
- 
-     this.mask = new Phaser.Display.Masks.GeometryMask(this, this.graphics);
- 
-     this.des.setMask(this.mask);
- 
-     // //  The rectangle they can 'drag' within
-     this.add.zone(150, 230, 900, 250).setOrigin(0).setInteractive().setVisible(true).setScrollFactor(0)
-       .on('pointermove', (pointer) => {
-         if (pointer.isDown) {
-           this.des.y += (pointer.velocity.y / 10);
- 
-           this.des.y = Phaser.Math.Clamp(this.des.y, -400, 720);
-         }
- 
-       })
+    this.graphics.fillRect(152, 230, 900, 250).setScrollFactor(0);
+
+    this.mask = new Phaser.Display.Masks.GeometryMask(this, this.graphics);
+
+    this.des.setMask(this.mask);
+
+    // //  The rectangle they can 'drag' within
+    this.add.zone(150, 230, 900, 250).setOrigin(0).setInteractive().setVisible(true).setScrollFactor(0)
+      .on('pointermove', (pointer) => {
+        if (pointer.isDown) {
+          this.des.y += (pointer.velocity.y / 10);
+
+          this.des.y = Phaser.Math.Clamp(this.des.y, -400, 720);
+        }
+
+      })
 
 
+    //Rain 
+    const particles = this.add.particles('flares');
+
+    // particles.createEmitter({
+    //   frame: 'blue',
+    //   y: 0,
+    //   x: { min: 0, max: 1500},
+    //   lifespan: 2000,
+    //   speedY: { min: 200, max: 400 },
+    //   scale: { start: 0.2, end: 0 },
+    //   quantity: 3,
+    //   blendMode: 'ADD'
+    // }).setScrollFactor(0);
+
+    particles.createEmitter({
+      frame: 'blue',
+      x: { min: 0, max: 1500 },
+      y: 0,
+      lifespan: 1000,
+      speedY: 800,
+      scaleY: .5,
+      scaleX: .01,
+      quantity: 10,
+      blendMode: 'ADD'
+    }).setScrollFactor(0);
+
+
+    if (this.characterBefore != undefined) {
+      this.showColorLossAllStat(this.characterBefore, this.characterData)
+    }
     for (const idx in this.eventOptions) {
 
       // can take option or not
@@ -262,7 +323,7 @@ export default class lake_scene3 extends BaseScene {
     if (this.player.x > 5100) {
       this.pregameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start("lake_scene4", { isUsedPotion: this.isUsedPotion });
+      this.scene.start("lake_scene4", { isUsedPotion: this.isUsedPotion, isUsedUsableItem: this.isUsedUsableItem });
     }
 
     if (this.player.x > 4200 && this.isInteracted == false) {

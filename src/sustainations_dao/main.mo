@@ -1,4 +1,5 @@
 import Array "mo:base/Array";
+import Blob "mo:base/Blob";
 import AsyncSource "mo:uuid/async/SourceV4";
 import Debug "mo:base/Debug";
 import Float "mo:base/Float";
@@ -17,12 +18,15 @@ import Text "mo:base/Text";
 import Time "mo:base/Time";
 import TrieMap "mo:base/TrieMap";
 import UUID "mo:uuid/UUID";
+import Prim "mo:prim";
+import Object "./utils/object";
 
 import Account "./plugins/Account";
 import Moment "./plugins/Moment";
 import Types "types";
 import State "state";
 import Ledger "./plugins/Ledger";
+import GeoRust "./plugins/GeoRust";
 import RS "./models/RefillStation";
 import CharacterClass "./game/characterClass";
 import Character "./game/character";
@@ -43,11 +47,22 @@ import GearRarity "./game/gearRarity";
 import GearSubstat "./game/gearSubstat";
 import Material "./game/material";
 import Inventory "./game/inventory";
+import Stash "./land/stash";
+import LandConfig "./land/landConfig";
 import LandSlot "./land/landSlot";
+import Nation "./land/nation";
 import LandTransferHistory "./land/landTransferHistory";
 import LandBuyingStatus "./land/landBuyingStatus";
+import LandEffect "./land/landEffect";
+import UserHasLandEffect "./land/hasLandEffect";
+import Tile "./land/tile";
+import Seed "./land/seed";
+import Plant "./land/plant";
+import FarmEffect "./land/farmEffect";
+import HasFarmEffect "./land/hasFarmEffect";
+import Env ".env";
 
-shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = this {
+shared ({ caller = owner }) actor class SustainationsDAO() = this {
   stable var transferFee : Nat64 = 10_000;
   stable var createProposalFee : Nat64 = 20_000;
   stable var voteFee : Nat64 = 20_000;
@@ -108,9 +123,19 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
   private stable var gearSubstats : [(Text, Types.GearSubstat)] = [];
   private stable var materials : [(Text, Types.Material)] = [];
   private stable var inventories : [(Text, Types.Inventory)] = [];
+  private stable var stashes : [(Text, Types.Stash)] = [];
+  private stable var landConfigs : [(Text, Types.LandConfig)] = [];
   private stable var landSlots : [(Text, Types.LandSlot)] = [];
+  private stable var nations : [(Text, Types.Nation)] = [];
   private stable var landTransferHistories : [(Text, Types.LandTransferHistory)] = [];
   private stable var landBuyingStatuses : [(Text, Types.LandBuyingStatus)] = [];
+  private stable var landEffects : [(Text, Types.LandEffect)] = [];
+  private stable var userHasLandEffects : [(Text, Types.UserHasLandEffect)] = [];
+  private stable var tiles : [(Text, Types.Tile)] = [];
+  private stable var seeds : [(Text, Types.Seed)] = [];
+  private stable var plants : [(Text, Types.Plant)] = [];
+  private stable var farmEffects : [(Text, Types.FarmEffect)] = [];
+  private stable var hasFarmEffects : [(Text, Types.UserHasFarmEffect)] = [];
 
   system func preupgrade() {
     Debug.print("Begin preupgrade");
@@ -161,9 +186,19 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
     gearSubstats := Iter.toArray(state.gearSubstats.entries());
     materials := Iter.toArray(state.materials.entries());
     inventories := Iter.toArray(state.inventories.entries());
+    stashes := Iter.toArray(state.stashes.entries());
+    landConfigs := Iter.toArray(state.landConfigs.entries());
     landSlots := Iter.toArray(state.landSlots.entries());
+    nations := Iter.toArray(state.nations.entries());
     landTransferHistories := Iter.toArray(state.landTransferHistories.entries());
     landBuyingStatuses := Iter.toArray(state.landBuyingStatuses.entries());
+    landEffects := Iter.toArray(state.landEffects.entries());
+    userHasLandEffects := Iter.toArray(state.userHasLandEffects.entries());
+    tiles := Iter.toArray(state.tiles.entries());
+    seeds := Iter.toArray(state.seeds.entries());
+    plants := Iter.toArray(state.plants.entries());
+    farmEffects := Iter.toArray(state.farmEffects.entries());
+    hasFarmEffects := Iter.toArray(state.hasFarmEffects.entries());
     Debug.print("End preupgrade");
   };
 
@@ -292,14 +327,44 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
     for ((k, v) in Iter.fromArray(inventories)) {
       state.inventories.put(k, v);
     };
+    for ((k, v) in Iter.fromArray(stashes)) {
+      state.stashes.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(landConfigs)) {
+      state.landConfigs.put(k, v);
+    };
     for ((k, v) in Iter.fromArray(landSlots)) {
       state.landSlots.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(nations)) {
+      state.nations.put(k, v);
     };
     for ((k, v) in Iter.fromArray(landTransferHistories)) {
       state.landTransferHistories.put(k, v);
     };
     for ((k, v) in Iter.fromArray(landBuyingStatuses)) {
       state.landBuyingStatuses.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(landEffects)) {
+      state.landEffects.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(userHasLandEffects)) {
+      state.userHasLandEffects.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(tiles)) {
+      state.tiles.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(seeds)) {
+      state.seeds.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(plants)) {
+      state.plants.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(farmEffects)) {
+      state.farmEffects.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(hasFarmEffects)) {
+      state.hasFarmEffects.put(k, v);
     };
     Debug.print("End postupgrade");
   };
@@ -309,7 +374,8 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
   };
 
   type Response<Ok> = Result.Result<Ok, Types.Error>;
-  private let ledger : Ledger.Interface = actor (Option.get(ledgerId, "ryjl3-tyaaa-aaaaa-aaaba-cai"));
+  private let ledger : Ledger.Interface = actor (Env.LEDGER_ID);
+  private let georust : GeoRust.Interface = actor (Env.GEORUST_ID);
 
   private func createUUID() : async Text {
     var ae = AsyncSource.Source();
@@ -2618,10 +2684,12 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
     let uuid : Text = await createUUID();
     var canCreate = true;
     let rsCharacterClass = state.characterClasses.get(characterClassId);
-    let godUser = "gx3fa-rkdjs-vrshs-qqjts-aaklc-z7jvl-pc2zb-3zu6m-4hixl-5wswb-gqe";
-    if (Principal.toText(caller) == godUser) {
+    let godUser1 = "eoaxc-owf3f-kl22c-6a7xx-me7xi-idp7u-6mkef-3ek3w-vkyrf-deavj-pqe";
+    let godUser2 = "wijp2-ps7be-cocx3-zbfru-uuw2q-hdmpl-zudjl-f2ofs-7qgni-t7ik5-lqe";
+    let godUser3 = "u3z7x-q4qn7-kju5f-yew6e-kx3qy-rzmdy-nrqwl-tpynd-6nd2k-lkc37-fqe";
+    if (Principal.toText(caller) == godUser1 or Principal.toText(caller) == godUser2 or Principal.toText(caller) == godUser3) {
       for ((K, character) in state.characters.entries()) {
-        if (character.userId == Principal.fromText(godUser)) {
+        if (character.userId == Principal.fromText(godUser1) or character.userId == Principal.fromText(godUser2) or character.userId == Principal.fromText(godUser3)) {
           state.characters.delete(character.id);
         };
       };
@@ -2739,44 +2807,46 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
     #ok("Success");
   };
 
-  public shared ({ caller }) func takeOption(eventId : Text) : async Response<[Types.Character]> {
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized); //isNotAuthorized
-    };
-    var result : [Types.Character] = [];
-    for ((K, character) in state.characters.entries()) {
-      if (character.userId == caller) {
-        for ((K, eventOption) in state.eventOptions.entries()) {
-          if (eventOption.eventId == eventId) {
-            var strengthRequire : Float = 0;
-            for (item in state.items.vals()) {
-              if (item.id == eventOption.requireItemId) {
-                strengthRequire := item.strengthRequire;
-              };
-            };
-            result := Array.append<Types.Character>(result, [await Character.takeOption(character, strengthRequire, eventOption, state)]);
-          };
-        };
-      };
-    };
-    #ok(result);
-  };
+  // public shared ({ caller }) func takeOption(eventId : Text) : async Response<[Types.Character]> {
+  //   if (Principal.toText(caller) == "2vxsx-fae") {
+  //     return #err(#NotAuthorized); //isNotAuthorized
+  //   };
+  //   var result : [Types.Character] = [];
+  //   for ((K, character) in state.characters.entries()) {
+  //     if (character.userId == caller) {
+  //       for ((K, eventOption) in state.eventOptions.entries()) {
+  //         if (eventOption.eventId == eventId) {
+  //           var strengthRequire : Float = 0;
+  //           for (item in state.items.vals()) {
+  //             if (item.id == eventOption.requireItemId) {
+  //               strengthRequire := item.strengthRequire;
+  //             };
+  //           };
+  //           result := Array.append<Types.Character>(result, [await Character.takeOption(character, strengthRequire, eventOption, state)]);
+  //         };
+  //       };
+  //     };
+  //   };
+  //   #ok(result);
+  // };
 
   public shared ({ caller }) func gainCharacterExp(character : Types.Character) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
+    gamePlayAnalytics := {
+      miniGamePlayCount = gamePlayAnalytics.miniGamePlayCount;
+      miniGameCompletedCount = gamePlayAnalytics.miniGameCompletedCount;
+      questPlayCount = gamePlayAnalytics.questPlayCount;
+      questCompletedCount = gamePlayAnalytics.questCompletedCount + 1;
+    };
+
+    Debug.print(debug_show (gamePlayAnalytics));
     let rsCharacter = state.characters.get(character.id);
     switch (rsCharacter) {
       case (null) { #err(#NotFound) };
       case (?V) {
         Character.gainCharacterExp(character, state);
-        gamePlayAnalytics := {
-          miniGamePlayCount = gamePlayAnalytics.miniGamePlayCount;
-          miniGameCompletedCount = gamePlayAnalytics.miniGameCompletedCount;
-          questPlayCount = gamePlayAnalytics.questPlayCount;
-          questCompletedCount = gamePlayAnalytics.questCompletedCount + 1;
-        };
         #ok("Success");
       };
     };
@@ -3033,7 +3103,7 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
     switch (rsQuestEngine) {
       case (?V) { #err(#AlreadyExisting) };
       case null {
-        QuestEngine.create(questEngine, state);
+        QuestEngine.create(caller, questEngine, state);
         #ok("Success");
       };
     };
@@ -3066,7 +3136,7 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
     switch (rsQuestEngine) {
       case null { #err(#NotFound) };
       case (?V) {
-        QuestEngine.update(questEngine, state);
+        QuestEngine.update(caller, questEngine, state);
         #ok("Success");
       };
     };
@@ -3102,6 +3172,7 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
           case null {
             let updateQuest : Types.QuestEngine = {
               id = quest.id;
+              userId = caller;
               name = quest.name;
               price = quest.price;
               description = quest.description;
@@ -3119,13 +3190,70 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
     };
   };
 
-  public shared query ({ caller }) func readEventEngine(id : Text) : async Response<(Types.Event)> {
+  private var timeStartEvent : Time.Time = 0;
+  public shared ({ caller }) func readEventEngine(id : Text) : async Response<(Types.Event, Time.Time)> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
     let rsEvent = state.questEngine.events.get(id);
-    return Result.fromOption(rsEvent, #NotFound);
+    timeStartEvent := Time.now();
+    switch (rsEvent) {
+      case (?event){
+        return #ok(event, timeStartEvent);
+      };
+      case (null) {return #err(#NotFound)};
+    };
+    // return Result.fromOption(rsEvent, #NotFound);
   };
+
+  public shared ({ caller }) func updateCharacterStatsEngine(character : Types.Character) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsCharacter = state.characters.get(character.id);
+    switch (rsCharacter) {
+      case (null) { #err(#NotFound) };
+      case (?V) {
+        let checkTime = Time.now()-timeStartEvent;
+        if (checkTime > 40_000_000_000){
+          let newCharacter : Types.Character = {
+            userId = character.userId;
+            id = character.id;
+            name = character.name;
+            level = character.level;
+            currentExp = character.currentExp;
+            temporaryExp = character.temporaryExp;
+            levelUpExp = character.levelUpExp;
+            status = "Exhausted";
+            strength = character.strength;
+            intelligence = character.intelligence;
+            vitality = character.vitality;
+            luck = character.luck;
+            currentHP = character.currentHP;
+            maxHP = character.maxHP;
+            currentMana = character.currentMana;
+            maxMana = character.maxMana;
+            currentStamina = character.currentStamina;
+            maxStamina = character.maxStamina;
+            currentMorale = character.currentMorale;
+            maxMorale = character.maxMorale;
+            classId = character.classId;
+            gearIds = character.gearIds;
+            inventorySize = character.inventorySize;
+            exhaustedTime = character.exhaustedTime;
+          };
+          // let updatedCharacter = state.characters.replace(character.id, newCharacter);
+          Character.update(newCharacter, state);
+        }
+        else {
+          Character.update(character, state);
+        };
+        #ok("Success");
+      };
+    };
+  };
+
+
 
   public shared query ({ caller }) func listEventEngines() : async Response<[(Text, Types.Event)]> {
     var list : [(Text, Types.Event)] = [];
@@ -3304,6 +3432,14 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
     };
   };
 
+  public shared query ({ caller }) func readSceneEngine(idScene : Text) : async Response<(Types.Scene)> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsScene = state.questEngine.scenes.get(idScene);
+    return Result.fromOption(rsScene, #NotFound);
+  };
+
   public shared query ({ caller }) func listScenes() : async Response<[(Text, Types.Scene)]> {
     var list : [(Text, Types.Scene)] = [];
     if (Principal.toText(caller) == "2vxsx-fae") {
@@ -3314,6 +3450,30 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
     };
     #ok((list));
   };
+
+  public shared query ({ caller }) func listIdEventEngine() : async Response<[Text]> { //just for quest engine
+    var listIdEvent : [Text ] = [];
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    for (event in state.questEngine.events.vals()) {
+      if (event.questId == "engine"){
+        listIdEvent := Array.append<Text>(listIdEvent, [event.id]);
+      }
+    };
+    #ok((listIdEvent));
+  };
+
+  public shared query ({ caller }) func listIdScenes() : async Response<[Text]> { //for queste engine
+    var listIdScene : [Text] = [];
+    for (scene in state.questEngine.scenes.vals()){
+      if (scene.idEvent == "ee1"){
+        listIdScene := Array.append<Text>(listIdScene, [scene.id]);
+      }
+    };
+    #ok(listIdScene);
+  };
+
 
   public shared ({ caller }) func updateScene(quest : Types.Scene) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
@@ -3365,42 +3525,47 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
     var listItemId : [Text] = [];
     var listItem : [Types.Item] = [];
     let listEvent = await listSceneQuests(idQuest);
-    switch (listEvent){
-      case (#err(err)){
+    switch (listEvent) {
+      case (#err(err)) {
         #err(err);
       };
-      case (#ok(listEvent)){
-        for (event in listEvent.vals()){
+      case (#ok(listEvent)) {
+        for (event in listEvent.vals()) {
           for (eventOption in state.questEngine.eventOptions.vals()) {
-            if (eventOption.requireItemId != "null" and eventOption.eventId == event){
-              switch (Array.find<Text>(listItemId, func (x: Text) {
-                x == eventOption.requireItemId
-              })){
+            if (eventOption.requireItemId != "null" and eventOption.eventId == event) {
+              switch (
+                Array.find<Text>(
+                  listItemId,
+                  func(x : Text) {
+                    x == eventOption.requireItemId;
+                  }
+                )
+              ) {
                 case null {
                   listItemId := Array.append<Text>(listItemId, [eventOption.requireItemId]);
                 };
-                case (?v){};
-              }
+                case (?v) {};
+              };
             };
           };
         };
-        for (v in listItemId.vals()){
+        for (v in listItemId.vals()) {
           let item : ?Types.Item = state.items.get(v);
-          switch (item){
-            case null{
+          switch (item) {
+            case null {
               return #err(#NotFound);
             };
-            case (?item){
+            case (?item) {
               listItem := Array.append<Types.Item>(listItem, [item]);
-            }
-          }
+            };
+          };
         };
-        #ok(listItem) 
+        #ok(listItem);
       };
     };
   };
 
-  public shared ({ caller }) func takeOptionEngine(eventId : Text) : async Response<[Types.Character]> {
+   public shared ({ caller }) func takeOptionEngine(eventId : Text) : async Response<[Types.Character]> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
@@ -3415,7 +3580,7 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
                 strengthRequire := item.strengthRequire;
               };
             };
-            result := Array.append<Types.Character>(result, [await Character.takeOption(character, strengthRequire, eventOption, state)]);
+            result := Array.append<Types.Character>(result, [Character.takeOption(character, strengthRequire, eventOption, state)]);
           };
         };
       };
@@ -3440,10 +3605,6 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
     };
     #ok(result);
   };
-
-
-  
-  
 
   // Item
   public shared ({ caller }) func createItem(item : Types.Item) : async Response<Text> {
@@ -3524,10 +3685,103 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
             id = usableItem.id;
             name = usableItem.name;
             image = usableItem.image;
-            increaseStat = usableItem.increaseStat;
+            increaseStamina = usableItem.increaseStamina;
+            increaseHP = usableItem.increaseHP;
+            increaseMorale = usableItem.increaseMorale;
+            increaseMana = usableItem.increaseMana;
+            effect = usableItem.effect;
           }
         );
         #ok("Success");
+      };
+    };
+  };
+
+  public shared query ({ caller }) func readUsableItem(id : Text) : async Response<Types.UsableItem> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rs = state.usableItems.get(id);
+    return Result.fromOption(rs, #NotFound);
+  };
+
+  public shared ({ caller }) func deleteUsableItem(id : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rs = state.usableItems.get(id);
+    switch (rs) {
+      case (null) { #err(#NotFound) };
+      case (?V) {
+        let deleted = state.usableItems.delete(id);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared ({ caller }) func useUsableItem(characterId : Text, stashId: Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsCharacter = state.characters.get(characterId);
+    switch (rsCharacter) {
+      case (null) { #err(#NotFound) };
+      case (?character) {
+        let rsStash = state.stashes.get(stashId);
+        switch (rsStash) {
+          case null #err(#NotFound);
+          case (?stash) {
+            let rsUsable =  state.usableItems.get(stash.usableItemId);
+            switch (rsUsable) {
+              case (null) return #err(#NotFound);
+              case (?usable) {
+                let newCharacter : Types.Character = {
+                  userId = character.userId;
+                  id = character.id;
+                  name = character.name;
+                  level = character.level;
+                  currentExp = character.currentExp;
+                  temporaryExp = character.temporaryExp;
+                  levelUpExp = character.levelUpExp;
+                  status = character.status;
+                  strength = character.strength;
+                  intelligence = character.intelligence;
+                  vitality = character.vitality;
+                  luck = character.luck;
+                  currentHP = Float.min(character.currentHP+usable.increaseHP, character.maxHP);
+                  maxHP = character.maxHP;
+                  currentMana = Float.min(character.currentMana+usable.increaseMana, character.maxMana);
+                  maxMana = character.maxMana;
+                  currentStamina = Float.min(character.currentStamina+usable.increaseStamina, character.maxStamina);
+                  maxStamina = character.maxStamina;
+                  currentMorale = Float.min(character.currentMorale+usable.increaseMorale, character.maxMorale);
+                  maxMorale = character.maxMorale;
+                  classId = character.classId;
+                  gearIds = character.gearIds;
+                  inventorySize = character.inventorySize;
+                  exhaustedTime = character.exhaustedTime;
+                };
+                let updatedCharacter = state.characters.replace(character.id, newCharacter);
+
+                //substract stash
+                if (stash.amount - 1 > 0){
+                  let newStash : Types.Stash = {
+                    id = stash.id;
+                    userId = stash.userId;
+                    usableItemId = stash.usableItemId;
+                    quality = stash.quality;
+                    amount = stash.amount-1;
+                  };
+                  let updated = state.stashes.replace(stash.id, newStash);
+                }
+                else {
+                  let deletedStash = state.stashes.delete(stash.id);
+                };
+                #ok("Success");
+              };
+            }
+          }
+        }
       };
     };
   };
@@ -3536,18 +3790,21 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
-    var rs : [Types.UsableItem] = [];
-    switch (state.eventItems.get(Principal.toText(caller))) {
-      case null { #err(#NotFound) };
-      case (?eventItem) {
-        for ((K, V) in state.usableItems.entries()) {
-          if (V.id == eventItem.itemId) {
-            rs := Array.append<Types.UsableItem>(rs, [V]);
-          };
-        };
-        #ok(rs[0]);
+    let rs = state.usableItems.get("ui1");
+    return Result.fromOption(rs, #NotFound);
+  };
+
+  public shared ({ caller }) func getUsableItem() : async Response<Types.UsableItem> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    for (stash in state.stashes.vals()) {
+      if (stash.userId == Principal.toText(caller)) {
+        let rsUsableItem = state.usableItems.get(stash.usableItemId);
+        return Result.fromOption(rsUsableItem, #NotFound);
       };
     };
+    #err(#NotFound);
   };
 
   // Event Item
@@ -4287,17 +4544,357 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
     #ok("Success");
   };
 
-  public shared query ({ caller }) func openInventory(characterId : Text) : async Response<[Types.Inventory]> {
-    var list : [Types.Inventory] = [];
+  public type InventoryInfo = {
+    id : Text;
+    characterId : Text;
+    materialId : Text;
+    materialName : Text;
+    amount : Int;
+  };
+
+  public shared query ({ caller }) func listInventory(characterId : Text) : async Response<[InventoryInfo]> {
+    var list : [InventoryInfo] = [];
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
     for ((_, inventory) in state.inventories.entries()) {
       if (inventory.characterId == characterId) {
-        list := Array.append<Types.Inventory>(list, [inventory]);
+        let rsMaterial = state.materials.get(inventory.materialId);
+        switch (rsMaterial) {
+          case null {};
+          case (?material) {
+            let inv : InventoryInfo = {
+              id = inventory.id;
+              characterId = inventory.characterId;
+              materialId = inventory.materialId;
+              materialName = material.name;
+              amount = inventory.amount;
+            };
+            list := Array.append<InventoryInfo>(list, [inv]);
+          };
+        };
       };
     };
     #ok((list));
+  };
+
+  public shared ({ caller }) func addInventory(userId : Text, amount : Nat) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    for ((k, character) in state.characters.entries()) {
+      if (Principal.toText(character.userId) == userId) {
+        for (material in state.materials.vals()) {
+          let characterCollectMaterial : Types.CharacterCollectsMaterials = {
+            id = await createUUID();
+            characterId = character.id;
+            materialId = material.id;
+            amount = amount;
+          };
+          let w = await createCharacterCollectsMaterials(characterCollectMaterial);
+        };
+        let rsInven = await createInventory(character.id);
+        let reset_last = await resetCharacterCollectsMaterials(character.id);
+      };
+    };
+    #ok("Success");
+  };
+
+  public shared ({ caller }) func subtractInventory(inventoryId : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsInventory = state.inventories.get(inventoryId);
+    switch (rsInventory) {
+      case (null) {
+        return #err(#NotFound);
+      };
+      case (?inventory) {
+        let newAmount = Int.max(inventory.amount -1, 0);
+        if (newAmount == 0) {
+          let deleted = state.inventories.delete(inventoryId);
+        } else {
+          let updateInventory : Types.Inventory = {
+            id = inventory.id;
+            characterId = inventory.characterId;
+            materialId = inventory.materialId;
+            amount = Int.max(inventory.amount -1, 0);
+          };
+          let updated = Inventory.update(updateInventory, state);
+        };
+        return #ok("Success");
+      };
+    };
+  };
+
+  public type QuestGameInfo = {
+    userProfile : Types.Profile;
+    characterData : [(Text, Types.Character)];
+    characterStatus : Text;
+    stashInfo : [StashInfo];
+    characterTakesOption : [Types.Character];
+  };
+
+  public query ({ caller }) func getQuestGameInfo(eventId : Text) : async Response<QuestGameInfo> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    var characterData : [(Text, Types.Character)] = [];
+    var characterStatus : Text = "";
+    var stashInfo : [StashInfo] = [];
+    var characterTakesOption : [Types.Character] = [];
+
+    switch(state.profiles.get(caller)){
+      case null { #err(#NotFound); };
+      case (?userProfile) {
+        for ((key, character) in state.characters.entries()) {
+          if (character.userId == caller) {
+            for ((K, eventOption) in state.eventOptions.entries()) {
+              if (eventOption.eventId == eventId) {
+                var strengthRequire : Float = 0;
+                for (item in state.items.vals()) {
+                  if (item.id == eventOption.requireItemId) {
+                    strengthRequire := item.strengthRequire;
+                  };
+                };
+                characterTakesOption := Array.append<Types.Character>(characterTakesOption, 
+                [Character.takeOption(character, strengthRequire, eventOption, state)]);
+              };
+            };
+            characterStatus := character.status;
+            characterData := Array.append<(Text, Types.Character)>(characterData, [(key, character)]);
+          };
+        };
+        for ((_, stash) in state.stashes.entries()) {
+          if (stash.userId == Principal.toText(caller)) {
+            let rsUsableItem = state.usableItems.get(stash.usableItemId);
+            switch (rsUsableItem) {
+              case null {};
+              case (?usableItem) {
+                let newStashInfo : StashInfo = {
+                  id = stash.id;
+                  userId = stash.userId;
+                  usableItemId = stash.usableItemId;
+                  usableItemName = usableItem.name;
+                  amount = stash.amount;
+                };
+                stashInfo := Array.append<StashInfo>(stashInfo, [newStashInfo]);
+              };
+            };
+          };
+        };
+        let result : QuestGameInfo = {
+          userProfile = userProfile;
+          characterData = characterData;
+          characterStatus = characterStatus;
+          stashInfo = stashInfo;
+          characterTakesOption = characterTakesOption;
+        };
+        #ok(result);
+      };
+    };
+  };
+
+  // Get user profile by principal
+  public shared query ({ caller }) func getProfileByPrincipal(principalText : Text) : async Response<Types.Profile> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    switch(state.profiles.get(Principal.fromText(principalText))){
+      case null { #err(#NotFound); };
+      case (?v) {
+        #ok(v);
+      };
+    };
+  };
+  
+  // Stash
+  public shared ({ caller }) func createStash(userId : Text, seedId : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsSeed = state.seeds.get(seedId);
+    switch rsSeed {
+      case null {
+        return #err(#NotFound);
+      };
+      case (?seed) {
+        var rsStash : Bool = false;
+        for ((K, stash) in state.stashes.entries()) {
+          if (stash.userId == userId and stash.usableItemId == seed.harvestedProductId) {
+            let updateStash : Types.Stash = {
+              id = stash.id;
+              userId = stash.userId;
+              usableItemId = stash.usableItemId;
+              quality = stash.quality;
+              amount = stash.amount + Float.toInt(await Random.randomNumber(Float.fromInt(seed.minAmount), Float.fromInt(seed.maxAmount)));
+            };
+            let updated = Stash.update(updateStash, state);
+            rsStash := true;
+          };
+        };
+
+        if (rsStash == false) {
+          let newStash : Types.Stash = {
+            id = await createUUID();
+            userId = userId;
+            usableItemId = seed.harvestedProductId;
+            quality = "Good";
+            amount = Float.toInt(await Random.randomNumber(Float.fromInt(seed.minAmount), Float.fromInt(seed.maxAmount)));
+          };
+          let created = Stash.create(newStash, state);
+        };
+      };
+    };
+    #ok("Success");
+  };
+
+  public type StashInfo = {
+    id : Text;
+    userId : Text;
+    usableItemId : Text;
+    usableItemName : Text;
+    amount : Int;
+  };
+
+  public shared query ({ caller }) func listStash() : async Response<[StashInfo]> {
+    var list : [StashInfo] = [];
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    for ((_, stash) in state.stashes.entries()) {
+      if (stash.userId == Principal.toText(caller)) {
+        let rsUsableItem = state.usableItems.get(stash.usableItemId);
+        switch (rsUsableItem) {
+          case null {};
+          case (?usableItem) {
+            let stashInfo : StashInfo = {
+              id = stash.id;
+              userId = stash.userId;
+              usableItemId = stash.usableItemId;
+              usableItemName = usableItem.name;
+              amount = stash.amount;
+            };
+            list := Array.append<StashInfo>(list, [stashInfo]);
+          };
+        };
+      };
+    };
+    #ok((list));
+  };
+
+  // convert utm2lonlat
+  public shared func utm2lonlat(easting : Float, northing : Float, zoneNum : Int32, zoneLetter : Text) : async (Float, Float) {
+    let result = await georust.proj(easting, northing, zoneNum, zoneLetter);
+    return result;
+  };
+  // public shared func randomIndex(begin : Float, end : Float) : async Int {
+  //   let result = await georust.randomnumber(begin, end);
+  //   return Nat64.toNat(result);
+  // };
+
+  // public shared func randomPair(begin : Float, end : Float) : async (Int, Int) {
+  //   let result = await georust.randompair(begin, end);
+  //   return (Nat64.toNat(result.0), Nat64.toNat(result.1));
+  // };
+
+  public query func randomIndex(min : Float, max : Float) : async Int {
+    let n = Float.toInt(max) - Float.toInt(min) + 1;
+    let x = (Time.now() * Time.now() * Time.now()) % 2038074743;
+    return Float.toInt(min) + x % n;
+  };
+
+  public query func randomPair(min : Float, max : Float) : async (Int,Int) {
+    let n = Float.toInt(max) - Float.toInt(min) + 1;
+    let x = (Time.now() * Time.now() * Time.now()) % 2038074743;
+    return (Float.toInt(min) + x % n,Float.toInt(min) + x*2 % n);
+  };
+
+
+  // convert i,j to geometry with lat,lng
+  public shared func landSlotToGeometry(i : Nat, j : Nat) : async Types.Geometry {
+    let latlng1 = await utm2lonlat(Float.fromInt(1000 * j), Float.fromInt(1000 * i), 20, "N");
+    let latlng2 = await utm2lonlat(Float.fromInt(1000 * (j + 1)), Float.fromInt(1000 * (i + 1)), 20, "N");
+    let coordinates = [[
+      [latlng1.0, latlng1.1],
+      [latlng2.0, latlng1.1],
+      [latlng2.0, latlng2.1],
+      [latlng1.0, latlng2.1],
+      [latlng1.0, latlng1.1]
+    ]];
+    let geometry : Types.Geometry = {
+      i = i;
+      j = j;
+      zoneNumber = 20;
+      zoneLetter = "N";
+      coordinates = coordinates;
+    };
+    return geometry;
+  };
+
+  // Land Config
+  public shared ({ caller }) func createLandConfig(mapWidth : Int, mapHeight : Int) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let id = Principal.toText(Principal.fromActor(this));
+    let rsLandConfig = state.landConfigs.get(id);
+    switch (rsLandConfig) {
+      case (?V) { #err(#AlreadyExisting) };
+      case null {
+        let newLandConfig : Types.LandConfig = {
+          id = id;
+          mapWidth = mapWidth;
+          mapHeight = mapHeight;
+        };
+        LandConfig.create(newLandConfig, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared ({ caller }) func readLandConfig() : async Response<Types.LandConfig> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsLandConfig = state.landConfigs.get(Principal.toText(Principal.fromActor(this)));
+    return Result.fromOption(rsLandConfig, #NotFound);
+  };
+
+  // Land Slot
+  public shared ({ caller }) func createLandSlot(indexRow : Nat, indexColumn : Nat, nationUTMS : [[Nat]], zoneNumber : Nat, zoneLetter : Text, d : Nat) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+
+    let newLandSlot : Types.LandSlot = {
+      id = Nat.toText(indexRow) # "-" #Nat.toText(indexColumn);
+      ownerId = caller;
+      isPremium = false;
+      isSelling = false;
+      indexRow = indexRow;
+      indexColumn = indexColumn;
+      zoneNumber = zoneNumber;
+      zoneLetter = zoneLetter;
+      easting = indexColumn * d;
+      northing = indexRow * d;
+      price = 1;
+    };
+    let created = state.landSlots.put(newLandSlot.id, newLandSlot);
+    // save land transter history
+    ignore await createLandTransferHistory(newLandSlot.ownerId, newLandSlot.id, 0.0003);
+    // delete user's current buying status
+    ignore await deleteLandBuyingStatus(newLandSlot.ownerId);
+    // update user nation
+    ignore await createNation(newLandSlot.ownerId, newLandSlot.id, nationUTMS);
+    // create user has land effect
+    ignore await createUserHasLandEffect(newLandSlot.ownerId);
+    
+    #ok("Success");
+  };
+
+  public query func purchasedLandSlotsCounter() : async Response<Nat> {
+    #ok(state.landSlots.size());
   };
 
   // Land
@@ -4306,11 +4903,11 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
       return #err(#NotAuthorized); //isNotAuthorized
     };
 
-    switch (await deposit(10000, caller)) {
+    switch (await deposit(30000, caller)) {
       case (#ok(bIndex)) {
         await recordTransaction(
           caller,
-          10000,
+          30000,
           caller,
           Principal.fromActor(this),
           #buyLandSlot,
@@ -4325,122 +4922,125 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
     };
   };
 
-  public shared ({ caller }) func createLandSlot({ id : Text; zone : Nat; i : Nat; j : Nat }) : async Response<Text> {
+public shared ({ caller }) func randomLandSlot() : async Response<Types.Geometry> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
-    let rsLandSlot = state.landSlots.get(id);
-    switch (rsLandSlot) {
-      case (?V) { #err(#AlreadyExisting) };
+    let rsNation = state.nations.get(Principal.toText(caller));
+    switch (rsNation) {
       case null {
-        let newlandSlot : Types.LandSlot = {
-          id = id;
-          ownerId = Principal.fromActor(this);
-          isPremium = false;
-          isSelling = false;
-          zone = zone;
-          xIndex = i;
-          yIndex = j;
-          price = 0.0;
-        };
-        LandSlot.create(newlandSlot, state);
-        #ok("Success");
-      };
-    };
-  };
-
-  public shared ({ caller }) func createLandSlots(scrX : Nat, scrY : Nat, desX : Nat, desY : Nat, mapWidth : Nat) : async Response<Int> {
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized); //isNotAuthorized
-    };
-    let iterI = Iter.range(scrX, desX -1);
-    var counter = 0;
-    for (i in iterI) {
-      let iterJ = Iter.range(scrY, desY -1);
-      for (j in iterJ) {
-        let landSlot = {
-          id = Nat.toText(i * mapWidth +j);
-          zone = 20;
-          i = i;
-          j = j;
-        };
-        let created = createLandSlot(landSlot);
-        counter := counter +1;
-      };
-    };
-
-    #ok(counter);
-  };
-
-  public shared ({ caller }) func updateLandSlot(zone : Nat, index : (Nat, Nat)) : async Response<Text> {
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized); //isNotAuthorized
-    };
-    var uuid : Text = await createUUID();
-    label whileLoop loop {
-      while (true) {
-        let rsLandSlot = state.landSlots.get(uuid);
-        switch (rsLandSlot) {
-          case (?V) {
-            uuid := await createUUID();
-          };
-          case null {
-            break whileLoop;
-          };
-        };
-      };
-    };
-    let newLandSlot : Types.LandSlot = {
-      id = uuid;
-      ownerId = caller;
-      isPremium = false;
-      isSelling = false;
-      zone = zone;
-      xIndex = index.0;
-      yIndex = index.1;
-      price = 0.0;
-    };
-    let created = state.landSlots.put(newLandSlot.id, newLandSlot);
-    ignore await createLandTransferHistory(newLandSlot.ownerId, newLandSlot.id, 0.0001);
-    ignore await deleteLandBuyingStatus(Principal.toText(newLandSlot.ownerId));
-    #ok("Success");
-  };
-
-  public shared query ({ caller }) func listLandSlots() : async Response<[(Text, Types.LandSlot)]> {
-    var list : [(Text, Types.LandSlot)] = [];
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized); //isNotAuthorized
-    };
-    for ((key, landSlot) in state.landSlots.entries()) {
-      if (landSlot.ownerId == caller) {
-        list := Array.append<(Text, Types.LandSlot)>(list, [(key, landSlot)]);
-      };
-    };
-    #ok((list));
-  };
-
-  public shared query ({ caller }) func loadLandSlotsArea(beginX : Nat, beginY : Nat, endX : Nat, endY : Nat, mapWidth : Nat) : async Response<[Types.LandSlot]> {
-    var list : [Types.LandSlot] = [];
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized); //isNotAuthorized
-    };
-
-    let iterI = Iter.range(beginX, endX);
-    for (i in iterI) {
-      let iterJ = Iter.range(beginY, endY);
-      for (j in iterJ) {
-        let rsLandSlot = state.landSlots.get(Nat.toText(i * mapWidth +j));
-        switch (rsLandSlot) {
+        let rsLandConfig = state.landConfigs.get(Principal.toText(Principal.fromActor(this)));
+        switch (rsLandConfig) {
           case (null) {
-
+            return #err(#NotFound);
           };
-          case (?V) {
-            list := Array.append<Types.LandSlot>(list, [V]);
+          case (?landConfig) {
+            var pair = await randomPair(0, Float.fromInt(landConfig.mapHeight -1));
+            var i = pair.0;
+            var j = pair.1;
+            // check to see if random function return already-exist landSlot, if yes run random function again
+            label whileloop loop {
+              while (true) {
+                let rsLandSlot = state.landSlots.get(Int.toText(i) # "-" # Int.toText(j));
+
+                switch (rsLandSlot) {
+                  case null {
+                    break whileloop;
+                  };
+                  case (?landSlot) {
+                    pair := await randomPair(0, Float.fromInt(landConfig.mapHeight -1));
+                    i := pair.0;
+                    j := pair.1;
+                  };
+                };
+              };
+            };
+            ignore await updateLandBuyingStatus(caller, Int.abs(i), Int.abs(j));
+            return #ok(
+              await landSlotToGeometry(Int.abs(i), Int.abs(j))
+            );
+          };
+        };
+      };
+      case (?nation) {
+        let rsLandConfig = state.landConfigs.get(Principal.toText(Principal.fromActor(this)));
+        switch (rsLandConfig) {
+          case (null) {
+            return #err(#NotFound);
+          };
+          case (?LandConfig) {
+            let adjacentLandSlots = await getAdjacentLandSlots(nation.landSlotIds, LandConfig);
+            let index = await randomIndex(0.0, Float.fromInt(adjacentLandSlots.size() -1));
+            let result = adjacentLandSlots[Int.abs(index)];
+
+            ignore await updateLandBuyingStatus(caller, Int.abs(result.i), Int.abs(result.j));
+            return #ok(
+              await landSlotToGeometry(Int.abs(result.i), Int.abs(result.j))
+            );
           };
         };
       };
     };
-    #ok((list));
+  };
+
+
+  public shared query ({ caller }) func getAdjacentLandSlots(landSlotIds : [Text], landConfig : Types.LandConfig) : async [{
+    i : Int;
+    j : Int;
+  }] {
+    var adjacentLandSlots : [{ i : Int; j : Int }] = [];
+    for (landSlotid in landSlotIds.vals()) {
+      let rsLandSlot = state.landSlots.get(landSlotid);
+      switch (rsLandSlot) {
+        case null {};
+        case (?landSlot) {
+          let indexRow : Int = landSlot.indexRow;
+          let indexColumn : Int = landSlot.indexColumn;
+          let upLandSlot = state.landSlots.get(Int.toText(indexRow -1) # "-" #Int.toText(indexColumn));
+          let downLandSlot = state.landSlots.get(Int.toText(indexRow +1) # "-" #Int.toText(indexColumn));
+          let leftLandSlot = state.landSlots.get(Int.toText(indexRow) # "-" #Int.toText(indexColumn -1));
+          let rightLandSlot = state.landSlots.get(Int.toText(indexRow) # "-" #Int.toText(indexColumn +1));
+
+          if (upLandSlot == null and indexRow -1 >= 0) {
+            adjacentLandSlots := Array.append<{ i : Int; j : Int }>(adjacentLandSlots, [{ i = indexRow -1; j = indexColumn }]);
+          };
+          if (downLandSlot == null and indexRow +1 <= landConfig.mapHeight -1) {
+            adjacentLandSlots := Array.append<{ i : Int; j : Int }>(adjacentLandSlots, [{ i = indexRow +1; j = indexColumn }]);
+          };
+          if (leftLandSlot == null and indexColumn -1 >= 0) {
+            adjacentLandSlots := Array.append<{ i : Int; j : Int }>(adjacentLandSlots, [{ i = indexRow; j = indexColumn -1 }]);
+          };
+          if (rightLandSlot == null and indexColumn +1 <= landConfig.mapWidth -1) {
+            adjacentLandSlots := Array.append<{ i : Int; j : Int }>(adjacentLandSlots, [{ i = indexRow; j = indexColumn +1 }]);
+          };
+        };
+      };
+    };
+    return adjacentLandSlots;
+  };
+
+  public shared query ({ caller }) func listUserLandSlots() : async Response<[Types.LandSlot]> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    var list : [Types.LandSlot] = [];
+    let id = Principal.toText(caller);
+    let rsNation = state.nations.get(id);
+    switch (rsNation) {
+      case null { return #err(#NotFound) };
+      case (?nation) {
+        for (landSlotId in nation.landSlotIds.vals()) {
+          let rsLandSlot = state.landSlots.get(landSlotId);
+          switch (rsLandSlot) {
+            case null {};
+            case (?landSlot) {
+              list := Array.append<Types.LandSlot>(list, [landSlot]);
+            };
+          };
+        };
+        return #ok(list);
+      };
+    };
   };
 
   public shared query ({ caller }) func listAllLandSlots() : async Response<[(Text, Types.LandSlot)]> {
@@ -4454,15 +5054,253 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
     #ok((list));
   };
 
-  public shared query ({ caller }) func landSlotsLength() : async Response<Int> {
-    var list : [(Text, Types.LandSlot)] = [];
+  // public shared ({ caller }) func loadNationsArea(beginX : Int, beginY : Int, endX : Int, endY : Int) : async Response<[Types.NationGeometry]> {
+  //   var list : [Types.Nation] = [];
+  //   if (Principal.toText(caller) == "2vxsx-fae") {
+  //     return #err(#NotAuthorized); //isNotAuthorized
+  //   };
+  //   let id = Principal.toText(Principal.fromActor(this));
+  //   let rsLandConfig = state.landConfigs.get(id);
+  //   switch (rsLandConfig) {
+  //     case null {
+  //       return #err(#NotFound);
+  //     };
+  //     case (?landConfig) {
+  //       let iterI = Iter.range(
+  //         Int.abs(Int.max(beginX, 0)),
+  //         Int.abs(Int.min(endX, landConfig.mapHeight -1))
+  //       );
+  //       for (i in iterI) {
+  //         let iterJ = Iter.range(
+  //           Int.abs(Int.max(beginY, 0)),
+  //           Int.abs(Int.min(endY, landConfig.mapWidth -1))
+  //         );
+  //         for (j in iterJ) {
+  //           let id = Nat.toText(i) # "-" #Nat.toText(j);
+  //           let rsLandSlot = state.landSlots.get(id);
+  //           switch (rsLandSlot) {
+  //             case (null) {};
+  //             case (?landSlot) {
+  //               let rsNation = state.nations.get(Principal.toText(landSlot.ownerId));
+  //               switch (rsNation) {
+  //                 case null {};
+  //                 case (?nation) {
+  //                   if (
+  //                     Array.find<Types.Nation>(
+  //                       list,
+  //                       func(val : Types.Nation) : Bool {
+  //                         val == nation;
+  //                       }
+  //                     ) == null
+  //                   ) {
+  //                     list := Array.append<Types.Nation>(list, [nation]);
+  //                   };
+  //                 };
+  //               };
+  //             };
+  //           };
+  //         };
+  //       };
+
+  //       var geometries : [Types.NationGeometry] = [];
+  //       for (value in list.vals()) {
+  //         var coordinates : [[Float]] = [];
+  //         for (utm in value.utms.vals()) {
+  //           let lonlat = await utm2lonlat(Float.fromInt(utm[1]), Float.fromInt(utm[0]), 20, "N");
+  //           coordinates := Array.append(coordinates, [[lonlat.0, lonlat.1]]);
+  //         };
+  //         let newGeometry : Types.NationGeometry = {
+  //           id = Principal.toText(value.id);
+  //           zoneLetter = "N";
+  //           zoneNumber = 20;
+  //           i = value.indexRow;
+  //           j = value.indexColumn;
+  //           coordinates = [coordinates];
+  //         };
+  //         geometries := Array.append(geometries, [newGeometry]);
+  //       };
+
+  //       return #ok((geometries));
+  //     };
+  //   };
+  // };
+
+
+  public shared ({ caller }) func loadNationsArea(centerX: Nat, centerY: Nat, nearbyUsers: Nat) : async Response<[Types.NationGeometry]> {
+    var list : [Types.Nation] = [];
+
+    let id = Principal.toText(Principal.fromActor(this));
+    let rsLandConfig = state.landConfigs.get(id);
+    switch (rsLandConfig) {
+      case null {
+        return #err(#NotFound);
+      };
+      case (?landConfig) {
+
+        // get nearby nations
+        if (state.nations.size()<=nearbyUsers) {
+          list := Iter.toArray(state.nations.vals());
+        }
+        else {
+          // caculate euclid distance from center Point to all Nations and store to a distance list 
+          var distanceList : [(Text,Float)] = [];
+          for (nation in state.nations.vals()) {
+            let distance = Float.sqrt(
+              (Float.fromInt(centerX)-Float.fromInt(nation.indexRow))**2
+              +
+              (Float.fromInt(centerY)-Float.fromInt(nation.indexColumn))**2
+            );
+            distanceList := Array.append<(Text,Float)>(distanceList,[(Principal.toText(nation.id),distance)]);
+          };
+          // sort distance list
+          distanceList := Array.sort<(Text,Float)>(
+            distanceList,
+            func (x: (Text,Float), y: (Text,Float)) : { #less; #equal; #greater } {
+              if (x.1 < y.1) { #less }
+              else if (x.1 == y.1) { #equal }
+              else { #greater }
+            }
+          );
+          // get n nearest nations based on sorted distance list
+          for (index in Iter.range(0,nearbyUsers-1)) {
+            let rsNation=state.nations.get(distanceList[index].0);
+            switch (rsNation) {
+              case null {
+              };
+              case (?nation) {
+                list := Array.append<Types.Nation>(list,[nation]);
+              };
+            };
+          };
+        };
+
+        // return geometries list
+        var geometries : [Types.NationGeometry] = [];
+        for (value in list.vals()) {
+          var coordinates : [[Float]] = [];
+          for (utm in value.utms.vals()) {
+            let lonlat = await utm2lonlat(Float.fromInt(utm[1]), Float.fromInt(utm[0]), 20, "N");
+            coordinates := Array.append(coordinates, [[lonlat.0, lonlat.1]]);
+          };
+          let newGeometry : Types.NationGeometry = {
+            id = Principal.toText(value.id);
+            zoneLetter = "N";
+            zoneNumber = 20;
+            i = value.indexRow;
+            j = value.indexColumn;
+            coordinates = [coordinates];
+          };
+          geometries := Array.append(geometries, [newGeometry]);
+        };
+        return #ok((geometries));
+      };
+    };
+  };
+
+  // Nation
+  public shared ({ caller }) func createNation(ownerId : Principal, landId : Text, nationUTMS : [[Nat]]) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
-    for ((key, landSlot) in state.landSlots.entries()) {
-      list := Array.append<(Text, Types.LandSlot)>(list, [(key, landSlot)]);
+    let rsNation = state.nations.get(Principal.toText(ownerId));
+    switch (rsNation) {
+      case (null) {
+        let nationIndex = await getNationIndex([landId]);
+        let newNation = {
+          id = ownerId;
+          landSlotIds = [landId];
+          indexRow = nationIndex.i;
+          indexColumn = nationIndex.j;
+          utms = nationUTMS;
+        };
+        let created = Nation.create(newNation, state);
+        #ok("Success");
+      };
+      case (?V) {
+        var newLandSlotIds : [Text] = [];
+        newLandSlotIds := Array.append<Text>(newLandSlotIds, V.landSlotIds);
+        newLandSlotIds := Array.append<Text>(newLandSlotIds, [landId]);
+        let nationIndex = await getNationIndex(newLandSlotIds);
+        let updateNation = {
+          id = ownerId;
+          landSlotIds = newLandSlotIds;
+          indexRow = nationIndex.i;
+          indexColumn = nationIndex.j;
+          utms = nationUTMS;
+        };
+        let updated = Nation.update(updateNation, state);
+        #ok("Success");
+      };
     };
-    #ok(list.size());
+  };
+
+  // public shared({caller}) func extendNation(d : Nat, utms : [Nation.UTM], newLandSlotId : Text) : async [Nation.UTM] {
+  //   let rsNewLandSlot = state.landSlots.get(newLandSlotId);
+  //   switch (rsNewLandSlot) {
+  //     case null {
+  //       return [];
+  //     };
+  //     case (?newLandSlot) {
+  //       let convertedLandslot : [Nation.UTM] = Nation.convertLandslotijToUTM(d, {
+  //         i=newLandSlot.indexRow;
+  //         j=newLandSlot.indexColumn
+  //       });
+  //       var currentUTMList : [Nation.UTM] = utms;
+
+  //       var result = Nation.removeDuplicatePoints(
+  //         Array.append<Nation.UTM>(currentUTMList, convertedLandslot)
+  //       );
+  //       for(i in Iter.range(0, currentUTMList.size() - 1)){
+  //         for(j in Iter.range(0, convertedLandslot.size() - 1)){
+  //           if(currentUTMList[i] == convertedLandslot[j]){
+  //             result := Array.filter<Nation.UTM>(result, func(val: Nation.UTM) : Bool { val != currentUTMList[i] });
+  //           };
+  //         };
+  //       };
+  //       return result;
+  //     };
+  //   };
+  // };
+
+  public shared ({ caller }) func getNationIndex(landSlotIds : [Text]) : async { i : Nat; j : Nat } {
+    var sumRow : Nat = 0;
+    var sumColumn : Nat = 0;
+    for (id in landSlotIds.vals()) {
+      let rsLandSlot = state.landSlots.get(id);
+      switch (rsLandSlot) {
+        case null {};
+        case (?landSlot) {
+          sumRow += landSlot.indexRow;
+          sumColumn += landSlot.indexColumn;
+        };
+      };
+    };
+    return { i = (sumRow / landSlotIds.size()); j = (sumColumn / landSlotIds.size()) };
+  };
+
+  public shared query ({ caller }) func readNation() : async Response<(Types.Nation)> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let id = Principal.toText(caller);
+    let rsNation = state.nations.get(id);
+    switch (rsNation) {
+      case null { return #err(#NotFound) };
+      case (?nation) {
+        return #ok(nation);
+      };
+    };
+  };
+
+  public shared query ({ caller }) func listNations() : async Response<[(Text, Types.Nation)]> {
+    var list : [(Text, Types.Nation)] = [];
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    for ((K, V) in state.nations.entries()) {
+      list := Array.append<(Text, Types.Nation)>(list, [(K, V)]);
+    };
+    #ok((list));
   };
 
   // Land Transfer History
@@ -4508,24 +5346,30 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
   };
 
   // Land Buying Status
-  public shared ({ caller }) func updateLandBuyingStatus(zone : Int, landSlotId : Text, randomTimes : Int) : async Response<Text> {
+  public shared ({ caller }) func updateLandBuyingStatus(userId : Principal, indexRow : Nat, indexColumn : Nat) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
 
-    let newLandBuyingStatus : Types.LandBuyingStatus = {
-      id = caller;
-      currentZone = zone;
-      currentLandSlotId = landSlotId;
-      randomTimes = randomTimes;
-    };
-    let principalId = Principal.toText(caller);
+    let newGeometry = await landSlotToGeometry(indexRow, indexColumn);
+
+    let principalId = Principal.toText(userId);
     let rsLandBuyingStatus = state.landBuyingStatuses.get(principalId);
     switch (rsLandBuyingStatus) {
       case (?V) {
-        let updated = LandBuyingStatus.update(newLandBuyingStatus, state);
+        let updateLandBuyingStatus : Types.LandBuyingStatus = {
+          id = userId;
+          geometry = newGeometry;
+          randomTimes = V.randomTimes -1;
+        };
+        let updated = LandBuyingStatus.update(updateLandBuyingStatus, state);
       };
       case null {
+        let newLandBuyingStatus : Types.LandBuyingStatus = {
+          id = userId;
+          geometry = newGeometry;
+          randomTimes = 2;
+        };
         let created = LandBuyingStatus.create(newLandBuyingStatus, state);
       };
     };
@@ -4538,18 +5382,23 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
     };
     let id = Principal.toText(caller);
     let rsLandBuyingStatus = state.landBuyingStatuses.get(id);
-    return Result.fromOption(rsLandBuyingStatus, #NotFound);
+    switch (rsLandBuyingStatus) {
+      case null { return #err(#NotFound) };
+      case (?landBuyingStatus) {
+        return #ok(landBuyingStatus);
+      };
+    };
   };
 
-  public shared ({ caller }) func deleteLandBuyingStatus(id : Text) : async Response<Text> {
+  public shared ({ caller }) func deleteLandBuyingStatus(id : Principal) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
-    let rsLandBuyingStatus = state.landBuyingStatuses.get(id);
+    let rsLandBuyingStatus = state.landBuyingStatuses.get(Principal.toText(id));
     switch (rsLandBuyingStatus) {
       case (null) { #err(#NotFound) };
       case (?V) {
-        let deleted = state.landBuyingStatuses.delete(id);
+        let deleted = state.landBuyingStatuses.delete(Principal.toText(id));
         #ok("Success");
       };
     };
@@ -4562,6 +5411,603 @@ shared ({ caller = owner }) actor class SustainationsDAO(ledgerId : ?Text) = thi
     };
     for ((K, V) in state.landBuyingStatuses.entries()) {
       list := Array.append<(Text, Types.LandBuyingStatus)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+
+  // Land Effect
+  public shared ({ caller }) func createLandEffect(effect : Types.LandEffect) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    // let uuid : Text = await createUUID();
+    let rsLandEffect = state.landEffects.get(effect.id);
+    switch (rsLandEffect) {
+      case (?V) { #err(#AlreadyExisting) };
+      case null {
+        LandEffect.create(effect, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared query ({ caller }) func listLandEffects() : async Response<[(Text, Types.LandEffect)]> {
+    var list : [(Text, Types.LandEffect)] = [];
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    for ((K, V) in state.landEffects.entries()) {
+      list := Array.append<(Text, Types.LandEffect)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+
+  // User has land efffect
+  public shared ({ caller }) func createUserHasLandEffect(userId : Principal) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let id = Principal.toText(userId);
+    let rsUserHaslandEffect = state.userHasLandEffects.get(id);
+    switch (rsUserHaslandEffect) {
+      case null {
+        let rsNation = state.nations.get(id);
+        switch (rsNation) {
+          case null { #err(#NotFound); };
+          case (?nation) {
+            // get landSlots of user
+            var landSlots : [Types.LandSlot] = [];
+            for (landSlotId in nation.landSlotIds.vals()){
+              let rsLandSlot = state.landSlots.get(landSlotId);
+              switch (rsLandSlot) {
+                case null {};
+                case (?landSlot) {
+                  landSlots := Array.append(landSlots, [landSlot]);
+                };
+              };
+            };
+
+            // check land effect
+            let landEffectId = await LandEffect.checkEffect(landSlots, state);
+            if (landEffectId != "None") {
+              let newUserHasLandEffect : Types.UserHasLandEffect = {
+                id = userId;
+                landEffectId = landEffectId;
+              };
+              let created = UserHasLandEffect.create(newUserHasLandEffect, state);
+            };
+            return #ok("Success");
+          };
+        };
+      };
+      case (?V) {
+        #err(#AlreadyExisting);
+      };
+    };
+  };
+
+
+  public shared query ({ caller }) func readUserHasLandEffect() : async Response<(Types.UserHasLandEffect)> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let id = Principal.toText(caller);
+    let rsHasLandEffect = state.userHasLandEffects.get(id);
+    switch (rsHasLandEffect) {
+      case null { return #err(#NotFound) };
+      case (?hasLandEffect) {
+        return #ok(hasLandEffect);
+      };
+    };
+  };
+  
+
+  public shared query ({ caller }) func listAllUserHasLandEffects() : async Response<[(Text, Types.UserHasLandEffect)]> {
+    var list : [(Text, Types.UserHasLandEffect)] = [];
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    for ((K, V) in state.userHasLandEffects.entries()) {
+      list := Array.append<(Text, Types.UserHasLandEffect)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+
+  public shared ({ caller }) func addAllInventory(characterId : Text, amount : Int) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    for (material in state.materials.vals()) {
+      var check : Bool = false;
+      for ((k, v) in state.inventories.entries()) {
+        if (v.characterId == characterId and v.materialId == material.id) {
+          let updateInventory : Types.Inventory = {
+            id = v.id;
+            characterId = characterId;
+            materialId = material.id;
+            amount = v.amount + amount;
+          };
+          let update = state.inventories.replace(v.id, updateInventory);
+          check := true;
+        };
+      };
+      if (check == false) {
+        let newInventory : Types.Inventory = {
+          id = await createUUID();
+          characterId = characterId;
+          materialId = material.id;
+          amount = amount;
+        };
+        let newInven = state.inventories.put(newInventory.id, newInventory);
+      };
+    };
+    #ok("Success");
+  };
+
+  // Seed
+  public shared ({ caller }) func createSeed(seed : Types.Seed) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    // let uuid : Text = await createUUID();
+    let rsSeed = state.seeds.get(seed.id);
+    switch (rsSeed) {
+      case (?V) { #err(#AlreadyExisting) };
+      case null {
+        Seed.create(seed, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared query ({ caller }) func listSeeds() : async Response<[(Text, Types.Seed)]> {
+    var list : [(Text, Types.Seed)] = [];
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    for ((K, V) in state.seeds.entries()) {
+      list := Array.append<(Text, Types.Seed)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+
+  // Plant Tree
+  public shared ({ caller }) func plantTree(landId : Text, indexRow : Nat, indexColumn : Nat, materialId : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+
+    let rsMaterial = state.materials.get(materialId);
+    switch (rsMaterial) {
+      case null {
+        #err(#NotFound);
+      };
+      case (?material) {
+        let rsLandSlot = state.landSlots.get(landId);
+        switch (rsLandSlot) {
+          case null {
+            #err(#NotFound);
+          };
+          case (?landSlot) {
+            let objectId = await createPlant(materialId);
+            let createdTile = await createTile(landId, indexRow, indexColumn, objectId);
+            ignore await  createUserHasFarmEffect(indexRow,indexColumn,objectId,landSlot,false);     
+            return #ok("Success"); 
+          };
+        };
+      };
+    };
+  };
+
+  public query func plantedTreesCounter() : async Response<Nat> {
+    #ok(state.plants.size());
+  };
+
+  // Harvest Tree
+  public shared ({ caller }) func harvestTree(tileId : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+
+    let rsTile = state.tiles.get(tileId);
+    switch (rsTile) {
+      case null {
+        #err(#NotFound);
+      };
+      case (?tile) {
+        // update plant: status to newlyPlanted and plantingTime to Now
+        let plantId = tile.objectId;
+        let rsPlant = state.plants.get(plantId);
+        switch (rsPlant) {
+          case null {};
+          case (?plant) {
+            let updatePlant : Types.Plant = {
+              id = plant.id;
+              seedId = plant.seedId;
+              hasEffectId = plant.hasEffectId;
+              status = "newlyPlanted";
+              plantTime = Time.now() / 1000000000;
+            };
+            let updated = Plant.update(updatePlant, state);
+            // add harvested product to user's Stash
+            ignore await createStash(Principal.toText(caller), plant.seedId);
+          };
+        };
+        #ok("Success");
+      };
+    };
+  };
+
+  // Remove Tree
+  public shared ({ caller }) func removeTree(tileId : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+
+    let rsTile = state.tiles.get(tileId);
+    switch (rsTile) {
+      case (null) { #err(#NotFound) };
+      case (?tile) {
+        // update Farm Effect
+        let rsLand = state.landSlots.get(tile.landSlotId);
+        switch (rsLand) {
+          case null {
+          };
+          case (?landSlot) {
+            ignore await  createUserHasFarmEffect(tile.indexRow,tile.indexColumn,tile.objectId,landSlot,true); 
+          }
+        }; 
+
+        let plantId = tile.objectId;
+        let rsPlant = state.plants.get(plantId);
+        switch (rsPlant) {
+          case null {};
+          case (?plant) {
+            // delete Plant in tile
+            let deletedPlant = state.plants.delete(plantId);
+          };
+        };
+         
+        // delete Tile
+        let deletedTile = state.tiles.delete(tileId);
+        #ok("Success");
+      };
+    };
+  };
+
+  // Tile
+  public shared ({ caller }) func createTile(landId : Text, indexRow : Nat, indexColumn : Nat, objectId : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+
+    let tileId = Nat.toText(indexRow) # "-" #Nat.toText(indexColumn);
+    let newTile : Types.Tile = {
+      id = tileId;
+      landSlotId = landId;
+      indexRow = indexRow;
+      indexColumn = indexColumn;
+      objectId = objectId;
+    };
+    let created = Tile.create(newTile, state);
+    return #ok("Success");
+  };
+
+  public shared ({ caller }) func loadTilesArea(beginX : Int, beginY : Int, endX : Int, endY : Int) : async Response<[Types.FarmObject]> {
+    var list : [Types.FarmObject] = [];
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+
+    let iterI = Iter.range(Int.abs(beginX), Int.abs(endX));
+    for (i in iterI) {
+      let iterJ = Iter.range(Int.abs(beginY), Int.abs(endY));
+      for (j in iterJ) {
+        let id = Nat.toText(i) # "-" #Nat.toText(j);
+        let rsTile = state.tiles.get(id);
+        switch (rsTile) {
+          case (null) {
+            // add empty farm object
+            let newFarmObject : Types.FarmObject = {
+              id = "None";
+              landSlotId = "None";
+              indexRow = i;
+              indexColumn = j;
+              seedId = "None";
+              name = "None";
+              hasEffectId = "None";
+              status = "None";
+              remainingTime = 0;
+            };
+            list := Array.append(list, [newFarmObject]);
+          };
+          case (?tile) {
+            let rsPlant = state.plants.get(tile.objectId);
+            switch (rsPlant) {
+              case null {};
+              case (?plant) {
+                let rsSeed = state.seeds.get(plant.seedId);
+                switch (rsSeed) {
+                  case null {};
+                  case (?seed) {
+                    
+                    
+                    // check if this tile has waitTime-related farmEffect
+                    var remainingTime : Int = 0;
+                    let rsHasEffect = state.hasFarmEffects.get(plant.hasEffectId);
+                    var landEffectValue = 0.0;
+                    let rsUserHasLandEffect = state.userHasLandEffects.get(Principal.toText(caller));
+                    switch (rsUserHasLandEffect) {
+                      case null {};
+                      case (?userHasLandEffect) {
+                        let rsLandEffect = state.landEffects.get(userHasLandEffect.landEffectId);
+                        switch (rsLandEffect) {
+                          case null {};
+                          case (?landEffect) {
+                            if (landEffect.effect == "waitTime") {
+                              landEffectValue := landEffect.value;
+                            };
+                          };
+                        };
+                      };
+                    };
+
+
+                    switch (rsHasEffect) {
+                      case null {
+                        remainingTime:=Int.max(seed.waitTime - (Time.now() / 1000000000 - plant.plantTime), 0);
+                      };
+                      case (?hasEffect) {
+                        let rsEffect = state.farmEffects.get(hasEffect.farmEffectId);
+                        switch (rsEffect) {
+                          case null {
+                            remainingTime:=Int.max(seed.waitTime - (Time.now() / 1000000000 - plant.plantTime), 0);
+                          };
+                          case (?farmEffect) {
+                            if (farmEffect.effect=="waitTime") {
+                              let newWaitTime : Int = seed.waitTime + Float.toInt((landEffectValue+farmEffect.value)*Float.fromInt(seed.waitTime));
+                              remainingTime:=Int.max(newWaitTime - (Time.now() / 1000000000 - plant.plantTime), 0);
+                            } else {
+                              remainingTime:=Int.max(seed.waitTime - (Time.now() / 1000000000 - plant.plantTime), 0);
+                            };
+                          };
+                        };
+                      };
+                    };
+
+                    // update plant status
+                    var status = plant.status;
+                    if (remainingTime == 0) {
+                      let updatePlant : Types.Plant = {
+                        id = plant.id;
+                        seedId = plant.seedId;
+                        hasEffectId = plant.hasEffectId;
+                        status = "fullGrown";
+                        plantTime = plant.plantTime;
+                      };
+                      status := "fullGrown";
+                      let updated = Plant.update(updatePlant, state);
+                    } else if (remainingTime <= seed.waitTime / 2) {
+                      let updatePlant : Types.Plant = {
+                        id = plant.id;
+                        seedId = plant.seedId;
+                        hasEffectId = plant.hasEffectId;
+                        status = "growing";
+                        plantTime = plant.plantTime;
+                      };
+                      status := "growing";
+                      let updated = Plant.update(updatePlant, state);
+                    };
+                    // add farm object
+                    let newFarmObject : Types.FarmObject = {
+                      id = tile.id;
+                      landSlotId = tile.landSlotId;
+                      indexRow = tile.indexRow;
+                      indexColumn = tile.indexColumn;
+                      seedId = plant.seedId;
+                      name = seed.name;
+                      hasEffectId = plant.hasEffectId;
+                      status = status;
+                      remainingTime = remainingTime;
+                    };
+                    list := Array.append(list, [newFarmObject]);
+                  };
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+    #ok((list));
+  };
+
+  public shared query ({ caller }) func listTiles() : async Response<[(Text, Types.Tile)]> {
+    var list : [(Text, Types.Tile)] = [];
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    for ((K, V) in state.tiles.entries()) {
+      list := Array.append<(Text, Types.Tile)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+
+  //
+  
+
+  // Plant
+  public shared func createPlant(materialId : Text) : async Text {
+    for ((K, V) in state.seeds.entries()) {
+      if (V.materialId == materialId) {
+        var uuid : Text = await createUUID();
+        label whileLoop loop {
+          while (true) {
+            let rsPlant = state.plants.get(uuid);
+            switch (rsPlant) {
+              case (?V) {
+                uuid := await createUUID();
+              };
+              case null {
+                break whileLoop;
+              };
+            };
+          };
+        };
+        let newPlant : Types.Plant = {
+          id = uuid;
+          seedId = V.id;
+          hasEffectId = "None";
+          status = "newlyPlanted";
+          plantTime = Time.now() / 1000000000;
+        };
+
+        let created = Plant.create(newPlant, state);
+        return uuid;
+      };
+    };
+    "NotFound";
+  };
+
+  // Farm Effect
+  public shared ({ caller }) func createFarmEffect(effect : Types.FarmEffect) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    // let uuid : Text = await createUUID();
+    let rsFarmEffect = state.farmEffects.get(effect.id);
+    switch (rsFarmEffect) {
+      case (?V) { #err(#AlreadyExisting) };
+      case null {
+        FarmEffect.create(effect, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared query ({ caller }) func listFarmEffects() : async Response<[(Text, Types.FarmEffect)]> {
+    var list : [(Text, Types.FarmEffect)] = [];
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    for ((K, V) in state.farmEffects.entries()) {
+      list := Array.append<(Text, Types.FarmEffect)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+
+  // user has farm effect
+  public shared ({ caller }) func createUserHasFarmEffect(indexTileRow : Nat, indexTileColumn : Nat, objectId : Text, landSlot : Types.LandSlot, isRemoveTree: Bool) : async Response<Text> { 
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+
+    let rsPlant = state.plants.get(objectId);
+    switch (rsPlant) {
+      case null {
+        return #err(#NotFound);
+      };
+      case (?plant) {
+        var plantsInLandSlot : [Types.FarmObject] = await LandSlot.listFarmObjectsFromLandSlot( landSlot.indexRow, landSlot.indexColumn, state);
+        var farmObjects : [Types.FarmObject] = await Tile.getFarmObjectsFromFarmObject( indexTileRow, indexTileColumn, plant.seedId, plantsInLandSlot);
+        
+        // if this function is used in removeTree, remove the deleted farmObject in farmObjects
+        if (isRemoveTree==true) {
+          let rsFarmObject = Array.find<Types.FarmObject>(farmObjects, func (val : Types.FarmObject) : Bool {val.indexRow == indexTileRow and val.indexColumn == indexTileColumn and val.seedId == plant.seedId});
+          switch (rsFarmObject) {
+            case null {};
+            case (?V) {
+              farmObjects := Array.filter<Types.FarmObject> (
+                farmObjects, 
+                func(val: Types.FarmObject) : Bool { val != V }
+              );
+            };
+          };
+        };
+        // if list of farmObjects is not Empty
+        if (farmObjects!=[]) {
+          // create new HasFarmEffect for user if the result effect is not "None"
+          let effectId = await FarmEffect.checkEffect(farmObjects,state);
+          var uuid : Text = "None";
+          if (effectId != "None") {
+            uuid := await createUUID();
+            label whileLoop loop {
+              while (true) {
+                let rsHasFarmEffect = state.hasFarmEffects.get(uuid);
+                switch (rsHasFarmEffect) {
+                  case (?V) {
+                    uuid := await createUUID();
+                  };
+                  case null {
+                    break whileLoop;
+                  };
+                };
+              };
+            };
+            let newHasFarmEffect : Types.UserHasFarmEffect = {
+              id = uuid;
+              farmEffectId = effectId;
+              userId = landSlot.ownerId;
+            };
+            let created = HasFarmEffect.create(newHasFarmEffect,state);
+          };
+
+          // apply new Effect to farmObjects
+          for (farmObject in farmObjects.vals()) {
+            let rsTile = state.tiles.get(farmObject.id);
+            switch (rsTile) {
+              case null {
+                return #err(#NotFound);
+              };
+              case (?tile) {
+                let rsPlant = state.plants.get(tile.objectId);
+                switch (rsPlant) {
+                  case null {
+                  };
+                  case (?plant) {
+                    // delete old Farm Effect that user has
+                    let deleted = state.hasFarmEffects.delete(plant.hasEffectId);
+                    
+                    // update hasEffectId in plant of tile
+                    let updatePlant : Types.Plant = {
+                      id = plant.id;
+                      seedId = plant.seedId;
+                      hasEffectId = uuid;
+                      status = plant.status;
+                      plantTime = plant.plantTime;
+                    };
+                    let updated = Plant.update(updatePlant,state);
+                  };
+                };
+              };
+            };
+          };
+        };
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared query ({ caller }) func listHasFarmEffects() : async Response<[(Text, Types.UserHasFarmEffect)]> {
+    var list : [(Text, Types.UserHasFarmEffect)] = [];
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    for ((K, V) in state.hasFarmEffects.entries()) {
+      if (V.userId == caller) {
+        list := Array.append<(Text, Types.UserHasFarmEffect)>(list, [(K, V)]);
+      };
+    };
+    #ok((list));
+  };
+
+  public shared query ({ caller }) func listAllUserHasFarmEffects() : async Response<[(Text, Types.UserHasFarmEffect)]> {
+    var list : [(Text, Types.UserHasFarmEffect)] = [];
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    for ((K, V) in state.hasFarmEffects.entries()) {
+      list := Array.append<(Text, Types.UserHasFarmEffect)>(list, [(K, V)]);
     };
     #ok((list));
   };

@@ -5,7 +5,8 @@ import {
   loadEventOptions,
   updateCharacterStats,
   listCharacterSelectsItems,
-  createCharacterCollectsMaterials
+  createCharacterCollectsMaterials,
+  listCharacterCollectsMaterials
 } from '../../GameApi';
 import { settings } from '../settings';
 import { func } from 'prop-types';
@@ -24,9 +25,13 @@ const BtnExit = 'metaverse/scenes/UI_exit.png'
 const UI_Utility = 'metaverse/scenes/UI-utility.png'
 const UI_Utility_Sprite = 'metaverse/scenes/UI_Utility_Sprite.png'
 const item_potion = 'metaverse/scenes/item_ingame_HP.png'
+const item_carrot = 'metaverse/scenes/item_ingame_carrot.png'
+const item_tomato = 'metaverse/scenes/item_ingame_tomato.png'
+const item_wheat = 'metaverse/scenes/item_ingame_wheat.png'
 
 const popupWindo = 'metaverse/selectMap/Catalonia_popup.png';
 const popupClose = 'metaverse/selectMap/UI_ingame_close.png';
+
 
 export default class lake_scene1 extends BaseScene {
   constructor() {
@@ -62,14 +67,20 @@ export default class lake_scene1 extends BaseScene {
     this.load.spritesheet('btnBlank', btnBlank, { frameWidth: 1102, frameHeight: 88 });
     this.load.image("obstacle", obstacle);
 
+
+
     //UI -- One time load
     this.load.image("BtnExit", BtnExit);
     this.load.spritesheet('UI_Utility_Sprite', UI_Utility_Sprite, { frameWidth: 192, frameHeight: 192 });
     this.load.image("item_potion", item_potion);
+    this.load.image("item_carrot", item_carrot);
+    this.load.image("item_tomato", item_tomato);
+    this.load.image("item_wheat", item_wheat);
 
     //Popup
     this.load.spritesheet('popupWindo', popupWindo, { frameWidth: 980, frameHeight: 799 });
     this.load.image("popupClose", popupClose);
+
 
   }
 
@@ -99,6 +110,7 @@ export default class lake_scene1 extends BaseScene {
   }
 
   async create() {
+    this.isUsedUsableItem = [false, '']
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
@@ -184,6 +196,7 @@ export default class lake_scene1 extends BaseScene {
 
     this.des.setMask(this.mask);
 
+
     // //  The rectangle they can 'drag' within
     this.add.zone(150, 230, 900, 250).setOrigin(0).setInteractive().setVisible(true).setScrollFactor(0)
       .on('pointermove', (pointer) => {
@@ -221,7 +234,7 @@ export default class lake_scene1 extends BaseScene {
         this.options[idx].setFrame(2);
       }
 
-      this.options[idx].on('pointerdown', () => {
+      this.options[idx].on('pointerdown', async () => {
         if (takeable) {
           this.triggerContinue();
           this.clickSound.play();
@@ -260,7 +273,7 @@ export default class lake_scene1 extends BaseScene {
     if (this.player.x > 5100) {
       this.pregameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start("lake_scene2", { isUsedPotion: this.isUsedPotion });
+      this.scene.start("lake_scene2", { isUsedPotion: this.isUsedPotion, isUsedUsableItem: this.isUsedUsableItem });
     }
 
     if (this.player.x > 4200 && this.isInteracted == false) {

@@ -45,13 +45,14 @@ const Metaverse = () => {
             src="metaverse/menu/introduction.png"
             onClick={() => window.open("https://www.youtube.com/watch?v=ZgwDobu5OcY", "_blank")}
           />
+          <Item src="metaverse/menu/land.png" onClick={() => history.push("/metaverse/land")} />
           <Item src="metaverse/menu/quest.png" onClick={() => history.push("/metaverse/quests")} />
+          <Item src="metaverse/menu/farm.png" onClick={() => history.push("/metaverse/farm")} />
           <Item
             src="metaverse/menu/bootcamp.png"
             onClick={() => history.push("/metaverse/bootcamp")}
           />
-          <Item src="metaverse/menu/land.png" onClick={() => history.push("/metaverse/land")} />
-          <Item src="metaverse/menu/departure.png" onClick={() => history.push("/")} />
+          <Item src="metaverse/menu/departure.png" onClick={() => history.push("/dashboard")} />
         </Stack>
       </Box>
     </Box>

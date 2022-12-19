@@ -6,7 +6,9 @@ import {
   updateCharacterStats,
   listCharacterSelectsItems,
   createCharacterCollectsMaterials,
-  readEvent
+  readEvent,
+  loadCharacter,
+  useUsableItem
 } from '../../GameApi';
 import { settings } from '../settings';
 import { isThisSecond } from 'date-fns';
@@ -28,7 +30,8 @@ export default class catalonia_scene2_1 extends BaseScene {
   }
   init(data) {
     this.isHealedPreviously = data.isUsedPotion;
-    console.log('healed', this.isHealedPreviously);
+    this.isUsedUsableItem = data.isUsedUsableItem;
+    console.log(data)
   }
   clearSceneCache() {
     const textures_list = ['ground', 'background1', 'background2',
@@ -40,7 +43,26 @@ export default class catalonia_scene2_1 extends BaseScene {
 
   preload() {
     this.addLoadingScreen();
-    this.initialLoad("e8");
+
+    if (this.isUsedUsableItem[0]){
+      this.load.rexAwait(function (successCallback, failureCallback) {
+        loadCharacter().then((result) => {
+          this.characterData = result.ok[1];
+          this.characterBefore = this.characterData;
+          this.load.rexAwait(function (successCallback, failureCallback) {
+            useUsableItem(this.characterData.id, this.isUsedUsableItem[1]).then((result) => {
+              this.initialLoad("e8");     
+              successCallback();         
+            });
+          }, this);
+          successCallback();
+       
+        });
+      }, this);
+    }
+    else {
+      this.initialLoad("e8");
+    }
 
     //Preload
     this.clearSceneCache();
@@ -85,10 +107,10 @@ export default class catalonia_scene2_1 extends BaseScene {
   }
 
   async create() {
+    console.log("before: ", this.characterBefore)
+    console.log("after: ", this.characterData)
     this.isExhausted();
     this.listMaterial();
-
-    // add audios
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
     this.ingameSound = this.sound.add('ingameSound', { loop: true });
@@ -160,6 +182,10 @@ export default class catalonia_scene2_1 extends BaseScene {
 
     // load event options
     this.options = [];
+    if(this.characterBefore != undefined){
+      this.showColorLossAllStat(this.characterBefore, this.characterData)
+    }
+
     for (const idx in this.eventOptions) {
       // can take option or not
       const takeable = this.eventOptions[idx][0];
@@ -192,12 +218,7 @@ export default class catalonia_scene2_1 extends BaseScene {
           this.setValue(this.mana, this.characterTakeOptions[idx].currentMana / this.characterTakeOptions[idx].maxMana * 100);
           this.setValue(this.morale, this.characterTakeOptions[idx].currentMorale / this.characterTakeOptions[idx].maxMorale * 100);
 
-          //HP, Stamina, mana, morele in col       
-          let loss_stat = this.showLossStat(this.characterData, this.characterTakeOptions[idx])
-          this.showColorLossStat(423, 65, loss_stat[0]);
-          this.showColorLossStat(460 + 200, 65, loss_stat[1]);
-          this.showColorLossStat(470 + 200 * 2 + 20, 65, loss_stat[2]);
-          this.showColorLossStat(490 + 200 * 3 + 35, 65, loss_stat[3]);
+          this.showColorLossAllStat(this.characterData, this.characterTakeOptions[idx])
           // update character after choose option
           updateCharacterStats(this.characterTakeOptions[idx]);
           // create charactercollectsmaterials after choose option
@@ -216,7 +237,7 @@ export default class catalonia_scene2_1 extends BaseScene {
     if (this.player.x > 2779) {
       this.ingameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start('catalonia_scene2_2', { isUsedPotion: this.isUsedPotion });
+      this.scene.start('catalonia_scene2_2', { isUsedPotion: this.isUsedPotion, isUsedUsableItem: this.isUsedUsableItem});
     }
 
     if (this.player.x > 1400 && this.isInteracted == false) {

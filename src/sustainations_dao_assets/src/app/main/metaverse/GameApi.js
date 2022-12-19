@@ -11,6 +11,23 @@ function getUserInfo() {
   });
 };
 
+export function getQuestGameInfo(eventId){
+  return new Promise((resolve, reject) => {
+    const { user } = store.getState();
+    const rs = user.actor.getQuestGameInfo(eventId);
+    resolve(rs);
+  });
+};
+
+// export function getCharacterActions(eventId){
+//   return new Promise((resolve, reject) => {
+//     const { user } = store.getState();
+//     const rs = user.actor.getCharacterActions(eventId);
+//     resolve(rs);
+//   });
+// };
+
+
 // character
 const characterClassId = "cc1";
 
@@ -40,6 +57,17 @@ function updateCharacterStats(character) {
   const promise = new Promise((resolve, reject) => {
     const { user } = store.getState();
     const rs = user.actor.updateCharacter(character);
+    resolve(rs);
+  })
+  promise.then((data) => {
+    return data;
+  })
+};
+
+export function updateCharacterStatsEngine(character) {
+  const promise = new Promise((resolve, reject) => {
+    const { user } = store.getState();
+    const rs = user.actor.updateCharacterStatsEngine(character);
     resolve(rs);
   })
   promise.then((data) => {
@@ -175,6 +203,27 @@ function getHpPotion() {
   });
 };
 
+async function getUsableItem() {
+  const { user } = store.getState();
+  const func = async () => await user.actor.getUsableItem();
+  const result = (await func());
+  return result;
+};
+
+async function listStash() {
+  const { user } = store.getState();
+  const func = async () => await user.actor.listStash();
+  const result = (await func()).ok;
+  return result;
+};
+
+async function useUsableItem(characterId, stashId) {
+  const { user } = store.getState();
+  const func = async () => await user.actor.useUsableItem(characterId, stashId);
+  const result = (await func()).ok;
+  return result;
+};
+
 // get AR item
 function canGetARItemPromise(eventItemId) {
   return new Promise((resolve, reject) => {
@@ -199,7 +248,7 @@ async function createInventory(characterId) {
 
 async function openInventory(characterId) {
   const { user } = store.getState();
-  const func = async () => await user.actor.openInventory(characterId);
+  const func = async () => await user.actor.listInventory(characterId);
   const rs = (await func()).ok;
   return rs;
 };
@@ -241,6 +290,36 @@ async function readEvent(eventId) {
 }
 
 //Engine
+//Engine
+//quest
+async function createQuestEngine(quest) {
+  const { user } = store.getState();
+  const func = async () => await user.actor.createQuestEngine(quest);
+  const rs = (await func()).ok;
+  return rs;
+}
+
+async function createEventEngine(event) {
+  const { user } = store.getState();
+  const func = async () => await user.actor.createEventEngine(event);
+  const rs = (await func()).ok;
+  return rs;
+}
+
+async function createEventOptionEngine(eventOption) {
+  const { user } = store.getState();
+  const func = async () => await user.actor.createEventOptionEngine(eventOption);
+  const rs = (await func()).ok;
+  return rs;
+}
+
+async function createScene(scene) {
+  const { user } = store.getState();
+  const func = async () => await user.actor.createScene(scene);
+  const rs = (await func()).ok;
+  return rs;
+}
+
 // list scene of quest
 async function listSceneQuests(idQuest) {
   const { user } = store.getState();
@@ -263,9 +342,31 @@ async function readEventEngine(eventId) {
   return event;
 }
 
-async function readScene(eventId) {
+async function listIdScenes() {
   const { user } = store.getState();
-  const func = async () => await user.actor.readScene(eventId);
+  const func = async () => await user.actor.listIdScenes();
+  const listIdScenes = (await func()).ok;
+  return listIdScenes;
+}
+
+async function listIdEventEngine() {
+  const { user } = store.getState();
+  const func = async () => await user.actor.listIdEventEngine();
+  const listIdEventEngine = (await func()).ok;
+  return listIdEventEngine;
+}
+
+async function addAllInventory(characterId, amount) {
+  return new Promise((resolve, reject) => {
+    const { user } = store.getState();
+    const rs = user.actor.addAllInventory(characterId, amount);
+    resolve(rs);
+  });
+};
+
+async function readSceneEngine(sceneId) {
+  const { user } = store.getState();
+  const func = async () => await user.actor.readSceneEngine(sceneId);
   const scene = (await func()).ok;
   return scene;
 }
@@ -291,6 +392,7 @@ async function characterCollectsMaterialEngines(eventId) {
   return result;
 };
 
+
 export {
   getUserInfo,
   loadQuestItems,
@@ -312,18 +414,28 @@ export {
   loadEventItem,
   getHpPotion,
   useHpPotion,
+  getUsableItem,
+  listStash,
   gainCharacterExp,
   resetCharacterCollectsMaterials,
+  characterCollectsMaterialEngines,
   createInventory,
   openInventory,
   getRemainingTime,
   payQuest,
   readEvent,
   listSceneQuests,
-  loadEventOptionEngines,
+  addAllInventory,
+  useUsableItem,
+  createQuestEngine,
+  createEventEngine,
+  createEventOptionEngine,
+  createScene,
   readEventEngine,
-  readScene,
+  readSceneEngine,
+  loadEventOptionEngines,
   loadQuestItemEngines,
-  characterTakeOptionEngine, 
-  characterCollectsMaterialEngines
+  characterTakeOptionEngine,
+  listIdScenes,
+  listIdEventEngine,
 }

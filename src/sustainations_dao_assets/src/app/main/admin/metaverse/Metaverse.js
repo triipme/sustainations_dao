@@ -209,6 +209,135 @@ const Metaverse = () => {
     });
   };
 
+  const createSeed = () => {
+    return new Promise(resolve => {
+      const seeds = data[8];
+      seeds.forEach(async seed => {
+        try {
+          if (!!actor?.createSeed) {
+            const rs = await actor.createSeed(seed);
+            console.log("Create Seed");
+            console.log(rs);
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      });
+      resolve();
+    });
+  };
+
+  const createFarmEffect = () => {
+    return new Promise(resolve => {
+      const farmEffects = data[9];
+      farmEffects.forEach(async farmEffect => {
+        try {
+          if (!!actor?.createFarmEffect) {
+            const rs = await actor.createFarmEffect(farmEffect);
+            console.log("Create Farm Effect");
+            console.log(rs);
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      });
+      resolve();
+    });
+  };
+
+  const createLandEffect = () => {
+    return new Promise(resolve => {
+      const landEffects = data[10];
+      landEffects.forEach(async landEffect => {
+        try {
+          if (!!actor?.createLandEffect) {
+            const rs = await actor.createLandEffect(landEffect);
+            console.log("Create Land Effect");
+            console.log(rs);
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      });
+      resolve();
+    });
+  };
+
+  const createQuestEngine = () => {
+    return new Promise(resolve => {
+      const questEngines = data[11];
+      questEngines.forEach(async questEngine => {
+        try {
+          if (!!actor?.createQuestEngine) {
+            const rs = await actor.createQuestEngine(questEngine);
+            console.log("Create Quest Engine");
+            console.log(rs);
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      });
+      resolve();
+    });
+  };
+
+  const createEventEngine = () => {
+    return new Promise(resolve => {
+      const eventEngines = data[12];
+      eventEngines.forEach(async eventEngine => {
+        try {
+          if (!!actor?.createEventEngine) {
+            const rs = await actor.createEventEngine(eventEngine);
+            console.log("Create Event Engine");
+            console.log(rs);
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      });
+      resolve();
+    });
+  };
+
+  const createEventOptionEngine = () => {
+    return new Promise(resolve => {
+      const eventOptionEngines = data[13];
+      eventOptionEngines.forEach(async eventOptionEngine => {
+        try {
+          if (!!actor?.createEventOptionEngine) {
+            const rs = await actor.createEventOptionEngine(eventOptionEngine);
+            console.log("Create Event Option Engine");
+            console.log(rs);
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      });
+      resolve();
+    });
+  };
+
+  const createScene = () => {
+    return new Promise(resolve => {
+      const scenes = data[14];
+      scenes.forEach(async scene => {
+        try {
+          if (!!actor?.createScene) {
+            const rs = await actor.createScene(scene);
+            console.log("Create Scene Engine");
+            console.log(rs);
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      });
+      resolve();
+    });
+  };
+
+  
+
+
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -220,6 +349,13 @@ const Metaverse = () => {
     await createEvent();
     await createEventOption();
     await createCharacterClass();
+    await createSeed();
+    await createFarmEffect();
+    await createLandEffect();
+    await createQuestEngine();
+    await createEventEngine();
+    await createEventOptionEngine();
+    await createScene();
     console.log("DONE");
     setLoading(false);
   };

@@ -9,7 +9,9 @@ import {
   createCharacterCollectsMaterials,
   openInventory,
   createInventory,
-  readEvent
+  readEvent,
+  loadCharacter,
+  useUsableItem
 } from '../../GameApi';
 import { settings } from '../settings';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
@@ -29,7 +31,7 @@ export default class catalonia_scene7 extends BaseScene {
 
   init(data) {
     this.isHealedPreviously = data.isUsedPotion;
-    console.log('healed', this.isHealedPreviously);
+    this.isUsedUsableItem = data.isUsedUsableItem;
   }
 
   clearSceneCache() {
@@ -42,7 +44,25 @@ export default class catalonia_scene7 extends BaseScene {
 
   preload() {
     this.addLoadingScreen();
-    this.initialLoad("e16");
+    if (this.isUsedUsableItem[0]){
+      this.load.rexAwait(function (successCallback, failureCallback) {
+        loadCharacter().then((result) => {
+          this.characterData = result.ok[1];
+          this.characterBefore = this.characterData;
+          this.load.rexAwait(function (successCallback, failureCallback) {
+            useUsableItem(this.characterData.id, this.isUsedUsableItem[1]).then((result) => {
+              this.initialLoad("e16");     
+              successCallback();         
+            });
+          }, this);
+          successCallback();
+       
+        });
+      }, this);
+    }
+    else {
+      this.initialLoad("e16");
+    }
 
     //Preload
     this.clearSceneCache();
@@ -205,6 +225,10 @@ export default class catalonia_scene7 extends BaseScene {
     }).setVisible(false).setScrollFactor(0);
 
     this.options = [];
+    if(this.characterBefore != undefined){
+      this.showColorLossAllStat(this.characterBefore, this.characterData)
+    }
+
     for (const idx in this.eventOptions) {
       // can take option or not
       const takeable = this.eventOptions[idx][0];
@@ -263,7 +287,7 @@ export default class catalonia_scene7 extends BaseScene {
     if (this.player.x > gameConfig.scale.width * 4) {
       this.ingameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start('catalonia_scene8');
+      this.scene.start('catalonia_scene8', { isUsedPotion: this.isUsedPotion, isUsedUsableItem: this.isUsedUsableItem });
     }
 
     if (this.player.x > 3967 && this.isInteracted == false) {

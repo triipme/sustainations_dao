@@ -5,7 +5,9 @@ import {
   loadEventOptions,
   updateCharacterStats,
   listCharacterSelectsItems,
-  createCharacterCollectsMaterials
+  createCharacterCollectsMaterials,
+  loadCharacter,
+  useUsableItem
 } from '../../GameApi';
 import { settings } from '../settings';
 import { func } from 'prop-types';
@@ -41,10 +43,33 @@ export default class lava_scene2 extends BaseScene {
       this.textures.remove(textures_list[index]);
     }
   }
+  init(data) {
+    this.isHealedPreviously = data.isUsedPotion;
+    this.isUsedUsableItem = data.isUsedUsableItem;
+  }
 
   preload() {
     this.addLoadingScreen();
-    this.initialLoad("e32");
+    if (this.isUsedUsableItem[0]){
+      this.load.rexAwait(function (successCallback, failureCallback) {
+        loadCharacter().then((result) => {
+          this.characterData = result.ok[1];
+          this.characterBefore = this.characterData;
+          this.load.rexAwait(function (successCallback, failureCallback) {
+            useUsableItem(this.characterData.id, this.isUsedUsableItem[1]).then((result) => {
+              this.initialLoad("e32");     
+              successCallback();         
+            });
+          }, this);
+          successCallback();
+       
+        });
+      }, this);
+    }
+    else {
+      this.initialLoad("e32");
+    }
+
 
     //Preload
     this.clearSceneCache();
@@ -218,7 +243,9 @@ export default class lava_scene2 extends BaseScene {
       }
     }).setVisible(false).setScrollFactor(0);
 
-
+    if (this.characterBefore != undefined) {
+      this.showColorLossAllStat(this.characterBefore, this.characterData)
+    }
     for (const idx in this.eventOptions) {
 
       // can take option or not
@@ -267,7 +294,7 @@ export default class lava_scene2 extends BaseScene {
           // update character after choose option
           updateCharacterStats(this.characterTakeOptions[idx]);
           // create charactercollectsmaterials after choose option
-          createCharacterCollectsMaterials(this.characterCollectMaterials[idx]);
+          // createCharacterCollectsMaterials(this.characterCollectMaterials[idx]);
         }
       });
 
@@ -284,7 +311,7 @@ export default class lava_scene2 extends BaseScene {
     if (this.player.x > 5100) {
       this.pregameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start("lava_scene3", { isUsedPotion: this.isUsedPotion });
+      this.scene.start("lava_scene3", { isUsedPotion: this.isUsedPotion, isUsedUsableItem: this.isUsedUsableItem });
     }
 
     if (this.player.x > 4450 && this.isInteracted == false) {

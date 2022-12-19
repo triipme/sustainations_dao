@@ -25,7 +25,9 @@ const Footer = () => {
           <div
             className='item'
             style={{
-              backgroundColor: '#002E5E'
+              backgroundColor: '#9ed6ad',
+              border: '1px solid #9ed6ad',
+
             }}></div>
           <span
             style={{
@@ -44,7 +46,29 @@ const Footer = () => {
           <div
             className='item'
             style={{
-              backgroundColor: '#48c3c8'
+              backgroundColor: '#48c3c8',
+              border: '1px solid #48c3c8',
+
+            }}></div>
+          <span
+            style={{
+              color: '#fff',
+              marginLeft: 10
+            }}>
+            Neighbor
+          </span>
+        </div>
+        <div
+          className='d-flex align-items-center'
+          style={{
+            marginRight: 25
+          }}>
+          <div
+            className='item'
+            style={{
+              backgroundColor: '#002E5E',
+              border: '1px solid #002E5E',
+
             }}></div>
           <span
             style={{
@@ -54,41 +78,20 @@ const Footer = () => {
             Purchased
           </span>
         </div>
-
         <div
-          className='d-flex align-items-center'
-          style={{
-            marginRight: 25
-          }}>
+          className='d-flex align-items-center'>
           <div
             className='item'
             style={{
-              backgroundColor: '#FAA61A'
+              backgroundColor: '#002E5E',
+              border: '1px solid yellow',
             }}></div>
           <span
             style={{
               color: '#fff',
               marginLeft: 10
             }}>
-            Premium
-          </span>
-        </div>
-        <div
-          className='d-flex align-items-center'
-          style={{
-            marginRight: 25
-          }}>
-          <div
-            className='item'
-            style={{
-              backgroundColor: '#fff'
-            }}></div>
-          <span
-            style={{
-              color: '#fff',
-              marginLeft: 10
-            }}>
-            Owner
+            LandEffect
           </span>
         </div>
       </div>

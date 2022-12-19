@@ -3,10 +3,6 @@ import numeral from 'numeral';
 import moment from "moment";
 import NumberFormat from 'react-number-format';
 
-export function fCurrency(number) {
-  return numeral(number).format(Number.isInteger(number) ? '$0,0' : '$0,0.00');
-}
-
 export function fPercent(number) {
   return numeral(number / 100).format('0.0%');
 }
@@ -32,6 +28,15 @@ export function fICP(amount) {
     <NumberFormat
       value={parseInt(amount) / 1e8} displayType={'text'}
       thousandSeparator={true} suffix={' ICP'}
+    />
+  );
+}
+
+export function fCurrency(amount, currency) {
+  return (
+    <NumberFormat
+      value={amount} displayType={'text'}
+      thousandSeparator={true} suffix={` ${currency}`}
     />
   );
 }

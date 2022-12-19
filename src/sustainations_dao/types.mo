@@ -178,13 +178,14 @@ module {
   //--------------------- Quest Engine---------------------//
   public type QuestEngine = {
     id : Text;
+    userId: Principal;
     name : Text;
     price : Nat64;
     description : Text;
     images : Text;
-    isActive: Bool;
-    dateCreate: Time.Time;
-    listScene: [Text];
+    isActive : Bool;
+    dateCreate : Time.Time;
+    listScene : [Text];
   };
 
   //--------------------- Scene ---------------------//
@@ -211,11 +212,15 @@ module {
     questId : Text;
   };
 
-  public type UsableItem = {
+public type UsableItem = {
     id : Text;
     name : Text;
     image : Text;
-    increaseStat : Float;
+    increaseStamina : Float;
+    increaseHP : Float;
+    increaseMorale : Float;
+    increaseMana : Float;
+    effect : Text;
   };
 
   public type EventItem = {
@@ -307,16 +312,34 @@ module {
   };
 
   // Land
+  //--------------------- Land Config -------------------//
+  public type LandConfig = {
+    id : Text;
+    mapWidth : Int;
+    mapHeight : Int;
+  };
+
   //--------------------- Land Slot ---------------------//
   public type LandSlot = {
     id : Text;
     ownerId : Principal;
     isPremium : Bool;
     isSelling : Bool;
-    zone : Nat;
-    xIndex : Nat;
-    yIndex : Nat;
-    price: Float; 
+    indexRow : Nat;
+    indexColumn : Nat;
+    zoneNumber : Nat;
+    zoneLetter : Text;
+    easting : Nat;
+    northing : Nat;
+    price : Float;
+  };
+
+  public type Geometry = {
+    zoneNumber : Nat;
+    zoneLetter : Text;
+    i : Nat;
+    j : Nat;
+    coordinates : [[[Float]]];
   };
 
   //--------------------- Land Transfer History ---------------------//
@@ -328,20 +351,114 @@ module {
     transferTime : Int;
     price : Float;
   };
+
   //--------------------- Land Buying Status ---------------------//
   public type LandBuyingStatus = {
     id : Principal;
-    currentZone: Int;
-    currentLandSlotId: Text;
-    randomTimes : Int;
+    geometry : Geometry;
+    randomTimes : Nat;
   };
 
-//------------------------------------------------------------//
-public type UserhasLandSLots = {
-  id : Principal;
-  landSlotIds : [Text];
+  //--------------------------Nation--------------------------//
+  public type Nation = {
+    id : Principal;
+    landSlotIds : [Text];
+    indexRow : Nat;
+    indexColumn : Nat;
+    utms : [[Nat]];
+  };
+
+  public type NationGeometry = {
+    id : Text;
+    zoneNumber : Nat;
+    zoneLetter : Text;
+    i : Nat;
+    j : Nat;
+    coordinates: [[[Float]]];
+  };
+//--------------------------Land Effect-------------//
+  public type LandEffect = {
+    id : Text;
+    symbol : Text;
+    value : Float;
+    effect : Text;
+    description : Text;
+  };
+
+  public type UserHasLandEffect = {
+    id : Principal;
+    landEffectId : Text;
+  };
+// Farm
+//--------------------- Stash ---------------------//
+public type Stash = {
+  id : Text;
+  userId : Text;
+  usableItemId : Text;
+  quality : Text;
+  amount : Int; 
 };
 
+  //-------------------------Tile------------------------------//
+  public type Tile = {
+    id : Text;
+    landSlotId : Text;
+    indexRow : Nat;
+    indexColumn : Nat;
+    objectId : Text;
+  };
+
+  //--------------------- Farm Object ---------------------//
+  public type FarmObject = {
+    id : Text;
+    landSlotId : Text;
+    indexRow : Nat;
+    indexColumn : Nat;
+    seedId : Text;
+    name : Text;
+    hasEffectId : Text;
+    status : Text;
+    remainingTime : Int;
+  };
+
+  //--------------------- Seed ---------------------//
+  public type Seed = {
+    id : Text;
+    harvestedProductId : Text;
+    materialId : Text;
+    rowSize : Nat;
+    columnSize : Nat;
+    name : Text;
+    description : Text;
+    waitTime : Int;
+    expiryTime : Int;
+    grownCondition : Text;
+    minAmount : Int;
+    maxAmount : Int;
+  };
+
+  //--------------------- Plant ---------------------//
+  public type Plant = {
+    id : Text;
+    seedId : Text;
+    hasEffectId : Text;
+    status : Text;
+    plantTime : Int;
+  };
+//--------------------- Farm Effect -------------//
+  public type FarmEffect = {
+    id : Text;
+    symbol : Text;
+    value : Float;
+    effect : Text;
+    description : Text;
+  };
+
+  public type UserHasFarmEffect = {
+    id : Text;
+    farmEffectId : Text;
+    userId : Principal;
+  };
 
   // Error codes
   public type Error = {
@@ -434,5 +551,6 @@ public type UserhasLandSLots = {
     miniGameCompletedCount : Nat;
     questPlayCount : Nat;
     questCompletedCount : Nat;
+    // purchasedLandSlotsCount : ?Nat;
   };
 };

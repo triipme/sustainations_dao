@@ -17,7 +17,7 @@ module CharacterCollectsMaterials {
     let uuid : Text = UUID.toText(id);
     let rsCharacter = state.characters.get(characterId);
     
-    let randomPercent = await RandomMethod.randomPercent();
+    let randomPercent = RandomMethod.randomPercent();
     var amount : Int = 0;
     var materialId : Text = "";
 
@@ -25,14 +25,14 @@ module CharacterCollectsMaterials {
     if ( randomPercent > 0 and randomPercent <= eventOption.riskChance ) {
       if (Text.contains(eventOption.riskLost,#text "/") == true) {
         let materialList = Iter.toArray(Text.split(eventOption.riskLost,#text "/"));
-        materialId := await Material.getRandomMaterial(materialList,state);
+        materialId := Material.getRandomMaterial(materialList,state);
         amount := -1;
       };
     }
     else if ( randomPercent > eventOption.riskChance and randomPercent <= (eventOption.riskChance + eventOption.luckyChance) ) {
       if (Text.contains(eventOption.gainByLuck,#text "/") == true) {
-        materialId := await Material.getRandomMaterial(Iter.toArray(Text.split(eventOption.gainByLuck,#text "/")),state);
-        amount := +2;
+        materialId := Material.getRandomMaterial(Iter.toArray(Text.split(eventOption.gainByLuck,#text "/")),state);
+        amount := +Float.toInt(RandomMethod.randomInRange(1,3));
       };
     };
 

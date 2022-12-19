@@ -10,7 +10,9 @@ import {
   loadCharacterAwait,
   resetCharacterCollectsMaterials,
   listSceneQuests,
-  loadQuestItemEngines
+  loadQuestItemEngines,
+  listIdScenes,
+  listIdEventEngine
 } from '../GameApi';
 import { throws } from 'assert';
 
@@ -55,7 +57,6 @@ class selectItemScene extends BaseScene {
     this.load.rexAwait(function (successCallback, failureCallback) {
       getUserInfo().then((result) => {
         this.userInfo = result.ok;
-        console.log(this.userInfo);
         successCallback();
       });
     }, this);
@@ -68,16 +69,23 @@ class selectItemScene extends BaseScene {
 
     //For Engine
     this.load.rexAwait(function (successCallback, failureCallback) {
-      listSceneQuests("engine").then((result) => { // for test
+      listIdScenes().then((result) => { // for test
         this.listScene = result;
         successCallback();
       });
-    }, this)
+    }, this);
 
-    if  (this.map == "engine"){
+    this.load.rexAwait(function (successCallback, failureCallback) {
+      listIdEventEngine().then((result) => { // for test
+        this.listEvent = result;
+        successCallback();
+      });
+    }, this);
+
+    if (this.map == "engine") {
       this.load.rexAwait(function (successCallback, failureCallback) {
         loadQuestItemEngines(this.map).then((result) => {
-          if (result != []){}
+          if (result != []) { }
           this.questItems = result;
           console.log("result: ", result);
           for (const index in result) {
@@ -92,7 +100,7 @@ class selectItemScene extends BaseScene {
     else {
       this.load.rexAwait(function (successCallback, failureCallback) {
         loadQuestItems(this.map).then((result) => {
-          if (result != []){}
+          if (result != []) { }
           this.questItems = result;
           for (const index in result) {
             this.itemNames.push(result[index].name);
@@ -239,7 +247,7 @@ class selectItemScene extends BaseScene {
           break;
         case 'engine':
           // this.scene.start('BaseEngine', {  listScene: await listSceneQuests("qe1")});
-          this.scene.start('Engine', { listScene: this.listScene });
+          this.scene.start('Engine', { listScene: this.listScene, listEvent: this.listEvent });
           break;
         default:
           console.log('invalid map name');

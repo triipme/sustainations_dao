@@ -1,13 +1,13 @@
 import Phaser from 'phaser';
 import BaseScene from '../BaseScene'
 import gameConfig from '../../GameConfig';
-import { 
+import {
   loadEventOptions,
   updateCharacterStats,
   listCharacterSelectsItems,
   createCharacterCollectsMaterials
 } from '../../GameApi';
-import {settings} from '../settings';
+import { settings } from '../settings';
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
 const bg1 = 'metaverse/scenes/jungle/Scene6/PNG/back-01.png';
@@ -26,9 +26,9 @@ export default class jungle_scene6 extends BaseScene {
     console.log('healed', this.isHealedPreviously);
   }
   clearSceneCache() {
-    const textures_list = ['ground', 'background1', 'background2', 
+    const textures_list = ['ground', 'background1', 'background2',
       'background3', 'selectAction', 'btnBlank', 'obstacle'];
-    for (const index in textures_list){
+    for (const index in textures_list) {
       this.textures.remove(textures_list[index]);
     }
   }
@@ -51,25 +51,25 @@ export default class jungle_scene6 extends BaseScene {
     this.load.image("background2", bg2);
     this.load.image("background3", bg3);
     this.load.image("selectAction", selectAction);
-    this.load.spritesheet('btnBlank', btnBlank, { frameWidth: 1102, frameHeight: 88});
+    this.load.spritesheet('btnBlank', btnBlank, { frameWidth: 1102, frameHeight: 88 });
     this.load.image("obstacle", obstacle);
   }
 
   //defined function
-  triggerPause(){
+  triggerPause() {
     this.isInteracting = true;
     this.veil.setVisible(true);
     this.selectAction.setVisible(true);
-    for (const idx in this.options){
+    for (const idx in this.options) {
       this.options[idx].setVisible(true);
       this.options[idx].text.setVisible(true);
     }
   }
 
-  triggerContinue(){
+  triggerContinue() {
     this.veil.setVisible(false);
     this.selectAction.setVisible(false);
-    for (const idx in this.options){
+    for (const idx in this.options) {
       this.options[idx].setVisible(false);
       this.options[idx].text.setVisible(false);
     }
@@ -84,27 +84,27 @@ export default class jungle_scene6 extends BaseScene {
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
-    this.ingameSound = this.sound.add('ingameSound', {loop: true});
+    this.ingameSound = this.sound.add('ingameSound', { loop: true });
     this.ingameSound.isRunning = false;
-    this.ambientSound = this.sound.add('ambientSound', {loop: true});
-    this.sfx_char_footstep = this.sound.add('sfx_char_footstep', {loop: true, volume: 0.2});
-    this.sfx_small_waterfall = this.sound.add('sfx_small_waterfall', {loop: true});
+    this.ambientSound = this.sound.add('ambientSound', { loop: true });
+    this.sfx_char_footstep = this.sound.add('sfx_char_footstep', { loop: true, volume: 0.2 });
+    this.sfx_small_waterfall = this.sound.add('sfx_small_waterfall', { loop: true });
 
-    if(this.characterStatus != 'Exhausted') {
+    if (this.characterStatus != 'Exhausted') {
       this.ambientSound.play();
       this.sfx_char_footstep.play();
     }
-    
+
     this.createSceneLayers();
     // platforms
     const platforms = this.physics.add.staticGroup();
-    for (let x = -50; x < gameConfig.scale.width*4; x += 4) {
+    for (let x = -50; x < gameConfig.scale.width * 4; x += 4) {
       platforms.create(x, 635, "ground").refreshBody();
     }
     this.physics.add.collider(this.player, platforms);
 
     this.createUIElements();
-    this.defineCamera(gameConfig.scale.width*4, gameConfig.scale.height);
+    this.defineCamera(gameConfig.scale.width * 4, gameConfig.scale.height);
     this.createPauseScreen();
 
     // load selected items ids
@@ -115,20 +115,20 @@ export default class jungle_scene6 extends BaseScene {
 
     // stats before choose option
     this.usePotion();
-    this.setValue(this.stamina, this.characterData.currentStamina/this.characterData.maxStamina*100);
-    this.setValue(this.mana, this.characterData.currentMana/this.characterData.maxMana*100);
-    this.setValue(this.morale, this.characterData.currentMorale/this.characterData.maxMorale*100);
+    this.setValue(this.stamina, this.characterData.currentStamina / this.characterData.maxStamina * 100);
+    this.setValue(this.mana, this.characterData.currentMana / this.characterData.maxMana * 100);
+    this.setValue(this.morale, this.characterData.currentMorale / this.characterData.maxMorale * 100);
 
     // load event options
     this.options = [];
-    for (const idx in this.eventOptions){
+    for (const idx in this.eventOptions) {
       // can take option or not
       const takeable = this.eventOptions[idx][0];
-      
-      this.options[idx] = this.add.sprite(gameConfig.scale.width/2, gameConfig.scale.height/2 -100 + idx*70, 'btnBlank').setScale(0.67);
+
+      this.options[idx] = this.add.sprite(gameConfig.scale.width / 2, gameConfig.scale.height / 2 - 100 + idx * 70, 'btnBlank').setScale(0.67);
       this.options[idx].text = this.add.text(
-        gameConfig.scale.width/2, gameConfig.scale.height/2 - 100 + idx*70, this.eventOptions[idx][1].description, { fill: '#fff', align: 'center', fontSize: '20px' })
-      .setScrollFactor(0).setVisible(false).setOrigin(0.5);
+        gameConfig.scale.width / 2, gameConfig.scale.height / 2 - 100 + idx * 70, this.eventOptions[idx][1].description, { fill: '#fff', align: 'center', fontSize: '20px' })
+        .setScrollFactor(0).setVisible(false).setOrigin(0.5);
       this.options[idx].setInteractive().setScrollFactor(0).setVisible(false);
       if (takeable) {
         this.options[idx].on('pointerover', () => {
@@ -143,20 +143,20 @@ export default class jungle_scene6 extends BaseScene {
       }
 
       this.options[idx].on('pointerdown', () => {
-        if (takeable){
+        if (takeable) {
           this.triggerContinue();
           this.clickSound.play();
           this.sfx_char_footstep.play();
           this.cameras.main.fadeOut(500, 0, 0, 0);
           // stats after choose option
-          this.setValue(this.hp, this.characterTakeOptions[idx].currentHP/this.characterTakeOptions[idx].maxHP*100);
-          this.setValue(this.stamina, this.characterTakeOptions[idx].currentStamina/this.characterTakeOptions[idx].maxStamina*100);
-          this.setValue(this.mana, this.characterTakeOptions[idx].currentMana/this.characterTakeOptions[idx].maxMana*100);
-          this.setValue(this.morale, this.characterTakeOptions[idx].currentMorale/this.characterTakeOptions[idx].maxMorale*100);
+          this.setValue(this.hp, this.characterTakeOptions[idx].currentHP / this.characterTakeOptions[idx].maxHP * 100);
+          this.setValue(this.stamina, this.characterTakeOptions[idx].currentStamina / this.characterTakeOptions[idx].maxStamina * 100);
+          this.setValue(this.mana, this.characterTakeOptions[idx].currentMana / this.characterTakeOptions[idx].maxMana * 100);
+          this.setValue(this.morale, this.characterTakeOptions[idx].currentMorale / this.characterTakeOptions[idx].maxMorale * 100);
           // update character after choose option
           updateCharacterStats(this.characterTakeOptions[idx]);
           // create charactercollectsmaterials after choose option
-	        createCharacterCollectsMaterials(this.characterCollectMaterials[idx]);
+          createCharacterCollectsMaterials(this.characterCollectMaterials[idx]);
         }
       });
     };
@@ -168,14 +168,14 @@ export default class jungle_scene6 extends BaseScene {
       this.player.setVelocityX(settings.movementSpeed);
     }
 
-    if (this.player.x > gameConfig.scale.width*3+200) {
+    if (this.player.x > gameConfig.scale.width * 3 + 200) {
       this.ingameSound.stop();
       this.sfx_char_footstep.stop();
       this.sfx_small_waterfall.stop();
       this.scene.start("jungle_scene7");
     }
 
-    if (this.player.x > gameConfig.scale.width*3 && this.isInteracted == false) {
+    if (this.player.x > gameConfig.scale.width * 3 && this.isInteracted == false) {
       this.triggerPause();
       this.ambientSound.stop();
       this.sfx_char_footstep.stop();
@@ -188,11 +188,11 @@ export default class jungle_scene6 extends BaseScene {
       this.player.stop()
     }
 
-    if (this.player.x > gameConfig.scale.width*2 && this.isCloseToObstacle == false) {
+    if (this.player.x > gameConfig.scale.width * 2 && this.isCloseToObstacle == false) {
       this.sfx_small_waterfall.play();
       this.isCloseToObstacle = true;
     }
-    
+
     //bg
     // scroll the texture of the tilesprites proportionally to the camera scroll
     this.bg_1.tilePositionX = this.myCam.scrollX * .3;

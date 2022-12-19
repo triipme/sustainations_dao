@@ -4,12 +4,13 @@ import gameConfig from '../../GameConfig';
 import {
   loadEventOptionEngines,
   updateCharacterStats,
+  updateCharacterStatsEngine,
   listCharacterSelectsItems,
-  createCharacterCollectsMaterials,
-  readScene,
+  // createCharacterCollectsMaterials,
+  readSceneEngine,
   loadItemUrl,
   characterTakeOptionEngine,
-  characterCollectsMaterialEngines
+  // characterCollectsMaterialEngines
 } from '../../GameApi';
 import { func } from 'prop-types';
 import { readEventEngine } from '../../GameApi';
@@ -36,28 +37,30 @@ export default class Engine extends BaseScene {
 
   init(data) {
     this.listScene = data.listScene;
+    this.listEvent = data.listEvent;
   }
 
   async preload() {
     this.addLoadingScreen();
     console.log("data: ", this.listScene);
-    this.eventId = this.listScene[0];
+    this.eventId = this.listEvent.splice((Math.random() * this.listEvent.length), 1)[0];
     this.initialLoad(this.eventId);
     console.log("this eventid: ", this.eventId);
+    console.log("this.listEvent: ", this.listEvent);
     this.load.rexAwait(function (successCallback, failureCallback) {
       characterTakeOptionEngine(this.eventId).then((result) => {
         this.characterTakeOptions = result;
         successCallback();
       });
     }, this);
-    this.load.rexAwait(function (successCallback, failureCallback) {
-      characterCollectsMaterialEngines(this.eventId).then((result) => {
-        this.characterCollectMaterials = result;
-        successCallback();
-      });
-    }, this);
-    this.sceneEvent = await readScene(this.listScene[0])
-    console.log(this.sceneEvent);
+    // this.load.rexAwait(function (successCallback, failureCallback) {
+    //   characterCollectsMaterialEngines(this.eventId).then((result) => {
+    //     this.characterCollectMaterials = result;
+    //     successCallback();
+    //   });
+    // }, this);
+    // this.sceneEvent = await readScene(this.listScene[0])
+    this.sceneEvent = await readSceneEngine(this.listScene[Math.floor(Math.random() * (this.listScene.length))]);
 
 
     //Preload
@@ -77,7 +80,7 @@ export default class Engine extends BaseScene {
     this.load.image("background3", loadItemUrl(this.sceneEvent.front));
     this.load.image("selectAction", selectAction);
     this.load.spritesheet('btnBlank', btnBlank, { frameWidth: 1102, frameHeight: 88 });
-    this.load.image("obstacle", loadItemUrl(this.sceneEvent.obstacle));
+    // this.load.image("obstacle", loadItemUrl(this.sceneEvent.obstacle));
 
     //UI -- One time load
     this.load.image("BtnExit", BtnExit);
@@ -92,8 +95,8 @@ export default class Engine extends BaseScene {
 
 
   async create() {
-    console.log("this.characterTakeOptions 2", this.characterTakeOptions);
-    console.log(this.listScene.shift())
+    console.log(this.characterTakeOptions)
+    // console.log(this.listScene.shift())
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
@@ -117,7 +120,7 @@ export default class Engine extends BaseScene {
     this.physics.add.collider(this.player, platforms);
 
     this.createUIElements();
-    this.defineCamera(5118, gameConfig.scale.height);
+    this.defineCamera(1280, gameConfig.scale.height); //default 5118
     this.createPauseScreen();
 
     // load selected items ids
@@ -155,7 +158,9 @@ export default class Engine extends BaseScene {
     });
 
     // load description of event
-    this.event = await readEventEngine(this.eventId)
+    this.rsEvent = await readEventEngine(this.eventId)
+    this.event = this.rsEvent[0];
+    console.log("time: ", this.rsEvent[1]);
 
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
@@ -210,34 +215,52 @@ export default class Engine extends BaseScene {
           this.setValue(this.stamina, this.characterTakeOptions[idx].currentStamina / this.characterTakeOptions[idx].maxStamina * 100);
           this.setValue(this.mana, this.characterTakeOptions[idx].currentMana / this.characterTakeOptions[idx].maxMana * 100);
           this.setValue(this.morale, this.characterTakeOptions[idx].currentMorale / this.characterTakeOptions[idx].maxMorale * 100);
-          
+
           //HP, Stamina, mana, morele in col 
           let loss_stat = this.showLossStat(this.characterData, this.characterTakeOptions[idx])
           this.showColorLossStat(423, 65, loss_stat[0]);
           this.showColorLossStat(460 + 200, 65, loss_stat[1]);
           this.showColorLossStat(470 + 200 * 2 + 20, 65, loss_stat[2]);
           this.showColorLossStat(490 + 200 * 3 + 35, 65, loss_stat[3]);
-          
+
           // update character after choose option
-          updateCharacterStats(this.characterTakeOptions[idx]);
+          updateCharacterStatsEngine(this.characterTakeOptions[idx]);
           // create charactercollectsmaterials after choose option
           // createCharacterCollectsMaterials(this.characterCollectMaterials[idx]);
         }
       });
     };
+
   }
-  
+
   update() {
 
-    // locationStop, locationInteract, nextScene
-    this.playerLogicEngine(5100, 4200, "Engine");
+    if (this.player.x > 1280) { //default 5100
+      console.log(this.sum)
+      this.pregameSound.stop();
+      this.sfx_char_footstep.stop();
+
+      if (this.listEvent.length === 0) this.scene.start("thanks", { isUsedPotion: this.isUsedPotion });
+      else this.scene.start("Engine", { isUsedPotion: this.isUsedPotion, listScene: this.listScene, listEvent: this.listEvent });
+    }
+
+    if (this.player.x > 600 && this.isInteracted == false) { //default 4200
+
+      this.premiumPopupWindow.setVisible(true);
+      this.premiumPopupCloseBtn.setVisible(true);
+      this.des.setVisible(true);
+      // this.triggerPause();
+      this.sfx_char_footstep.stop();
+      this.player.setVelocityX(0);
+      this.player.play('idle-anims');
+      this.player.stop();
+    }
 
     //bg
     // scroll the texture of the tilesprites proportionally to the camera scroll
-    this.scrollTexture(.3, 1, 1, 1);
-    // this.bg_1.tilePositionX = this.myCam.scrollX * .3;
-    // this.bg_2.tilePositionX = this.myCam.scrollX * 1;
+    this.bg_1.tilePositionX = this.myCam.scrollX * .3;
+    this.bg_2.tilePositionX = this.myCam.scrollX * 1;
     // this.obstacle.tilePositionX = this.myCam.scrollX * 1;
-    // this.bg_3.tilePositionX = this.myCam.scrollX * 1;
+    this.bg_3.tilePositionX = this.myCam.scrollX * 1;
   }
 }

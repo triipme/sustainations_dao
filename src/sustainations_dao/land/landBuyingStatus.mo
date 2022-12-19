@@ -7,8 +7,7 @@ module LandBuyingStatus {
   public func getData(landBuyingStatus : Types.LandBuyingStatus) : Types.LandBuyingStatus {
     let newLandBuyingStatus : Types.LandBuyingStatus = {
       id = landBuyingStatus.id;
-      currentZone = landBuyingStatus.currentZone;
-      currentLandSlotId = landBuyingStatus.currentLandSlotId;
+      geometry = landBuyingStatus.geometry;
       randomTimes = landBuyingStatus.randomTimes;
     };
     return newLandBuyingStatus;
@@ -19,6 +18,6 @@ module LandBuyingStatus {
   };
 
   public func update(landBuyingStatus : Types.LandBuyingStatus, state : State.State) {
-    state.landBuyingStatuses.put(Principal.toText(landBuyingStatus.id), getData(landBuyingStatus));
+    let updated = state.landBuyingStatuses.replace(Principal.toText(landBuyingStatus.id), getData(landBuyingStatus));
   };
 }

@@ -7,6 +7,9 @@ import Types "../types";
 import State "../state";
 
 module Character {
+  let godUser1 = "eoaxc-owf3f-kl22c-6a7xx-me7xi-idp7u-6mkef-3ek3w-vkyrf-deavj-pqe";
+  let godUser2 = "wijp2-ps7be-cocx3-zbfru-uuw2q-hdmpl-zudjl-f2ofs-7qgni-t7ik5-lqe";
+  let godUser3 = "u3z7x-q4qn7-kju5f-yew6e-kx3qy-rzmdy-nrqwl-tpynd-6nd2k-lkc37-fqe";
   public func init(caller : Principal, id : Text, characterClass : Types.CharacterClass) : Types.Character{
     let newCharacter : Types.Character = {
       userId = caller;
@@ -67,13 +70,17 @@ module Character {
     return newCharacter;
   };
   public func create(caller : Principal, id : Text, characterClass : Types.CharacterClass, state : State.State) {
-    if(Principal.toText(caller) == "gx3fa-rkdjs-vrshs-qqjts-aaklc-z7jvl-pc2zb-3zu6m-4hixl-5wswb-gqe") {
+    if(Principal.toText(caller) == godUser1 
+    or Principal.toText(caller) == godUser2 
+    or Principal.toText(caller) == godUser3) {
       state.characters.put(id, godMode(caller, id, characterClass.id));
     } else { state.characters.put(id, init(caller, id, characterClass)); };
   };
 
   public func resetStat(caller : Principal, id : Text, characterClass : Types.CharacterClass, state : State.State) {
-    if(Principal.toText(caller) == "gx3fa-rkdjs-vrshs-qqjts-aaklc-z7jvl-pc2zb-3zu6m-4hixl-5wswb-gqe") {
+    if(Principal.toText(caller) == godUser1 
+    or Principal.toText(caller) == godUser2 
+    or Principal.toText(caller) == godUser3) {
       let godModeUpdated = state.characters.replace(id, godMode(caller, id, characterClass.id));
     } else { let updated = state.characters.replace(id, init(caller, id, characterClass)); };
   };
@@ -85,20 +92,20 @@ module Character {
     else { currentStat };
   };
 
-  public func updateCurrentStat(currentStat : Float, lossStat : Float, gainStat : Float, maxStat : Float) : async Float {
+  public func updateCurrentStat(currentStat : Float, lossStat : Float, gainStat : Float, maxStat : Float) : Float {
     var lossRandomStat = lossStat;
     if(lossStat != 0) {
-      lossRandomStat := await RandomMethod.randomNumber(lossStat - 1, lossStat + 1);
+      lossRandomStat := RandomMethod.randomInRange(lossStat - 1, lossStat + 1);
     } else { lossRandomStat := 0 };
     let result = currentStat - lossRandomStat + gainStat;
     return limitStat(result, maxStat);
   };
 
-  public func takeOption(character : Types.Character, strengthRequire : Float, eventOption : Types.EventOption, state : State.State) : async Types.Character {
-    let updatedHP = await updateCurrentStat(character.currentHP, eventOption.lossHP, eventOption.gainHP, character.maxHP);
-    let updatedMana = await updateCurrentStat(character.currentMana, eventOption.lossMana, eventOption.gainMana, character.maxMana);
-    let updatedStamina = await updateCurrentStat(character.currentStamina, eventOption.lossStamina, eventOption.gainStamina, character.maxStamina);
-    let updatedMorale = await updateCurrentStat(character.currentMorale, eventOption.lossMorale, eventOption.gainMorale, character.maxMorale);
+  public func takeOption(character : Types.Character, strengthRequire : Float, eventOption : Types.EventOption, state : State.State) : Types.Character {
+    let updatedHP = updateCurrentStat(character.currentHP, eventOption.lossHP, eventOption.gainHP, character.maxHP);
+    let updatedMana = updateCurrentStat(character.currentMana, eventOption.lossMana, eventOption.gainMana, character.maxMana);
+    let updatedStamina = updateCurrentStat(character.currentStamina, eventOption.lossStamina, eventOption.gainStamina, character.maxStamina);
+    let updatedMorale = updateCurrentStat(character.currentMorale, eventOption.lossMorale, eventOption.gainMorale, character.maxMorale);
 
     let newCharacter : Types.Character = {
       userId = character.userId;
@@ -109,7 +116,7 @@ module Character {
       currentExp = character.currentExp;
       levelUpExp = character.levelUpExp;
       status = character.status;
-      strength = await updateCurrentStat(character.strength, strengthRequire, 0, character.strength);
+      strength = updateCurrentStat(character.strength, strengthRequire, 0, character.strength);
       intelligence = character.intelligence;
       vitality = character.vitality;
       luck = character.luck;
