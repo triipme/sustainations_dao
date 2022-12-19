@@ -188,6 +188,14 @@ module {
     listScene : [Text];
   };
 
+  //--------------------- GameGameQuest ---------------------//
+  public type GameQuestEngine = {
+    userId: Text;
+    listScene: [Text];
+    listEvent: List.List<Text>;
+    score: Nat;
+  };
+
   //--------------------- Scene ---------------------//
   public type Scene = {
     id : Text;

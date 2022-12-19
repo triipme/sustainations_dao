@@ -2,22 +2,23 @@ import Phaser from 'phaser';
 import BaseScene from '../BaseScene'
 import gameConfig from '../../GameConfig';
 import {
-  loadEventOptions,
+  loadEventOptionEngines,
   updateCharacterStats,
+  updateCharacterStatsEngine,
   listCharacterSelectsItems,
-  createCharacterCollectsMaterials,
-  listCharacterCollectsMaterials
+  // createCharacterCollectsMaterials,
+  readSceneEngine,
+  loadItemUrl,
+  characterTakeOptionEngine,
+  // characterCollectsMaterialEngines,
+  getEventEngine
 } from '../../GameApi';
 import { settings } from '../settings';
 import { func } from 'prop-types';
-import { readEvent } from '../../GameApi';
+import { readEventEngine } from '../../GameApi';
 
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
-const bg1 = 'metaverse/scenes/lake/Scene1/PNG/back.png';
-const bg2 = 'metaverse/scenes/lake/Scene1/PNG/mid.png';
-const bg3 = 'metaverse/scenes/lake/Scene1/PNG/front.png';
-const obstacle = 'metaverse/scenes/lake/Scene1/PNG/obstacle.png';
 const selectAction = 'metaverse/scenes/background_menu.png';
 const btnBlank = 'metaverse/scenes/selection.png';
 
@@ -25,17 +26,13 @@ const BtnExit = 'metaverse/scenes/UI_exit.png'
 const UI_Utility = 'metaverse/scenes/UI-utility.png'
 const UI_Utility_Sprite = 'metaverse/scenes/UI_Utility_Sprite.png'
 const item_potion = 'metaverse/scenes/item_ingame_HP.png'
-const item_carrot = 'metaverse/scenes/item_ingame_carrot.png'
-const item_tomato = 'metaverse/scenes/item_ingame_tomato.png'
-const item_wheat = 'metaverse/scenes/item_ingame_wheat.png'
 
 const popupWindo = 'metaverse/selectMap/Catalonia_popup.png';
 const popupClose = 'metaverse/selectMap/UI_ingame_close.png';
 
-
-export default class lake_scene1 extends BaseScene {
+export default class Engine extends BaseScene {
   constructor() {
-    super('lake_scene1');
+    super('Test');
   }
 
   clearSceneCache() {
@@ -47,9 +44,36 @@ export default class lake_scene1 extends BaseScene {
     }
   }
 
-  preload() {
+  init(data) {
+    this.listScene = data.listScene;
+  }
+
+  async preload() {
     this.addLoadingScreen();
-    this.initialLoad("e36");
+    console.log("data: ", this.listScene);
+    this.load.rexAwait(function (successCallback, failureCallback) {
+      getEventEngine().then((result) => {
+        this.event = result;
+        this.initialLoad(this.event.id);
+        this.load.rexAwait(function (successCallback, failureCallback) {
+          characterTakeOptionEngine(this.event.id).then((result) => {
+            this.characterTakeOptions = result;
+            successCallback();
+          });
+        }, this);
+        successCallback();
+      });
+    }, this);
+   
+    // this.load.rexAwait(function (successCallback, failureCallback) {
+    //   characterCollectsMaterialEngines(this.eventId).then((result) => {
+    //     this.characterCollectMaterials = result;
+    //     successCallback();
+    //   });
+    // }, this);
+    // this.sceneEvent = await readScene(this.listScene[0])
+    this.sceneEvent = await readSceneEngine(this.listScene[Math.floor(Math.random() * (this.listScene.length))]);
+
 
     //Preload
     this.clearSceneCache();
@@ -60,27 +84,21 @@ export default class lake_scene1 extends BaseScene {
       frameHeight: 337
     });
     this.load.image("ground", ground);
-    this.load.image("background1", bg1);
-    this.load.image("background2", bg2);
-    this.load.image("background3", bg3);
+    this.load.image("background1", loadItemUrl(this.sceneEvent.back));
+    this.load.image("background2", loadItemUrl(this.sceneEvent.mid));
+    this.load.image("background3", loadItemUrl(this.sceneEvent.front));
     this.load.image("selectAction", selectAction);
     this.load.spritesheet('btnBlank', btnBlank, { frameWidth: 1102, frameHeight: 88 });
-    this.load.image("obstacle", obstacle);
-
-
+    // this.load.image("obstacle", loadItemUrl(this.sceneEvent.obstacle));
 
     //UI -- One time load
     this.load.image("BtnExit", BtnExit);
     this.load.spritesheet('UI_Utility_Sprite', UI_Utility_Sprite, { frameWidth: 192, frameHeight: 192 });
     this.load.image("item_potion", item_potion);
-    this.load.image("item_carrot", item_carrot);
-    this.load.image("item_tomato", item_tomato);
-    this.load.image("item_wheat", item_wheat);
 
     //Popup
     this.load.spritesheet('popupWindo', popupWindo, { frameWidth: 980, frameHeight: 799 });
     this.load.image("popupClose", popupClose);
-
 
   }
 
@@ -110,7 +128,9 @@ export default class lake_scene1 extends BaseScene {
   }
 
   async create() {
-    this.isUsedUsableItem = [false, '']
+    this.listScene.shift()
+    console.log(this.characterTakeOptions)
+    // console.log(this.listScene.shift())
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
@@ -134,7 +154,7 @@ export default class lake_scene1 extends BaseScene {
     this.physics.add.collider(this.player, platforms);
 
     this.createUIElements();
-    this.defineCamera(5118, gameConfig.scale.height);
+    this.defineCamera(1280, gameConfig.scale.height); //default 5118
     this.createPauseScreen();
 
     // load selected items ids
@@ -143,8 +163,7 @@ export default class lake_scene1 extends BaseScene {
 
 
     // load event options
-    this.eventOptions = await loadEventOptions(this.eventId, this.selectedItemsIds);
-    console.log("test: ", this.eventOptions, this.eventId)
+    this.eventOptions = await loadEventOptionEngines(this.eventId, this.selectedItemsIds);
 
     // stats before choose option
     this.setValue(this.hp, this.characterData.currentHP / this.characterData.maxHP * 100);
@@ -174,12 +193,14 @@ export default class lake_scene1 extends BaseScene {
     });
 
     // load description of event
-    const event = await readEvent(this.eventId)
+    this.rsEvent = await readEventEngine(this.eventId)
+    this.event = this.rsEvent[0];
+    console.log("time: ", this.rsEvent[1]);
 
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
-      text: 'On the bench, there is a question. Find the correct answer to continue or else.\n\n“What is able to go up a chimney when down but unable to go down a chimney when up?”',
+      text: this.event.description,
       origin: { x: 0.5, y: 0.5 },
       style: {
         font: 'bold 25px Arial',
@@ -196,7 +217,6 @@ export default class lake_scene1 extends BaseScene {
     this.mask = new Phaser.Display.Masks.GeometryMask(this, this.graphics);
 
     this.des.setMask(this.mask);
-
 
     // //  The rectangle they can 'drag' within
     this.add.zone(150, 230, 900, 250).setOrigin(0).setInteractive().setVisible(true).setScrollFactor(0)
@@ -235,7 +255,7 @@ export default class lake_scene1 extends BaseScene {
         this.options[idx].setFrame(2);
       }
 
-      this.options[idx].on('pointerdown', async () => {
+      this.options[idx].on('pointerdown', () => {
         if (takeable) {
           this.triggerContinue();
           this.clickSound.play();
@@ -255,14 +275,12 @@ export default class lake_scene1 extends BaseScene {
           this.showColorLossStat(490 + 200 * 3 + 35, 65, loss_stat[3]);
 
           // update character after choose option
-          updateCharacterStats(this.characterTakeOptions[idx]);
+          updateCharacterStatsEngine(this.characterTakeOptions[idx]);
           // create charactercollectsmaterials after choose option
-          createCharacterCollectsMaterials(this.characterCollectMaterials[idx]);
+          // createCharacterCollectsMaterials(this.characterCollectMaterials[idx]);
         }
       });
-
     };
-
   }
 
   update() {
@@ -271,13 +289,17 @@ export default class lake_scene1 extends BaseScene {
       this.player.setVelocityX(settings.movementSpeed);
     }
 
-    if (this.player.x > 5100) {
+    if (this.player.x > 1280) { //default 5100
+      console.log(this.sum)
       this.pregameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start("lake_scene2", { isUsedPotion: this.isUsedPotion, isUsedUsableItem: this.isUsedUsableItem });
+
+      if (this.listScene.length === 0) this.scene.start("thanks", { isUsedPotion: this.isUsedPotion });
+      else this.scene.start("Engine", { isUsedPotion: this.isUsedPotion, listScene: this.listScene});
+      // this.scene.start("Test", { isUsedPotion: this.isUsedPotion, listScene: this.listScene});
     }
 
-    if (this.player.x > 4200 && this.isInteracted == false) {
+    if (this.player.x > 600 && this.isInteracted == false) { //default 4200
 
       this.premiumPopupWindow.setVisible(true);
       this.premiumPopupCloseBtn.setVisible(true);
@@ -293,7 +315,7 @@ export default class lake_scene1 extends BaseScene {
     // scroll the texture of the tilesprites proportionally to the camera scroll
     this.bg_1.tilePositionX = this.myCam.scrollX * .3;
     this.bg_2.tilePositionX = this.myCam.scrollX * 1;
-    this.obstacle.tilePositionX = this.myCam.scrollX * 1;
+    // this.obstacle.tilePositionX = this.myCam.scrollX * 1;
     this.bg_3.tilePositionX = this.myCam.scrollX * 1;
   }
 }

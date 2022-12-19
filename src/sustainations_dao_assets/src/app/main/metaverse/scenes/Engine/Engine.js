@@ -10,7 +10,8 @@ import {
   readSceneEngine,
   loadItemUrl,
   characterTakeOptionEngine,
-  // characterCollectsMaterialEngines
+  // characterCollectsMaterialEngines,
+  getEventEngine
 } from '../../GameApi';
 import { func } from 'prop-types';
 import { readEventEngine } from '../../GameApi';
@@ -37,22 +38,25 @@ export default class Engine extends BaseScene {
 
   init(data) {
     this.listScene = data.listScene;
-    this.listEvent = data.listEvent;
   }
 
   async preload() {
     this.addLoadingScreen();
     console.log("data: ", this.listScene);
-    this.eventId = this.listEvent.splice((Math.random() * this.listEvent.length), 1)[0];
-    this.initialLoad(this.eventId);
-    console.log("this eventid: ", this.eventId);
-    console.log("this.listEvent: ", this.listEvent);
     this.load.rexAwait(function (successCallback, failureCallback) {
-      characterTakeOptionEngine(this.eventId).then((result) => {
-        this.characterTakeOptions = result;
+      getEventEngine().then((result) => {
+        this.event = result;
+        this.initialLoad(this.event.id);
+        this.load.rexAwait(function (successCallback, failureCallback) {
+          characterTakeOptionEngine(this.event.id).then((result) => {
+            this.characterTakeOptions = result;
+            successCallback();
+          });
+        }, this);
         successCallback();
       });
     }, this);
+   
     // this.load.rexAwait(function (successCallback, failureCallback) {
     //   characterCollectsMaterialEngines(this.eventId).then((result) => {
     //     this.characterCollectMaterials = result;
@@ -240,8 +244,9 @@ export default class Engine extends BaseScene {
       this.pregameSound.stop();
       this.sfx_char_footstep.stop();
 
-      if (this.listEvent.length === 0) this.scene.start("thanks", { isUsedPotion: this.isUsedPotion });
-      else this.scene.start("Engine", { isUsedPotion: this.isUsedPotion, listScene: this.listScene, listEvent: this.listEvent });
+      // if (this.listEvent.length === 0) this.scene.start("thanks", { isUsedPotion: this.isUsedPotion });
+      // else this.scene.start("Engine", { isUsedPotion: this.isUsedPotion, listScene: this.listScene});
+      this.scene.start("Engine", { isUsedPotion: this.isUsedPotion, listScene: this.listScene});
     }
 
     if (this.player.x > 600 && this.isInteracted == false) { //default 4200
