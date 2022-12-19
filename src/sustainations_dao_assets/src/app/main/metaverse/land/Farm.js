@@ -93,16 +93,26 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
   //     }),
   //   []
   // );
-  const checkAvailablePosition = (i, j) => {
-    const result = tileplant.filter(tile => {
-      return tile.properties.i >= i && tile.properties.i <= i + 2 && tile.properties.j >= j && tile.properties.j <= j + 2
+  const checkAvailablePosition = (i, j, x) => {
+    let result = []
+    if (x === 9) {
+      result = tileplant.filter(tile => {
+        return tile.properties.i >= i && tile.properties.i <= i + 2 && tile.properties.j >= j && tile.properties.j <= j + 2
+      }
+      )
+    } else {
+      console.log("run")
+      result = tileplant.filter(tile => {
+        return tile.properties.j == j && tile.properties.i >= i && tile.properties.i <= i + 1
+      }
+      )
     }
-    )
+    console.log(result)
     const arr = result.filter(idx => {
       return idx.properties.name !== "None"
     })
 
-    if (arr.length === 0 && result.length === 9) {
+    if (arr.length === 0 && result.length === x) {
       return true
     }
     return false
@@ -159,8 +169,8 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
           setLoading(true)
           positionTree.i = country.properties.i
           positionTree.j = country.properties.j
-          console.log("checkAvailablePosition: ", checkAvailablePosition(positionTree.i, positionTree.j))
-          if (checkAvailablePosition(positionTree.i, positionTree.j))
+          console.log("checkAvailablePosition: ", checkAvailablePosition(positionTree.i, positionTree.j, 9))
+          if (checkAvailablePosition(positionTree.i, positionTree.j, 9))
             console.log("Build Factory: ", (await user.actor.buildConstruction(country.properties.landId, country.properties.i, country.properties.j, "c1")))
           else {
             setCantBuild("factory")
@@ -215,19 +225,24 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
           setLoading(true)
           positionTree.i = country.properties.i
           positionTree.j = country.properties.j
-
-          console.log(
-            "Plant tree status: ",
-            await user.actor.plantTree(
-              country.properties.landId,
-              country.properties.i,
-              country.properties.j,
-              currentSeed[0].materialId
-            )
-          );
-          await user.actor.subtractInventory(currentSeed[0].id);
-          setTileplant(await loadTileSlots(landSlotProperties));
-          setInventory((await user.actor.listInventory(characterId)).ok);
+          console.log("checkAvailablePosition: ", checkAvailablePosition(positionTree.i, positionTree.j, 2), currentSeed[0].materialName)
+          if(( currentSeed[0].materialName === "pine_seed" && checkAvailablePosition(positionTree.i, positionTree.j, 2)) || currentSeed[0].materialName !== "pine_seed") {
+            console.log(
+              "Plant tree status: ",
+              await user.actor.plantTree(
+                country.properties.landId,
+                country.properties.i,
+                country.properties.j,
+                currentSeed[0].materialId
+              )
+            );
+            await user.actor.subtractInventory(currentSeed[0].id);
+            setTileplant(await loadTileSlots(landSlotProperties));
+            setInventory((await user.actor.listInventory(characterId)).ok);
+          } else {
+            setCantBuild("pine")
+          }
+          
           setLoading(false)
           positionTree.i = -1
           positionTree.j = -1
@@ -318,7 +333,7 @@ const Inventory = ({ inventory }) => {
           alt=""
         />
       </div>
-       {/* <div className="imgItem" style={{
+      {/* <div className="imgItem" style={{
         border: inventoryStatus["market"] == true ? "2px" : "0px",
         borderStyle: inventoryStatus["market"] == true ? "dashed dashed dashed dashed" : "none",
         width: "65px",
@@ -350,7 +365,7 @@ const Inventory = ({ inventory }) => {
           alt=""
         />
       </div> */}
-      
+
       {inventory.length > 0 ?
         <>
           {inventory.map((value, i) => {
@@ -424,7 +439,7 @@ const CreateBound = ({ tileplant, loading }) => {
               {/* <ImageOverlay key={value} url={'/metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-51.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} /> */}
               <ImageOverlay key={value} url={'/metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-51.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} />
               {/* <ImageOverlay key={value} url={'/metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-50.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} /> */}
-              
+
               {loading === true && positionTree.i == tag.properties.i && positionTree.j == tag.properties.j ? <ImageOverlay key={value + 200} url={'metaverse/Ripple-loading.gif'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} /> : <></>}
             </>
           )
@@ -436,7 +451,7 @@ const CreateBound = ({ tileplant, loading }) => {
         //       {/* <ImageOverlay key={value} url={'/metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-51.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} /> */}
         //       {/* <ImageOverlay key={value} url={'/metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-05.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} /> */}
         //       <ImageOverlay key={value} url={'/metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-50.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} />
-              
+
         //       {loading === true && positionTree.i == tag.properties.i && positionTree.j == tag.properties.j ? <ImageOverlay key={value + 200} url={'metaverse/Ripple-loading.gif'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} /> : <></>}
         //     </>
         //   )
@@ -448,7 +463,7 @@ const CreateBound = ({ tileplant, loading }) => {
         //       <ImageOverlay key={value} url={'/metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-51.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} />
         //       {/* <ImageOverlay key={value} url={'/metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-05.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} /> */}
         //       {/* <ImageOverlay key={value} url={'/metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-50.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} /> */}
-              
+
         //       {loading === true && positionTree.i == tag.properties.i && positionTree.j == tag.properties.j ? <ImageOverlay key={value + 200} url={'metaverse/Ripple-loading.gif'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} /> : <></>}
         //     </>
         //   )
