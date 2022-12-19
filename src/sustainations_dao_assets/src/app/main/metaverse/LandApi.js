@@ -99,7 +99,7 @@ async function loadNationsfromCenter(x, y) {
   //   x - 100, y - 100, x + 100, y + 100
   // );
   const func = await user.actor.loadNationsArea(
-    x,y,4
+    x, y, 4
   );
   const nations = func?.ok;
   var result = {
@@ -186,7 +186,7 @@ function lonlat2utm(lon, lat) {
 function getLandIndex(latlng) {
   let temp = lonlat2utm(latlng.lng, latlng.lat)
   // console.log([parseInt(temp[1]/1000), parseInt(temp[0]/1000)])
-  return [parseInt(temp[1]/1000), parseInt(temp[0]/1000)]
+  return [parseInt(temp[1] / 1000), parseInt(temp[0] / 1000)]
 }
 
 // load LandTransferHistories
@@ -238,7 +238,7 @@ async function loadTileSlots(properties) {
   const { user } = store.getState();
   const func = async () => await user.actor.loadTilesArea(x, y, x + 9, y + 9);
   const tiles = (await func()).ok;
-  
+
 
   var result = {
     features: []
@@ -246,9 +246,9 @@ async function loadTileSlots(properties) {
   // console.log("tiles", tiles)
   for (let tile of tiles) {
     let latlng1 = utm2lonlat(d * Number(tile.indexColumn), d * Number(tile.indexRow));
-    let latlng2 = utm2lonlat(d * (Number(tile.indexColumn) + 1), d * (Number(tile.indexRow) + 1));
+    let latlng2 = utm2lonlat(d * (Number(tile.indexColumn) + Number(tile.columnSize)), d * (Number(tile.indexRow) + Number(tile.rowSize)));
     let landId = properties.i.toString() + "-" + properties.j.toString();
-    
+
     let feature = {
       type: "Feature",
       properties: {
@@ -261,7 +261,7 @@ async function loadTileSlots(properties) {
         "hasEffectId": tile.hasEffectId,
         "status": tile.status,
         "remainingTime": Number(tile.remainingTime),
-        "hasEffectId": tile.hasEffectId, 
+        "hasEffectId": tile.hasEffectId,
       },
       geometry: {
         type: "Polygon", coordinates: [
@@ -326,6 +326,14 @@ async function removeTree(tileId) {
   return result;
 }
 
+// Build Construction
+async function buildConstruction(landId, indexRow, indexColumn, constructionId) {
+  const { user } = store.getState();
+  const func = await user.actor.buildConstruction(landId, indexRow, indexColumn, constructionId);
+  const result = func?.ok;
+  return result;
+}
+
 
 
 export {
@@ -349,5 +357,6 @@ export {
   // plantTree,
   harvestTree,
   removeTree,
-  loadUserLandSlots
+  loadUserLandSlots,
+  buildConstruction
 }
