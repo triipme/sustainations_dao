@@ -511,7 +511,6 @@ public type UsableItem = {
     startProducingTime : Int;
   };
 
-
   // Error codes
   public type Error = {
     #BalanceLow;
