@@ -6302,4 +6302,279 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
     #ok((list));
   };
+
+  // alchemyRecipe
+  public shared ({ caller }) func createAlchemyRecipe(alchemyRecipe : Types.AlchemyRecipe) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsAlchemyRecipe = state.alchemyRecipes.get(alchemyRecipe.id);
+    switch (rsAlchemyRecipe) {
+      case (?V) { #err(#AlreadyExisting) };
+      case null {
+        AlchemyRecipe.create(alchemyRecipe, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared query ({ caller }) func readAlchemyRecipe(id : Text) : async Response<(Types.AlchemyRecipe)> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsAlchemyRecipe = state.alchemyRecipes.get(id);
+    return Result.fromOption(rsAlchemyRecipe, #NotFound);
+  };
+
+  public shared query ({ caller }) func listAlchemyRecipes() : async Response<[(Text, Types.AlchemyRecipe)]> {
+    var list : [(Text, Types.AlchemyRecipe)] = [];
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    for ((K, V) in state.alchemyRecipes.entries()) {
+      list := Array.append<(Text, Types.AlchemyRecipe)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+
+  // alchemyRecipeDetail
+  public shared ({ caller }) func createAlchemyRecipeDetail(alchemyRecipeDetail : Types.AlchemyRecipeDetail) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsAlchemyRecipeDetail = state.alchemyRecipeDetails.get(alchemyRecipeDetail.id);
+    switch (rsAlchemyRecipeDetail) {
+      case (?V) { #err(#AlreadyExisting) };
+      case null {
+        AlchemyRecipeDetail.create(alchemyRecipeDetail, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared query ({ caller }) func readAlchemyRecipeDetail(id : Text) : async Response<(Types.AlchemyRecipeDetail)> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsAlchemyRecipeDetail = state.alchemyRecipeDetails.get(id);
+    return Result.fromOption(rsAlchemyRecipeDetail, #NotFound);
+  };
+
+  public shared query ({ caller }) func listAlchemyRecipeDetails() : async Response<[(Text, Types.AlchemyRecipeDetail)]> {
+    var list : [(Text, Types.AlchemyRecipeDetail)] = [];
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    for ((K, V) in state.alchemyRecipeDetails.entries()) {
+      list := Array.append<(Text, Types.AlchemyRecipeDetail)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+
+  // BuildingType
+  public shared ({ caller }) func createBuildingType(buildingType : Types.BuildingType) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsBuildingType = state.buildingTypes.get(buildingType.id);
+    switch (rsBuildingType) {
+      case (?V) { #err(#AlreadyExisting) };
+      case null {
+        BuildingType.create(buildingType, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared query ({ caller }) func readBuildingType(id : Text) : async Response<(Types.BuildingType)> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsBuildingType = state.buildingTypes.get(id);
+    return Result.fromOption(rsBuildingType, #NotFound);
+  };
+
+  public shared query ({ caller }) func listBuildingTypes() : async Response<[(Text, Types.BuildingType)]> {
+    var list : [(Text, Types.BuildingType)] = [];
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    for ((K, V) in state.buildingTypes.entries()) {
+      list := Array.append<(Text, Types.BuildingType)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+
+
+  public shared ({ caller }) func buildConstruction(landId : Text, indexRow : Nat, indexColumn : Nat, buildingTypeId : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+
+    let rsBuildingType = state.buildingTypes.get(buildingTypeId);
+    switch (rsBuildingType) {
+      case null {
+        #err(#NotFound);
+      };
+      case (?buildingType) {
+        let rsLandSlot = state.landSlots.get(landId);
+        switch (rsLandSlot) {
+          case null {
+            #err(#NotFound);
+          };
+          case (?landSlot) {
+            let objectId = await createBuilding(buildingTypeId);
+            createTile(landId, indexRow, indexColumn, objectId);
+            return #ok("Success"); 
+          };
+        };
+      };
+    };
+  };
+
+
+  private func createBuilding(buildingTypeId : Text) : async Text {
+    var uuid : Text = await createUUID();
+    label whileLoop loop {
+      while (true) {
+        let rsPlant = state.buildings.get(uuid);
+        switch (rsPlant) {
+          case (?V) {
+            uuid := await createUUID();
+          };
+          case null {
+            break whileLoop;
+          };
+        };
+      };
+    };
+    let newBuilding : Types.Building = {
+      id = uuid;
+      buildingTypeId = buildingTypeId;
+      resultUsableItemId = "None";
+      status = "completed";
+      buildTime = Time.now() / 1000000000;
+      startProducingTime = -1;
+    };
+
+    let created = Building.create(newBuilding, state);
+    return uuid;
+  };
+
+  public shared query ({ caller }) func listBuildings() : async Response<[(Text, Types.Building)]> {
+    var list : [(Text, Types.Building)] = [];
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    for ((K, V) in state.buildings.entries()) {
+      list := Array.append<(Text, Types.Building)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+
+     // Event land effect (pine tree)
+  public shared func createOneTreeLandEffect(userId: Principal, plant: Types.Plant): () {
+    if (plant.seedId == "s4pine") {
+      let rsLandEffect = state.userHasLandEffects.get(Principal.toText(userId));
+      switch (rsLandEffect) {
+        case null {
+          let userHasLandEffect : Types.UserHasLandEffect = {
+            id = userId;
+            landEffectId = "le2";
+          };
+          let created = UserHasLandEffect.create(userHasLandEffect, state);
+        };
+        case (?hasLandEffect) {
+          let rsLandEffect = state.landEffects.get(hasLandEffect.landEffectId);
+          switch (rsLandEffect) {
+            case null {};
+            case (?landEffect) {
+              if (landEffect.effect == "waitTime" and landEffect.value > -0.12) {
+                let userHasLandEffect : Types.UserHasLandEffect = {
+                  id = userId;
+                  landEffectId = "le2";
+                };
+                let updated = UserHasLandEffect.update(userHasLandEffect, state);
+              };
+            };
+          };
+        };
+      };
+    };
+  };
+
+  public shared func deleteOneTreeLandEffect(userId: Principal, plant: Types.Plant): () {
+    if (plant.seedId == "s4pine") {
+      let rsNation = state.nations.get(Principal.toText(userId));
+      switch (rsNation) {
+        case null { };
+        case (?nation) {
+          // get landSlots of user
+          var landSlots : [Types.LandSlot] = [];
+          for (landSlotId in nation.landSlotIds.vals()){
+            let rsLandSlot = state.landSlots.get(landSlotId);
+            switch (rsLandSlot) {
+              case null {};
+              case (?landSlot) {
+                landSlots := Array.append(landSlots, [landSlot]);
+              };
+            };
+          };
+          let landEffectId = LandEffect.checkEffect(landSlots, state);
+
+          let counter = await countSeedInNation(userId, "s4pine");
+          if (counter == 0) {
+            if (landEffectId == "None") {
+              let deleted = state.userHasLandEffects.delete(Principal.toText(userId));
+            } else {
+              let updateUserHasLandEffect : Types.UserHasLandEffect = {
+                id = userId;
+                landEffectId = landEffectId;
+              };
+              let updated = UserHasLandEffect.update(updateUserHasLandEffect, state);
+            };
+          };
+        };
+      };
+    };
+  };
+
+  public shared query func countSeedInNation(userId : Principal, seedId : Text): async Nat {
+    var counter : Nat = 0;
+    let rsNation = state.nations.get(Principal.toText(userId));
+    switch (rsNation) {
+      case null { 0; };
+      case (?nation) {
+        for (landSlotId in nation.landSlotIds.vals()) {
+          let rsLandSlot = state.landSlots.get(landSlotId);
+          switch (rsLandSlot) {
+            case null {};
+            case (?landSlot) {
+              let iterI = Iter.range(Int.abs(landSlot.indexRow*10), Int.abs((landSlot.indexRow*10) + 9));
+              for (i in iterI) {
+                let iterJ = Iter.range(Int.abs(landSlot.indexColumn*10), Int.abs((landSlot.indexColumn*10) + 9));
+                for (j in iterJ) {
+                  let id = Nat.toText(i) # "-" #Nat.toText(j);
+                  let rsTile = state.tiles.get(id);
+                  switch (rsTile) {
+                    case null {};
+                    case (?tile) {
+                      let rsPlant = state.plants.get(tile.objectId);
+                      switch (rsPlant) {
+                        case null {};
+                        case (?plant) {
+                          if (plant.seedId == seedId) counter := counter + 1;
+                        };
+                      };
+                    };
+                  };
+                };
+              };
+            };
+          };
+        };
+        return counter;
+      };
+    };
+  };
 };
