@@ -263,14 +263,14 @@ const Metaverse = () => {
     });
   };
 
-  const createQuestEngine = () => {
+  const createBuildingType = () => {
     return new Promise(resolve => {
-      const questEngines = data[11];
-      questEngines.forEach(async questEngine => {
+      const buildingTypes = data[11];
+      buildingTypes.forEach(async buildingType => {
         try {
-          if (!!actor?.createQuestEngine) {
-            const rs = await actor.createQuestEngine(questEngine);
-            console.log("Create Quest Engine");
+          if (!!actor?.createBuildingType) {
+            const rs = await actor.createBuildingType(buildingType);
+            console.log("Create Building Type");
             console.log(rs);
           }
         } catch (error) {
@@ -281,14 +281,14 @@ const Metaverse = () => {
     });
   };
 
-  const createEventEngine = () => {
+  const createAlchemyRecipe = () => {
     return new Promise(resolve => {
-      const eventEngines = data[12];
-      eventEngines.forEach(async eventEngine => {
+      const alchemyRecipes = data[12];
+      alchemyRecipes.forEach(async alchemyRecipe => {
         try {
-          if (!!actor?.createEventEngine) {
-            const rs = await actor.createEventEngine(eventEngine);
-            console.log("Create Event Engine");
+          if (!!actor?.createAlchemyRecipe) {
+            const rs = await actor.createAlchemyRecipe(alchemyRecipe);
+            console.log("Create Alchemy Recipe");
             console.log(rs);
           }
         } catch (error) {
@@ -299,14 +299,14 @@ const Metaverse = () => {
     });
   };
 
-  const createEventOptionEngine = () => {
+  const createAlchemyRecipeDetail = () => {
     return new Promise(resolve => {
-      const eventOptionEngines = data[13];
-      eventOptionEngines.forEach(async eventOptionEngine => {
+      const alchemyRecipeDetails = data[13];
+      alchemyRecipeDetails.forEach(async alchemyRecipeDetail => {
         try {
-          if (!!actor?.createEventOptionEngine) {
-            const rs = await actor.createEventOptionEngine(eventOptionEngine);
-            console.log("Create Event Option Engine");
+          if (!!actor?.createAlchemyRecipeDetail) {
+            const rs = await actor.createAlchemyRecipeDetail(alchemyRecipeDetail);
+            console.log("Create Alchemy Recipe Detail");
             console.log(rs);
           }
         } catch (error) {
@@ -317,14 +317,14 @@ const Metaverse = () => {
     });
   };
 
-  const createScene = () => {
+  const createProduct = () => {
     return new Promise(resolve => {
-      const scenes = data[14];
-      scenes.forEach(async scene => {
+      const products = data[14];
+      products.forEach(async product => {
         try {
-          if (!!actor?.createScene) {
-            const rs = await actor.createScene(scene);
-            console.log("Create Scene Engine");
+          if (!!actor?.createProduct) {
+            const rs = await actor.createProduct(product);
+            console.log("Create Product");
             console.log(rs);
           }
         } catch (error) {
@@ -334,9 +334,6 @@ const Metaverse = () => {
       resolve();
     });
   };
-
-  
-
 
 
   const handleSubmit = async () => {
@@ -352,10 +349,10 @@ const Metaverse = () => {
     await createSeed();
     await createFarmEffect();
     await createLandEffect();
-    await createQuestEngine();
-    await createEventEngine();
-    await createEventOptionEngine();
-    await createScene();
+    await createBuildingType();
+    await createAlchemyRecipe();
+    await createAlchemyRecipeDetail();
+    await createProduct();
     console.log("DONE");
     setLoading(false);
   };

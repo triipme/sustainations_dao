@@ -61,8 +61,16 @@ import UserHasLandEffect "./land/hasLandEffect";
 import Tile "./land/tile";
 import Seed "./land/seed";
 import Plant "./land/plant";
+import PlantPenaltyTime "./land/plantPenaltyTime";
+import PlantHarvestingHistory "./land/plantHarvestingHistory";
+import Product "./land/product";
 import FarmEffect "./land/farmEffect";
 import HasFarmEffect "./land/hasFarmEffect";
+import AlchemyRecipe "./land/alchemyRecipe";
+import AlchemyRecipeDetail "./land/alchemyRecipeDetail";
+import BuildingType "./land/buildingType";
+import BuildingBuyingHistory "./land/buildingBuyingHistory";
+import Building "./land/building";
 import Env ".env";
 
 shared ({ caller = owner }) actor class SustainationsDAO() = this {
@@ -115,6 +123,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   };
   private stable var items : [(Text, Types.Item)] = [];
   private stable var questItems : [(Text, Types.QuestItem)] = [];
+  private stable var products : [(Text, Types.Product)] = [];
   private stable var usableItems : [(Text, Types.UsableItem)] = [];
   private stable var eventItems : [(Text, Types.EventItem)] = [];
   private stable var arItems : [(Text, Types.ARItem)] = [];
@@ -137,8 +146,15 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   private stable var tiles : [(Text, Types.Tile)] = [];
   private stable var seeds : [(Text, Types.Seed)] = [];
   private stable var plants : [(Text, Types.Plant)] = [];
+  private stable var plantPenaltyTimes : [(Text, Types.PlantPenaltyTime)] = [];
+  private stable var plantHarvestingHistories : [(Text, Types.PlantHarvestingHistory)] = [];
   private stable var farmEffects : [(Text, Types.FarmEffect)] = [];
   private stable var hasFarmEffects : [(Text, Types.UserHasFarmEffect)] = [];
+  private stable var alchemyRecipes : [(Text, Types.AlchemyRecipe)] = [];
+  private stable var alchemyRecipeDetails : [(Text, Types.AlchemyRecipeDetail)] = [];
+  private stable var buildingTypes : [(Text, Types.BuildingType)] = [];
+  private stable var buildingBuyingHistories : [(Text, Types.BuildingBuyingHistory)] = [];
+  private stable var buildings : [(Text, Types.Building)] = [];
 
   system func preupgrade() {
     Debug.print("Begin preupgrade");
@@ -178,6 +194,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     quests := Iter.toArray(state.quests.entries());
     items := Iter.toArray(state.items.entries());
     questItems := Iter.toArray(state.questItems.entries());
+    products := Iter.toArray(state.products.entries());
     usableItems := Iter.toArray(state.usableItems.entries());
     eventItems := Iter.toArray(state.eventItems.entries());
     arItems := Iter.toArray(state.arItems.entries());
@@ -200,8 +217,15 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     tiles := Iter.toArray(state.tiles.entries());
     seeds := Iter.toArray(state.seeds.entries());
     plants := Iter.toArray(state.plants.entries());
+    plantPenaltyTimes := Iter.toArray(state.plantPenaltyTimes.entries());
+    plantHarvestingHistories := Iter.toArray(state.plantHarvestingHistories.entries());
     farmEffects := Iter.toArray(state.farmEffects.entries());
     hasFarmEffects := Iter.toArray(state.hasFarmEffects.entries());
+    alchemyRecipes := Iter.toArray(state.alchemyRecipes.entries());
+    alchemyRecipeDetails := Iter.toArray(state.alchemyRecipeDetails.entries());
+    buildingTypes := Iter.toArray(state.buildingTypes.entries());
+    buildingBuyingHistories := Iter.toArray(state.buildingBuyingHistories.entries());
+    buildings := Iter.toArray(state.buildings.entries());
     Debug.print("End preupgrade");
   };
 
@@ -297,6 +321,9 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     for ((k, v) in Iter.fromArray(questItems)) {
       state.questItems.put(k, v);
     };
+    for ((k, v) in Iter.fromArray(products)) {
+      state.products.put(k, v);
+    };
     for ((k, v) in Iter.fromArray(usableItems)) {
       state.usableItems.put(k, v);
     };
@@ -363,11 +390,32 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     for ((k, v) in Iter.fromArray(plants)) {
       state.plants.put(k, v);
     };
+    for ((k, v) in Iter.fromArray(plantPenaltyTimes)) {
+      state.plantPenaltyTimes.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(plantHarvestingHistories)) {
+      state.plantHarvestingHistories.put(k, v);
+    };
     for ((k, v) in Iter.fromArray(farmEffects)) {
       state.farmEffects.put(k, v);
     };
     for ((k, v) in Iter.fromArray(hasFarmEffects)) {
       state.hasFarmEffects.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(alchemyRecipes)) {
+      state.alchemyRecipes.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(alchemyRecipeDetails)) {
+      state.alchemyRecipeDetails.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(buildingTypes)) {
+      state.buildingTypes.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(buildingBuyingHistories)) {
+      state.buildingBuyingHistories.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(buildings)) {
+      state.buildings.put(k, v);
     };
     Debug.print("End postupgrade");
   };
@@ -3814,6 +3862,70 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
   };
 
+  // Product
+  public shared ({ caller }) func createProduct(product : Types.Product) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsProduct = state.products.get(product.id);
+    switch (rsProduct) {
+      case (?V) { #err(#AlreadyExisting) };
+      case null {
+        Product.create(product, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared ({ caller }) func updateProduct(product : Types.Product) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsProduct = state.products.get(product.id);
+    switch (rsProduct) {
+      case null { #err(#NotFound) };
+      case (?V) {
+        Product.update(product,state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared query ({ caller }) func readProduct(id : Text) : async Response<Types.Product> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rs = state.products.get(id);
+    return Result.fromOption(rs, #NotFound);
+  };
+
+  public shared query ({ caller }) func listProducts() : async Response<[(Text, Types.Product)]> {
+    var list : [(Text, Types.Product)] = [];
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    for ((K, V) in state.products.entries()) {
+      list := Array.append<(Text, Types.Product)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+
+  
+
+  public shared ({ caller }) func deleteProduct(id : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rs = state.products.get(id);
+    switch (rs) {
+      case (null) { #err(#NotFound) };
+      case (?V) {
+        let deleted = state.products.delete(id);
+        #ok("Success");
+      };
+    };
+  };
+
   // Usable Item
   public shared ({ caller }) func createUsableItem(usableItem : Types.UsableItem) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
@@ -3837,6 +3949,20 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
             effect = usableItem.effect;
           }
         );
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared ({ caller }) func updateUsableItem(usableItem : Types.UsableItem) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsUsableItem = state.usableItems.get(usableItem.id);
+    switch (rsUsableItem) {
+      case null { #err(#NotFound) };
+      case (?V) {
+        let updated = state.usableItems.replace(usableItem.id, usableItem);
         #ok("Success");
       };
     };
@@ -4852,14 +4978,10 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   };
 
   // Stash
-  public shared ({ caller }) func createStash(userId : Text, seedId : Text) : async Response<Text> {
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized); //isNotAuthorized
-    };
+  public shared ({ caller }) func createStash(userId : Text, seedId : Text) : () {
     let rsSeed = state.seeds.get(seedId);
     switch rsSeed {
       case null {
-        return #err(#NotFound);
       };
       case (?seed) {
         var rsStash : Bool = false;
@@ -4889,7 +5011,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
         };
       };
     };
-    #ok("Success");
   };
 
   public type StashInfo = {
@@ -4955,8 +5076,8 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
 
   // convert i,j to geometry with lat,lng
   public shared func landSlotToGeometry(i : Nat, j : Nat) : async Types.Geometry {
-    let latlng1 = await utm2lonlat(Float.fromInt(1000 * j), Float.fromInt(1000 * i), 20, "N");
-    let latlng2 = await utm2lonlat(Float.fromInt(1000 * (j + 1)), Float.fromInt(1000 * (i + 1)), 20, "N");
+    let latlng1 = await georust.proj(Float.fromInt(1000 * j), Float.fromInt(1000 * i), 20, "N");
+    let latlng2 = await georust.proj(Float.fromInt(1000 * (j + 1)), Float.fromInt(1000 * (i + 1)), 20, "N");
     let coordinates = [[
       [latlng1.0, latlng1.1],
       [latlng2.0, latlng1.1],
@@ -5024,14 +5145,14 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
     let created = state.landSlots.put(newLandSlot.id, newLandSlot);
     // save land transter history
-    ignore await createLandTransferHistory(newLandSlot.ownerId, newLandSlot.id, 0.0003);
+    createLandTransferHistory(newLandSlot.ownerId, newLandSlot.id, 0.0003);
     // delete user's current buying status
-    ignore await deleteLandBuyingStatus(newLandSlot.ownerId);
+    deleteLandBuyingStatus(newLandSlot.ownerId);
     // update user nation
-    ignore await createNation(newLandSlot.ownerId, newLandSlot.id, nationUTMS);
+    createNation(newLandSlot.ownerId, newLandSlot.id, nationUTMS);
     // create user has land effect
-    ignore await createUserHasLandEffect(newLandSlot.ownerId);
-
+    createUserHasLandEffect(newLandSlot.ownerId);
+    
     #ok("Success");
   };
 
@@ -5044,7 +5165,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
-
     switch (await deposit(30000, caller)) {
       case (#ok(bIndex)) {
         await recordTransaction(
@@ -5097,7 +5217,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
                 };
               };
             };
-            ignore await updateLandBuyingStatus(caller, Int.abs(i), Int.abs(j));
+            updateLandBuyingStatus(caller, Int.abs(i), Int.abs(j));
             return #ok(
               await landSlotToGeometry(Int.abs(i), Int.abs(j))
             );
@@ -5115,7 +5235,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
             let index = await randomIndex(0.0, Float.fromInt(adjacentLandSlots.size() -1));
             let result = adjacentLandSlots[Int.abs(index)];
 
-            ignore await updateLandBuyingStatus(caller, Int.abs(result.i), Int.abs(result.j));
+            updateLandBuyingStatus(caller, Int.abs(result.i), Int.abs(result.j));
             return #ok(
               await landSlotToGeometry(Int.abs(result.i), Int.abs(result.j))
             );
@@ -5333,10 +5453,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   };
 
   // Nation
-  public shared ({ caller }) func createNation(ownerId : Principal, landId : Text, nationUTMS : [[Nat]]) : async Response<Text> {
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized); //isNotAuthorized
-    };
+  public shared ({ caller }) func createNation(ownerId : Principal, landId : Text, nationUTMS : [[Nat]]) : () {
     let rsNation = state.nations.get(Principal.toText(ownerId));
     switch (rsNation) {
       case (null) {
@@ -5349,7 +5466,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
           utms = nationUTMS;
         };
         let created = Nation.create(newNation, state);
-        #ok("Success");
       };
       case (?V) {
         var newLandSlotIds : [Text] = [];
@@ -5364,7 +5480,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
           utms = nationUTMS;
         };
         let updated = Nation.update(updateNation, state);
-        #ok("Success");
       };
     };
   };
@@ -5397,7 +5512,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   //   };
   // };
 
-  public shared ({ caller }) func getNationIndex(landSlotIds : [Text]) : async { i : Nat; j : Nat } {
+  public shared query ({ caller }) func getNationIndex(landSlotIds : [Text]) : async { i : Nat; j : Nat } {
     var sumRow : Nat = 0;
     var sumColumn : Nat = 0;
     for (id in landSlotIds.vals()) {
@@ -5439,10 +5554,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   };
 
   // Land Transfer History
-  public shared ({ caller }) func createLandTransferHistory(buyerId : Principal, landId : Text, price : Float) : async Response<Text> {
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized); //isNotAuthorized
-    };
+  public shared ({ caller }) func createLandTransferHistory(buyerId : Principal, landId : Text, price : Float) : () {
     var uuid : Text = await createUUID();
     label whileLoop loop {
       while (true) {
@@ -5466,7 +5578,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       price = price;
     };
     let created = state.landTransferHistories.put(newLandTransferHistory.id, newLandTransferHistory);
-    #ok("Success");
   };
 
   public shared query ({ caller }) func listLandTransferHistories() : async Response<[(Text, Types.LandTransferHistory)]> {
@@ -5481,13 +5592,8 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   };
 
   // Land Buying Status
-  public shared ({ caller }) func updateLandBuyingStatus(userId : Principal, indexRow : Nat, indexColumn : Nat) : async Response<Text> {
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized); //isNotAuthorized
-    };
-
+  public shared ({ caller }) func updateLandBuyingStatus(userId : Principal, indexRow : Nat, indexColumn : Nat) : () {
     let newGeometry = await landSlotToGeometry(indexRow, indexColumn);
-
     let principalId = Principal.toText(userId);
     let rsLandBuyingStatus = state.landBuyingStatuses.get(principalId);
     switch (rsLandBuyingStatus) {
@@ -5508,7 +5614,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
         let created = LandBuyingStatus.create(newLandBuyingStatus, state);
       };
     };
-    #ok("Success");
   };
 
   public shared query ({ caller }) func readLandBuyingStatus() : async Response<(Types.LandBuyingStatus)> {
@@ -5525,16 +5630,12 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
   };
 
-  public shared ({ caller }) func deleteLandBuyingStatus(id : Principal) : async Response<Text> {
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized); //isNotAuthorized
-    };
+  public shared ({ caller }) func deleteLandBuyingStatus(id : Principal) : () {
     let rsLandBuyingStatus = state.landBuyingStatuses.get(Principal.toText(id));
     switch (rsLandBuyingStatus) {
-      case (null) { #err(#NotFound) };
+      case (null) {};
       case (?V) {
         let deleted = state.landBuyingStatuses.delete(Principal.toText(id));
-        #ok("Success");
       };
     };
   };
@@ -5578,17 +5679,14 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   };
 
   // User has land efffect
-  public shared ({ caller }) func createUserHasLandEffect(userId : Principal) : async Response<Text> {
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized); //isNotAuthorized
-    };
+  public shared ({ caller }) func createUserHasLandEffect(userId : Principal) : () {
     let id = Principal.toText(userId);
     let rsUserHaslandEffect = state.userHasLandEffects.get(id);
     switch (rsUserHaslandEffect) {
       case null {
         let rsNation = state.nations.get(id);
         switch (rsNation) {
-          case null { #err(#NotFound) };
+          case null {};
           case (?nation) {
             // get landSlots of user
             var landSlots : [Types.LandSlot] = [];
@@ -5603,7 +5701,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
             };
 
             // check land effect
-            let landEffectId = await LandEffect.checkEffect(landSlots, state);
+            let landEffectId = LandEffect.checkEffect(landSlots, state);
             if (landEffectId != "None") {
               let newUserHasLandEffect : Types.UserHasLandEffect = {
                 id = userId;
@@ -5611,15 +5709,13 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
               };
               let created = UserHasLandEffect.create(newUserHasLandEffect, state);
             };
-            return #ok("Success");
           };
         };
       };
-      case (?V) {
-        #err(#AlreadyExisting);
-      };
+      case (?V) {};
     };
   };
+
 
   public shared query ({ caller }) func readUserHasLandEffect() : async Response<(Types.UserHasLandEffect)> {
     if (Principal.toText(caller) == "2vxsx-fae") {
@@ -5722,10 +5818,10 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
             #err(#NotFound);
           };
           case (?landSlot) {
-            let objectId = await createPlant(materialId);
-            let createdTile = await createTile(landId, indexRow, indexColumn, objectId);
-            ignore await createUserHasFarmEffect(indexRow, indexColumn, objectId, landSlot, false);
-            return #ok("Success");
+            let objectId = await createPlant(caller,materialId);
+            createTile(landId, indexRow, indexColumn, objectId);
+            createUserHasFarmEffect(indexRow,indexColumn,objectId,landSlot,false);     
+            return #ok("Success"); 
           };
         };
       };
@@ -5748,22 +5844,28 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
         #err(#NotFound);
       };
       case (?tile) {
-        // update plant: status to newlyPlanted and plantingTime to Now
         let plantId = tile.objectId;
+        let harvestTime = Time.now() / 1000000000;
+        // create plant harvesting history
+        createPlantHarvestingHistory(caller,plantId);
+        // update plant: status to newlyPlanted and plantingTime to Now
         let rsPlant = state.plants.get(plantId);
         switch (rsPlant) {
           case null {};
           case (?plant) {
+            // create plant's penalty time
+            createPlantPenaltyTime(plant,harvestTime,1.2,0.3);
+            // update plant
             let updatePlant : Types.Plant = {
               id = plant.id;
               seedId = plant.seedId;
               hasEffectId = plant.hasEffectId;
               status = "newlyPlanted";
-              plantTime = Time.now() / 1000000000;
+              plantTime = harvestTime;
             };
             let updated = Plant.update(updatePlant, state);
             // add harvested product to user's Stash
-            ignore await createStash(Principal.toText(caller), plant.seedId);
+            createStash(Principal.toText(caller), plant.seedId);
           };
         };
         #ok("Success");
@@ -5786,9 +5888,9 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
         switch (rsLand) {
           case null {};
           case (?landSlot) {
-            ignore await createUserHasFarmEffect(tile.indexRow, tile.indexColumn, tile.objectId, landSlot, true);
-          };
-        };
+            createUserHasFarmEffect(tile.indexRow,tile.indexColumn,tile.objectId,landSlot,true); 
+          }
+        }; 
 
         let plantId = tile.objectId;
         let rsPlant = state.plants.get(plantId);
@@ -5797,9 +5899,10 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
           case (?plant) {
             // delete Plant in tile
             let deletedPlant = state.plants.delete(plantId);
+            // delete land effect pine
+            deleteOneTreeLandEffect(caller,plant);
           };
         };
-
         // delete Tile
         let deletedTile = state.tiles.delete(tileId);
         #ok("Success");
@@ -5808,11 +5911,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   };
 
   // Tile
-  public shared ({ caller }) func createTile(landId : Text, indexRow : Nat, indexColumn : Nat, objectId : Text) : async Response<Text> {
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized); //isNotAuthorized
-    };
-
+  public shared ({ caller }) func createTile(landId : Text, indexRow : Nat, indexColumn : Nat, objectId : Text) : () {
     let tileId = Nat.toText(indexRow) # "-" #Nat.toText(indexColumn);
     let newTile : Types.Tile = {
       id = tileId;
@@ -5822,7 +5921,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       objectId = objectId;
     };
     let created = Tile.create(newTile, state);
-    return #ok("Success");
   };
 
   public shared ({ caller }) func loadTilesArea(beginX : Int, beginY : Int, endX : Int, endY : Int) : async Response<[Types.FarmObject]> {
@@ -5830,117 +5928,121 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
-
+    var ignoredTiles : [Text] = [];
+    // load PLants
     let iterI = Iter.range(Int.abs(beginX), Int.abs(endX));
     for (i in iterI) {
       let iterJ = Iter.range(Int.abs(beginY), Int.abs(endY));
       for (j in iterJ) {
         let id = Nat.toText(i) # "-" #Nat.toText(j);
-        let rsTile = state.tiles.get(id);
-        switch (rsTile) {
-          case (null) {
-            // add empty farm object
-            let newFarmObject : Types.FarmObject = {
-              id = "None";
-              landSlotId = "None";
-              indexRow = i;
-              indexColumn = j;
-              seedId = "None";
-              name = "None";
-              hasEffectId = "None";
-              status = "None";
-              remainingTime = 0;
+        let isIgnored = Array.find<Text>(ignoredTiles, func (val: Text) : Bool {val==id});
+        if (isIgnored == null) {
+          let rsTile = state.tiles.get(id);
+          switch (rsTile) {
+            case (null) {
+              // add empty farm object
+              let newFarmObject : Types.FarmObject = {
+                id = "None";
+                landSlotId = "None";
+                indexRow = i;
+                indexColumn = j;
+                rowSize = 1;
+                columnSize = 1;
+                objectId = "None";
+                name = "None";
+                hasEffectId = "None";
+                status = "None";
+                remainingTime = 0;
+              };
+              list := Array.append(list, [newFarmObject]);
             };
-            list := Array.append(list, [newFarmObject]);
-          };
-          case (?tile) {
-            let rsPlant = state.plants.get(tile.objectId);
-            switch (rsPlant) {
-              case null {};
-              case (?plant) {
-                let rsSeed = state.seeds.get(plant.seedId);
-                switch (rsSeed) {
-                  case null {};
-                  case (?seed) {
-
-                    // check if this tile has waitTime-related farmEffect
-                    var remainingTime : Int = 0;
-                    let rsHasEffect = state.hasFarmEffects.get(plant.hasEffectId);
-                    var landEffectValue = 0.0;
-                    let rsUserHasLandEffect = state.userHasLandEffects.get(Principal.toText(caller));
-                    switch (rsUserHasLandEffect) {
-                      case null {};
-                      case (?userHasLandEffect) {
-                        let rsLandEffect = state.landEffects.get(userHasLandEffect.landEffectId);
-                        switch (rsLandEffect) {
-                          case null {};
-                          case (?landEffect) {
-                            if (landEffect.effect == "waitTime") {
-                              landEffectValue := landEffect.value;
+            case (?tile) {
+              let rsPlant = state.plants.get(tile.objectId);
+              switch (rsPlant) {
+                case null {
+                  // if the tile is not a plant. it definitely is a construction 
+                  let rsBuilding = state.buildings.get(tile.objectId);
+                  switch (rsBuilding) {
+                    case null {};
+                    case (?building) {
+                      let rsBuildingType = state.buildingTypes.get(building.buildingTypeId);
+                      switch (rsBuildingType) {
+                        case null {};
+                        case (?buildingType) {
+                          let newFarmObject : Types.FarmObject = {
+                            id = tile.id;
+                            landSlotId = tile.landSlotId;
+                            indexRow = tile.indexRow;
+                            indexColumn = tile.indexColumn;
+                            rowSize = buildingType.rowSize;
+                            columnSize = buildingType.columnSize;
+                            objectId = building.buildingTypeId;
+                            name = buildingType.name;
+                            hasEffectId = "None";
+                            status = building.status;
+                            remainingTime = 0;
+                          };
+                          list := Array.append(list, [newFarmObject]);
+                          // update ignored-tiles list
+                          let iterX = Iter.range(Int.abs(tile.indexRow), Int.abs(tile.indexRow+buildingType.rowSize-1));
+                          for (i in iterX) {
+                            let iterY = Iter.range(Int.abs(tile.indexColumn), Int.abs(tile.indexColumn+buildingType.columnSize-1));
+                            for (j in iterY) {
+                              let ignoredTileId = Nat.toText(i) # "-" #Nat.toText(j);
+                              if (ignoredTileId!=id) {
+                                ignoredTiles := Array.append<Text>(ignoredTiles,[ignoredTileId]);
+                              };
                             };
                           };
                         };
                       };
                     };
+                  };
+                };
+                case (?plant) {
+                  let rsSeed = state.seeds.get(plant.seedId);
+                  switch (rsSeed) {
+                    case null {};
+                    case (?seed) {
+                      // check if this tile has waitTime-related landEffect
+                      let landEffectValue : Float = LandEffect.getLandEffectTimeValue(caller,state);
+                      // check if the plant has Penalty Time
+                      let plantPenaltyTime : Int = PlantPenaltyTime.getPlantPenaltyTime(plant,state);
+                      // check if this tile has waitTime-related farmEffect
+                      let farmEffectValue : Float = FarmEffect.getFarmEffectTimeValue(plant,state);
+                      
+                      let newWaitTime : Int = seed.waitTime + Float.toInt((landEffectValue+farmEffectValue)*Float.fromInt(seed.waitTime));
+                      let remainingTime : Int = Int.max(newWaitTime + plantPenaltyTime - (Time.now() / 1000000000 - plant.plantTime), 0);
 
-                    switch (rsHasEffect) {
-                      case null {
-                        remainingTime := Int.max(seed.waitTime - (Time.now() / 1000000000 - plant.plantTime), 0);
+                      // update plant status
+                      let status : Text = Plant.updatePlantStatus(remainingTime, plant,seed,state);
+                      // add farm object
+                      let newFarmObject : Types.FarmObject = {
+                        id = tile.id;
+                        landSlotId = tile.landSlotId;
+                        indexRow = tile.indexRow;
+                        indexColumn = tile.indexColumn;
+                        rowSize = seed.rowSize;
+                        columnSize = seed.columnSize;
+                        objectId = plant.seedId;
+                        name = seed.name;
+                        hasEffectId = plant.hasEffectId;
+                        status = status;
+                        remainingTime = remainingTime;
                       };
-                      case (?hasEffect) {
-                        let rsEffect = state.farmEffects.get(hasEffect.farmEffectId);
-                        switch (rsEffect) {
-                          case null {
-                            remainingTime := Int.max(seed.waitTime - (Time.now() / 1000000000 - plant.plantTime), 0);
-                          };
-                          case (?farmEffect) {
-                            if (farmEffect.effect == "waitTime") {
-                              let newWaitTime : Int = seed.waitTime + Float.toInt((landEffectValue +farmEffect.value) * Float.fromInt(seed.waitTime));
-                              remainingTime := Int.max(newWaitTime - (Time.now() / 1000000000 - plant.plantTime), 0);
-                            } else {
-                              remainingTime := Int.max(seed.waitTime - (Time.now() / 1000000000 - plant.plantTime), 0);
-                            };
+                      list := Array.append(list, [newFarmObject]);
+                      // update ignored-tiles list
+                      let iterX = Iter.range(Int.abs(tile.indexRow), Int.abs(tile.indexRow+seed.rowSize-1));
+                      for (i in iterX) {
+                        let iterY = Iter.range(Int.abs(tile.indexColumn), Int.abs(tile.indexColumn+seed.columnSize-1));
+                        for (j in iterY) {
+                          let ignoredTileId = Nat.toText(i) # "-" #Nat.toText(j);
+                          if (ignoredTileId!=id) {
+                            ignoredTiles := Array.append<Text>(ignoredTiles,[ignoredTileId]);
                           };
                         };
                       };
                     };
-
-                    // update plant status
-                    var status = plant.status;
-                    if (remainingTime == 0) {
-                      let updatePlant : Types.Plant = {
-                        id = plant.id;
-                        seedId = plant.seedId;
-                        hasEffectId = plant.hasEffectId;
-                        status = "fullGrown";
-                        plantTime = plant.plantTime;
-                      };
-                      status := "fullGrown";
-                      let updated = Plant.update(updatePlant, state);
-                    } else if (remainingTime <= seed.waitTime / 2) {
-                      let updatePlant : Types.Plant = {
-                        id = plant.id;
-                        seedId = plant.seedId;
-                        hasEffectId = plant.hasEffectId;
-                        status = "growing";
-                        plantTime = plant.plantTime;
-                      };
-                      status := "growing";
-                      let updated = Plant.update(updatePlant, state);
-                    };
-                    // add farm object
-                    let newFarmObject : Types.FarmObject = {
-                      id = tile.id;
-                      landSlotId = tile.landSlotId;
-                      indexRow = tile.indexRow;
-                      indexColumn = tile.indexColumn;
-                      seedId = plant.seedId;
-                      name = seed.name;
-                      hasEffectId = plant.hasEffectId;
-                      status = status;
-                      remainingTime = remainingTime;
-                    };
-                    list := Array.append(list, [newFarmObject]);
                   };
                 };
               };
@@ -5963,10 +6065,8 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     #ok((list));
   };
 
-  //
-
   // Plant
-  public shared func createPlant(materialId : Text) : async Text {
+  private func createPlant(userId : Principal, materialId : Text) : async Text {
     for ((K, V) in state.seeds.entries()) {
       if (V.materialId == materialId) {
         var uuid : Text = await createUUID();
@@ -5990,13 +6090,85 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
           status = "newlyPlanted";
           plantTime = Time.now() / 1000000000;
         };
-
+        // create Plant
         let created = Plant.create(newPlant, state);
+        // create one tree land effect (Pine Tree)
+        createOneTreeLandEffect(userId,newPlant);
         return uuid;
       };
     };
     "NotFound";
   };
+
+  // Plant Penalty Time
+  public shared func createPlantPenaltyTime(plant : Types.Plant, harvestTime : Int, latePercent : Float, penaltyPercent : Float ) : () {
+    var penaltyTime : Int = 0;
+    let rsPlantPenaltyTime = state.plantPenaltyTimes.get(plant.id);
+    switch (rsPlantPenaltyTime) {
+      case null {};
+      case (?V) {penaltyTime:=V.penaltyTime;};
+    };
+    
+    let rsSeed = state.seeds.get(plant.seedId);
+    switch (rsSeed) {
+      case null {};
+      case (?seed) {
+        if (harvestTime-plant.plantTime - penaltyTime >= Float.toInt(Float.fromInt(seed.waitTime)*latePercent)) {
+          let plantPenaltyTime : Types.PlantPenaltyTime = {
+            id = plant.id;
+            penaltyTime = Float.toInt(Float.fromInt(seed.waitTime)*penaltyPercent);
+          };
+          let updated = PlantPenaltyTime.update(plantPenaltyTime,state);
+        }
+        else {
+          let plantPenaltyTime : Types.PlantPenaltyTime = {
+            id = plant.id;
+            penaltyTime = 0;
+          };
+          let updated = PlantPenaltyTime.update(plantPenaltyTime,state);
+        };
+      };
+    };
+  };
+  
+
+  // Plant Harvesting History
+  public shared func createPlantHarvestingHistory(harvesterId : Principal,plantId : Text) : () {
+    var uuid : Text = await createUUID();
+    label whileLoop loop {
+      while (true) {
+        let rsPlantHarvestingHistory = state.plantHarvestingHistories.get(uuid);
+        switch (rsPlantHarvestingHistory) {
+          case (?V) {
+            uuid := await createUUID();
+          };
+          case null {
+            break whileLoop;
+          };
+        };
+      };
+    };
+    let newPlantHarvestingHistory : Types.PlantHarvestingHistory = {
+      id = uuid;
+      harvesterId = harvesterId;
+      plantId= plantId;
+      harvestTime = Time.now();
+    };
+    PlantHarvestingHistory.create(newPlantHarvestingHistory,state);
+  };
+
+  public shared query ({ caller }) func listPlantHarvestingHistories() : async Response<[(Text, Types.PlantHarvestingHistory)]> {
+    var list : [(Text, Types.PlantHarvestingHistory)] = [];
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    for ((K, V) in state.plantHarvestingHistories.entries()) {
+      list := Array.append<(Text, Types.PlantHarvestingHistory)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+
+
 
   // Farm Effect
   public shared ({ caller }) func createFarmEffect(effect : Types.FarmEffect) : async Response<Text> {
@@ -6026,23 +6198,17 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   };
 
   // user has farm effect
-  public shared ({ caller }) func createUserHasFarmEffect(indexTileRow : Nat, indexTileColumn : Nat, objectId : Text, landSlot : Types.LandSlot, isRemoveTree : Bool) : async Response<Text> {
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized); //isNotAuthorized
-    };
-
+  public shared ({ caller }) func createUserHasFarmEffect(indexTileRow : Nat, indexTileColumn : Nat, objectId : Text, landSlot : Types.LandSlot, isRemoveTree: Bool) : () { 
     let rsPlant = state.plants.get(objectId);
     switch (rsPlant) {
-      case null {
-        return #err(#NotFound);
-      };
+      case null {};
       case (?plant) {
-        var plantsInLandSlot : [Types.FarmObject] = await LandSlot.listFarmObjectsFromLandSlot(landSlot.indexRow, landSlot.indexColumn, state);
-        var farmObjects : [Types.FarmObject] = await Tile.getFarmObjectsFromFarmObject(indexTileRow, indexTileColumn, plant.seedId, plantsInLandSlot);
-
+        var plantsInLandSlot : [Types.FarmObject] = LandSlot.listFarmObjectsFromLandSlot( landSlot.indexRow, landSlot.indexColumn, state);
+        var farmObjects : [Types.FarmObject] = Tile.getFarmObjectsFromFarmObject( indexTileRow, indexTileColumn, plant.seedId, plantsInLandSlot);
+        
         // if this function is used in removeTree, remove the deleted farmObject in farmObjects
-        if (isRemoveTree == true) {
-          let rsFarmObject = Array.find<Types.FarmObject>(farmObjects, func(val : Types.FarmObject) : Bool { val.indexRow == indexTileRow and val.indexColumn == indexTileColumn and val.seedId == plant.seedId });
+        if (isRemoveTree==true) {
+          let rsFarmObject = Array.find<Types.FarmObject>(farmObjects, func (val : Types.FarmObject) : Bool {val.indexRow == indexTileRow and val.indexColumn == indexTileColumn and val.objectId == plant.seedId});
           switch (rsFarmObject) {
             case null {};
             case (?V) {
@@ -6056,7 +6222,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
         // if list of farmObjects is not Empty
         if (farmObjects != []) {
           // create new HasFarmEffect for user if the result effect is not "None"
-          let effectId = await FarmEffect.checkEffect(farmObjects, state);
+          let effectId = FarmEffect.checkEffect(farmObjects,state);
           var uuid : Text = "None";
           if (effectId != "None") {
             uuid := await createUUID();
@@ -6085,9 +6251,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
           for (farmObject in farmObjects.vals()) {
             let rsTile = state.tiles.get(farmObject.id);
             switch (rsTile) {
-              case null {
-                return #err(#NotFound);
-              };
+              case null {};
               case (?tile) {
                 let rsPlant = state.plants.get(tile.objectId);
                 switch (rsPlant) {
@@ -6111,7 +6275,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
             };
           };
         };
-        #ok("Success");
       };
     };
   };

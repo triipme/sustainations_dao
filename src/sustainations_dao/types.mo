@@ -398,14 +398,22 @@ public type UsableItem = {
     landEffectId : Text;
   };
 // Farm
+
+//--------------------- Product ---------------------//
+  public type Product = {
+    id : Text;
+    name : Text;
+    description : Text;
+  };
+
 //--------------------- Stash ---------------------//
-public type Stash = {
-  id : Text;
-  userId : Text;
-  usableItemId : Text;
-  quality : Text;
-  amount : Int; 
-};
+  public type Stash = {
+    id : Text;
+    userId : Text;
+    usableItemId : Text;
+    quality : Text;
+    amount : Int; 
+  };
 
   //-------------------------Tile------------------------------//
   public type Tile = {
@@ -422,7 +430,9 @@ public type Stash = {
     landSlotId : Text;
     indexRow : Nat;
     indexColumn : Nat;
-    seedId : Text;
+    rowSize : Nat;
+    columnSize : Nat;
+    objectId : Text;
     name : Text;
     hasEffectId : Text;
     status : Text;
@@ -453,6 +463,19 @@ public type Stash = {
     status : Text;
     plantTime : Int;
   };
+//------------------ Plant Penalty Time-------------------//
+  public type PlantPenaltyTime = {
+    id : Text;
+    penaltyTime : Int;
+  };
+//--------------------- Plant Harvesting History ---------------------//
+  public type PlantHarvestingHistory = {
+    id : Text;
+    harvesterId : Principal;
+    plantId : Text;
+    harvestTime : Int;
+  };
+
 //--------------------- Farm Effect -------------//
   public type FarmEffect = {
     id : Text;
@@ -467,6 +490,57 @@ public type Stash = {
     farmEffectId : Text;
     userId : Principal;
   };
+
+//--------------------- Alchemy Recipe -------------//
+  public type AlchemyRecipe = {
+    id : Text;
+    usableItemId : Text;
+    description : Text;
+    craftingTime : Int;
+  };
+
+  public type AlchemyRecipeDetail = {
+    id : Text;
+    recipeId : Text;
+    productId: Text;
+    amount: Int;
+  };
+
+//--------------------- BuildingType -------------//
+  public type BuildingType = {
+    id : Text;
+    name : Text;
+    price : Float;    
+    rowSize : Nat;
+    columnSize : Nat;
+    buildWaitTime : Int;
+    // usableItemId : Text;
+    // resultUsableItemId: Text;
+    description : Text;
+    // produceWaitTime : Int;
+    // minAmount : Int;
+    // maxAmount : Int;
+  };
+
+//--------------------BuildingBuyingHistory----------//
+  public type BuildingBuyingHistory = {
+    id : Text;
+    buyerId : Principal;
+    constructionId : Text;
+    buyTime : Int;
+    price : Float;
+  };
+
+//--------------------- Building -------------//
+  public type Building = {
+    id : Text;
+    buildingTypeId : Text;
+    resultUsableItemId : Text;
+    status : Text;
+    buildTime : Int;
+    startProducingTime : Int;
+  };
+
 
   // Error codes
   public type Error = {
