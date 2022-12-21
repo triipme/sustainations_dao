@@ -30,6 +30,6 @@ geo = "0.23.0"
 # geozero = "0.9.5"
 # geocoding = "0.4.0" # Loi khac
 # polyline = "0.9.0"
-# utm = "0.1.5"
+utm = "0.1.5"
 geomorph = "1.1.0"
 ran = "1.0.5"
