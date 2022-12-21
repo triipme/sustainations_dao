@@ -3,15 +3,13 @@ import BaseScene from '../BaseScene'
 import gameConfig from '../../GameConfig';
 import {
   loadEventOptionEngines,
-  updateCharacterStats,
   updateCharacterStatsEngine,
   listCharacterSelectsItems,
-  // createCharacterCollectsMaterials,
+  createCharacterCollectsMaterials,
   readSceneEngine,
   loadItemUrl,
   characterTakeOptionEngine,
-  // characterCollectsMaterialEngines,
-  getEventEngine
+  characterCollectsMaterialEngines,
 } from '../../GameApi';
 import { settings } from '../settings';
 import { func } from 'prop-types';
@@ -46,33 +44,32 @@ export default class Engine extends BaseScene {
 
   init(data) {
     this.listScene = data.listScene;
+    this.listEvent = data.listEvent;
+    console.log("data: ", data);
   }
 
   async preload() {
     this.addLoadingScreen();
     console.log("data: ", this.listScene);
+    this.event = this.listEvent.shift();
+    console.log("this.event: ", this.event)
+    console.log("this.listEvent: ", this.listEvent);
+    this.initialLoad(this.event);
     this.load.rexAwait(function (successCallback, failureCallback) {
-      getEventEngine().then((result) => {
-        this.event = result;
-        this.initialLoad(this.event.id);
-        this.load.rexAwait(function (successCallback, failureCallback) {
-          characterTakeOptionEngine(this.event.id).then((result) => {
-            this.characterTakeOptions = result;
-            successCallback();
-          });
-        }, this);
+      characterTakeOptionEngine(this.event).then((result) => {
+        this.characterTakeOptions = result;
         successCallback();
       });
     }, this);
    
-    // this.load.rexAwait(function (successCallback, failureCallback) {
-    //   characterCollectsMaterialEngines(this.eventId).then((result) => {
-    //     this.characterCollectMaterials = result;
-    //     successCallback();
-    //   });
-    // }, this);
-    // this.sceneEvent = await readScene(this.listScene[0])
-    this.sceneEvent = await readSceneEngine(this.listScene[Math.floor(Math.random() * (this.listScene.length))]);
+    this.load.rexAwait(function (successCallback, failureCallback) {
+      characterCollectsMaterialEngines(this.event).then((result) => {
+        this.characterCollectMaterials = result;
+        successCallback();
+      });
+    }, this);
+    this.sceneEvent = await readSceneEngine(this.listScene[0]);
+    this.listScene.push(this.listScene.shift());
 
 
     //Preload
@@ -293,10 +290,10 @@ export default class Engine extends BaseScene {
       console.log(this.sum)
       this.pregameSound.stop();
       this.sfx_char_footstep.stop();
-
-      // if (this.listEvent.length === 0) this.scene.start("thanks", { isUsedPotion: this.isUsedPotion });
-      // else this.scene.start("Engine", { isUsedPotion: this.isUsedPotion, listScene: this.listScene});
-      this.scene.start("Engine", { isUsedPotion: this.isUsedPotion, listScene: this.listScene});
+      console.log("length: ", this.listScene.length)
+      if (this.listEvent.length === 0) this.scene.start("thanks", { isUsedPotion: this.isUsedPotion });
+      else this.scene.start("Engine", { isUsedPotion: this.isUsedPotion, listScene: this.listScene, listEvent: this.listEvent});
+      // this.scene.start("Engine", { isUsedPotion: this.isUsedPotion, listScene: this.listScene, listEvent: this.listEvent});
     }
 
     if (this.player.x > 600 && this.isInteracted == false) { //default 4200

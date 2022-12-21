@@ -11,7 +11,6 @@ import {
   loadItemUrl,
   characterTakeOptionEngine,
   // characterCollectsMaterialEngines,
-  getEventEngine
 } from '../../GameApi';
 import { settings } from '../settings';
 import { func } from 'prop-types';
@@ -51,19 +50,19 @@ export default class Engine extends BaseScene {
   async preload() {
     this.addLoadingScreen();
     console.log("data: ", this.listScene);
-    this.load.rexAwait(function (successCallback, failureCallback) {
-      getEventEngine().then((result) => {
-        this.event = result;
-        this.initialLoad(this.event.id);
-        this.load.rexAwait(function (successCallback, failureCallback) {
-          characterTakeOptionEngine(this.event.id).then((result) => {
-            this.characterTakeOptions = result;
-            successCallback();
-          });
-        }, this);
-        successCallback();
-      });
-    }, this);
+    // this.load.rexAwait(function (successCallback, failureCallback) {
+    //   getEventEngine().then((result) => {
+    //     this.event = result;
+    //     this.initialLoad(this.event.id);
+    //     this.load.rexAwait(function (successCallback, failureCallback) {
+    //       characterTakeOptionEngine(this.event.id).then((result) => {
+    //         this.characterTakeOptions = result;
+    //         successCallback();
+    //       });
+    //     }, this);
+    //     successCallback();
+    //   });
+    // }, this);
    
     // this.load.rexAwait(function (successCallback, failureCallback) {
     //   characterCollectsMaterialEngines(this.eventId).then((result) => {

@@ -3455,12 +3455,9 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
             Scene.create(scene, state);
             #ok("Success");
           };
-          case null {
-            #err(#NotFound);
-          };
         };
       }
-    }
+    };
   };
 
   public shared query ({ caller }) func readScene(idEvent : Text) : async Response<(Types.Scene)> {
@@ -3539,48 +3536,55 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   //   return listIdEvent;
   // };
 
-  public shared ({ caller }) func createGameQuestEngine(): async Response<Text> {
+  public type GameQuest = {
+    listEvent : [Text];
+    listScene : [Text];
+  };
+
+  public shared ({ caller }) func getListEventQuest(): async Response<GameQuest> { //for quest engine
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
     let userId = Principal.toText(caller);
-    let gameQuest = state.gameQuestEngines.get(userId);
-    var listId : [Text] = [];
+    var listIdEvent : [Text] = [];
+    var listIdScene : [Text] = [];
     for (event in state.questEngine.events.vals()){
       if (event.questId == "engine"){
-        listId := Array.append<Text>(listId, [event.id]);
+        listIdEvent := Array.append<Text>(listIdEvent, [event.id]);
       };
     };
-    switch (gameQuest) {
-      case (null) {
-        let newGame : Types.GameQuestEngine = {
-          userId = userId;
-          listScene = [];
-          listEvent = List.fromArray(listId);
-          score = 0;
-        };
-        let gameNew = state.gameQuestEngines.put(userId, newGame);
-      };
-      case (?game) {
-         let resetGame : Types.GameQuestEngine = {
-          userId = userId;
-          listScene = [];
-          listEvent = List.fromArray(listId);
-          score = game.score;
-        };
-        let gameReset = state.gameQuestEngines.replace(userId, resetGame);
+
+    for (scene in state.questEngine.scenes.vals()){
+      if (scene.idEvent == "ee1"){
+        listIdScene := Array.append<Text>(listIdScene, [scene.id]);
       };
     };
-    #ok("Success");
+
+    var shuffleListEvent : [var Text] = Array.thaw(listIdEvent);
+    let sizeScene = listIdScene.size();
+    for (i in listIdEvent.keys()){
+      let j : Nat = Int.abs(Float.toInt(await Random.randomNumber(0.0, Float.fromInt(i))));
+      let temp = shuffleListEvent[i];
+      shuffleListEvent[i] := shuffleListEvent[j];
+      shuffleListEvent[j] := temp;
+    };
+
+    var shuffleListScene : [var Text] = Array.thaw(listIdScene);
+    for (i in listIdScene.keys()){
+      let j : Nat = Int.abs(Float.toInt(await Random.randomNumber(0.0, Float.fromInt(i))));
+      let temp = shuffleListScene[i];
+      shuffleListScene[i] := shuffleListScene[j];
+      shuffleListScene[j] := temp;
+    };
+    let shuffledListEvent : [Text] = Array.freeze(shuffleListEvent);
+    let shuffledListScene : [Text] = Array.freeze(shuffleListScene);
+    let game : GameQuest = {
+      listEvent = shuffledListEvent;
+      listScene = shuffledListScene;
+    };
+    #ok(game);
   };
 
-  public shared query ({ caller }) func readGameQuestEngine(id : Text) : async Response<Types.GameQuestEngine> {
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized); //isNotAuthorized
-    };
-    let rsGame = state.gameQuestEngines.get(id);
-    return Result.fromOption(rsGame, #NotFound);
-  };
 
   // public shared ({ caller }) func getEventEngine() : async Response<Types.Event> {
   //   if (Principal.toText(caller) == "2vxsx-fae") {
@@ -3623,50 +3627,50 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   //   };
   // };
 
-  public shared ({ caller }) func getEventEngine() : async Response<Types.Event> {
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized); //isNotAuthorized
-    };
-    //random Nat
-    var b : Blob = await RandomBase.blob();
-    let rand = Nat8.toNat(RandomBase.byteFrom(b));
-    let game = state.gameQuestEngines.get(Principal.toText(caller));
-    switch (game) {
-      case (null) {
-        return #err(#NotFound);
-      };
-      case(?gameQuest){
-        let randomIndex = rand%(List.size(gameQuest.listEvent));
-        let randomId = List.get(gameQuest.listEvent, randomIndex);
-        switch (randomId) {
-          case (null) {return #err(#NotFound)};
-          case(?id){
-            let randomEvent = state.questEngine.events.get(id);
-            switch (randomEvent){
-              case (null) {
-                #err(#NotFound);
-              };
-              case(?event){
-                #ok(event);
-              };
-            };
-          }
-        }
-      }
-    }
-    // switch (game){
-    //   case (null) {return #err(#NotFound)};
-    //   case (?v){
-    //     let addGameQuest : Types.GameQuestEngine = {
-    //       userId = Principal.toText(caller);
-    //       listScene = [];
-    //       listEvent = v.listEvent.put(radomId, 1);
-    //       score = v.score+1;
-    //     };
-    //     let update = state.gameQuestEngines.replace(Principal.toText(caller), addGameQuest);
-    //   };
-    // };
-  };
+  // public shared ({ caller }) func getEventEngine() : async Response<Types.Event> {
+  //   if (Principal.toText(caller) == "2vxsx-fae") {
+  //     return #err(#NotAuthorized); //isNotAuthorized
+  //   };
+  //   //random Nat
+  //   var b : Blob = await RandomBase.blob();
+  //   let rand = Nat8.toNat(RandomBase.byteFrom(b));
+  //   let game = state.gameQuestEngines.get(Principal.toText(caller));
+  //   switch (game) {
+  //     case (null) {
+  //       return #err(#NotFound);
+  //     };
+  //     case(?gameQuest){
+  //       let randomIndex = rand%(List.size(gameQuest.listEvent));
+  //       let randomId = List.get(gameQuest.listEvent, randomIndex);
+  //       switch (randomId) {
+  //         case (null) {return #err(#NotFound)};
+  //         case(?id){
+  //           let randomEvent = state.questEngine.events.get(id);
+  //           switch (randomEvent){
+  //             case (null) {
+  //               #err(#NotFound);
+  //             };
+  //             case(?event){
+  //               #ok(event);
+  //             };
+  //           };
+  //         }
+  //       }
+  //     }
+  //   }
+  //   // switch (game){
+  //   //   case (null) {return #err(#NotFound)};
+  //   //   case (?v){
+  //   //     let addGameQuest : Types.GameQuestEngine = {
+  //   //       userId = Principal.toText(caller);
+  //   //       listScene = [];
+  //   //       listEvent = v.listEvent.put(radomId, 1);
+  //   //       score = v.score+1;
+  //   //     };
+  //   //     let update = state.gameQuestEngines.replace(Principal.toText(caller), addGameQuest);
+  //   //   };
+  //   // };
+  // };
 
   public shared ({ caller }) func updateScene(quest : Types.Scene) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {

@@ -9,7 +9,6 @@ import {
   payQuest,
   getUserInfo,
   buyLandSlot,
-  createGameQuestEngine
 } from '../GameApi';
 
 
@@ -58,14 +57,7 @@ class selectMap extends BaseScene {
         successCallback();
       });
     }, this);
-    this.load.rexAwait(function (successCallback, failureCallback) {
-      createGameQuestEngine().then((result) => {
-        console.log(result);
-        successCallback();
-      });
-    }, this);
-
-
+    
     //preload
     this.clearCache();
     this.load.image('bg', bg);

@@ -356,16 +356,9 @@ async function listIdScenes() {
   return listIdScenes;
 }
 
-export async function createGameQuestEngine() {
+export async function getListEventQuest() {
   const { user } = store.getState();
-  const func = async () => await user.actor.createGameQuestEngine();
-  const rs = (await func()).ok;
-  return rs;
-}
-
-export async function getEventEngine() {
-  const { user } = store.getState();
-  const func = async () => await user.actor.getEventEngine();
+  const func = async () => await user.actor.getListEventQuest();
   const rs = (await func()).ok;
   return rs;
 }
@@ -401,8 +394,8 @@ async function characterTakeOptionEngine(eventId) {
 
 async function characterCollectsMaterialEngines(eventId) {
   const { user } = store.getState();
-  const collectsMaterialEngines = async () => await user.actor.collectsMaterialEngines(eventId);
-  const result = (await collectsMaterialEngines()).ok;
+  const func = async () => await user.actor.collectsMaterialEngines(eventId);
+  const result = (await func()).ok;
   return result;
 };
 
