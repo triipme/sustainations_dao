@@ -49,10 +49,10 @@ function listCharacters() {
 // };
 
 // list Stash
-function listStash() {
+function listProductStorage() {
   return new Promise((resolve, reject) => {
     const { user } = store.getState();
-    const rs = user.actor.listStash();
+    const rs = user.actor.listProductStorage();
     resolve(rs).ok;
   });
 };
@@ -303,33 +303,33 @@ async function loadUserLandSlots() {
 
 };
 // Plant Tree
-// async function plantTree(landId, indexRow, indexColumn, materialId) {
+// async function sowSeed(landId, indexRow, indexColumn, materialId) {
 //   const { user } = store.getState();
-//   const func = await user.actor.plantTree(landId, indexRow, indexColumn, materialId);
+//   const func = await user.actor.sowSeed(landId, indexRow, indexColumn, materialId);
 //   const result = func?.ok;
 //   return result;
 // }
 
 // Harvest Tree
-async function harvestTree(tileId) {
+async function harvestPlant(tileId) {
   const { user } = store.getState();
-  const func = await user.actor.harvestTree(tileId);
+  const func = await user.actor.harvestPlant(tileId);
   const result = func?.ok;
   return result;
 }
 
 // Remove Tree
-async function removeTree(tileId) {
+async function removeObject(tileId) {
   const { user } = store.getState();
-  const func = await user.actor.removeTree(tileId);
+  const func = await user.actor.removeObject(tileId);
   const result = func?.ok;
   return result;
 }
 
 // Build Construction
-async function buildConstruction(landId, indexRow, indexColumn, constructionId) {
+async function constructBuilding(landId, indexRow, indexColumn, constructionId) {
   const { user } = store.getState();
-  const func = await user.actor.buildConstruction(landId, indexRow, indexColumn, constructionId);
+  const func = await user.actor.constructBuilding(landId, indexRow, indexColumn, constructionId);
   const result = func?.ok;
   return result;
 }
@@ -340,7 +340,7 @@ export {
   getUserInfo,
   // listInventory,
   // subtractInventory,
-  listStash,
+  listProductStorage,
   listCharacters,
   randomLandSlot,
   createLandSlot,
@@ -355,8 +355,8 @@ export {
   loadUserHasLandEffect,
   unionLandSlots,
   // plantTree,
-  harvestTree,
-  removeTree,
+  harvestPlant,
+  removeObject,
   loadUserLandSlots,
-  buildConstruction
+  constructBuilding
 }
