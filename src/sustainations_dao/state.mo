@@ -41,6 +41,7 @@ module {
     items : Map<Text, Types.Item>;
     questItems : Map<Text, Types.QuestItem>;
     products: Map<Text, Types.Product>;
+    productStorages : Map<Text, Types.ProductStorage>;
     usableItems : Map<Text, Types.UsableItem>;
     eventItems : Map<Text, Types.EventItem>;
     arItems : Map<Text, Types.ARItem>;
@@ -72,6 +73,7 @@ module {
     buildingTypes : Map<Text, Types.BuildingType>;
     buildingBuyingHistories : Map<Text,Types.BuildingBuyingHistory>;
     buildings : Map<Text, Types.Building>;
+    productionQueues : Map<Text, Types.ProductionQueue>;
   };
 
   public func empty() : State {
@@ -107,6 +109,7 @@ module {
       items = TrieMap.TrieMap<Text, Types.Item>(Text.equal, Text.hash);
       questItems = TrieMap.TrieMap<Text, Types.QuestItem>(Text.equal, Text.hash);
       products = TrieMap.TrieMap<Text, Types.Product>(Text.equal, Text.hash);
+      productStorages = TrieMap.TrieMap<Text, Types.ProductStorage>(Text.equal, Text.hash);
       usableItems = TrieMap.TrieMap<Text, Types.UsableItem>(Text.equal, Text.hash);
       eventItems = TrieMap.TrieMap<Text, Types.EventItem>(Text.equal, Text.hash);
       arItems = TrieMap.TrieMap<Text, Types.ARItem>(Text.equal, Text.hash);
@@ -138,6 +141,7 @@ module {
       buildingTypes = TrieMap.TrieMap<Text, Types.BuildingType>(Text.equal,Text.hash);
       buildingBuyingHistories = TrieMap.TrieMap<Text, Types.BuildingBuyingHistory>(Text.equal,Text.hash);
       buildings = TrieMap.TrieMap<Text, Types.Building>(Text.equal,Text.hash);
+      productionQueues = TrieMap.TrieMap<Text, Types.ProductionQueue>(Text.equal,Text.hash);
     };
   };
 };

@@ -376,6 +376,15 @@ public type UsableItem = {
     description : Text;
   };
 
+//--------------------- ProductStorage ---------------------//
+  public type ProductStorage = {
+    id : Text;
+    userId : Text;
+    productId : Text;
+    quality : Text;
+    amount : Int; 
+  };
+
 //--------------------- Stash ---------------------//
   public type Stash = {
     id : Text;
@@ -441,7 +450,7 @@ public type UsableItem = {
 //--------------------- Plant Harvesting History ---------------------//
   public type PlantHarvestingHistory = {
     id : Text;
-    harvesterId : Principal;
+    userId : Principal;
     plantId : Text;
     harvestTime : Int;
   };
@@ -511,6 +520,12 @@ public type UsableItem = {
     startProducingTime : Int;
   };
 
+//--------------------- Production Queue -------------//
+  public type ProductionQueue = {
+    id : Text;
+    nodeAmount : Int;
+    queueMaxSize : Int;
+  };
 
   // Error codes
   public type Error = {
