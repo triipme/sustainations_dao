@@ -258,6 +258,7 @@ async function loadTileSlots(properties) {
         "landId": landId,
         "tileId": tile.id,
         "name": tile.name,
+        "objectId" : tile.objectId,
         "hasEffectId": tile.hasEffectId,
         "status": tile.status,
         "remainingTime": Number(tile.remainingTime),
@@ -326,10 +327,18 @@ async function removeObject(tileId) {
   return result;
 }
 
-// Build Construction
+// Construct Building
 async function constructBuilding(landId, indexRow, indexColumn, constructionId) {
   const { user } = store.getState();
   const func = await user.actor.constructBuilding(landId, indexRow, indexColumn, constructionId);
+  const result = func?.ok;
+  return result;
+}
+
+// craft UsableItem
+async function craftUsableItem(buildingId, alchemyRecipeId) {
+  const { user } = store.getState();
+  const func = await user.actor.craftUsableItem(buildingId, alchemyRecipeId);
   const result = func?.ok;
   return result;
 }
@@ -358,5 +367,6 @@ export {
   harvestPlant,
   removeObject,
   loadUserLandSlots,
-  constructBuilding
+  constructBuilding,
+  craftUsableItem
 }

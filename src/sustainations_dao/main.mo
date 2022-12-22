@@ -5266,7 +5266,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
           case (?landSlot) {
             let objectId = await createPlant(caller,materialId);
             createTile(landId, indexRow, indexColumn, objectId);
-            createUserHasFarmEffect(indexRow,indexColumn,objectId,landSlot,false);     
+            await createUserHasFarmEffect(indexRow,indexColumn,objectId,landSlot,false);     
             return #ok("Success"); 
           };
         };
@@ -5335,7 +5335,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
           case null {
           };
           case (?landSlot) {
-            createUserHasFarmEffect(tile.indexRow,tile.indexColumn,tile.objectId,landSlot,true); 
+            await createUserHasFarmEffect(tile.indexRow,tile.indexColumn,tile.objectId,landSlot,true); 
           }
         }; 
 
@@ -5655,7 +5655,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
 
 
   // user has farm effect
-  public shared ({ caller }) func createUserHasFarmEffect(indexTileRow : Nat, indexTileColumn : Nat, objectId : Text, landSlot : Types.LandSlot, isRemoveTree: Bool) : () { 
+  public shared ({ caller }) func createUserHasFarmEffect(indexTileRow : Nat, indexTileColumn : Nat, objectId : Text, landSlot : Types.LandSlot, isRemoveTree: Bool) : async () { 
     let rsPlant = state.plants.get(objectId);
     switch (rsPlant) {
       case null {};

@@ -74,6 +74,7 @@ module {
     buildingBuyingHistories : Map<Text,Types.BuildingBuyingHistory>;
     buildings : Map<Text, Types.Building>;
     productionQueues : Map<Text, Types.ProductionQueue>;
+    productionQueueNodes : Map<Text, Types.ProductionQueueNode>;
   };
 
   public func empty() : State {
@@ -142,6 +143,7 @@ module {
       buildingBuyingHistories = TrieMap.TrieMap<Text, Types.BuildingBuyingHistory>(Text.equal,Text.hash);
       buildings = TrieMap.TrieMap<Text, Types.Building>(Text.equal,Text.hash);
       productionQueues = TrieMap.TrieMap<Text, Types.ProductionQueue>(Text.equal,Text.hash);
+      productionQueueNodes = TrieMap.TrieMap<Text, Types.ProductionQueueNode>(Text.equal,Text.hash);
     };
   };
 };
