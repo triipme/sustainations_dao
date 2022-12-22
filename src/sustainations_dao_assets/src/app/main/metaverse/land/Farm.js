@@ -7,8 +7,8 @@ import "./styles.css";
 import UIFarm from "./FarmUI";
 import {
   loadTileSlots,
-  listStash,
-  buildConstruction
+  listProductStorage,
+  constructBuilding
 } from "../LandApi";
 import Land from "./Land";
 import BigMap from "./BigMap";
@@ -40,17 +40,20 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
       const characterid = await user.actor.readCharacter();
       setChacterId(characterid.ok[0]);
       const inv = await user.actor.listInventory(characterid.ok[0]);
-      const listStash = (await user.actor.listStash()).ok
-      const defineAmount = (item, usableItemName) => {
-        if (usableItemName === "Carrot") {
+      const listProductStorage = (await user.actor.listProductStorage()).ok
+      const stash = (await user.actor.listStash()).ok;
+      console.log("STASH: ",stash);
+
+      const defineAmount = (item, productName) => {
+        if (productName === "Carrot") {
           setCarrot(Number(item.amount))
-        } else if (usableItemName === "Wheat") {
+        } else if (productName === "Wheat") {
           setWheat(Number(item.amount))
         } else {
           setTomato(Number(item.amount))
         }
       }
-      listStash.forEach(item => defineAmount(item, item.usableItemName))
+      listProductStorage.forEach(item => defineAmount(item, item.productName))
       setInventory(inv.ok);
     };
     load();
@@ -148,20 +151,20 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
           positionTree.i = country.properties.i
           positionTree.j = country.properties.j
 
-          console.log("Harvest", await user.actor.harvestTree(country.properties.tileId))
+          console.log("Harvest", await user.actor.harvestPlant(country.properties.tileId))
           setTileplant(await loadTileSlots(landSlotProperties));
 
-          const listStash = (await user.actor.listStash()).ok
-          const defineAmount = (item, usableItemName) => {
-            if (usableItemName === "Carrot") {
+          const listProductStorage = (await user.actor.listProductStorage()).ok
+          const defineAmount = (item, productName) => {
+            if (productName === "Carrot") {
               setCarrot(Number(item.amount))
-            } else if (usableItemName === "Wheat") {
+            } else if (productName === "Wheat") {
               setWheat(Number(item.amount))
             } else {
               setTomato(Number(item.amount))
             }
           }
-          listStash.forEach(item => defineAmount(item, item.usableItemName))
+          listProductStorage.forEach(item => defineAmount(item, item.productName))
           setLoading(false)
           positionTree.i = -1
           positionTree.j = -1
@@ -170,7 +173,7 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
           setLoading(true)
           positionTree.i = country.properties.i
           positionTree.j = country.properties.j
-          console.log("Remove: ", await user.actor.removeTree(country.properties.tileId))
+          console.log("Remove: ", await user.actor.removeObject(country.properties.tileId))
           setTileplant(await loadTileSlots(landSlotProperties));
           setInventory((await user.actor.listInventory(characterId)).ok);
 
@@ -184,7 +187,7 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
           positionTree.j = country.properties.j
           console.log("checkAvailablePosition: ", checkAvailablePosition(positionTree.i, positionTree.j, 9))
           if (checkAvailablePosition(positionTree.i, positionTree.j, 9))
-            console.log("Build Factory: ", (await user.actor.buildConstruction(country.properties.landId, country.properties.i, country.properties.j, "c1")))
+            console.log("Build Factory: ", (await user.actor.constructBuilding(country.properties.landId, country.properties.i, country.properties.j, "c1")))
           else {
             setCantBuild("factory")
           }
@@ -200,7 +203,7 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
         //   positionTree.j = country.properties.j
         //   console.log("checkAvailablePosition: ", checkAvailablePosition(positionTree.i, positionTree.j))
         //   if (checkAvailablePosition(positionTree.i, positionTree.j))
-        //     console.log("Build Factory: ", (await user.actor.buildConstruction(country.properties.landId, country.properties.i, country.properties.j, "c2")))
+        //     console.log("Build Factory: ", (await user.actor.constructBuilding(country.properties.landId, country.properties.i, country.properties.j, "c2")))
         //   else {
         //     setCantBuild("factory")
         //   }
@@ -216,7 +219,7 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
         //   positionTree.j = country.properties.j
         //   console.log("checkAvailablePosition: ", checkAvailablePosition(positionTree.i, positionTree.j))
         //   if (checkAvailablePosition(positionTree.i, positionTree.j))
-        //     console.log("Build Factory: ", (await user.actor.buildConstruction(country.properties.landId, country.properties.i, country.properties.j, "c3")))
+        //     console.log("Build Factory: ", (await user.actor.constructBuilding(country.properties.landId, country.properties.i, country.properties.j, "c3")))
         //   else {
         //     setCantBuild("factory")
         //   }
@@ -242,7 +245,7 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
           if ((currentSeed[0].materialName === "pine_seed" && checkAvailablePosition(positionTree.i, positionTree.j, 2)) || currentSeed[0].materialName !== "pine_seed") {
             console.log(
               "Plant tree status: ",
-              await user.actor.plantTree(
+              await user.actor.sowSeed(
                 country.properties.landId,
                 country.properties.i,
                 country.properties.j,
