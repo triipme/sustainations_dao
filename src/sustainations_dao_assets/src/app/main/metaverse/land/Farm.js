@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { selectUser } from "app/store/userSlice";
 import { GeoJSON, useMap, useMapEvents, ImageOverlay, MapContainer } from "react-leaflet";
+import "./farmproduce.css";
 import "./styles.css";
 import UIFarm from "./FarmUI";
 import {
@@ -12,7 +13,8 @@ import {
 import Land from "./Land";
 import BigMap from "./BigMap";
 import Loading from "./loading";
-import Back from "./Back"
+import Back from "./Back";
+// import FarmProduce from "./FarmProduce.js";
 import { useLocation, useNavigate } from "react-router-dom";
 
 var inventoryStatus = {};
@@ -27,10 +29,12 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
   const [wheat, setWheat] = useState(0)
   const [tomato, setTomato] = useState(0)
   const [cantBuild, setCantBuild] = useState("")
+  const [popupFactory, setPopupFactory] = useState(false)
   const map = useMap();
   // const numPlantHarvest = (arr) => {
   //   return arr.reduce((previousValue, currentValue) => previousValue + Number(currentValue.amount), 0)
   // }
+
   useEffect(() => {
     const load = async () => {
       const characterid = await user.actor.readCharacter();
@@ -84,6 +88,8 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
       clearInterval(interval);
     };
   }, []);
+
+
   // const latlng = useMemo(
   //   () =>
   //     tileplant?.map(feature => {
@@ -123,14 +129,21 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
       fillColor: (country.properties.hasEffectId === "None" || country.properties.hasEffectId === "") ? "#FFFFFF" : "#f6cb1c",
       fillOpacity: (country.properties.hasEffectId === "None" || country.properties.hasEffectId === "") ? "0.1" : "0.4",
     });
+    layer.bindPopup(`<img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000"></img>`, {
+      direction: "top",
+      permanent: true,
+      className: "labelstyle",
+    });
 
     layer.on({
       click: async e => {
         console.log(country)
         let currentSeed = inventory.filter((item) => inventoryStatus[item.materialName] === true)
 
-        // console.log(country)// Harvest
-        if (country.properties.status === "fullGrown" && inventoryStatus["dig"] === false && loading === false && country.properties.name !== "Pine_Seed") {
+        if (country.properties.name === "Factory" && country.properties.status === "completed") {
+          setPopupFactory(true)
+        }
+        else if (country.properties.status === "fullGrown" && inventoryStatus["dig"] === false && loading === false && country.properties.name !== "Pine_Seed") {
           setLoading(true)
           positionTree.i = country.properties.i
           positionTree.j = country.properties.j
@@ -226,7 +239,7 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
           positionTree.i = country.properties.i
           positionTree.j = country.properties.j
           console.log("checkAvailablePosition: ", checkAvailablePosition(positionTree.i, positionTree.j, 2), currentSeed[0].materialName)
-          if(( currentSeed[0].materialName === "pine_seed" && checkAvailablePosition(positionTree.i, positionTree.j, 2)) || currentSeed[0].materialName !== "pine_seed") {
+          if ((currentSeed[0].materialName === "pine_seed" && checkAvailablePosition(positionTree.i, positionTree.j, 2)) || currentSeed[0].materialName !== "pine_seed") {
             console.log(
               "Plant tree status: ",
               await user.actor.plantTree(
@@ -242,7 +255,7 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
           } else {
             setCantBuild("pine")
           }
-          
+
           setLoading(false)
           positionTree.i = -1
           positionTree.j = -1
@@ -250,6 +263,67 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
       }
     });
   };
+
+  const FarmProduce = () => {
+    // const [active, setActive] = useState("")
+    let a = 800
+    return (
+      <>
+        {popupFactory ? <div>
+          <div style={{ display: "flex", alignItems: "center", height: "95%", justifyContent: "center", textAlign: "center", width: "100%" }}>
+            <div id="myModal" className="modal">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <span className="close" onClick={() => { setPopupFactory(false) }}>&times;</span>
+                  <h1>FACTORY</h1>
+                  <div id="myProgress" >
+                    <div id="myBar" style={{ width: a }}></div>Hello
+                  </div>
+                </div>
+                <div className="modal-body" style={{backgroundColor: "#ece2e1"}}>
+
+                  <div className="scrollmenu">
+                    <a style={{scale:"1.2"}}><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
+                    <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
+                    <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
+                    <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
+                    <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
+                    <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
+                    <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
+                    <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
+                    <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
+                  </div>
+                </div>
+                <div className="modal-body" style={{
+                  height: "155px",
+                  backgroundColor: "#d3e1dc" 
+                }}>
+
+                  <div className="scrollmenu-chooser">
+                    <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /><div className="text">
+                      <div className="cal"><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> 2/3 </div>
+                     + <div className="cal"><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> 2/3 </div> </div></a>
+                    <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> <div className="text">2/3</div></a>
+                    <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> <div className="text"> Hello</div></a>
+                    <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> <div className="text"> Hello</div></a>
+                    <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> <div className="text"> Hello</div></a>
+                    <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> <div className="text"> Hello</div></a>
+                    <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> <div className="text"> Hello</div></a>
+
+                  </div>
+
+                </div>
+
+                <div className="modal-footer">
+                  <h3>CRAFT</h3>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div > : <></>}
+      </>
+    )
+  }
   return (
     <>
       {cantBuild !== "" ? <div className="containPopup">
@@ -288,6 +362,7 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
       <Inventory
         key={Math.floor(Math.random() * 9999999)}
         inventory={inventory}></Inventory>
+      <FarmProduce></FarmProduce>
     </>
   );
 };
@@ -481,6 +556,62 @@ const CreateBound = ({ tileplant, loading }) => {
     </>
   );
 };
+
+const FarmProduce = (props) => {
+  return (
+    <>
+      {props.popupFactory ? <div>
+        <div style={{ display: "flex", alignItems: "center", height: "95%", justifyContent: "center", textAlign: "center", width: "100%" }}>
+          <div id="myModal" className="modal">
+            <div className="modal-content">
+              <div className="modal-header">
+                <span className="close" onClick={() => { }}>&times;</span>
+                <h1>FACTORY</h1>
+              </div>
+              <div className="modal-body">
+                <div id="myProgress" >
+                  <div id="myBar" style={{ width: "50%" }}></div>
+                </div>
+                <div className="scrollmenu">
+                  <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
+                  <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
+                  <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
+                  <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
+                  <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
+                  <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
+                  <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
+                  <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
+                  <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
+                </div>
+              </div>
+              <div className="modal-body" style={{ height: "143px" }}>
+
+                <div className="scrollmenu">
+                  <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
+                  <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
+                  <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
+                  <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
+                  <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
+                  <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
+                  <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
+                  <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
+                  <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
+
+                </div>
+
+              </div>
+
+              <div className="modal-footer">
+                <h3>CRAFT</h3>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div> : <></>}
+    </>
+  )
+}
+
 
 function FarmContainer() {
   const user = useSelector(selectUser);
