@@ -5,7 +5,7 @@ module PlantHarvestingHistory {
   public func getData(plantHarvestingHistory : Types.PlantHarvestingHistory) : Types.PlantHarvestingHistory {
     let newPlantHarvestingHistory : Types.PlantHarvestingHistory = {
       id = plantHarvestingHistory.id;
-      userId = plantHarvestingHistory.userId;
+      harvesterId = plantHarvestingHistory.harvesterId;
       plantId = plantHarvestingHistory.plantId;
       harvestTime = plantHarvestingHistory.harvestTime;
     };

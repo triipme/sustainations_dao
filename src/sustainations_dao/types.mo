@@ -450,7 +450,7 @@ public type UsableItem = {
 //--------------------- Plant Harvesting History ---------------------//
   public type PlantHarvestingHistory = {
     id : Text;
-    userId : Principal;
+    harvesterId : Principal;
     plantId : Text;
     harvestTime : Int;
   };
@@ -481,8 +481,8 @@ public type UsableItem = {
   public type AlchemyRecipeDetail = {
     id : Text;
     recipeId : Text;
-    productId: Text;
-    amount: Int;
+    productId : Text;
+    amount : Int;
   };
 
 //--------------------- BuildingType -------------//
@@ -525,6 +525,14 @@ public type UsableItem = {
     id : Text;
     nodeAmount : Int;
     queueMaxSize : Int;
+  };
+
+//--------------- Production Queue Node -------------//
+  public type ProductionQueueNode = {
+    id : Text;
+    recipeId : Text;
+    status : Text;
+    startCraftingTime : Int;
   };
 
   // Error codes
