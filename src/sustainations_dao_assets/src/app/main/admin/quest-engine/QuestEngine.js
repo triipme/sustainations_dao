@@ -2,6 +2,7 @@ import { useState } from 'react';
 import _ from '@lodash';
 import { Controller, useForm } from 'react-hook-form';
 import Box from '@mui/system/Box';
+import BasicTable from './Table'
 import {
   Avatar,
   Button,
@@ -225,7 +226,7 @@ const QuestEngine = () => {
   const handleAdd = () => {
     if (option !== null) {
       setOptions(prev => [...prev, option])
-      setOption('')
+      setOption({ option: '', hp: 0, stamina: 0, mana: 0, morale: 0 })
     }
   }
 
@@ -323,6 +324,18 @@ const QuestEngine = () => {
                 </Box>
               )}
             />
+
+            <br></br>
+            <br></br>
+            <LoadingButton
+              className="ml-8"
+              variant="contained"
+              color="secondary"
+              loading={loading}
+            // onClick={handleSubmit(onSubmit)}
+            >
+              Save Quest
+            </LoadingButton>
           </CardContent>
         </Card>
       </div>
@@ -354,17 +367,18 @@ const QuestEngine = () => {
             />
 
 
-            {/* <br> */}
+
             <br></br>
             <br></br>
 
             <Typography className="mt-32 mb-16 text-3xl font-bold tracking-tight leading-tight">
-              Add option
+              Add options
             </Typography>
+
 
             <form>
               <TextField type='text' value={option.option || ''} className="mt-32" label="Option" placeholder="Option" variant="outlined" fullWidth
-                onChange={e => setOption({ ...option, option: e.target.value })}
+                required onChange={e => setOption({ ...option, option: e.target.value })}
               />
               <TextField type='number' value={option.hp || 0} placeholder="HP" onChange={e => setOption({ ...option, hp: e.target.value })} className="mt-32" label="HP" variant="outlined" fullWidth></TextField>
               <TextField type='number' value={option.stamina || 0} placeholder="Stamina" onChange={e => setOption({ ...option, stamina: e.target.value })} className="mt-32" label="Stamina" variant="outlined" fullWidth></TextField>
@@ -373,31 +387,16 @@ const QuestEngine = () => {
               <br></br>
               <br></br>
 
-              {/* <input type='number' value={option.stamina || 0} placeholder="Stamina" onChange={e => setOption({ ...option, stamina: e.target.value })}></input>
-              <input type='number' value={option.mana || 0} placeholder="Mana" onChange={e => setOption({ ...option, mana: e.target.value })}></input>
-              <input type='number' value={option.morale || 0} placeholder="Morale" onChange={e => setOption({ ...option, morale: e.target.value })}></input> */}
               {option.option ?
                 <Button className="ml-auto" color="secondary" variant="contained" onClick={handleAdd}>
                   Add Option
                 </Button> : ""}
+
             </form>
+            <br></br>
+            <br></br>
 
-            <ul>
-              {
-                options.map((option, index) => (
-                  <ul key={index}>
-                    <li > Option: {option.option}</li>
-                    <li> Hp:{option.hp}</li>
-                    <li> Stamina: {option.stamina}</li>
-                    <li> Mana: {option.mana}</li>
-                    <li> Morale: {option.morale}</li>
-                    <li>-----------------------------------------</li>
-                    <br></br>
-                  </ul>
-
-                ))
-              }
-            </ul>
+            {options.length != 0 ? <BasicTable rows={options} /> : <></>}
 
 
 
@@ -565,8 +564,6 @@ const QuestEngine = () => {
                 </Box>
               )}
             />
-
-
 
 
             <Box
