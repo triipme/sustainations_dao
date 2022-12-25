@@ -3596,7 +3596,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
           let newEventOption : Types.EventOption = {
             id = id;
             eventId = idEvent;
-            description = "";
+            description = option.option;
             requireItemId = "null";
             lossHP = Float.min(option.hp, 0);
             lossMana = Float.min(option.mana, 0);

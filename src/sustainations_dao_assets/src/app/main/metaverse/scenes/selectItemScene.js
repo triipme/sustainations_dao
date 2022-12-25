@@ -10,7 +10,8 @@ import {
   loadCharacterAwait,
   resetCharacterCollectsMaterials,
   loadQuestItemEngines,
-  getListEventQuest
+  getListEventQuest,
+  getAllScenes
 } from '../GameApi';
 import { throws } from 'assert';
 
@@ -65,12 +66,13 @@ class selectItemScene extends BaseScene {
       });
     }, this);
 
-    // this.load.rexAwait(function (successCallback, failureCallback) {
-    //   getEventEngine().then((result) => {
-    //     console.log(result);
-    //     successCallback();
-    //   });
-    // }, this);
+    this.load.rexAwait(function (successCallback, failureCallback) {
+      getAllScenes("test").then((result) => {
+        this.listScene = result;
+        console.log(result);
+        successCallback();
+      });
+    }, this);
 
     if (this.map == "engine") {
       this.load.rexAwait(function (successCallback, failureCallback) {

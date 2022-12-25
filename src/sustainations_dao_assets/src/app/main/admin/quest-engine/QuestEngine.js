@@ -114,67 +114,67 @@ const QuestEngine = () => {
         back: data.scene.imageBack.path,
         obstacle: data.scene.imageObstacle.path
       }
-      // const resultScene = await createScene(scene);
+      const resultScene = await createScene(scene);
 
-      // if ('Success' == resultScene) {
-      //   let bufFront = Buffer.from(data.scene.imageFront.base64data, 'base64')
-      //   let bufMid = Buffer.from(data.scene.imageMid.base64data, 'base64')
-      //   let bufBack = Buffer.from(data.scene.imageBack.base64data, 'base64')
-      //   let bufObstacle = Buffer.from(data.scene.imageObstacle.base64data, 'base64')
-      //   let dataImageFront = {
-      //     Key: data.scene.imageFront.path,
-      //     Body: bufFront,
-      //     ContentEncoding: 'base64',
-      //     ContentType: 'image/jpeg'
-      //   };
-      //   let dataImageMid = {
-      //     Key: data.scene.imageMid.path,
-      //     Body: bufMid,
-      //     ContentEncoding: 'base64',
-      //     ContentType: 'image/jpeg'
-      //   };
-      //   let dataImageBack = {
-      //     Key: data.scene.imageBack.path,
-      //     Body: bufBack,
-      //     ContentEncoding: 'base64',
-      //     ContentType: 'image/jpeg'
-      //   };
-      //   let dataImageObstacle = {
-      //     Key: data.scene.imageObstacle.path,
-      //     Body: bufObstacle,
-      //     ContentEncoding: 'base64',
-      //     ContentType: 'image/jpeg'
-      //   };
-      //   s3Bucket.putObject(dataImageFront, function (err, data) {
-      //     if (err) {
-      //       console.log('Error uploading data!');
-      //     } else {
-      //       console.log('Successfully uploaded the image front!');
-      //     }
-      //   });
-      //   s3Bucket.putObject(dataImageMid, function (err, data) {
-      //     if (err) {
-      //       console.log('Error uploading data!');
-      //     } else {
-      //       console.log('Successfully uploaded the image mid!');
-      //     }
-      //   });
-      //   s3Bucket.putObject(dataImageBack, function (err, data) {
-      //     if (err) {
-      //       console.log('Error uploading data!');
-      //     } else {
-      //       console.log('Successfully uploaded the image back!');
-      //     }
-      //   });
-      //   s3Bucket.putObject(dataImageObstacle, function (err, data) {
-      //     if (err) {
-      //       console.log('Error uploading data!');
-      //     } else {
-      //       console.log('Successfully uploaded the image obstacle!');
-      //     }
-      //   });
-      // }
-      // console.log("test: ", resultEvent, resultScene)
+      if ('Success' == resultScene) {
+        let bufFront = Buffer.from(data.scene.imageFront.base64data, 'base64')
+        let bufMid = Buffer.from(data.scene.imageMid.base64data, 'base64')
+        let bufBack = Buffer.from(data.scene.imageBack.base64data, 'base64')
+        let bufObstacle = Buffer.from(data.scene.imageObstacle.base64data, 'base64')
+        let dataImageFront = {
+          Key: data.scene.imageFront.path,
+          Body: bufFront,
+          ContentEncoding: 'base64',
+          ContentType: 'image/jpeg'
+        };
+        let dataImageMid = {
+          Key: data.scene.imageMid.path,
+          Body: bufMid,
+          ContentEncoding: 'base64',
+          ContentType: 'image/jpeg'
+        };
+        let dataImageBack = {
+          Key: data.scene.imageBack.path,
+          Body: bufBack,
+          ContentEncoding: 'base64',
+          ContentType: 'image/jpeg'
+        };
+        let dataImageObstacle = {
+          Key: data.scene.imageObstacle.path,
+          Body: bufObstacle,
+          ContentEncoding: 'base64',
+          ContentType: 'image/jpeg'
+        };
+        s3Bucket.putObject(dataImageFront, function (err, data) {
+          if (err) {
+            console.log('Error uploading data!');
+          } else {
+            console.log('Successfully uploaded the image front!');
+          }
+        });
+        s3Bucket.putObject(dataImageMid, function (err, data) {
+          if (err) {
+            console.log('Error uploading data!');
+          } else {
+            console.log('Successfully uploaded the image mid!');
+          }
+        });
+        s3Bucket.putObject(dataImageBack, function (err, data) {
+          if (err) {
+            console.log('Error uploading data!');
+          } else {
+            console.log('Successfully uploaded the image back!');
+          }
+        });
+        s3Bucket.putObject(dataImageObstacle, function (err, data) {
+          if (err) {
+            console.log('Error uploading data!');
+          } else {
+            console.log('Successfully uploaded the image obstacle!');
+          }
+        });
+      }
+      console.log("test: ", resultEvent, resultScene)
       let createOptions = await createAllEventOptionEngine(data.idEvent, options);
       console.log("createOptions", createOptions)
       dispatch(showMessage({ message: 'Success!' }));
@@ -194,7 +194,7 @@ const QuestEngine = () => {
   const handleAdd = () => {
     if (option !== null) {
       setOptions(prev => [...prev, option])
-      setOption('')
+      setOption({ option: '', hp: 0, stamina: 0, mana: 0, morale: 0 })
     }
   }
   console.log(options)
@@ -211,7 +211,7 @@ const QuestEngine = () => {
             {/* ===== location ===== */}
             <Controller
               control={control}
-              name="scene.location"
+              name="scene.description"
               render={({ field }) => (
                 <TextField
                   className="mt-32"

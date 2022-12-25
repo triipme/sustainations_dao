@@ -45,16 +45,21 @@ export default class Engine extends BaseScene {
   }
 
   init(data) {
-    this.listScene = data.listScene;
+    // this.listScene = data.listScene;
   }
 
   async preload() {
     console.log("this.Lisce:", this.listScene)
     this.addLoadingScreen();
-    // if (this.listScene === undefined || this.listScene.length == 0){
-    //   this.listScene = await getAllScenes("test");
-    //   console.log("test:", this.listScene)
-    // };
+    if (this.listScene === undefined || this.listScene.length == 0){
+      this.load.rexAwait(function (successCallback, failureCallback) {
+        getAllScenes("test").then((result) => {
+          this.listScene = result;
+          console.log("data: ", this.listScene);
+          successCallback();
+        });
+      }, this);
+    };
     this.load.rexAwait(function (successCallback, failureCallback) {
       readSceneEngine(this.listScene[0].id).then((result) => {
         this.initialLoad(result.idEvent);
