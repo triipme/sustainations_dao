@@ -3,19 +3,16 @@ import BaseScene from '../BaseScene'
 import gameConfig from '../../GameConfig';
 import {
   loadEventOptionEngines,
-  updateCharacterStats,
   updateCharacterStatsEngine,
   listCharacterSelectsItems,
-  createCharacterCollectsMaterials,
   loadItemUrl,
   characterTakeOptionEngine,
   characterCollectsMaterialEngines,
-  getAllScenes,
-  readSceneEngine
+  readSceneEngine,
+  readEventEngine 
 } from '../../GameApi';
 import { settings } from '../settings';
 import { func } from 'prop-types';
-import { readEventEngine } from '../../GameApi';
 
 const heroRunningSprite = 'metaverse/walkingsprite.png';
 const ground = 'metaverse/transparent-ground.png';
@@ -51,22 +48,19 @@ export default class Engine extends BaseScene {
   async preload() {
     console.log("this.Lisce:", this.listScene)
     this.addLoadingScreen();
-    // if (this.listScene === undefined || this.listScene.length == 0){
-    //   this.listScene = await getAllScenes("test");
-    //   console.log("test:", this.listScene)
-    // };
     this.load.rexAwait(function (successCallback, failureCallback) {
       readSceneEngine(this.listScene[0].id).then((result) => {
         this.initialLoad(result.idEvent);
         this.sceneEvent = result;
         console.log("this.sceneEvent:", this.sceneEvent)
-        successCallback();
         this.load.image("background1", loadItemUrl(this.sceneEvent.back));
         this.load.image("background2", loadItemUrl(this.sceneEvent.mid));
         this.load.image("background3", loadItemUrl(this.sceneEvent.front));
         this.load.rexAwait(function (successCallback, failureCallback) {
           characterTakeOptionEngine(this.sceneEvent.idEvent).then((result) => {
             this.characterTakeOptions = result;
+            console.log(this.sceneEvent)
+            console.log("da vao ham", result);
             successCallback();
           });
         }, this);
@@ -76,6 +70,7 @@ export default class Engine extends BaseScene {
             successCallback();
           });
         }, this);          
+        successCallback();
       });
     }, this);
     // this.characterTakeOptions = await characterTakeOptionEngine(this.sceneEvent.idEvent);

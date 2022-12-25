@@ -67,7 +67,7 @@ class selectItemScene extends BaseScene {
     }, this);
 
     this.load.rexAwait(function (successCallback, failureCallback) {
-      getAllScenes("test").then((result) => {
+      getAllScenes(this.map).then((result) => {
         this.listScene = result;
         console.log(result);
         successCallback();

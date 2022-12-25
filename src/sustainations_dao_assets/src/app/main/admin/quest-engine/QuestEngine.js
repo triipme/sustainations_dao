@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import _ from '@lodash';
 import { Controller, useForm } from 'react-hook-form';
 import Box from '@mui/system/Box';
@@ -198,7 +198,7 @@ const QuestEngine = () => {
       setOption({ option: '', hp: 0, stamina: 0, mana: 0, morale: 0 })
     }
   }
-  console.log(options)
+  
   return (
     <div className="relative flex flex-col flex-auto items-center">
       {/* ================= Scene 1 ================= */}

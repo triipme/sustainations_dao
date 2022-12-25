@@ -3598,10 +3598,10 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
             eventId = idEvent;
             description = option.option;
             requireItemId = "null";
-            lossHP = Float.min(option.hp, 0);
-            lossMana = Float.min(option.mana, 0);
-            lossStamina = Float.min(option.stamina, 0);
-            lossMorale = Float.min(option.morale, 0);
+            lossHP = -Float.min(option.hp, 0);
+            lossMana = -Float.min(option.mana, 0);
+            lossStamina = -Float.min(option.stamina, 0);
+            lossMorale = -Float.min(option.morale, 0);
             riskChance = 0.0;
             riskLost = "null";
             lossOther = "null";
