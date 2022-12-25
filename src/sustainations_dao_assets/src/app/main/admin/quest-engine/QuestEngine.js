@@ -2,6 +2,7 @@ import { useState } from 'react';
 import _ from '@lodash';
 import { Controller, useForm } from 'react-hook-form';
 import Box from '@mui/system/Box';
+import BasicTable from './Table'
 import {
   Avatar,
   Button,
@@ -250,24 +251,12 @@ const QuestEngine = () => {
                 <Button className="ml-auto" color="secondary" variant="contained" onClick={handleAdd}>
                   Add Option
                 </Button> : ""}
+
             </form>
+            <br></br>
+            <br></br>
 
-            <ul>
-              {
-                options.map((option, index) => (
-                  <ul key={index}>
-                    <li > Option: {option.option}</li>
-                    <li> Hp:{option.hp}</li>
-                    <li> Stamina: {option.stamina}</li>
-                    <li> Mana: {option.mana}</li>
-                    <li> Morale: {option.morale}</li>
-                    <li>-----------------------------------------</li>
-                    <br></br>
-                  </ul>
-
-                ))
-              }
-            </ul>
+            {options.length != 0 ? <BasicTable rows={options} /> : <></>}
 
 
 
@@ -435,6 +424,8 @@ const QuestEngine = () => {
                 </Box>
               )}
             />
+
+
             <Box
               className="flex items-center mt-40 py-14 pr-16 pl-4 sm:pr-48 sm:pl-36 border-t"
             >
