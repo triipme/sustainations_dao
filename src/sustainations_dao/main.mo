@@ -3426,11 +3426,11 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   };
 
   // Scene Engine
-  public shared ({ caller }) func createScene(questId: Text, scene : Types.Scene) : async Response<Text> {
+  public shared ({ caller }) func createScene(scene : Types.Scene) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
-    let rsQuest = state.questEngine.quests.get(questId);
+    let rsQuest = state.questEngine.quests.get(scene.idQuest);
     switch (rsQuest) {
       case (null) {
         return #err(#NotFound);
@@ -3499,19 +3499,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     #ok((list));
   };
 
-  // public shared query ({ caller }) func listIdEventEngine() : async Response<[Text]> { //just for quest engine
-  //   var listIdEvent : [Text ] = [];
-  //   if (Principal.toText(caller) == "2vxsx-fae") {
-  //     return #err(#NotAuthorized); //isNotAuthorized
-  //   };
-  //   for (event in state.questEngine.events.vals()) {
-  //     if (event.questId == "engine"){
-  //       listIdEvent := Array.append<Text>(listIdEvent, [event.id]);
-  //     }
-  //   };
-  //   #ok((listIdEvent));
-  // };
-
   public shared query ({ caller }) func listIdScenes() : async Response<[Text]> {
     //for queste engine
     if (Principal.toText(caller) == "2vxsx-fae") {
@@ -3525,16 +3512,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
     #ok(listIdScene);
   };
-
-  // public func listIdEventEngine() : [Text] { //just for quest engine
-  //   var listIdEvent : [Text ] = [];
-  //   for (event in state.questEngine.events.vals()) {
-  //     if (event.questId == "engine"){
-  //       listIdEvent := Array.append<Text>(listIdEvent, [event.id]);
-  //     };
-  //   };
-  //   return listIdEvent;
-  // };
 
   public type GameQuest = {
     listEvent : [Text];
@@ -3585,92 +3562,65 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     #ok(game);
   };
 
+  public shared query ({ caller }) func getAllScenes(idQuest: Text) : async Response<[Types.Scene]> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    var list : [Types.Scene] = [];
+    for (v in state.questEngine.scenes.vals()){
+      if (v.idQuest == idQuest){
+        list := Array.append<Types.Scene>(list, [v]);
+      };
+    };
+    #ok(list);
+  };
 
-  // public shared ({ caller }) func getEventEngine() : async Response<Types.Event> {
-  //   if (Principal.toText(caller) == "2vxsx-fae") {
-  //     return #err(#NotAuthorized); //isNotAuthorized
-  //   };
-  //   //random Nat
-  //   var b : Blob = await RandomBase.blob();
-  //   let rand = Nat8.toNat(RandomBase.byteFrom(b));
-  //   var listId : [Text] = [];
-  //   var sizeEvent : Nat = 0;
-  //   for (event in state.questEngine.events.vals()){
-  //     if (event.questId == "engine"){
-  //       listId := Array.append<Text>(listId, [event.id]);
-  //       sizeEvent += 1;
-  //     };
-  //   };
-  //   let randomIndex = rand%sizeEvent;
-  //   let radomId = listId[randomIndex];
-  //   let game = state.gameQuestEngines.get(Principal.toText(caller));
-  //   switch (game){
-  //     case (null) {return #err(#NotFound)};
-  //     case (?v){
-  //       let addGameQuest : Types.GameQuestEngine = {
-  //         userId = Principal.toText(caller);
-  //         listScene = [];
-  //         listEvent = Array.append<Text>(v.listEvent, [radomId]);
-  //         score = v.score+1;
-  //       };
-  //       let update = state.gameQuestEngines.replace(Principal.toText(caller), addGameQuest);
-  //     };
-  //   };
-  //   let randomEvent = state.questEngine.events.get(radomId);
-  //   switch (randomEvent){
-  //     case (null) {
-  //       #err(#NotFound);
-  //     };
-  //     case(?event){
-  //       #ok(event);
-  //     };
-  //   };
-  // };
+  public type Option = {
+    option: Text;
+    hp: Float;
+    stamina: Float;
+    morale: Float;
+    mana: Float;
+  };
 
-  // public shared ({ caller }) func getEventEngine() : async Response<Types.Event> {
-  //   if (Principal.toText(caller) == "2vxsx-fae") {
-  //     return #err(#NotAuthorized); //isNotAuthorized
-  //   };
-  //   //random Nat
-  //   var b : Blob = await RandomBase.blob();
-  //   let rand = Nat8.toNat(RandomBase.byteFrom(b));
-  //   let game = state.gameQuestEngines.get(Principal.toText(caller));
-  //   switch (game) {
-  //     case (null) {
-  //       return #err(#NotFound);
-  //     };
-  //     case(?gameQuest){
-  //       let randomIndex = rand%(List.size(gameQuest.listEvent));
-  //       let randomId = List.get(gameQuest.listEvent, randomIndex);
-  //       switch (randomId) {
-  //         case (null) {return #err(#NotFound)};
-  //         case(?id){
-  //           let randomEvent = state.questEngine.events.get(id);
-  //           switch (randomEvent){
-  //             case (null) {
-  //               #err(#NotFound);
-  //             };
-  //             case(?event){
-  //               #ok(event);
-  //             };
-  //           };
-  //         }
-  //       }
-  //     }
-  //   }
-  //   // switch (game){
-  //   //   case (null) {return #err(#NotFound)};
-  //   //   case (?v){
-  //   //     let addGameQuest : Types.GameQuestEngine = {
-  //   //       userId = Principal.toText(caller);
-  //   //       listScene = [];
-  //   //       listEvent = v.listEvent.put(radomId, 1);
-  //   //       score = v.score+1;
-  //   //     };
-  //   //     let update = state.gameQuestEngines.replace(Principal.toText(caller), addGameQuest);
-  //   //   };
-  //   // };
-  // };
+  public shared ({ caller }) func createAllEventOptionEngine(idEvent: Text, options: [Option]) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsEvent = state.questEngine.events.get(idEvent);
+    switch (rsEvent) {
+      case null { return #err(#NotFound) };
+      case (?event) {
+        for (option in options.vals()){
+          let id = await createUUID();
+          let newEventOption : Types.EventOption = {
+            id = id;
+            eventId = idEvent;
+            description = "";
+            requireItemId = "null";
+            lossHP = Float.min(option.hp, 0);
+            lossMana = Float.min(option.mana, 0);
+            lossStamina = Float.min(option.stamina, 0);
+            lossMorale = Float.min(option.morale, 0);
+            riskChance = 0.0;
+            riskLost = "null";
+            lossOther = "null";
+            gainExp = 0;
+            gainHP = Float.max(option.hp, 0);
+            gainStamina = Float.max(option.stamina, 0);
+            gainMorale = Float.max(option.morale, 0);
+            gainMana = Float.max(option.mana, 0);
+            luckyChance = 0;
+            gainByLuck = "null";
+            gainOther = 0.0;
+          };
+          let new = state.questEngine.eventOptions.put(id, newEventOption);
+        };
+        #ok("Success");
+      };
+    };
+  };
+
 
   public shared ({ caller }) func updateScene(quest : Types.Scene) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
@@ -3693,9 +3643,29 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     let rsScene = state.questEngine.scenes.get(id);
     switch (rsScene) {
       case (null) { #err(#NotFound) };
-      case (?V) {
-        let deletedScene = state.questEngine.scenes.delete(id);
-        #ok("Success");
+      case (?scene) {
+        let rsQuest = state.questEngine.quests.get(scene.idQuest);
+        switch (rsQuest) {
+          case (null) {
+            return #err(#NotFound);
+          };
+          case (?quest){
+            let updateQuest : Types.QuestEngine = {
+              id = quest.id;
+              userId = caller;
+              name = quest.name;
+              price = quest.price;
+              description = quest.description;
+              images = quest.images;
+              isActive = quest.isActive;
+              dateCreate = quest.dateCreate;
+              listScene = Array.filter<Text>(quest.listScene, func x = x != scene.id);
+            };
+            let rsUpdate = updateQuestEngine(updateQuest);
+            let deletedScene = state.questEngine.scenes.delete(id);
+            #ok("Success");
+          };
+        };
       };
     };
   };

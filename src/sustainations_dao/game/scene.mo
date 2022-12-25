@@ -9,6 +9,7 @@ module Scene {
   public func getData(scene : Types.Scene) : Types.Scene {
     let newScene : Types.Scene = {
       id = scene.id;
+      idQuest = scene.idQuest;
       idEvent = scene.idEvent;
       front = scene.front;
       mid = scene.mid;

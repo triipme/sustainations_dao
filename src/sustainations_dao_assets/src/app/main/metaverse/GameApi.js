@@ -313,9 +313,16 @@ async function createEventOptionEngine(eventOption) {
   return rs;
 }
 
-async function createScene(idQuest, scene) {
+export async function createAllEventOptionEngine(idEvent, eventOptions) {
   const { user } = store.getState();
-  const func = async () => await user.actor.createScene(idQuest, scene);
+  const func = async () => await user.actor.createAllEventOptionEngine(idEvent, eventOptions);
+  const rs = (await func()).ok;
+  return rs;
+}
+
+async function createScene(scene) {
+  const { user } = store.getState();
+  const func = async () => await user.actor.createScene(scene);
   const rs = (await func()).ok;
   return rs;
 }
@@ -349,11 +356,11 @@ export async function readQuestEngine(id) {
   return quest;
 }
 
-async function listIdScenes() {
+export async function getAllScenes(idQuest) {
   const { user } = store.getState();
-  const func = async () => await user.actor.listIdScenes();
-  const listIdScenes = (await func()).ok;
-  return listIdScenes;
+  const func = async () => await user.actor.getAllScenes(idQuest);
+  const rs = (await func()).ok;
+  return rs;
 }
 
 export async function getListEventQuest() {
@@ -443,5 +450,4 @@ export {
   loadEventOptionEngines,
   loadQuestItemEngines,
   characterTakeOptionEngine,
-  listIdScenes,
 }

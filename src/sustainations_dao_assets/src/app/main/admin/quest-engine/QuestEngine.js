@@ -10,7 +10,12 @@ import {
   TextField,
 } from '@mui/material';
 
-import { createQuestEngine, createEventEngine, createScene } from '../../metaverse/GameApi';
+import { 
+  createQuestEngine,
+  createEventEngine,
+  createScene,
+  createAllEventOptionEngine
+} from '../../metaverse/GameApi';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Typography from '@mui/material/Typography';
 import { v4 as uuid } from 'uuid'
@@ -18,6 +23,8 @@ import { v4 as uuid } from 'uuid'
 import { useSelector, useDispatch } from "react-redux";
 import { selectUser, setUser } from 'app/store/userSlice';
 import { showMessage } from 'app/store/fuse/messageSlice';
+import { setOptions } from 'leaflet';
+
 
 // AWS3
 const AWS = require('aws-sdk');
@@ -40,10 +47,12 @@ const QuestEngine = () => {
   const idEvent = uuid()
   const idScene = uuid()
 
+  // const [openOptions, setOpenOptions] = useState(false);
+
   const { control, handleSubmit, formState } = useForm({
     mode: 'onChange',
     defaultValues: {
-      idQuest: idQuest,
+      idQuest: "test",
       idEvent: idEvent,
       idScene: idScene,
       name: '',
@@ -85,40 +94,6 @@ const QuestEngine = () => {
     console.log(data.questEventName, "quest event name")
     setLoading(true);
     try {
-      // ========== QUEST ==========
-      let quest = {
-        id: "test", //just for test
-        name: data.name,
-        price: data.price,
-        description: data.description,
-        images: data.scene.imageQuest.path
-      }
-      const resultQuest = await createQuestEngine(quest)
-      if ('Success' == resultQuest) {
-        let bufQuest = Buffer.from(data.scene.imageQuest.base64data, 'base64')
-        let dataImagQuest = {
-          Key: data.scene.imageQuest.path,
-          Body: bufQuest,
-          ContentEncoding: 'base64',
-          ContentType: 'image/jpeg'
-        };
-        s3Bucket.putObject(dataImagQuest, function (err, dataS3) {
-          if (err) {
-            console.log('Error uploading data!');
-          } else {
-            console.log('Successfully uploaded the image quest!');
-          }
-        });
-      }
-      // s3Bucket.putObject(dataImagQuest, function (err, dataS3) {
-      //   if (err) {
-      //     console.log('Error uploading data!');
-      //   } else {
-      //     console.log('Successfully uploaded the image!');
-      //   }
-      // });
-
-      // ========== SCENE ==========
       //EVENT
       let event = {
         id: data.idEvent,
@@ -133,77 +108,75 @@ const QuestEngine = () => {
       let scene = {
         id: data.idScene,
         idEvent: data.idEvent,
+        idQuest: data.idQuest,
         front: data.scene.imageFront.path,
         mid: data.scene.imageMid.path,
         back: data.scene.imageBack.path,
         obstacle: data.scene.imageObstacle.path
       }
-      const resultScene = await createScene(quest.id, scene);
+      // const resultScene = await createScene(scene);
 
-      if ('Success' == resultScene) {
-        let bufFront = Buffer.from(data.scene.imageFront.base64data, 'base64')
-        let bufMid = Buffer.from(data.scene.imageMid.base64data, 'base64')
-        let bufBack = Buffer.from(data.scene.imageBack.base64data, 'base64')
-        let bufObstacle = Buffer.from(data.scene.imageObstacle.base64data, 'base64')
-        let dataImageFront = {
-          Key: data.scene.imageFront.path,
-          Body: bufFront,
-          ContentEncoding: 'base64',
-          ContentType: 'image/jpeg'
-        };
-        let dataImageMid = {
-          Key: data.scene.imageMid.path,
-          Body: bufMid,
-          ContentEncoding: 'base64',
-          ContentType: 'image/jpeg'
-        };
-        let dataImageBack = {
-          Key: data.scene.imageBack.path,
-          Body: bufBack,
-          ContentEncoding: 'base64',
-          ContentType: 'image/jpeg'
-        };
-        let dataImageObstacle = {
-          Key: data.scene.imageObstacle.path,
-          Body: bufObstacle,
-          ContentEncoding: 'base64',
-          ContentType: 'image/jpeg'
-        };
-        s3Bucket.putObject(dataImageFront, function (err, data) {
-          if (err) {
-            console.log('Error uploading data!');
-          } else {
-            console.log('Successfully uploaded the image front!');
-          }
-        });
-        s3Bucket.putObject(dataImageMid, function (err, data) {
-          if (err) {
-            console.log('Error uploading data!');
-          } else {
-            console.log('Successfully uploaded the image mid!');
-          }
-        });
-        s3Bucket.putObject(dataImageBack, function (err, data) {
-          if (err) {
-            console.log('Error uploading data!');
-          } else {
-            console.log('Successfully uploaded the image back!');
-          }
-        });
-        s3Bucket.putObject(dataImageObstacle, function (err, data) {
-          if (err) {
-            console.log('Error uploading data!');
-          } else {
-            console.log('Successfully uploaded the image obstacle!');
-          }
-        });
-      }
-
-
-      console.log("test: ", resultQuest, resultEvent, resultScene)
-      // console.log("quest:", quest)
-      // console.log("event:", event)
-      // console.log("scene:", scene)
+      // if ('Success' == resultScene) {
+      //   let bufFront = Buffer.from(data.scene.imageFront.base64data, 'base64')
+      //   let bufMid = Buffer.from(data.scene.imageMid.base64data, 'base64')
+      //   let bufBack = Buffer.from(data.scene.imageBack.base64data, 'base64')
+      //   let bufObstacle = Buffer.from(data.scene.imageObstacle.base64data, 'base64')
+      //   let dataImageFront = {
+      //     Key: data.scene.imageFront.path,
+      //     Body: bufFront,
+      //     ContentEncoding: 'base64',
+      //     ContentType: 'image/jpeg'
+      //   };
+      //   let dataImageMid = {
+      //     Key: data.scene.imageMid.path,
+      //     Body: bufMid,
+      //     ContentEncoding: 'base64',
+      //     ContentType: 'image/jpeg'
+      //   };
+      //   let dataImageBack = {
+      //     Key: data.scene.imageBack.path,
+      //     Body: bufBack,
+      //     ContentEncoding: 'base64',
+      //     ContentType: 'image/jpeg'
+      //   };
+      //   let dataImageObstacle = {
+      //     Key: data.scene.imageObstacle.path,
+      //     Body: bufObstacle,
+      //     ContentEncoding: 'base64',
+      //     ContentType: 'image/jpeg'
+      //   };
+      //   s3Bucket.putObject(dataImageFront, function (err, data) {
+      //     if (err) {
+      //       console.log('Error uploading data!');
+      //     } else {
+      //       console.log('Successfully uploaded the image front!');
+      //     }
+      //   });
+      //   s3Bucket.putObject(dataImageMid, function (err, data) {
+      //     if (err) {
+      //       console.log('Error uploading data!');
+      //     } else {
+      //       console.log('Successfully uploaded the image mid!');
+      //     }
+      //   });
+      //   s3Bucket.putObject(dataImageBack, function (err, data) {
+      //     if (err) {
+      //       console.log('Error uploading data!');
+      //     } else {
+      //       console.log('Successfully uploaded the image back!');
+      //     }
+      //   });
+      //   s3Bucket.putObject(dataImageObstacle, function (err, data) {
+      //     if (err) {
+      //       console.log('Error uploading data!');
+      //     } else {
+      //       console.log('Successfully uploaded the image obstacle!');
+      //     }
+      //   });
+      // }
+      // console.log("test: ", resultEvent, resultScene)
+      let createOptions = await createAllEventOptionEngine(data.idEvent, options);
+      console.log("createOptions", createOptions)
       dispatch(showMessage({ message: 'Success!' }));
     }
     catch (err) {
@@ -213,140 +186,28 @@ const QuestEngine = () => {
     setLoading(false);
   };
 
+
+  //New Option
+  const [option, setOption] = useState({ option: '', hp: 0.0, stamina: 0.0, mana: 0.0, morale: 0.0 })
+  const [options, setOptions] = useState([])
+
+  const handleAdd = () => {
+    if (option !== null) {
+      setOptions(prev => [...prev, option])
+      setOption('')
+    }
+  }
+  console.log(options)
   return (
     <div className="relative flex flex-col flex-auto items-center">
-      <div className="w-full max-w-7xl">
-        <Card className="w-full py-32 mx-auto mt-24 rounded-2xl shadow">
-          <CardContent className="p-24 pt-0 sm:p-48 sm:pt-0">
-            <Typography className="mt-32 mb-16 text-3xl font-bold tracking-tight leading-tight">
-              Quest info
-            </Typography>
-            <Controller
-              control={control}
-              name="name"
-              render={({ field }) => (
-                <TextField
-                  className="mt-32"
-                  {...field}
-                  label="Quest name"
-                  placeholder="Quest name"
-                  id="questName"
-                  variant="outlined"
-                  fullWidth
-                />
-              )}
-            />
-            <Controller
-              control={control}
-              name="price"
-              render={({ field }) => (
-                <TextField
-                  className="mt-32"
-                  type={"number"}
-                  {...field}
-                  label="Quest price"
-                  placeholder="Quest price"
-                  id="questPrice"
-                  variant="outlined"
-                  fullWidth
-                />
-              )}
-            />
-            <Controller
-              control={control}
-              name="description"
-              render={({ field }) => (
-                <TextField
-                  className="mt-32"
-                  {...field}
-                  label="Quest Description"
-                  placeholder="Quest description"
-                  id="questDescription"
-                  variant="outlined"
-                  fullWidth
-                />
-              )}
-            />
-            <Controller
-              control={control}
-              name="scene.imageQuest"
-              render={({ field: { onChange } }) => (
-                <Box
-                  className='mt-32'
-                >
-                  <div>
-                    <h3>Image Quest</h3>
-                    <input
-                      accept="image/*"
-                      type="file"
-                      onChange={async (e) => {
-                        function readFileAsync() {
-                          return new Promise((resolve, reject) => {
-                            const file = e.target.files[0];
-                            file.preview = URL.createObjectURL(file)
-                            // setAvatar(file)
-                            if (!file) {
-                              return;
-                            }
-                            const reader = new FileReader();
-                            reader.onload = () => {
-                              resolve({
-                                base64data: `${btoa(reader.result)}`,
-                                path: `development/quests/${idQuest}`
-                              });
-                            };
-                            reader.onerror = reject;
-                            reader.readAsBinaryString(file);
-                          });
-                        }
-                        const newImage = await readFileAsync();
-                        onChange(newImage)
-                      }}
-                    />
-                  </div>
-                </Box>
-              )}
-            />
-            {/* <Box
-              className="flex items-center mt-40 py-14 pr-16 pl-4 sm:pr-48 sm:pl-36 border-t"
-            >
-              <LoadingButton
-                className="ml-8"
-                variant="contained"
-                color="secondary"
-                loading={loading}
-                onClick={handleSubmit(onSubmit)}
-              >
-                Save
-              </LoadingButton>
-            </Box> */}
-          </CardContent>
-        </Card>
-      </div>
-
       {/* ================= Scene 1 ================= */}
       <div className="w-full max-w-7xl">
         <Card className="w-full py-32 mx-auto mt-24 rounded-2xl shadow">
           <CardContent className="p-24 pt-0 sm:p-48 sm:pt-0">
             <Typography className="mt-32 mb-16 text-3xl font-bold tracking-tight leading-tight">
-              Scene 1
+              Scene
             </Typography>
-            {/* ===== description ===== */}
-            <Controller
-              control={control}
-              name="scene.description"
-              render={({ field }) => (
-                <TextField
-                  className="mt-32"
-                  {...field}
-                  label="Descrition"
-                  placeholder="Descrition"
-                  // id="questName"
-                  variant="outlined"
-                  fullWidth
-                />
-              )}
-            />
+
             {/* ===== location ===== */}
             <Controller
               control={control}
@@ -355,7 +216,7 @@ const QuestEngine = () => {
                 <TextField
                   className="mt-32"
                   {...field}
-                  label="Location"
+                  label="Question"
                   placeholder="Location"
                   // id="questName"
                   variant="outlined"
@@ -363,22 +224,53 @@ const QuestEngine = () => {
                 />
               )}
             />
-            {/* ===== destinaton ===== */}
-            <Controller
-              control={control}
-              name="scene.destination"
-              render={({ field }) => (
-                <TextField
-                  className="mt-32"
-                  {...field}
-                  label="Destination"
-                  placeholder="Destination"
-                  // id="questName"
-                  variant="outlined"
-                  fullWidth
-                />
-              )}
-            />
+            {/* <br> */}
+            <br></br>
+            <br></br>
+
+            <Typography className="mt-32 mb-16 text-3xl font-bold tracking-tight leading-tight">
+              Add option
+            </Typography>
+
+            <form>
+              <TextField type='text' value={option.option || ''} className="mt-32" label="Option" placeholder="Option" variant="outlined" fullWidth
+                onChange={e => setOption({ ...option, option: e.target.value })}
+              />
+              <TextField type='number' value={option.hp || 0.0} placeholder="HP" onChange={e => setOption({ ...option, hp: parseInt(e.target.value) })} className="mt-32" label="HP" variant="outlined" fullWidth></TextField>
+              <TextField type='number' value={option.stamina || 0.0} placeholder="Stamina" onChange={e => setOption({ ...option, stamina: parseInt(e.target.value) })} className="mt-32" label="Stamina" variant="outlined" fullWidth></TextField>
+              <TextField type='number' value={option.mana || 0.0} placeholder="Mana" onChange={e => setOption({ ...option, mana: parseInt(e.target.value) })} className="mt-32" label="Mana" variant="outlined" fullWidth></TextField>
+              <TextField type='number' value={option.morale || 0.0} placeholder="Morale" onChange={e => setOption({ ...option, morale: parseInt(e.target.value) })} className="mt-32" label="Morale" variant="outlined" fullWidth></TextField>
+              <br></br>
+              <br></br>
+
+              {/* <input type='number' value={option.stamina || 0} placeholder="Stamina" onChange={e => setOption({ ...option, stamina: e.target.value })}></input>
+              <input type='number' value={option.mana || 0} placeholder="Mana" onChange={e => setOption({ ...option, mana: e.target.value })}></input>
+              <input type='number' value={option.morale || 0} placeholder="Morale" onChange={e => setOption({ ...option, morale: e.target.value })}></input> */}
+              {option.option ?
+                <Button className="ml-auto" color="secondary" variant="contained" onClick={handleAdd}>
+                  Add Option
+                </Button> : ""}
+            </form>
+
+            <ul>
+              {
+                options.map((option, index) => (
+                  <ul key={index}>
+                    <li > Option: {option.option}</li>
+                    <li> Hp:{option.hp}</li>
+                    <li> Stamina: {option.stamina}</li>
+                    <li> Mana: {option.mana}</li>
+                    <li> Morale: {option.morale}</li>
+                    <li>-----------------------------------------</li>
+                    <br></br>
+                  </ul>
+
+                ))
+              }
+            </ul>
+
+
+
             {/* ===== FRONT ===== */}
             <Controller
               control={control}
@@ -557,19 +449,7 @@ const QuestEngine = () => {
               </LoadingButton>
             </Box>
 
-            <Box
-              className="flex items-center mt-40 py-14 pr-16 pl-4 sm:pr-48 sm:pl-36 border-t"
-            >
-              <LoadingButton
-                className="ml-8"
-                variant="contained"
-                color="secondary"
-                loading={loading}
-                onClick={handleSubmit(onSubmit)}
-              >
-                Test
-              </LoadingButton>
-            </Box>
+
           </CardContent>
         </Card>
       </div>

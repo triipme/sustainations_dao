@@ -6,11 +6,12 @@ import {
   updateCharacterStats,
   updateCharacterStatsEngine,
   listCharacterSelectsItems,
-  // createCharacterCollectsMaterials,
-  readSceneEngine,
+  createCharacterCollectsMaterials,
   loadItemUrl,
   characterTakeOptionEngine,
-  // characterCollectsMaterialEngines,
+  characterCollectsMaterialEngines,
+  getAllScenes,
+  readSceneEngine
 } from '../../GameApi';
 import { settings } from '../settings';
 import { func } from 'prop-types';
@@ -44,34 +45,58 @@ export default class Engine extends BaseScene {
   }
 
   init(data) {
-    this.listScene = data.listScene;
+    // this.listScene = data.listScene;
   }
 
   async preload() {
+    console.log("this.Lisce:", this.listScene)
     this.addLoadingScreen();
-    console.log("data: ", this.listScene);
+    if (this.listScene === undefined || this.listScene.length == 0){
+      this.load.rexAwait(function (successCallback, failureCallback) {
+        getAllScenes("test").then((result) => {
+          this.listScene = result;
+          console.log("data: ", this.listScene);
+          this.load.rexAwait(function (successCallback, failureCallback) {
+            readSceneEngine(this.listScene[0].id).then((result) => {
+              this.initialLoad(result.idEvent);
+              this.sceneEvent = result;
+              console.log("this.sceneEvent:", this.sceneEvent)
+              successCallback();
+              this.load.image("background1", loadItemUrl(this.sceneEvent.back));
+              this.load.image("background2", loadItemUrl(this.sceneEvent.mid));
+              this.load.image("background3", loadItemUrl(this.sceneEvent.front));
+              this.load.rexAwait(function (successCallback, failureCallback) {
+                characterTakeOptionEngine(this.sceneEvent.idEvent).then((result) => {
+                  this.characterTakeOptions = result;
+                  successCallback();
+                });
+              }, this);
+              this.load.rexAwait(function (successCallback, failureCallback) {
+                characterCollectsMaterialEngines(this.sceneEvent.idEvent).then((result) => {
+                  this.characterCollectMaterials = result;
+                  successCallback();
+                });
+              }, this);          
+            });
+          }, this);
+          successCallback();
+        });
+      }, this);
+    }
+    // this.characterTakeOptions = await characterTakeOptionEngine(this.sceneEvent.idEvent);
+    // this.characterCollectMaterials = await characterCollectsMaterialEngines(this.sceneEvent.idEvent);
     // this.load.rexAwait(function (successCallback, failureCallback) {
-    //   getEventEngine().then((result) => {
-    //     this.event = result;
-    //     this.initialLoad(this.event.id);
-    //     this.load.rexAwait(function (successCallback, failureCallback) {
-    //       characterTakeOptionEngine(this.event.id).then((result) => {
-    //         this.characterTakeOptions = result;
-    //         successCallback();
-    //       });
-    //     }, this);
+    //   characterTakeOptionEngine(this.sceneEvent.idEvent).then((result) => {
+    //     this.characterTakeOptions = result;
     //     successCallback();
     //   });
     // }, this);
-   
     // this.load.rexAwait(function (successCallback, failureCallback) {
-    //   characterCollectsMaterialEngines(this.eventId).then((result) => {
+    //   characterCollectsMaterialEngines(this.sceneEvent.idEvent).then((result) => {
     //     this.characterCollectMaterials = result;
     //     successCallback();
     //   });
     // }, this);
-    // this.sceneEvent = await readScene(this.listScene[0])
-    this.sceneEvent = await readSceneEngine(this.listScene[Math.floor(Math.random() * (this.listScene.length))]);
 
 
     //Preload
@@ -83,9 +108,9 @@ export default class Engine extends BaseScene {
       frameHeight: 337
     });
     this.load.image("ground", ground);
-    this.load.image("background1", loadItemUrl(this.sceneEvent.back));
-    this.load.image("background2", loadItemUrl(this.sceneEvent.mid));
-    this.load.image("background3", loadItemUrl(this.sceneEvent.front));
+    // this.load.image("background1", loadItemUrl(this.sceneEvent.back));
+    // this.load.image("background2", loadItemUrl(this.sceneEvent.mid));
+    // this.load.image("background3", loadItemUrl(this.sceneEvent.front));
     this.load.image("selectAction", selectAction);
     this.load.spritesheet('btnBlank', btnBlank, { frameWidth: 1102, frameHeight: 88 });
     // this.load.image("obstacle", loadItemUrl(this.sceneEvent.obstacle));
@@ -129,7 +154,6 @@ export default class Engine extends BaseScene {
   async create() {
     this.listScene.shift()
     console.log(this.characterTakeOptions)
-    // console.log(this.listScene.shift())
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
@@ -294,7 +318,7 @@ export default class Engine extends BaseScene {
       this.sfx_char_footstep.stop();
 
       if (this.listScene.length === 0) this.scene.start("thanks", { isUsedPotion: this.isUsedPotion });
-      else this.scene.start("Engine", { isUsedPotion: this.isUsedPotion, listScene: this.listScene});
+      else this.scene.start("Test", { isUsedPotion: this.isUsedPotion, listScene: this.listScene});
       // this.scene.start("Test", { isUsedPotion: this.isUsedPotion, listScene: this.listScene});
     }
 

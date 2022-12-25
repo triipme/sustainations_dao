@@ -191,6 +191,7 @@ module {
   //--------------------- Scene ---------------------//
   public type Scene = {
     id : Text;
+    idQuest : Text;
     idEvent : Text;
     front : Text;
     mid : Text;
