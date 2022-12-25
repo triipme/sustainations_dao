@@ -206,7 +206,7 @@ const QuestEngine = () => {
         <Card className="w-full py-32 mx-auto mt-24 rounded-2xl shadow">
           <CardContent className="p-24 pt-0 sm:p-48 sm:pt-0">
             <Typography className="mt-32 mb-16 text-3xl font-bold tracking-tight leading-tight">
-              Scene
+              Event
             </Typography>
 
             {/* ===== location ===== */}
