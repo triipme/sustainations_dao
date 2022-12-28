@@ -255,6 +255,8 @@ async function loadTileSlots(properties) {
         "zone": zone,
         "i": Number(tile.indexRow),
         "j": Number(tile.indexColumn),
+        "rowSize": tile.rowSize,
+        "columnSize": tile.columnSize,
         "landId": landId,
         "tileId": tile.id,
         "name": tile.name,
