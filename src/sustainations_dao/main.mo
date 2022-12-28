@@ -3670,6 +3670,50 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
   };
 
+  public shared ({ caller }) func deleteSceneEventAndEventOption(idScene : Text) : async Response<Text> { //delete scene, event, eventoption
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsScene = state.questEngine.scenes.get(idScene);
+    switch (rsScene) {
+      case (null) { #err(#NotFound) };
+      case (?scene) {
+        let rsQuest = state.questEngine.quests.get(scene.idQuest);
+        switch (rsQuest) {
+          case (null) {
+            return #err(#NotFound);
+          };
+          case (?quest){
+            let updateQuest : Types.QuestEngine = {
+              id = quest.id;
+              userId = caller;
+              name = quest.name;
+              price = quest.price;
+              description = quest.description;
+              images = quest.images;
+              isActive = quest.isActive;
+              dateCreate = quest.dateCreate;
+              listScene = Array.filter<Text>(quest.listScene, func x = x != scene.id);
+            };
+            let rsUpdate = updateQuestEngine(updateQuest);
+            let deletedScene = state.questEngine.scenes.delete(idScene);
+          };
+        };
+
+        //delete event
+        let deletedEvent = state.questEngine.events.delete(scene.idEvent);
+
+        //delete event option
+        for (eventOption in state.questEngine.eventOptions.vals()){
+          if (eventOption.eventId == scene.idEvent){
+            let deletedEventOption = state.questEngine.eventOptions.delete(eventOption.id);
+          };
+        };
+        #ok("Success");
+      };
+    };
+  };
+
   public shared ({ caller }) func listSceneQuests(idQuest : Text) : async Response<[Text]> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized

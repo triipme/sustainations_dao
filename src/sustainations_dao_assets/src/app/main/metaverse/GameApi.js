@@ -406,6 +406,12 @@ async function characterCollectsMaterialEngines(eventId) {
   return result;
 };
 
+export async function deleteSceneEventAndEventOption(idScene) {
+  const { user } = store.getState();
+  const func = async () => await user.actor.deleteSceneEventAndEventOption(idScene);
+  const result = (await func()).ok;
+  return result;
+};
 
 export {
   getUserInfo,
