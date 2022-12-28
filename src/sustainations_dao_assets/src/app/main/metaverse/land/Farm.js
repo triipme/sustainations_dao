@@ -30,11 +30,8 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
   const [tomato, setTomato] = useState(0)
   const [cantBuild, setCantBuild] = useState("")
   const [popupFactory, setPopupFactory] = useState(false)
+  const [objectId, setObjectId] = useState("None")
   const map = useMap();
-  // const numPlantHarvest = (arr) => {
-  //   return arr.reduce((previousValue, currentValue) => previousValue + Number(currentValue.amount), 0)
-  // }
-
   useEffect(() => {
     const load = async () => {
       const characterid = await user.actor.readCharacter();
@@ -42,7 +39,7 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
       const inv = await user.actor.listInventory(characterid.ok[0]);
       const listProductStorage = (await user.actor.listProductStorage()).ok
       const stash = (await user.actor.listStash()).ok;
-      console.log("STASH: ",stash);
+      console.log("STASH: ", stash);
 
       const defineAmount = (item, productName) => {
         if (productName === "Carrot") {
@@ -79,13 +76,12 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
   }, [inventory]);
 
   const [time, setTime] = useState(Date.now());
-
   useEffect(() => {
     const interval = setInterval(async () => {
       setTime(Date.now());
       let tile = await loadTileSlots(landSlotProperties);
       setTileplant(tile);
-    }, 10000);
+    }, 30000);
 
     return () => {
       clearInterval(interval);
@@ -104,7 +100,7 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
   // );
   const checkAvailablePosition = (i, j, x) => {
     let result = []
-    if (x === 9) {
+    if (x === 9) {c
       result = tileplant.filter(tile => {
         return tile.properties.i >= i && tile.properties.i <= i + 2 && tile.properties.j >= j && tile.properties.j <= j + 2
       }
@@ -132,18 +128,37 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
       fillColor: (country.properties.hasEffectId === "None" || country.properties.hasEffectId === "") ? "#FFFFFF" : "#f6cb1c",
       fillOpacity: (country.properties.hasEffectId === "None" || country.properties.hasEffectId === "") ? "0.1" : "0.4",
     });
-    layer.bindPopup(`<img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000"></img>`, {
-      direction: "top",
-      permanent: true,
-      className: "labelstyle",
-    });
 
+    var q = []
+    var que = []
+    const load = async () => {
+      q = (await user.actor.listProductionQueueNodesInfo(country.properties.objectId))?.ok
+      que = (q.filter(i => {
+        return i.status == "Completed"
+      }))
+      console.log(q, que.length)
+      layer.bindPopup(`<h1>${que.length}/${q.length}</h1>`).openPopup();
+    }
     layer.on({
+      mouseover: e => {
+        if (country.properties.name == "Factory") {
+          load()
+        }
+      },
       click: async e => {
-        console.log(country)
+        console.log(que, q)
         let currentSeed = inventory.filter((item) => inventoryStatus[item.materialName] === true)
 
-        if (country.properties.name === "Factory" && country.properties.status === "completed") {
+        if (country.properties.name === "Factory" && country.properties.status === "completed" && inventoryStatus["dig"] === false
+          && que.length <= q.length && que.length != 0) {
+          load()
+          setLoading(true)
+          console.log(await user.actor.collectUsableItems(country.properties.objectId))
+          setLoading(false)
+
+        }
+        else if (country.properties.name === "Factory" && country.properties.status === "completed" && inventoryStatus["dig"] === false) {
+          setObjectId(country.properties.objectId)
           setPopupFactory(true)
         }
         else if (country.properties.status === "fullGrown" && inventoryStatus["dig"] === false && loading === false && country.properties.name !== "Pine_Seed") {
@@ -197,38 +212,6 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
           positionTree.i = -1
           positionTree.j = -1
         }
-        // else if (inventoryStatus["market"] === true && loading === false && country.properties.name === "None") { // build factory
-        //   setLoading(true)
-        //   positionTree.i = country.properties.i
-        //   positionTree.j = country.properties.j
-        //   console.log("checkAvailablePosition: ", checkAvailablePosition(positionTree.i, positionTree.j))
-        //   if (checkAvailablePosition(positionTree.i, positionTree.j))
-        //     console.log("Build Factory: ", (await user.actor.constructBuilding(country.properties.landId, country.properties.i, country.properties.j, "c2")))
-        //   else {
-        //     setCantBuild("factory")
-        //   }
-        //   setTileplant(await loadTileSlots(landSlotProperties));
-        //   setInventory((await user.actor.listInventory(characterId))?.ok);
-        //   setLoading(false)
-        //   positionTree.i = -1
-        //   positionTree.j = -1
-        // }
-        // else if (inventoryStatus["chemistry"] === true && loading === false && country.properties.name === "None") { // build factory
-        //   setLoading(true)
-        //   positionTree.i = country.properties.i
-        //   positionTree.j = country.properties.j
-        //   console.log("checkAvailablePosition: ", checkAvailablePosition(positionTree.i, positionTree.j))
-        //   if (checkAvailablePosition(positionTree.i, positionTree.j))
-        //     console.log("Build Factory: ", (await user.actor.constructBuilding(country.properties.landId, country.properties.i, country.properties.j, "c3")))
-        //   else {
-        //     setCantBuild("factory")
-        //   }
-        //   setTileplant(await loadTileSlots(landSlotProperties));
-        //   setInventory((await user.actor.listInventory(characterId))?.ok);
-        //   setLoading(false)
-        //   positionTree.i = -1
-        //   positionTree.j = -1
-        // }
         else if (currentSeed.length === 0) {
           console.log("Do nothing")
         }
@@ -268,63 +251,114 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
   };
 
   const FarmProduce = () => {
-    // const [active, setActive] = useState("")
-    let a = 800
+    let path = "/metaverse/farm/Sustaination_farm/farm-object/PNG/"
+    const [recipes, setRecipes] = useState([])
+    const [rcp, setRcp] = useState({})
+    const [num, setNum] = useState(-1)
+    const [queue, setQueue] = useState([])
+
+    useEffect(() => {
+      const load = async () => {
+        setRecipes((await user.actor.listAlchemyRecipesInfo())?.ok);
+        setQueue((await user.actor.listProductionQueueNodesInfo(objectId))?.ok)
+      }
+      load();
+    }, [])
+
+    if (queue.length != 0) {
+      let t = (queue.filter(item => {
+        return item.status !== "Completed"
+      }))
+      if (t.length != 0) {
+        let tTime = (recipes.filter(item => {
+          return t[0].recipeId == item.id
+        }))
+        var time = Number(t[0].remainingTime)
+        var totalTime = Number(tTime[0].craftingTime)
+      }
+    }
+    const countDown = () => {
+      // setT(time)
+      time = time - 1
+    }
+    const stopCountDown = () => {
+      clearInterval(myVar);
+    }
+    if (queue.length != 0 && time > 0) {
+      var myVar = setInterval(countDown, 1000);
+    }
+    console.log(num)
     return (
-      <>
-        {popupFactory ? <div>
+      <div key={Math.random(100000)}>
+        <div >
           <div style={{ display: "flex", alignItems: "center", height: "95%", justifyContent: "center", textAlign: "center", width: "100%" }}>
             <div id="myModal" className="modal">
               <div className="modal-content">
                 <div className="modal-header">
-                  <span className="close" onClick={() => { setPopupFactory(false) }}>&times;</span>
+                  <span className="close" onClick={() => { stopCountDown(); setPopupFactory(false); }}>&times;</span>
                   <h1>FACTORY</h1>
-                  <div id="myProgress" >
-                    <div id="myBar" style={{ width: a }}></div>Hello
-                  </div>
+                  {/* <div id="myProgress" >
+                    <div id="myBar" style={{ width: String(time * 100 / totalTime) + "%" }}></div>{time}
+                  </div> */}
                 </div>
-                <div className="modal-body" style={{backgroundColor: "#ece2e1"}}>
-
+                <div className="modal-body" style={{ backgroundColor: "#9DC40E" }}>
                   <div className="scrollmenu">
-                    <a style={{scale:"1.2"}}><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
-                    <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
-                    <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
-                    <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
-                    <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
-                    <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
-                    <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
-                    <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
-                    <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
+                    {queue.map((item, idx) => {
+                      if (item.status == "Completed") {
+                        return (
+                          <a key={idx}><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
+                        )
+                      } else {
+                        return (
+                          <a key={idx} style={{ scale: "1.2" }}><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
+                        )
+                      }
+                    })}
                   </div>
                 </div>
                 <div className="modal-body" style={{
                   height: "155px",
-                  backgroundColor: "#d3e1dc" 
+                  backgroundColor: "#286DE8"
                 }}>
-
                   <div className="scrollmenu-chooser">
-                    <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /><div className="text">
-                      <div className="cal"><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> 2/3 </div>
-                     + <div className="cal"><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> 2/3 </div> </div></a>
-                    <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> <div className="text">2/3</div></a>
-                    <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> <div className="text"> Hello</div></a>
-                    <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> <div className="text"> Hello</div></a>
-                    <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> <div className="text"> Hello</div></a>
-                    <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> <div className="text"> Hello</div></a>
-                    <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> <div className="text"> Hello</div></a>
+                    {recipes.map((recipe, idx) => {
 
+                      return (
+                        <a
+                          key={Math.floor(Math.random() * 9999999)}
+                          style={{ backgroundColor: idx == num ? "yellow" : "none" }} onClick={() => {
+                            setNum(idx)
+                            setRcp(recipes[idx])
+                          }}>
+                          <img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /><div className="text">
+                            {recipe.alchemyRecipeDetails.map(item => {
+                              return (
+                                <div key={Math.floor(Math.random() * 9999999)} className="cal">
+                                  <img src={path + item.productName + "-icon.png"} style={{ height: "100px" }} />
+                                  {item.currentAmount.toString()}/{item.requiredAmount.toString()}
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </a>)
+                    })}
                   </div>
-
                 </div>
-
-                <div className="modal-footer">
-                  <h3>CRAFT</h3>
+                <div className="modal-footer" >
+                  <h3 style={{ background: rcp.canCraft === true ? "rgba:(255,255,255, 0.2)" : "rgba:(255,255,255, 0.2)" }} onClick={async () => {
+                    if (rcp.canCraft === true && objectId !== "None") {
+                      setLoading(true)
+                      console.log(await user.actor.craftUsableItem(objectId, rcp.id), objectId, rcp.id)
+                      setQueue((await user.actor.listProductionQueueNodesInfo(objectId))?.ok)
+                      setLoading(false)
+                    }
+                  }}>{loading ? <i className="fa fa-spinner fa-spin" /> : "CRAFT"}</h3>
                 </div>
               </div>
             </div>
           </div>
-        </div > : <></>}
-      </>
+        </div >
+      </div>
     )
   }
   return (
@@ -365,7 +399,9 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
       <Inventory
         key={Math.floor(Math.random() * 9999999)}
         inventory={inventory}></Inventory>
-      <FarmProduce></FarmProduce>
+      {popupFactory ? <FarmProduce
+        key={Math.floor(Math.random() * 9999999)}
+      ></FarmProduce> : <></>}
     </>
   );
 };
@@ -411,38 +447,6 @@ const Inventory = ({ inventory }) => {
           alt=""
         />
       </div>
-      {/* <div className="imgItem" style={{
-        border: inventoryStatus["market"] == true ? "2px" : "0px",
-        borderStyle: inventoryStatus["market"] == true ? "dashed dashed dashed dashed" : "none",
-        width: "65px",
-        height: "65px"
-      }}>
-        <img
-          onClick={() => {
-            inventoryStatus["market"] = !inventoryStatus["market"]
-            initialInventory("market")
-            setRender(!render)
-          }}
-          src={"metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-50.png"}
-          alt=""
-        />
-      </div>
-      <div className="imgItem" style={{
-        border: inventoryStatus["chemistry"] == true ? "2px" : "0px",
-        borderStyle: inventoryStatus["chemistry"] == true ? "dashed dashed dashed dashed" : "none",
-        width: "65px",
-        height: "65px"
-      }}>
-        <img
-          onClick={() => {
-            inventoryStatus["chemistry"] = !inventoryStatus["chemistry"]
-            initialInventory("chemistry")
-            setRender(!render)
-          }}
-          src={"metaverse/farm/Sustaination_farm/farm-object/PNG/factory-icon.png"}
-          alt=""
-        />
-      </div> */}
 
       {inventory.length > 0 ?
         <>
@@ -514,8 +518,8 @@ const CreateBound = ({ tileplant, loading }) => {
           return (
             <>
               <ImageOverlay key={value + 100} url={'metaverse/farm/Sustaination_farm/farm-tiles/Farm-Tiles-05.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} />
-              {/* <ImageOverlay key={value} url={'/metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-51.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} /> */}
               <ImageOverlay key={value} url={'/metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-51.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} />
+              {/* <ImageOverlay key={value} url={'/metaverse/farm/Sustaination_farm/farm-object/building/chemist.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} /> */}
               {/* <ImageOverlay key={value} url={'/metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-50.png'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} /> */}
 
               {loading === true && positionTree.i == tag.properties.i && positionTree.j == tag.properties.j ? <ImageOverlay key={value + 200} url={'metaverse/Ripple-loading.gif'} bounds={[[tag.geometry.coordinates[0][1][1], tag.geometry.coordinates[0][1][0]], [tag.geometry.coordinates[0][3][1], tag.geometry.coordinates[0][3][0]]]} /> : <></>}
@@ -559,62 +563,6 @@ const CreateBound = ({ tileplant, loading }) => {
     </>
   );
 };
-
-const FarmProduce = (props) => {
-  return (
-    <>
-      {props.popupFactory ? <div>
-        <div style={{ display: "flex", alignItems: "center", height: "95%", justifyContent: "center", textAlign: "center", width: "100%" }}>
-          <div id="myModal" className="modal">
-            <div className="modal-content">
-              <div className="modal-header">
-                <span className="close" onClick={() => { }}>&times;</span>
-                <h1>FACTORY</h1>
-              </div>
-              <div className="modal-body">
-                <div id="myProgress" >
-                  <div id="myBar" style={{ width: "50%" }}></div>
-                </div>
-                <div className="scrollmenu">
-                  <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
-                  <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
-                  <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
-                  <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
-                  <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
-                  <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
-                  <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
-                  <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
-                  <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
-                </div>
-              </div>
-              <div className="modal-body" style={{ height: "143px" }}>
-
-                <div className="scrollmenu">
-                  <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
-                  <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
-                  <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
-                  <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
-                  <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
-                  <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
-                  <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
-                  <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
-                  <a><img src="https://img.freepik.com/premium-vector/fast-food-pixel-art_553915-40.jpg?w=2000" style={{ height: "100px" }} /> </a>
-
-                </div>
-
-              </div>
-
-              <div className="modal-footer">
-                <h3>CRAFT</h3>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div> : <></>}
-    </>
-  )
-}
-
 
 function FarmContainer() {
   const user = useSelector(selectUser);

@@ -26,7 +26,7 @@
 .modal-content {
     border-radius: 10px;
     position: relative;
-    background-color: #fefefe;
+    background-color: #286DE8;
     margin: auto;
     padding: 0;
     border: 1px solid #888;
@@ -87,7 +87,7 @@
     /* padding: 2px 10px; */
     /* background-color: #fff; */
     color: #FFFF;
-    background-color: #fbd1d1
+    background-color: #286DE8
     ;
 }
 
@@ -104,7 +104,7 @@
     position: relative;
     border-radius: 0 0 8px 8px;
     padding: 2px 10px;
-    background-color: #afe1e1
+    background-color: #286DE8
     ;
     color: #273342;
     height: 65px;
@@ -147,6 +147,7 @@ div.scrollmenu {
     overflow-y: hidden;
     white-space: nowrap;
     margin: 10px;
+    z-index: 100000;
 }
 
 .scrollmenu a {
@@ -155,6 +156,8 @@ div.scrollmenu {
     text-align: center;
     padding: 14px;
     text-decoration: none;
+    -webkit-overflow-scrolling: touch;
+
 }
 
 /* .scrollmenu a:active {
@@ -164,6 +167,7 @@ div.scrollmenu {
 
 div.scrollmenu-chooser {
     overflow: auto;
+    -webkit-overflow-scrolling: touch;
     white-space: nowrap;
 }
 .scrollmenu-chooser a {
@@ -195,8 +199,9 @@ div.scrollmenu-chooser {
 }
 
 .modal-footer h3 {
-    background: #676ed1;
-    width: 150px;
+    background: rgba(255, 255, 255, 0.3);
+    min-width: 150px;
+    min-height: 45px;
     left: 40%;
     top: 15%;
     color: #fff;
@@ -207,9 +212,12 @@ div.scrollmenu-chooser {
     vertical-align: center;
     justify-content: center;
     cursor: pointer;
+    box-shadow: 1px 1px 1px 1px rgb(0 0 0 / 28%);
+
 }
 
 .cal{
     display: inline-block;
     border-style: solid;
+
 }
