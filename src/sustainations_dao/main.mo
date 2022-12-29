@@ -5356,7 +5356,11 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
           case null {
           };
           case (?landSlot) {
-            await createUserHasFarmEffect(tile.indexRow,tile.indexColumn,tile.objectId,landSlot,true); 
+            let adjacentTiles = Tile.getAdjacentTiles(tile.indexRow,tile.indexColumn,state);
+            for (t in adjacentTiles.vals()) {
+              await createUserHasFarmEffect(t.indexRow, t.indexColumn, t.objectId,landSlot,false); 
+            };
+            // await createUserHasFarmEffect(tile.indexRow,tile.indexColumn,tile.objectId,landSlot,false); 
           }
         }; 
 
