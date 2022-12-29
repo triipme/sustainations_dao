@@ -124,7 +124,7 @@ module Tile {
 
     // right Tile
     let rsRightTile = state.tiles.get(
-      Nat.toText(indexRow+1) # "-" #Nat.toText(indexColumn)
+      Nat.toText(indexRow) # "-" #Nat.toText(indexColumn+1)
     );  
     switch (rsRightTile) {
       case null {};
