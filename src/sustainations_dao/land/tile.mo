@@ -1,6 +1,7 @@
 import Option "mo:base/Option";
 import Array "mo:base/Array";
 import Int "mo:base/Int";
+import Nat "mo:base/Nat";
 import Types "../types";
 import State "../state";
 
@@ -29,6 +30,8 @@ module Tile {
       func(val: Types.FarmObject) : Bool { farmObject != val }
     );
   };
+
+
 
   public func removeDuplicateFarmObjects(farmObjects : [Types.FarmObject]) : [Types.FarmObject] {
     var oldFarmObjects : [Types.FarmObject] = farmObjects; 
@@ -81,5 +84,55 @@ module Tile {
         ));
       };
     }
+  };
+
+
+  public func getAdjacentTiles(indexRow : Nat, indexColumn : Nat, state : State.State) : [Types.Tile] {
+    var adjacentTiles : [Types.Tile] = [];
+
+    // up Tile
+    let rsUpTile = state.tiles.get(
+      Nat.toText(indexRow-1) # "-" #Nat.toText(indexColumn)
+    );   
+    switch (rsUpTile) {
+      case null {};
+      case (?upTile) {
+        adjacentTiles := Array.append(adjacentTiles,[upTile]);
+      };  
+    };
+
+    // down Tile
+    let rsDownTile = state.tiles.get(
+      Nat.toText(indexRow+1) # "-" #Nat.toText(indexColumn)
+    );  
+    switch (rsDownTile) {
+      case null {};
+      case (?downTile) {
+        adjacentTiles := Array.append(adjacentTiles,[downTile]);
+      };  
+    };
+
+    // left Tile
+    let rsLeftTile = state.tiles.get(
+      Nat.toText(indexRow) # "-" #Nat.toText(indexColumn-1)
+    );  
+    switch (rsLeftTile) {
+      case null {};
+      case (?leftTile) {
+        adjacentTiles := Array.append(adjacentTiles,[leftTile]);
+      };  
+    };
+
+    // right Tile
+    let rsRightTile = state.tiles.get(
+      Nat.toText(indexRow+1) # "-" #Nat.toText(indexColumn)
+    );  
+    switch (rsRightTile) {
+      case null {};
+      case (?rightTile) {
+        adjacentTiles := Array.append(adjacentTiles,[rightTile]);
+      };  
+    };
+    adjacentTiles;
   };
 }

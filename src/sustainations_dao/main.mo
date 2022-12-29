@@ -6147,7 +6147,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
                   };
                 }; 
               };
-              let deleted = state.productionQueueNodes.delete(productionQueue.id # "-node" # Int.toText(i));
+              let deleted = state.productionQueueNodes.delete(productionQueueNode.id);
             };
           };
         };
@@ -6155,6 +6155,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
         if (processingNodes.size() == 0) {
           return #ok("noneCompleted");
         };
+        let nodeAmount = processingNodes.size();
         for ( key in processingNodes.keys()) {
           let newProductionQueueNode : Types.ProductionQueueNode = {
             id = productionQueue.id # "-node" # Int.toText(key);
@@ -6167,7 +6168,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
 
         let updateProductionQueue : Types.ProductionQueue = {
           id = productionQueue.id;
-          nodeAmount = processingNodes.size();
+          nodeAmount = nodeAmount;
           queueMaxSize = productionQueue.queueMaxSize;
         };
         let updatedQueue = ProductionQueue.update(updateProductionQueue,state);
@@ -6175,9 +6176,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       };
     };
   };
-
-
-
 
   // Production Queue
   public shared func createProductionQueue(buildingId : Text) : () {
