@@ -1,8 +1,8 @@
 import "./styles.css";
-
 const UIFarm = ({ Carrot, Wheat, Tomato }) => {
   return (
     <>
+
       <ul style={{ zIndex: 10000, position: "relative", width: "80vw" }}>
         <li>
           <div style={{ scale: 0.8 }}>
@@ -11,7 +11,7 @@ const UIFarm = ({ Carrot, Wheat, Tomato }) => {
         </li>
         <li>
           <div className="container" style={{ scale: 0.8 }}>
-            <img style={{left: "0em"}} src="metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-35.png" />
+            <img style={{ left: "0em" }} src="metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-35.png" />
             <div style={{
               position: "absolute",
               top: "50%",
@@ -47,7 +47,7 @@ const UIFarm = ({ Carrot, Wheat, Tomato }) => {
         </li>
 
 
-        
+
         {/* <li>
           <img src="metaverse/farm/Sustaination_farm/decor-object/PNG/Sustaination__farm-object-31.png"></img>
         </li> */}
