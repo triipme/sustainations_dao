@@ -5350,16 +5350,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     switch (rsTile) {
       case (null) { #err(#NotFound) };
       case (?tile) {
-        // update Farm Effect
-        let rsLand = state.landSlots.get(tile.landSlotId);
-        switch (rsLand) {
-          case null {
-          };
-          case (?landSlot) {
-            await createUserHasFarmEffect(tile.indexRow,tile.indexColumn,tile.objectId,landSlot,true); 
-          }
-        }; 
-
         let plantId = tile.objectId;
         let rsPlant = state.plants.get(plantId);
         switch (rsPlant) {
@@ -5384,6 +5374,20 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
         };
         // delete Tile
         let deletedTile = state.tiles.delete(tileId);
+        // update Farm Effect
+        let rsLand = state.landSlots.get(tile.landSlotId);
+        switch (rsLand) {
+          case null {
+          };
+          case (?landSlot) {
+            let adjacentTiles = Tile.getAdjacentTiles(tile.indexRow,tile.indexColumn,state);
+            Debug.print(Nat.toText(adjacentTiles.size()));
+            for (t in adjacentTiles.vals()) {
+              await createUserHasFarmEffect(t.indexRow, t.indexColumn, t.objectId, landSlot, false); 
+            };
+          };
+        }; 
+
         #ok("Success");
       };
     };
@@ -6147,7 +6151,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
                   };
                 }; 
               };
-              let deleted = state.productionQueueNodes.delete(productionQueue.id # "-node" # Int.toText(i));
+              let deleted = state.productionQueueNodes.delete(productionQueueNode.id);
             };
           };
         };
@@ -6155,6 +6159,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
         if (processingNodes.size() == 0) {
           return #ok("noneCompleted");
         };
+        let nodeAmount = processingNodes.size();
         for ( key in processingNodes.keys()) {
           let newProductionQueueNode : Types.ProductionQueueNode = {
             id = productionQueue.id # "-node" # Int.toText(key);
@@ -6167,7 +6172,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
 
         let updateProductionQueue : Types.ProductionQueue = {
           id = productionQueue.id;
-          nodeAmount = processingNodes.size();
+          nodeAmount = nodeAmount;
           queueMaxSize = productionQueue.queueMaxSize;
         };
         let updatedQueue = ProductionQueue.update(updateProductionQueue,state);
@@ -6175,9 +6180,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       };
     };
   };
-
-
-
 
   // Production Queue
   public shared func createProductionQueue(buildingId : Text) : () {

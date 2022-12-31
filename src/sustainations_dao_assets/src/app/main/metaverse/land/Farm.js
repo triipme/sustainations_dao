@@ -84,7 +84,7 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
       setTime(Date.now());
       let tile = await loadTileSlots(landSlotProperties);
       setTileplant(tile);
-    }, 30000);
+    }, 20000);
 
     return () => {
       clearInterval(interval);
@@ -203,14 +203,13 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
           setLoading(true)
           positionTree.i = country.properties.i
           positionTree.j = country.properties.j
-          console.log("checkAvailablePosition: ", checkAvailablePosition(positionTree.i, positionTree.j, 9))
           if (checkAvailablePosition(positionTree.i, positionTree.j, 9))
             console.log("Build Factory: ", (await user.actor.constructBuilding(country.properties.landId, country.properties.i, country.properties.j, "c1")))
           else {
             setCantBuild("factory")
           }
           setTileplant(await loadTileSlots(landSlotProperties));
-          setInventory((await user.actor.listInventory(characterId))?.ok);
+          setInventory((await user.actor.listInventory(characterId)).ok);
           setLoading(false)
           positionTree.i = -1
           positionTree.j = -1
@@ -465,7 +464,7 @@ const Inventory = ({ inventory }) => {
   const [render, setRender] = useState(false)
   let path = "/metaverse/farm/Sustaination_farm/farm-object/PNG/"
   return (
-    <div className="farmItem" style={{ overflow: "auto" }}>
+    <div key={Math.floor(Math.random() * 9999999)} className="farmItem" style={{ overflow: "auto" }}>
       <div className="imgItem" style={{
         border: inventoryStatus["dig"] == true ? "2px" : "0px",
         borderStyle: inventoryStatus["dig"] == true ? "dashed dashed dashed dashed" : "none"
