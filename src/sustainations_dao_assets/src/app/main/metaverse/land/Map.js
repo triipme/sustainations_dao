@@ -171,7 +171,7 @@ const Map = () => {
       landSlotRand = landBuyingStatus
     }
     else {
-      // if having enough ICP
+      //if having enough ICP
       let isBuy = (await user.actor.buyLandSlot())?.ok;
       if (isBuy !== undefined) {
         numRandom -= 1

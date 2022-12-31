@@ -376,6 +376,15 @@ public type UsableItem = {
     description : Text;
   };
 
+//--------------------- ProductStorage ---------------------//
+  public type ProductStorage = {
+    id : Text;
+    userId : Text;
+    productId : Text;
+    quality : Text;
+    amount : Int; 
+  };
+
 //--------------------- Stash ---------------------//
   public type Stash = {
     id : Text;
@@ -472,8 +481,8 @@ public type UsableItem = {
   public type AlchemyRecipeDetail = {
     id : Text;
     recipeId : Text;
-    productId: Text;
-    amount: Int;
+    productId : Text;
+    amount : Int;
   };
 
 //--------------------- BuildingType -------------//
@@ -509,6 +518,21 @@ public type UsableItem = {
     status : Text;
     buildTime : Int;
     startProducingTime : Int;
+  };
+
+//--------------------- Production Queue -------------//
+  public type ProductionQueue = {
+    id : Text;
+    nodeAmount : Int;
+    queueMaxSize : Int;
+  };
+
+//--------------- Production Queue Node -------------//
+  public type ProductionQueueNode = {
+    id : Text;
+    recipeId : Text;
+    status : Text;
+    startCraftingTime : Int;
   };
 
   // Error codes
