@@ -44,8 +44,6 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
       const inv = await user.actor.listInventory(characterid.ok[0]);
       const listProductStorage = (await user.actor.listProductStorage()).ok
       const stash = (await user.actor.listStash()).ok;
-      console.log("STASH: ", stash);
-
       const defineAmount = (item, productName) => {
         if (productName === "Carrot") {
           setCarrot(Number(item.amount))
@@ -111,13 +109,11 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
       }
       )
     } else {
-      console.log("run")
       result = tileplant.filter(tile => {
         return tile.properties.j == j && tile.properties.i >= i && tile.properties.i <= i + 1
       }
       )
     }
-    console.log(result)
     const arr = result.filter(idx => {
       return idx.properties.name !== "None"
     })
@@ -141,7 +137,6 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
       que = (q.filter(i => {
         return i.status == "Completed"
       }))
-      console.log(q, que.length)
       layer.bindPopup(`<h1>${que.length}/${q.length}</h1>`).openPopup();
     }
     layer.on({
@@ -151,16 +146,19 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
         }
       },
       click: async e => {
-        console.log(que, q)
         let currentSeed = inventory.filter((item) => inventoryStatus[item.materialName] === true)
 
         if (country.properties.name === "Factory" && country.properties.status === "completed" && inventoryStatus["dig"] === false
           && que.length <= q.length && que.length != 0) {
           load()
           setLoading(true)
+          positionTree.i = country.properties.i
+          positionTree.j = country.properties.j
           console.log(await user.actor.collectUsableItems(country.properties.objectId))
+          setTileplant(await loadTileSlots(landSlotProperties));
           setLoading(false)
-
+          positionTree.i = -1
+          positionTree.j = -1
         }
         else if (country.properties.name === "Factory" && country.properties.status === "completed" && inventoryStatus["dig"] === false) {
           setObjectId(country.properties.objectId)
@@ -264,7 +262,7 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
 
     const style = {
       position: 'absolute',
-      top: '50%',
+      top: '42%',
       left: '50%',
       transform: 'translate(-50%, -50%)',
       bgcolor: 'background.paper',
@@ -295,7 +293,9 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
     }
 
     return (
-      <div>
+      <div
+        key={Math.floor(Math.random() * 9999999)}
+      >
         {/* <Button sx={{ zIndex: 999999 }} onClick={handleOpen}>Open modal</Button> */}
         <Modal
           open={true}
@@ -313,13 +313,13 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
               }}>FACTORY</h1>
 
             </div>
-            <div id="myProgress" style={{ textAlign: "center", alignItems: "center", border: "solid 1px", lineHeight: "28px" }}><span style={{ position: "absolute" }}>{Math.round(time / 60, 0)} min</span>
+            <div id="myProgress" style={{ textAlign: "center", alignItems: "center", border: "solid 1px", lineHeight: "28px" }}>
+              {time ? <span style={{ position: "absolute" }}>{Math.round(time / 60, 0)} min</span> : <></>}
               <div id="myBar" style={{ width: String(time * 100 / totalTime) + "%" }}></div>
             </div>
             <div className="modal-body" style={{ background: "radial-gradient(circle, rgba(111,149,236,1) 0%, rgba(40,109,232,1) 100%)" }}>
               <div className="scrollmenu">
                 {queue.map((item, idx) => {
-                  console.log(item)
                   if (item.status == "Completed") {
                     return (
                       <a key={idx}
@@ -383,16 +383,26 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
               </div>
             </div>
             <div className="modal-footer" >
-              <h3 style={{ background: rcp.canCraft === true ? "rgba:(255,255,255, 0.9)" : "rgba:(255,255,255, 0.1)" }} onClick={async () => {
-                // if (rcp.canCraft === true && objectId !== "None") {
-                setLoading(true)
-                console.log(await user.actor.craftUsableItem(objectId, rcp.id), objectId, rcp.id)
-                setQueue((await user.actor.listProductionQueueNodesInfo(objectId))?.ok)
-                console.log((await user.actor.listProductStorage()).ok)
-
-                setLoading(false)
-                // }
-              }}>{loading ? <i className="fa fa-spinner fa-spin" /> : "CRAFT"}</h3>
+              <h3 style={{ backgroundColor: rcp.canCraft == true ? "#ffa200" : "#cccccc", }} onClick={async () => {
+                console.log(objectId)
+                if (rcp.canCraft === true && objectId !== "None") {
+                  setLoading(true)
+                  await user.actor.craftUsableItem(objectId, rcp.id)
+                  setQueue((await user.actor.listProductionQueueNodesInfo(objectId))?.ok)
+                  const listProductStorage = (await user.actor.listProductStorage()).ok
+                  const defineAmount = (item, productName) => {
+                    if (productName === "Carrot") {
+                      setCarrot(Number(item.amount))
+                    } else if (productName === "Wheat") {
+                      setWheat(Number(item.amount))
+                    } else {
+                      setTomato(Number(item.amount))
+                    }
+                  }
+                  listProductStorage.forEach(item => defineAmount(item, item.productName))
+                  setLoading(false)
+                }
+              }}>{loading ? <i className="fa fa-spinner fa-spin" /> : <span>CRAFT</span>}</h3>
             </div>
           </Box>
         </Modal>
