@@ -154,7 +154,6 @@ export default class jungle_scene7 extends BaseScene {
         };
       });
     };
-    updateCharacterStats
   }
 
   update() {

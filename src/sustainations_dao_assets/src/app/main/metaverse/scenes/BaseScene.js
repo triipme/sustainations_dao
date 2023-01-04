@@ -70,21 +70,21 @@ class BaseScene extends Phaser.Scene {
     //     successCallback();
     //   });
     // }, this);
-    // this.load.rexAwait(function (successCallback, failureCallback) {
-    //   getUsableItem().then((result) => {
-    //     this.usableItem = result.ok;
-    //     console.log("this.usableItem: ", this.usableItem);
-    //     successCallback();
-    //   });
-    // }, this);
+    this.load.rexAwait(function (successCallback, failureCallback) {
+      getUsableItem().then((result) => {
+        this.usableItem = result.ok;
+        console.log("this.usableItem: ", this.usableItem);
+        successCallback();
+      });
+    }, this);
 
-    // this.load.rexAwait(function (successCallback, failureCallback) {
-    //   listStash().then((result) => {
-    //     this.listStash = result.ok;
-    //     console.log("this.listStash: ", this.listStash);
-    //     successCallback();
-    //   });
-    // }, this);
+    this.load.rexAwait(function (successCallback, failureCallback) {
+      listStash().then((result) => {
+        this.listStash = result.ok;
+        console.log("this.listStash: ", this.listStash);
+        successCallback();
+      });
+    }, this);
 
     this.load.rexAwait(function (successCallback, failureCallback) {
       getQuestGameInfo(this.eventId).then((result) => {
@@ -187,22 +187,9 @@ class BaseScene extends Phaser.Scene {
     this.stamina = this.makeBar(325 + 235 * 2, 65, 100, 15, 0xcf315f).setScrollFactor(0);
     this.morale = this.makeBar(325 + 235 * 3, 65, 100, 15, 0x63dafb).setScrollFactor(0);
 
-    // load event item
-    if (!isDisabled) {
-      this.eventItem = await loadEventItem();
-      this.isHadPotion = false;
-      console.log("EVENT ITEM", this.eventItem);
-      if (this.eventItem != undefined) {
-        this.isHadPotion = true;
-      };
-    } else {
-      this.isHadPotion = false;
-    }
     //Test
     this.itemSlot = [];
     this.landItem = this.listStash
-    console.log("HAD POTION ", this.isHadPotion);
-    this.isUsedPotion = false;
     let imgLandItem = "";
     let usableItemName = '';
     if (this.landItem.length != 0) {
@@ -236,20 +223,7 @@ class BaseScene extends Phaser.Scene {
       default:
         imgLandItem = "";
     }
-
-    if (this.isHadPotion) {
-      this.itemSlot[0] = this.add.image(55, 550, "UI_Utility_Sprite")
-        .setOrigin(0).setScrollFactor(0).setScale(0.5).setFrame(1);
-      this.potion = this.add.image(68, 563, "item_potion")
-        .setOrigin(0).setInteractive().setScrollFactor(0).setScale(0.5);
-      this.potion.on('pointerdown', () => {
-        this.clickSound.play();
-        this.itemSlot[0].setFrame(0);
-        this.potion.setVisible(false);
-        this.isUsedPotion = true;
-        console.log("Used potion => ", useHpPotion(this.characterData.id));
-      });
-    } else if (this.isHadUsableItem) {
+    if (this.isHadUsableItem) {
       this.itemSlot[0] = this.add.image(55, 550, "UI_Utility_Sprite")
         .setOrigin(0).setScrollFactor(0).setScale(0.5).setFrame(1);
       this.potion = this.add.image(68, 563, imgLandItem)
