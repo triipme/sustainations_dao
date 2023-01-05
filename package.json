@@ -38,6 +38,7 @@
     "@mui/system": "^5.8.3",
     "@mui/utils": "^5.8.0",
     "@mui/x-data-grid": "^5.12.1",
+    "@mui/x-data-grid-pro": "^5.17.17",
     "@mui/x-date-pickers": "^5.0.0-alpha.6",
     "@reduxjs/toolkit": "^1.8.2",
     "apexcharts": "^3.35.3",

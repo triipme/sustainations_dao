@@ -11,11 +11,12 @@ import {
   TextField,
 } from '@mui/material';
 
-import { 
+import {
   createQuestEngine,
   createEventEngine,
   createScene,
-  createAllEventOptionEngine
+  createAllEventOptionEngine,
+  getAllScenes
 } from '../../metaverse/GameApi';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Typography from '@mui/material/Typography';
@@ -25,6 +26,9 @@ import { useSelector, useDispatch } from "react-redux";
 import { selectUser, setUser } from 'app/store/userSlice';
 import { showMessage } from 'app/store/fuse/messageSlice';
 import { setOptions } from 'leaflet';
+import SceneTable from './SceneTable';
+import RowOrderingGrid from './DragTable';
+import DragDrop from './DragDrop';
 
 
 // AWS3
@@ -103,7 +107,8 @@ const QuestEngine = () => {
         locationName: data.scene.location,
         destinationName: data.scene.destination
       };
-      const resultEvent = await createEventEngine(event);
+      // const resultEvent = await createEventEngine(event);
+      const resultEvent =await user.actor.createEventEngine(event);
 
       //SCENE
       let scene = {
@@ -115,6 +120,10 @@ const QuestEngine = () => {
         back: data.scene.imageBack.path,
         obstacle: data.scene.imageObstacle.path
       }
+      if(scene.front == "" || scene.mid == "" || scene.back == "" || scene.obstacle == "" ){
+        dispatch(showMessage({ message: 'Required fields cannot be left blank.' }));
+        return;
+      } 
       const resultScene = await createScene(scene);
 
       if ('Success' == resultScene) {
@@ -198,7 +207,24 @@ const QuestEngine = () => {
       setOption({ option: '', hp: 0, stamina: 0, mana: 0, morale: 0 })
     }
   }
-  console.log(options)
+
+
+
+  //View all Scene
+  const [viewAll, setViewAll] = useState({})
+  const [openScene, setOpenScene] = useState(false)
+  const [id, setId] = useState([])
+  const handleView = async () => {
+    let allScene =  await getAllScenes("test")
+    setViewAll(allScene)
+    setOpenScene(!openScene)
+    const sceneInfo = (await user.actor.listSceneQuests("test"))?.ok
+    console.log(sceneInfo)
+    // setId()
+  }
+
+
+ 
   return (
     <div className="relative flex flex-col flex-auto items-center">
       {/* ================= Scene 1 ================= */}
@@ -218,10 +244,11 @@ const QuestEngine = () => {
                   className="mt-32"
                   {...field}
                   label="Question"
-                  placeholder="Location"
+                  placeholder="Question"
                   // id="questName"
                   variant="outlined"
                   fullWidth
+                  required
                 />
               )}
             />
@@ -234,7 +261,7 @@ const QuestEngine = () => {
             </Typography>
 
             <form>
-              <TextField type='text' value={option.option || ''} className="mt-32" label="Option" placeholder="Option" variant="outlined" fullWidth
+              <TextField required type='text' value={option.option || ''} className="mt-32" label="Option" placeholder="Option" variant="outlined" fullWidth
                 onChange={e => setOption({ ...option, option: e.target.value })}
               />
               <TextField type='number' value={option.hp || 0.0} placeholder="HP" onChange={e => setOption({ ...option, hp: parseInt(e.target.value) })} className="mt-32" label="HP" variant="outlined" fullWidth></TextField>
@@ -244,9 +271,7 @@ const QuestEngine = () => {
               <br></br>
               <br></br>
 
-              {/* <input type='number' value={option.stamina || 0} placeholder="Stamina" onChange={e => setOption({ ...option, stamina: e.target.value })}></input>
-              <input type='number' value={option.mana || 0} placeholder="Mana" onChange={e => setOption({ ...option, mana: e.target.value })}></input>
-              <input type='number' value={option.morale || 0} placeholder="Morale" onChange={e => setOption({ ...option, morale: e.target.value })}></input> */}
+    
               {option.option ?
                 <Button className="ml-auto" color="secondary" variant="contained" onClick={handleAdd}>
                   Add Option
@@ -269,8 +294,9 @@ const QuestEngine = () => {
                   className='mt-32'
                 >
                   <div>
-                    <h3>Image Front</h3>
+                    <h3>Image Front *</h3>
                     <input
+                      required
                       accept="image/*"
                       type="file"
                       onChange={async (e) => {
@@ -310,8 +336,9 @@ const QuestEngine = () => {
                   className='mt-32'
                 >
                   <div>
-                    <h3>Image Mid</h3>
+                    <h3>Image Mid *</h3>
                     <input
+                      required
                       accept="image/*"
                       type="file"
                       onChange={async (e) => {
@@ -351,8 +378,9 @@ const QuestEngine = () => {
                   className='mt-32'
                 >
                   <div>
-                    <h3>Image Back</h3>
+                    <h3>Image Back *</h3>
                     <input
+                      required
                       accept="image/*"
                       type="file"
                       onChange={async (e) => {
@@ -392,8 +420,9 @@ const QuestEngine = () => {
                   className='mt-32'
                 >
                   <div>
-                    <h3>Image Obstacle</h3>
+                    <h3>Image Obstacle *</h3>
                     <input
+                      required
                       accept="image/*"
                       type="file"
                       onChange={async (e) => {
@@ -438,7 +467,24 @@ const QuestEngine = () => {
               >
                 Save
               </LoadingButton>
+
+              <LoadingButton
+                className="ml-8"
+                variant="contained"
+                color="secondary"
+                loading={loading}
+                onClick={handleView}
+              >
+                All Scene
+              </LoadingButton>
             </Box>
+
+
+            {/* { openScene ? <SceneTable rows={viewAll}/> : <></>} */}
+            { openScene ? <RowOrderingGrid rows={viewAll} /> : <></>}
+            {/* { openScene ? <DragDrop rows={viewAll} /> : <></>} */}
+            
+           
 
 
           </CardContent>
