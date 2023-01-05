@@ -5263,6 +5263,37 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     #ok((list));
   };
 
+  public shared ({ caller }) func randomStashPotion() : async Response<Types.Stash> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    var listPotion : [Types.Stash] = [];
+    for (stash in state.stashes.vals()){
+      let rsUsable = state.usableItems.get(stash.usableItemId);
+      switch (rsUsable){
+        case null {return #err(#NotFound)};
+        case (?usable){
+          if (Text.contains(usable.name, #text "Potion") == true){
+            listPotion := Array.append<Types.Stash>(listPotion, [stash]);
+          };
+        };
+      };
+    };
+    if (listPotion == []){
+      #err(#NotFound);
+    }
+    else {
+      let index : Nat = Int.abs(Float.toInt(await Random.randomNumber(0.0, Float.fromInt(listPotion.size()-1))));
+      Debug.print(Nat.toText(index));
+      #ok(listPotion[index]);
+    };
+    // for (usable in state.usableItems.vals()){
+    //   if (Text.contains(usable.name, #text "Potion") == true){
+    //     listPotion := Array.append<(Text, Text)>(listPotion, [(usable.id, usable.name)]);
+    //   };
+    // };
+  };
+
   // convert utm2lonlat
   public shared func utm2lonlat(easting : Float, northing : Float, zoneNum : Int32, zoneLetter : Text) : async (Float, Float) {
     let result = await georust.proj(easting, northing, zoneNum, zoneLetter);

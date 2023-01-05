@@ -26,7 +26,6 @@ export default class catalonia_scene2_2 extends BaseScene {
   }
 
   init(data) {
-    this.isHealedPreviously = data.isUsedPotion;
     this.isUsedUsableItem = data.isUsedUsableItem;
   }
 
@@ -217,7 +216,7 @@ export default class catalonia_scene2_2 extends BaseScene {
     if (this.player.x > 2339) {
       this.ingameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start('catalonia_scene2_3', { isUsedPotion: this.isUsedPotion, isUsedUsableItem: this.isUsedUsableItem });
+      this.scene.start('catalonia_scene2_3', {isUsedUsableItem: this.isUsedUsableItem });
     }
 
     if (this.player.x > 1200 && this.isInteracted == false) {

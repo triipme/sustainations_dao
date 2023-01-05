@@ -217,6 +217,13 @@ async function listStash() {
   return result;
 };
 
+export async function randomStashPotion() {
+  const { user } = store.getState();
+  const func = async () => await user.actor.randomStashPotion();
+  const result = (await func()).ok;
+  return result;
+};
+
 async function useUsableItem(characterId, stashId) {
   const { user } = store.getState();
   const func = async () => await user.actor.useUsableItem(characterId, stashId);

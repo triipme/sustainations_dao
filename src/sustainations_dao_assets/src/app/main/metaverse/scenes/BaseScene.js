@@ -15,10 +15,11 @@ import {
   getHpPotion,
   getUsableItem,
   useUsableItem,
-  getQuestGameInfo
+  getQuestGameInfo,
+  listStash,
+  randomStashPotion
 } from '../GameApi';
-
-import { listStash } from '../LandApi';
+import { random } from "lodash";
 
 class BaseScene extends Phaser.Scene {
   constructor(key) {
@@ -71,20 +72,20 @@ class BaseScene extends Phaser.Scene {
     //   });
     // }, this);
     this.load.rexAwait(function (successCallback, failureCallback) {
-      getUsableItem().then((result) => {
-        this.usableItem = result.ok;
-        console.log("this.usableItem: ", this.usableItem);
+      randomStashPotion().then((result) => {
+        this.usableItem = result;
+        console.log(" this.usableItem: ",  this.usableItem);
         successCallback();
       });
     }, this);
 
-    this.load.rexAwait(function (successCallback, failureCallback) {
-      listStash().then((result) => {
-        this.listStash = result.ok;
-        console.log("this.listStash: ", this.listStash);
-        successCallback();
-      });
-    }, this);
+    // this.load.rexAwait(function (successCallback, failureCallback) {
+    //   listStash().then((result) => {
+    //     this.listStash = result.ok;
+    //     console.log("this.listStash: ", this.listStash);
+    //     successCallback();
+    //   });
+    // }, this);
 
     this.load.rexAwait(function (successCallback, failureCallback) {
       getQuestGameInfo(this.eventId).then((result) => {
@@ -200,34 +201,37 @@ class BaseScene extends Phaser.Scene {
     }
     //Test
     this.itemSlot = [];
-    this.landItem = this.listStash
     console.log("HAD POTION ", this.isHadPotion);
-    this.isUsedPotion = false;
     let imgLandItem = "";
-    let usableItemName = '';
-    if (this.landItem.length != 0) {
+    let usableItemId = '';
+    if (this.usableItem != undefined) {
       if (this.isUsedUsableItem.usedUsableItem != true) {
-        let randomItem = Math.floor(Math.random() * (this.landItem.length));
-        this.stashRandom = this.landItem[randomItem];
-        usableItemName = this.stashRandom?.usableItemName;
+        // let randomItem = Math.floor(Math.random() * (this.landItem.length));
+        // usableItemId = this.stashRandom?.usableItemId;
+        this.stashRandom = this.usableItem
+        usableItemId = this.usableItem.usableItemId
         this.isUsedUsableItem.usedUsableItem = false;
       }
       else {
         this.isUsedUsableItem.useUsableItem = false;
       }
     }
-    switch (usableItemName) {
-      case "HP Potion":
-        imgLandItem = "item_potion";
+    console.log("usableItemId:", usableItemId)
+    switch (usableItemId) {
+      case "ui1":
+        imgLandItem = "item_hp";
         break;
-      case "Stamina Potion":
+      case "ui2":
         imgLandItem = "item_stamina";
         break;
-      case "Mana Potion":
+      case "ui3":
         imgLandItem = "item_mana";
         break;
-      case "Morale Potion":
+      case "ui4":
         imgLandItem = "item_morale";
+        break;
+      case "ui8":
+        imgLandItem = "item_super";
         break;
       default:
         imgLandItem = "";
@@ -474,8 +478,8 @@ class BaseScene extends Phaser.Scene {
       this.pregameSound.stop();
       this.sfx_char_footstep.stop();
 
-      if (this.listScene.length === 0) this.scene.start("thanks", { isUsedPotion: this.isUsedPotion });
-      else this.scene.start(nextScene, { isUsedPotion: this.isUsedPotion, listScene: this.listScene });
+      if (this.listScene.length === 0) this.scene.start("thanks");
+      else this.scene.start(nextScene, {listScene: this.listScene });
     }
 
     if (this.player.x > locationInteract && this.isInteracted == false) { //4200
