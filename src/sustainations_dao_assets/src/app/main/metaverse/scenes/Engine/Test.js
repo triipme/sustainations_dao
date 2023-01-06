@@ -177,7 +177,6 @@ export default class Engine extends BaseScene {
     this.selectedItemsIds = await listCharacterSelectsItems(this.characterData.id);
     console.log(this.selectedItemsIds);
 
-
     // load event options
     this.eventOptions = await loadEventOptionEngines(this.eventId, this.selectedItemsIds);
 

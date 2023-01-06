@@ -37,7 +37,6 @@ const columns = [
 
 
 export default function DataTable(props) {
-
   return (
     <div style={{ height: 300, width: '100%' }}>
       <DataGrid

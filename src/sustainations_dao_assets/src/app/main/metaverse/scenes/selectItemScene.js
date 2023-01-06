@@ -11,7 +11,8 @@ import {
   resetCharacterCollectsMaterials,
   loadQuestItemEngines,
   getListEventQuest,
-  getAllScenes
+  getAllScenes,
+  listSceneQuests
 } from '../GameApi';
 import { throws } from 'assert';
 
@@ -67,7 +68,7 @@ class selectItemScene extends BaseScene {
     }, this);
 
     this.load.rexAwait(function (successCallback, failureCallback) {
-      getAllScenes(this.map).then((result) => {
+      listSceneQuests(this.map).then((result) => {
         this.listScene = result;
         console.log(result);
         successCallback();
@@ -86,13 +87,13 @@ class selectItemScene extends BaseScene {
             this.load.image(result[index].name, loadItemUrl(result[index].images));
           };
           //For Engine
-          this.load.rexAwait(function (successCallback, failureCallback) {
-            getListEventQuest().then((result) => { // for test
-              this.listEvent = result.listEvent;
-              this.listScene = result.listScene;
-              successCallback();
-            });
-          }, this);
+          // this.load.rexAwait(function (successCallback, failureCallback) {
+          //   getListEventQuest().then((result) => { // for test
+          //     this.listEvent = result.listEvent;
+          //     this.listScene = result.listScene;
+          //     successCallback();
+          //   });
+          // }, this);
           successCallback();
         });
       }, this)

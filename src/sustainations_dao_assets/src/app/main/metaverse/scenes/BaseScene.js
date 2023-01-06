@@ -17,7 +17,8 @@ import {
   useUsableItem,
   getQuestGameInfo,
   listStash,
-  randomStashPotion
+  randomStashPotion,
+  listSceneQuests
 } from '../GameApi';
 import { random } from "lodash";
 
@@ -46,6 +47,13 @@ class BaseScene extends Phaser.Scene {
     // this.load.rexAwait(function (successCallback, failureCallback) {
     //   characterTakeOption(this.eventId).then((result) => {
     //     this.characterTakeOptions = result;
+    //     successCallback();
+    //   });
+    // }, this);
+
+    // this.load.rexAwait(function (successCallback, failureCallback) {
+    //   getCharacterStatus().then((result) => {
+    //     this.characterStatus = result.ok;
     //     successCallback();
     //   });
     // }, this);
