@@ -24,7 +24,6 @@ const btnBlank = 'metaverse/scenes/selection.png';
 const BtnExit = 'metaverse/scenes/UI_exit.png'
 const UI_Utility = 'metaverse/scenes/UI-utility.png'
 const UI_Utility_Sprite = 'metaverse/scenes/UI_Utility_Sprite.png'
-// const item_potion = 'metaverse/scenes/item_ingame_HP.png'
 const item_hp = 'metaverse/farm/Sustaination_farm/farm-object/PNG/potion/HP_Potion.png'
 const item_stamina = 'metaverse/farm/Sustaination_farm/farm-object/PNG/potion/Stamina_Potion.png'
 const item_mana = 'metaverse/farm/Sustaination_farm/farm-object/PNG/potion/Mana_Potion.png'
@@ -115,8 +114,10 @@ export default class catalonia_scene1 extends BaseScene {
   }
 
   async create() {
-    this.isUsedUsableItem = [false, '']
-
+    this.isUsedUsableItem = {
+      useUsableItem: false,
+      stashId: ""
+    }
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
@@ -251,7 +252,7 @@ export default class catalonia_scene1 extends BaseScene {
     if (this.player.x > gameConfig.scale.width * 4) {
       this.pregameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start("catalonia_scene2_1", { isUsedPotion: this.isUsedPotion, isUsedUsableItem: this.isUsedUsableItem });
+      this.scene.start("catalonia_scene2_1", {isUsedUsableItem: this.isUsedUsableItem });
     }
 
     if (this.player.x > gameConfig.scale.width * 4 - 700 && this.isInteracted == false) {

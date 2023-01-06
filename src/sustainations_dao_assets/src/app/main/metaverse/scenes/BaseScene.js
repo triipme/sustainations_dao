@@ -81,7 +81,8 @@ class BaseScene extends Phaser.Scene {
     // }, this);
     this.load.rexAwait(function (successCallback, failureCallback) {
       randomStashPotion().then((result) => {
-        this.usableItem = result;
+        this.usableItem = result?.[0];
+        this.usableItemName = result?.[1];
         console.log(" this.usableItem: ",  this.usableItem);
         successCallback();
       });
@@ -89,7 +90,7 @@ class BaseScene extends Phaser.Scene {
 
     // this.load.rexAwait(function (successCallback, failureCallback) {
     //   listStash().then((result) => {
-    //     this.listStash = result.ok;
+    //     this.listStash = result;
     //     console.log("this.listStash: ", this.listStash);
     //     successCallback();
     //   });
@@ -196,49 +197,35 @@ class BaseScene extends Phaser.Scene {
     this.stamina = this.makeBar(325 + 235 * 2, 65, 100, 15, 0xcf315f).setScrollFactor(0);
     this.morale = this.makeBar(325 + 235 * 3, 65, 100, 15, 0x63dafb).setScrollFactor(0);
 
-    // load event item
-    if (!isDisabled) {
-      this.eventItem = await loadEventItem();
-      this.isHadPotion = false;
-      console.log("EVENT ITEM", this.eventItem);
-      if (this.eventItem != undefined) {
-        this.isHadPotion = true;
-      };
-    } else {
-      this.isHadPotion = false;
-    }
-    //Test
     this.itemSlot = [];
-    console.log("HAD POTION ", this.isHadPotion);
     let imgLandItem = "";
-    let usableItemId = '';
     if (this.usableItem != undefined) {
       if (this.isUsedUsableItem.usedUsableItem != true) {
-        // let randomItem = Math.floor(Math.random() * (this.landItem.length));
-        // usableItemId = this.stashRandom?.usableItemId;
         this.stashRandom = this.usableItem
-        usableItemId = this.usableItem.usableItemId
         this.isUsedUsableItem.usedUsableItem = false;
       }
       else {
         this.isUsedUsableItem.useUsableItem = false;
       }
     }
-    console.log("usableItemId:", usableItemId)
-    switch (usableItemId) {
-      case "ui1":
+    else {
+      this.isUsedUsableItem.usedUsableItem = true;
+    }
+    console.log("usableItemName:", this.usableItemName)
+    switch (this.usableItemName) {
+      case "HP_Potion":
         imgLandItem = "item_hp";
         break;
-      case "ui2":
+      case "Stamina_Potion":
         imgLandItem = "item_stamina";
         break;
-      case "ui3":
+      case "Mana_Potion":
         imgLandItem = "item_mana";
         break;
-      case "ui4":
+      case "Morale_Potion":
         imgLandItem = "item_morale";
         break;
-      case "ui8":
+      case "Super_Potion":
         imgLandItem = "item_super";
         break;
       default:
@@ -253,7 +240,6 @@ class BaseScene extends Phaser.Scene {
         this.clickSound.play();
         this.itemSlot[0].setFrame(0);
         this.potion.setVisible(false);
-        // this.isUsedUsableItem = [true, this.stashRandom.id, true];
         this.isUsedUsableItem = {
           useUsableItem: true,
           stashId: this.stashRandom.id,

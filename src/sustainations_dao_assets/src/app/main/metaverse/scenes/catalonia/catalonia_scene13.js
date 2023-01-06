@@ -250,7 +250,7 @@ export default class catalonia_scene13 extends BaseScene {
     if (this.player.x > 3800) {
       this.pregameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start("thanks", { isUsedPotion: this.isUsedPotion });
+      this.scene.start("thanks");
     }
 
     if (this.player.x > 2500 && this.isInteracted == false) {

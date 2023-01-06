@@ -27,8 +27,7 @@ export default class jungle_scene7 extends BaseScene {
     super('jungle_scene7');
   }
   init(data) {
-    this.isHealedPreviously = data.isUsedPotion;
-    console.log('healed', this.isHealedPreviously);
+    this.isUsedUsableItem = data.isUsedUsableItem;
   }
   clearSceneCache() {
     const textures_list = ['ground', 'background1', 'background2',

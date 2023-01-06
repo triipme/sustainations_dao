@@ -10,15 +10,12 @@ import Iter "mo:base/Iter";
 import List "mo:base/List";
 import Nat64 "mo:base/Nat64";
 import Nat "mo:base/Nat";
-import Nat8 "mo:base/Nat8";
 import Option "mo:base/Option";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
 import Random "./utils/random";
-import RandomBase "mo:base/Random";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
-import TrieMap "mo:base/TrieMap";
 import Trie "mo:base/Trie";
 import UUID "mo:uuid/UUID";
 import Prim "mo:prim";
@@ -3597,13 +3594,23 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
-    var list : [Types.Scene] = [];
-    for (v in state.questEngine.scenes.vals()){
-      if (v.idQuest == idQuest){
-        list := Array.append<Types.Scene>(list, [v]);
+    var listScene : [Types.Scene] = [];
+    let rsQuest = state.questEngine.quests.get(idQuest);
+    switch (rsQuest) {
+      case null {return #err(#NotFound)};
+      case (?quest) {
+        for (sceneId in quest.listScene.vals()){
+          let rsScene = state.questEngine.scenes.get(sceneId);
+          switch (rsScene) {
+            case null {};
+            case (?scene){
+              listScene := Array.append<Types.Scene>(listScene, [scene]);
+            };
+          };
+        };
       };
     };
-    #ok(list);
+    #ok(listScene);
   };
 
   public type Option = {
@@ -5263,18 +5270,18 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     #ok((list));
   };
 
-  public shared ({ caller }) func randomStashPotion() : async Response<Types.Stash> {
+  public shared ({ caller }) func randomStashPotion() : async Response<(Types.Stash, Text)> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
-    var listPotion : [Types.Stash] = [];
+    var listPotion : [(Types.Stash, Text)] = [];
     for (stash in state.stashes.vals()){
       let rsUsable = state.usableItems.get(stash.usableItemId);
       switch (rsUsable){
         case null {return #err(#NotFound)};
         case (?usable){
           if (Text.contains(usable.name, #text "Potion") == true){
-            listPotion := Array.append<Types.Stash>(listPotion, [stash]);
+            listPotion := Array.append<(Types.Stash, Text)>(listPotion, [(stash, usable.name)]);
           };
         };
       };
@@ -5284,7 +5291,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     }
     else {
       let index : Nat = Int.abs(Float.toInt(await Random.randomNumber(0.0, Float.fromInt(listPotion.size()-1))));
-      Debug.print(Nat.toText(index));
       #ok(listPotion[index]);
     };
     // for (usable in state.usableItems.vals()){
@@ -7317,18 +7323,5 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
         return counter;
       };
     };
-  };
-
-  public shared func addStash(userId: Text, usableItemId: Text): async Response<Text> { //just for test
-    var id : Text = await createUUID();
-    var new : Types.Stash = {
-      id = id;
-      userId = userId;
-      usableItemId = usableItemId;
-      quality = "Good";
-      amount = 1; 
-    };
-    let add = state.stashes.put(id, new);
-    #ok("OK");
   };
 };

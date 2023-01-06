@@ -19,7 +19,14 @@ const btnBlank = 'metaverse/scenes/selection.png';
 
 const BtnExit = 'metaverse/scenes/UI_exit.png'
 const UI_Utility_Sprite = 'metaverse/scenes/UI_Utility_Sprite.png'
-const item_potion = 'metaverse/scenes/item_ingame_HP.png'
+const item_hp = 'metaverse/farm/Sustaination_farm/farm-object/PNG/potion/HP_Potion.png'
+const item_stamina = 'metaverse/farm/Sustaination_farm/farm-object/PNG/potion/Stamina_Potion.png'
+const item_mana = 'metaverse/farm/Sustaination_farm/farm-object/PNG/potion/Mana_Potion.png'
+const item_morale = 'metaverse/farm/Sustaination_farm/farm-object/PNG/potion/Morale_Potion.png'
+const item_super = 'metaverse/farm/Sustaination_farm/farm-object/PNG/potion/Super_Potion.png'
+const item_carrot = 'metaverse/scenes/item_ingame_carrot.png'
+const item_tomato = 'metaverse/scenes/item_ingame_tomato.png'
+const item_wheat = 'metaverse/scenes/item_ingame_wheat.png'
 
 export default class jungle_scene1 extends BaseScene {
   constructor() {
@@ -58,7 +65,14 @@ export default class jungle_scene1 extends BaseScene {
     //UI -- One time load
     this.load.image("BtnExit", BtnExit);
     this.load.spritesheet('UI_Utility_Sprite', UI_Utility_Sprite, { frameWidth: 192, frameHeight: 192});
-    this.load.image("item_potion", item_potion);
+    this.load.image("item_hp", item_hp);
+    this.load.image("item_stamina", item_stamina);
+    this.load.image("item_morale", item_morale);
+    this.load.image("item_mana", item_mana);
+    this.load.image("item_super", item_super);
+    this.load.image("item_carrot", item_carrot);
+    this.load.image("item_tomato", item_tomato);
+    this.load.image("item_wheat", item_wheat);
   }
   
   //defined function
@@ -85,6 +99,10 @@ export default class jungle_scene1 extends BaseScene {
   }
   
   async create() {
+    this.isUsedUsableItem = {
+      useUsableItem: false,
+      stashId: ""
+    }
     this.listMaterial();
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
@@ -157,6 +175,12 @@ export default class jungle_scene1 extends BaseScene {
           this.setValue(this.stamina, this.characterTakeOptions[idx].currentStamina/this.characterTakeOptions[idx].maxStamina*100);
           this.setValue(this.mana, this.characterTakeOptions[idx].currentMana/this.characterTakeOptions[idx].maxMana*100);
           this.setValue(this.morale, this.characterTakeOptions[idx].currentMorale/this.characterTakeOptions[idx].maxMorale*100);
+          //HP, Stamina, mana, morele in col       
+          let loss_stat = this.showLossStat(this.characterData, this.characterTakeOptions[idx])
+          this.showColorLossStat(423, 65, loss_stat[0]);
+          this.showColorLossStat(460 + 200, 65, loss_stat[1]);
+          this.showColorLossStat(470 + 200 * 2 + 20, 65, loss_stat[2]);
+          this.showColorLossStat(490 + 200 * 3 + 35, 65, loss_stat[3]);
           // update character after choose option
           updateCharacterStats(this.characterTakeOptions[idx]);
           // create charactercollectsmaterials after choose option
@@ -175,7 +199,7 @@ export default class jungle_scene1 extends BaseScene {
     if (this.player.x > gameConfig.scale.width*4+100) {
       this.pregameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start("jungle_scene2");
+      this.scene.start("jungle_scene2", {isUsedUsableItem: this.isUsedUsableItem });
     }
 
     if (this.player.x > gameConfig.scale.width*4 - 700 && this.isInteracted == false) {
