@@ -142,6 +142,12 @@ export default class Engine extends BaseScene {
   }
 
   async create() {
+    if (this.isUsedUsableItem == undefined){
+      this.isUsedUsableItem = {
+        useUsableItem: false,
+        stashId: ""
+      }
+    }
     this.eventId = this.listScene[0].idEvent;
     this.listScene.shift()
 
