@@ -22,7 +22,14 @@ const btnBlank = 'metaverse/scenes/selection.png';
 const BtnExit = 'metaverse/scenes/UI_exit.png'
 const UI_Utility = 'metaverse/scenes/UI-utility.png'
 const UI_Utility_Sprite = 'metaverse/scenes/UI_Utility_Sprite.png'
-const item_potion = 'metaverse/scenes/item_ingame_HP.png'
+const item_hp = 'metaverse/farm/Sustaination_farm/farm-object/PNG/potion/HP_Potion.png'
+const item_stamina = 'metaverse/farm/Sustaination_farm/farm-object/PNG/potion/Stamina_Potion.png'
+const item_mana = 'metaverse/farm/Sustaination_farm/farm-object/PNG/potion/Mana_Potion.png'
+const item_morale = 'metaverse/farm/Sustaination_farm/farm-object/PNG/potion/Morale_Potion.png'
+const item_super = 'metaverse/farm/Sustaination_farm/farm-object/PNG/potion/Super_Potion.png'
+const item_carrot = 'metaverse/scenes/item_ingame_carrot.png'
+const item_tomato = 'metaverse/scenes/item_ingame_tomato.png'
+const item_wheat = 'metaverse/scenes/item_ingame_wheat.png'
 
 const popupWindo = 'metaverse/selectMap/Catalonia_popup.png';
 const popupClose = 'metaverse/selectMap/UI_ingame_close.png';
@@ -43,6 +50,13 @@ export default class Engine extends BaseScene {
 
   init(data) {
     this.listScene = data.listScene;
+    this.isUsedUsableItem = data.isUsedUsableItem;
+    if (this.isUsedUsableItem == undefined){
+      this.isUsedUsableItem = {
+        useUsableItem: false,
+        stashId: ""
+      }
+    }
   }
 
   async preload() {
@@ -50,7 +64,8 @@ export default class Engine extends BaseScene {
     this.addLoadingScreen();
     this.load.rexAwait(function (successCallback, failureCallback) {
       readSceneEngine(this.listScene[0].id).then((result) => {
-        this.initialLoad(result.idEvent);
+        this.characterBefore = this.useUsableItemScene(this.isUsedUsableItem, result.idEvent);
+        // this.initialLoad(result.idEvent);
         this.sceneEvent = result;
         console.log("this.sceneEvent:", this.sceneEvent)
         this.load.image("background1", loadItemUrl(this.sceneEvent.back));
@@ -108,7 +123,14 @@ export default class Engine extends BaseScene {
     //UI -- One time load
     this.load.image("BtnExit", BtnExit);
     this.load.spritesheet('UI_Utility_Sprite', UI_Utility_Sprite, { frameWidth: 192, frameHeight: 192 });
-    this.load.image("item_potion", item_potion);
+    this.load.image("item_hp", item_hp);
+    this.load.image("item_stamina", item_stamina);
+    this.load.image("item_morale", item_morale);
+    this.load.image("item_mana", item_mana);
+    this.load.image("item_super", item_super);
+    this.load.image("item_carrot", item_carrot);
+    this.load.image("item_tomato", item_tomato);
+    this.load.image("item_wheat", item_wheat);
 
     //Popup
     this.load.spritesheet('popupWindo', popupWindo, { frameWidth: 980, frameHeight: 799 });
@@ -142,12 +164,12 @@ export default class Engine extends BaseScene {
   }
 
   async create() {
-    if (this.isUsedUsableItem == undefined){
-      this.isUsedUsableItem = {
-        useUsableItem: false,
-        stashId: ""
-      }
-    }
+    // if (this.isUsedUsableItem == undefined){
+    //   this.isUsedUsableItem = {
+    //     useUsableItem: false,
+    //     stashId: ""
+    //   }
+    // }
     this.eventId = this.listScene[0].idEvent;
     this.listScene.shift()
 
@@ -193,6 +215,9 @@ export default class Engine extends BaseScene {
     this.setValue(this.morale, this.characterData.currentMorale / this.characterData.maxMorale * 100);
 
     this.options = [];
+    if (this.characterBefore != undefined) {
+      this.showColorLossAllStat(this.characterBefore, this.characterData)
+    }
 
 
     //popup
@@ -315,8 +340,8 @@ export default class Engine extends BaseScene {
       this.pregameSound.stop();
       this.sfx_char_footstep.stop();
 
-      if (this.listScene.length === 0) this.scene.start("thanks", { isUsedPotion: this.isUsedPotion });
-      else this.scene.start("Test", { isUsedPotion: this.isUsedPotion, listScene: this.listScene});
+      if (this.listScene.length === 0) this.scene.start("thanks");
+      else this.scene.start("Test", {listScene: this.listScene, isUsedUsableItem: this.isUsedUsableItem });
       // this.scene.start("Test", { isUsedPotion: this.isUsedPotion, listScene: this.listScene});
     }
 
