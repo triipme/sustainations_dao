@@ -14,8 +14,8 @@ import AdminConfig from "../main/admin/AdminConfig";
 import ProfileConfig from "../main/profile/ProfileConfig";
 import RefillNetworkConfig from "../main/refill-network/RefillNetworkConfig";
 import Workspac3Config from '../main/workspac3/Workspac3Config';
-
 import ProposalProductsConfig from "../main/proposal-products/ProposalProductsConfig";
+
 const routeConfigs = [
   ...Workspac3Config,
   ProjectDashboardAppConfig,
