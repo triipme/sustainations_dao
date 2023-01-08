@@ -1,6 +1,5 @@
 import Typography from '@mui/material/Typography';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
-import OrdersStatus from '../OrdersStatus';
 import _ from 'lodash';
 import { fDate } from '../../../../../utils/NumberFormat';
 
