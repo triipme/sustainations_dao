@@ -45,32 +45,12 @@ export default class lava_scene3 extends BaseScene {
   }
 
   init(data) {
-    this.isHealedPreviously = data.isUsedPotion;
     this.isUsedUsableItem = data.isUsedUsableItem;
   }
 
   preload() {
     this.addLoadingScreen();
-    if (this.isUsedUsableItem[0]){
-      this.load.rexAwait(function (successCallback, failureCallback) {
-        loadCharacter().then((result) => {
-          this.characterData = result.ok[1];
-          this.characterBefore = this.characterData;
-          this.load.rexAwait(function (successCallback, failureCallback) {
-            useUsableItem(this.characterData.id, this.isUsedUsableItem[1]).then((result) => {
-              this.initialLoad("e33");     
-              successCallback();         
-            });
-          }, this);
-          successCallback();
-       
-        });
-      }, this);
-    }
-    else {
-      this.initialLoad("e33");
-    }
-   
+    this.characterBefore = this.useUsableItemScene(this.isUsedUsableItem, "e33");
 
     //Preload
     this.clearSceneCache();
@@ -229,13 +209,13 @@ export default class lava_scene3 extends BaseScene {
     });
 
     // load description of event
-    const event = await readEvent(this.eventId)
+    this.event = await readEvent(this.eventId)
 
 
     this.des = this.make.text({
       x: gameConfig.scale.width / 2,
       y: gameConfig.scale.height / 2 - 10,
-      text: "There are many obstacles waiting for us ahead",
+      text: this.event.description,
       origin: { x: 0.5, y: 0.5 },
       style: {
         font: 'bold 25px Arial',
@@ -312,7 +292,7 @@ export default class lava_scene3 extends BaseScene {
     if (this.player.x > 5100) {
       this.pregameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start("lava_scene4", { isUsedPotion: this.isUsedPotion, isUsedUsableItem: this.isUsedUsableItem });
+      this.scene.start("lava_scene4", {isUsedUsableItem: this.isUsedUsableItem });
     }
 
     if (this.player.x > 4450 && this.isInteracted == false) {

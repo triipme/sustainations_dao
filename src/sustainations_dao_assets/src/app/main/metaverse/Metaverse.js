@@ -49,6 +49,10 @@ const Metaverse = () => {
           <Item src="metaverse/menu/quest.png" onClick={() => history.push("/metaverse/quests")} />
           <Item src="metaverse/menu/farm.png" onClick={() => history.push("/metaverse/farm")} />
           <Item
+            src="metaverse/menu/quest-design.png"
+            onClick={() => history.push("/metaverse/quest-design")}
+          />
+          <Item
             src="metaverse/menu/bootcamp.png"
             onClick={() => history.push("/metaverse/bootcamp")}
           />

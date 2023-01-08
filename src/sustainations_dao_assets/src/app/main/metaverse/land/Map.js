@@ -22,7 +22,6 @@ import {
   // loadNation,
   unionLandSlots,
 } from '../LandApi'
-import { ConfigurationServicePlaceholders } from "aws-sdk/lib/config_service_placeholders";
 import BigMap from "./BigMap";
 import Land from "./Land";
 import { useNavigate } from "react-router-dom";
