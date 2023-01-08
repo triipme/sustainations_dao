@@ -30,12 +30,12 @@ export default function RowOrderingGrid(props) {
     maxColumns: 20,
   });
 
-  // const [rows, setRows] = React.useState(data.rows);
-  // const [loading, setLoading] = React.useState(initialLoadingState);
 
   const [rows, setRows] = React.useState(props?.rows);
   const [loading, setLoading] = React.useState(initialLoadingState);
   console.log(rows)
+
+  const [loadingButton, setLoadingButton] = useState(false);
 
   React.useEffect(() => {
     setRows(props?.rows);
@@ -58,9 +58,15 @@ export default function RowOrderingGrid(props) {
   };
 
   const handleUpdate = async () => {
-    console.log(idList)
-    const sceneInfo = (await user.actor.updateSceneQuest("test", idList))?.ok
-    console.log(sceneInfo)
+    setLoadingButton(true)
+    try{
+      console.log(idList)
+      const sceneInfo = (await user.actor.updateSceneQuest("test", idList))?.ok
+      console.log(sceneInfo)
+    }catch{
+      console.log(err)
+    }
+    setLoadingButton(false)
   }
 
 
@@ -165,6 +171,8 @@ export default function RowOrderingGrid(props) {
   const idList = rows?.map(data => data.id)
   console.log(idList)
 
+
+
   return (
     <>
       <div style={{ marginBottom: "50px" }}>
@@ -182,7 +190,7 @@ export default function RowOrderingGrid(props) {
           className="ml-8"
           variant="contained"
           color="secondary"
-          loading={loading}
+          loading={loadingButton}
           style={{ marginbot: "50px" }}
           onClick={handleUpdate} 
         >
