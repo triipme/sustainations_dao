@@ -227,6 +227,29 @@ const QuestEngine = () => {
       <div className="w-full max-w-7xl">
         <Card className="w-full py-32 mx-auto mt-24 rounded-2xl shadow">
           <CardContent className="p-24 pt-0 sm:p-48 sm:pt-0">
+          <Typography className="mt-32 mb-16 text-3xl font-bold tracking-tight leading-tight">
+              Quest 
+            </Typography>
+
+            {/* ===== location ===== */}
+            <Controller
+              control={control}
+              name="scene.description"
+              render={({ field }) => (
+                <TextField
+                  className="mt-32"
+                  {...field}
+                  label="Question Name"
+                  placeholder="Question"
+                  // id="questName"
+                  variant="outlined"
+                  fullWidth
+                  required
+                />
+              )}
+            />
+            {/* <br> */}
+
             <Typography className="mt-32 mb-16 text-3xl font-bold tracking-tight leading-tight">
               Event
             </Typography>

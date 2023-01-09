@@ -3160,20 +3160,65 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   };
 
   // QuestEngine
-  public shared ({ caller }) func createQuestEngine(questEngine : Types.Quest) : async Response<Text> {
+  // public shared ({ caller }) func createQuestEngine(questEngine : Types.Quest) : async Response<Text> {
+  //   if (Principal.toText(caller) == "2vxsx-fae") {
+  //     return #err(#NotAuthorized); //isNotAuthorized
+  //   };
+  //   // let uuid : Text = await createUUID();
+  //   let rsQuestEngine = state.questEngine.quests.get(questEngine.id);
+  //   switch (rsQuestEngine) {
+  //     case (?V) { #err(#AlreadyExisting) };
+  //     case null {
+  //       QuestEngine.create(caller, questEngine, state);
+  //       #ok("Success");
+  //     };
+  //   };
+  // };
+  public type Quest = {
+    id : Text;
+    name : Text;
+    price : Float;
+    description : Text;
+    images : Text;
+  };
+   public shared ({ caller }) func createQuestEngine(questEngine : Quest) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
-    // let uuid : Text = await createUUID();
-    let rsQuestEngine = state.questEngine.quests.get(questEngine.id);
-    switch (rsQuestEngine) {
-      case (?V) { #err(#AlreadyExisting) };
-      case null {
-        QuestEngine.create(caller, questEngine, state);
-        #ok("Success");
+    var canCreate : Bool = true;
+    label checkQuest for (quest in state.questEngine.quests.vals()){
+      if (quest.userId == caller){
+        canCreate := false;
+        break checkQuest;
       };
     };
+    if (canCreate == true){
+      let rsQuestEngine = state.questEngine.quests.get(questEngine.id);
+      switch (rsQuestEngine) {
+        case (?V) { return #err(#AlreadyExisting) };
+        case null {
+          QuestEngine.create(caller, questEngine, state);
+          return #ok("Success");
+        };
+      };
+    }
+    else {
+      #err(#AlreadyExisting); 
+    };
   };
+
+  public shared ({ caller }) func checkCreatedQuestOfUser() : async Response<Types.QuestEngine> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    for (quest in state.questEngine.quests.vals()){
+      if (quest.userId == caller){
+        return #ok(quest);
+      };
+    };
+    #err(#NotFound);
+  };
+
 
   public shared query ({ caller }) func readQuestEngine(id : Text) : async Response<(Types.QuestEngine)> {
     if (Principal.toText(caller) == "2vxsx-fae") {
@@ -4194,7 +4239,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
                     userId = stash.userId;
                     usableItemId = stash.usableItemId;
                     quality = stash.quality;
-                    amount = stash.amount -1;
+                    amount = stash.amount-1;
                   };
                   let updated = state.stashes.replace(stash.id, newStash);
                 } else {
@@ -5276,12 +5321,14 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
     var listPotion : [(Types.Stash, Text)] = [];
     for (stash in state.stashes.vals()){
-      let rsUsable = state.usableItems.get(stash.usableItemId);
-      switch (rsUsable){
-        case null {return #err(#NotFound)};
-        case (?usable){
-          if (Text.contains(usable.name, #text "Potion") == true){
-            listPotion := Array.append<(Types.Stash, Text)>(listPotion, [(stash, usable.name)]);
+      if (stash.userId == Principal.toText(caller)){
+        let rsUsable = state.usableItems.get(stash.usableItemId);
+        switch (rsUsable){
+          case null {return #err(#NotFound)};
+          case (?usable){
+            if (Text.contains(usable.name, #text "Potion") == true){
+              listPotion := Array.append<(Types.Stash, Text)>(listPotion, [(stash, usable.name)]);
+            };
           };
         };
       };
@@ -5293,11 +5340,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       let index : Nat = Int.abs(Float.toInt(await Random.randomNumber(0.0, Float.fromInt(listPotion.size()-1))));
       #ok(listPotion[index]);
     };
-    // for (usable in state.usableItems.vals()){
-    //   if (Text.contains(usable.name, #text "Potion") == true){
-    //     listPotion := Array.append<(Text, Text)>(listPotion, [(usable.id, usable.name)]);
-    //   };
-    // };
   };
 
   // convert utm2lonlat
