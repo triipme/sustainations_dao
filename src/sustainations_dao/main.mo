@@ -5340,11 +5340,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       let index : Nat = Int.abs(Float.toInt(await Random.randomNumber(0.0, Float.fromInt(listPotion.size()-1))));
       #ok(listPotion[index]);
     };
-    // for (usable in state.usableItems.vals()){
-    //   if (Text.contains(usable.name, #text "Potion") == true){
-    //     listPotion := Array.append<(Text, Text)>(listPotion, [(usable.id, usable.name)]);
-    //   };
-    // };
   };
 
   // convert utm2lonlat
