@@ -236,8 +236,6 @@ const QuestEngine = () => {
     console.log(sceneInfo)
     // setId()
   }
-
-
  
   return (
     <div className="relative flex flex-col flex-auto items-center">
@@ -260,12 +258,31 @@ const QuestEngine = () => {
                 <TextField
                   className="mt-32"
                   {...field}
-                  label="Question Name"
-                  placeholder="Question"
+                  label="Quest Price"
+                  placeholder="ICP"
                   // id="questName"
                   variant="outlined"
                   fullWidth
                   required
+                />
+              )}
+            />
+            <Controller
+              control={control}
+              name="scene.description"
+              render={({ field }) => (
+                <TextField
+                  className="mt-32"
+                  {...field}
+                  label="Transaction Fee"
+                  // placeholder="2%"
+                  value = "2%"
+                  // id="questName"
+                  variant="outlined"
+                  fullWidth
+                  // readOnly={true}
+                  disabled
+                  // required
                 />
               )}
             />
@@ -508,7 +525,7 @@ const QuestEngine = () => {
                 Save
               </LoadingButton>
 
-              <LoadingButton
+              {/* <LoadingButton
                 className="ml-8"
                 variant="contained"
                 color="secondary"
@@ -516,7 +533,7 @@ const QuestEngine = () => {
                 onClick={handleView}
               >
                 All Scene
-              </LoadingButton>
+              </LoadingButton> */}
             </Box>
 
 

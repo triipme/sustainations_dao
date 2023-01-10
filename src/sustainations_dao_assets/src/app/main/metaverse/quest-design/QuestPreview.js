@@ -30,9 +30,14 @@ function QuestPreview() {
     return (<FuseLoading />);
   }
 
+  const divStyle = {
+    backgroundImage: 'url(https://images.immediate.co.uk/production/volatile/sites/3/2021/04/pokemon-games-7cedcc4.png?quality=90&webp=true&resize=620,414)',
+  };
+
   // TODO: update html/css
   return (
     <div className="flex flex-col flex-auto items-center sm:justify-center min-w-0">
+      <div style={divStyle}>Hello World!</div>
       <Paper className="w-full sm:w-auto min-h-full sm:min-h-auto rounded-0 py-32 px-16 sm:p-48 sm:rounded-2xl sm:shadow">
         <div className="w-full max-w-5xl sm\:w-auto mx-auto sm:mx-0">
           <Typography className="mt-32 justify-center">
