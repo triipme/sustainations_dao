@@ -3174,14 +3174,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   //     };
   //   };
   // };
-  public type Quest = {
-    id : Text;
-    name : Text;
-    price : Float;
-    description : Text;
-    images : Text;
-  };
-   public shared ({ caller }) func createQuestEngine(questEngine : Quest) : async Response<Text> {
+   public shared ({ caller }) func createQuestEngine(questEngine : Types.Quest) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
@@ -3207,10 +3200,11 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
   };
 
-  public shared ({ caller }) func checkCreatedQuestOfUser() : async Response<Types.QuestEngine> {
+  public shared query ({ caller }) func checkCreatedQuestOfUser() : async Response<Types.QuestEngine> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
+    Debug.print(Principal.toText(caller));
     for (quest in state.questEngine.quests.vals()){
       if (quest.userId == caller){
         return #ok(quest);
@@ -3218,6 +3212,77 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
     #err(#NotFound);
   };
+
+  func transferICP(amount : Nat64, fromPrincipal: Principal, toPrincipal : Principal) : async Ledger.TransferResult {
+    let from_account = Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(fromPrincipal));
+    let to_account = Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(toPrincipal));
+    await ledger.transfer({
+      memo : Nat64 = 0;
+      from_subaccount = ?from_account;
+      to = to_account;
+      amount = { e8s = amount };
+      fee = { e8s = transferFee };
+      created_at_time = ?{ timestamp_nanos = Nat64.fromNat(Int.abs(Time.now())) };
+    });
+  };
+
+  // public shared ({ caller }) func payQuestDesign(questId: Text) : async Response<Text> {
+  //   if (Principal.toText(caller) == "2vxsx-fae") {
+  //     return #err(#NotAuthorized); //isNotAuthorized
+  //   };
+  //   let rsQuest = state.questEngine.quests.get(questId);
+  //   switch (rsQuest) {
+  //     case null { #err(#NotFound) };
+  //     case (?quest) {
+  //       let transfer = await transferICP(quest.price, caller, quest.userId);
+  //       switch (transfer) {
+  //         case (#Ok(bIndex)) {
+  //           await recordTransaction(
+  //             caller,
+  //             quest.price,
+  //             caller,
+  //             quest.userId,
+  //             #payQuest,
+  //             ?questId,
+  //             bIndex
+  //           );
+  //           #ok("Success");
+  //         };
+  //         case (#Err(error)) {
+  //           #err(error);
+  //         };
+  //       };
+  //     };
+  //   };
+  // };
+
+  // as deposit
+  private func transferICPTest(amount : Nat64, fromPrincipal: Principal, toPrincipal : Principal) : async Response<Nat64> {
+    let accountId = Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(fromPrincipal));
+    let balance = await ledger.account_balance({ account = accountId });
+    let receipt = if (balance.e8s >= amount) {
+      await ledger.transfer({
+        memo : Nat64 = 0;
+        from_subaccount = ?Account.principalToSubaccount(fromPrincipal);
+        to = Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(toPrincipal));
+        amount = { e8s = amount };
+        fee = { e8s = transferFee };
+        created_at_time = ?{ timestamp_nanos = Nat64.fromNat(Int.abs(Time.now())) };
+      });
+    } else {
+      return #err(#BalanceLow);
+    };
+
+    switch receipt {
+      case (#Err _) {
+        #err(#TransferFailure);
+      };
+      case (#Ok(bIndex)) {
+        #ok(bIndex);
+      };
+    };
+  };
+
 
 
   public shared query ({ caller }) func readQuestEngine(id : Text) : async Response<(Types.QuestEngine)> {
@@ -3515,7 +3580,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
           case null {
             let updateQuest : Types.QuestEngine = {
               id = quest.id;
-              userId = caller;
+              userId = quest.userId;
               name = quest.name;
               price = quest.price;
               description = quest.description;

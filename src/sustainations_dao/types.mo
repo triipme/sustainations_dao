@@ -180,7 +180,7 @@ module {
     id : Text;
     userId: Principal;
     name : Text;
-    price : Float;
+    price : Nat64;
     description : Text;
     images : Text;
     isActive : Bool;

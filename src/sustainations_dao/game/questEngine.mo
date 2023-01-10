@@ -12,7 +12,7 @@ module QuestEngine {
    public func getDataEngine(caller: Principal, questEngine : Types.QuestEngine) : Types.QuestEngine {
     let newQuestEngine : Types.QuestEngine = {
       id = questEngine.id;
-      userId = caller;
+      userId = questEngine.userId;
       name = questEngine.name;
       price = questEngine.price;
       description = questEngine.description;
@@ -23,14 +23,7 @@ module QuestEngine {
     };
     return newQuestEngine;
   };
-  public type Quest = {
-    id : Text;
-    name : Text;
-    price : Float;
-    description : Text;
-    images : Text;
-  };
-  public func getData(caller: Principal, questEngine : Quest) : Types.QuestEngine {
+  public func getData(caller: Principal, questEngine : Types.Quest) : Types.QuestEngine {
     let newQuestEngine : Types.QuestEngine = {
       id = questEngine.id;
       userId = caller;
@@ -45,7 +38,7 @@ module QuestEngine {
     return newQuestEngine;
   };
 
-  public func create(caller: Principal, questEngine : Quest, state : State.State) {
+  public func create(caller: Principal, questEngine : Types.Quest, state : State.State) {
     state.questEngine.quests.put(questEngine.id, getData(caller, questEngine));
   };
 
