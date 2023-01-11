@@ -3286,9 +3286,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
 
 
   public shared query ({ caller }) func readQuestEngine(id : Text) : async Response<(Types.QuestEngine)> {
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized); //isNotAuthorized
-    };
     let rsQuestEngine = state.questEngine.quests.get(id);
     return Result.fromOption(rsQuestEngine, #NotFound);
   };

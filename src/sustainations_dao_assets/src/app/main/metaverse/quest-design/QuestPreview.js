@@ -15,7 +15,8 @@ function QuestPreview() {
   useEffect(() => {
     async function loadQuest() {
       const actor = createActor(canisterId);
-      const res = await actor.readQuest(questId);
+      const res = await actor.readQuestEngine(questId);
+      console.log("res", res)
       if ('ok' in res) {
         setQuest(res.ok);
         setLoading(false);
@@ -24,7 +25,7 @@ function QuestPreview() {
       }
     }
     loadQuest();
-  });
+  }, []);
 
   if (loading) {
     return (<FuseLoading />);
@@ -52,7 +53,7 @@ function QuestPreview() {
             We wish you the best of luck on your journey, and we hope you have a great time exploring the wilds of Sustainations World.
           </Typography>
           <div className="text-center">
-            <Link className="block font-normal mt-48" to="/metaverse/quest">
+            <Link className="block font-normal mt-48" to="/metaverse/quests">
             Click here to login/sign up!
             </Link>
           </div>

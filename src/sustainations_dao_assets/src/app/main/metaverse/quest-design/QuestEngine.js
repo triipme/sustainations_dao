@@ -56,7 +56,7 @@ const QuestEngine = () => {
       idQuest: idQuest,
       idEvent: idEvent,
       idScene: idScene,
-      quest : {
+      quest: {
         name: '',
         price: 0,
         description: ''
@@ -95,7 +95,7 @@ const QuestEngine = () => {
     console.log("data: ", data)
     console.log(data.questEventName, "quest event name")
     setLoading(true);
-    try{
+    try {
       //get quest id
       console.log("1")
       let checkCreateQuest = await user.actor.checkCreatedQuestOfUser()
@@ -115,8 +115,8 @@ const QuestEngine = () => {
         };
         console.log("quétId: ", idQuest)
         console.log("event: ", event)
-        const resultEvent =await user.actor.createEventEngine(event);
-  
+        const resultEvent = await user.actor.createEventEngine(event);
+
         //SCENE
         let scene = {
           id: data.idScene,
@@ -127,12 +127,12 @@ const QuestEngine = () => {
           back: data.scene.imageBack.path,
           obstacle: data.scene.imageObstacle.path
         }
-        if(scene.front == "" || scene.mid == "" || scene.back == "" || scene.obstacle == "" ){
+        if (scene.front == "" || scene.mid == "" || scene.back == "" || scene.obstacle == "") {
           dispatch(showMessage({ message: 'Required fields cannot be left blank.' }));
           return;
-        } 
+        }
         const resultScene = await createScene(scene);
-  
+
         if ('Success' == resultScene) {
           let bufFront = Buffer.from(data.scene.imageFront.base64data, 'base64')
           let bufMid = Buffer.from(data.scene.imageMid.base64data, 'base64')
@@ -195,6 +195,7 @@ const QuestEngine = () => {
         let createOptions = await createAllEventOptionEngine(data.idEvent, options);
         console.log("createOptions", createOptions)
         dispatch(showMessage({ message: 'Success!' }));
+        setSceneInfoOutside(true)
       }
       else {
         console.log("quest not found")
@@ -216,14 +217,14 @@ const QuestEngine = () => {
       console.log("checkCreatedQuestOfUser: ", checkCreateQuest)
       console.log("checkCreatedQuestOfUser: ", checkCreateQuest.ok?.id)
       console.log("3")
-      if (checkCreateQuest.ok?.id == undefined){
+      if (checkCreateQuest.ok?.id == undefined) {
         // QUEST ENGINE
         let quest = {
-          id : data.idQuest,
-          name : "",
-          price : parseFloat(data.quest.price) * 100000000,
-          description : "",
-          images : ""
+          id: data.idQuest,
+          name: "",
+          price: parseFloat(data.quest.price) * 100000000,
+          description: "",
+          images: ""
         }
         let resultEngine = await user.actor.createQuestEngine(quest);
         console.log("resultEngine ", resultEngine)
@@ -257,26 +258,32 @@ const QuestEngine = () => {
   const [openScene, setOpenScene] = useState(false)
   const [id, setId] = useState([])
   const handleView = async () => {
+    let checkCreateQuest = await user.actor.checkCreatedQuestOfUser()
+    idQuest = checkCreateQuest.ok?.id
     console.log("idQuest", idQuest)
-    let allScene =  await getAllScenes(idQuest)
+    let allScene = await getAllScenes(idQuest)
     setViewAll(allScene)
     setOpenScene(!openScene)
-    const sceneInfo = (await user.actor.listSceneQuests(idQuest))?.ok
-    console.log(sceneInfo)
+    // const sceneInfo = (await user.actor.listSceneQuests(idQuest))?.ok
+    // setSceneInfoOutside(sceneInfo);
+    // console.log("sceneInfo", sceneInfo)
+    // return sceneInfo
     // setId()
   }
- 
+
+  // const sceneInfoOutside = handleView();
+
   return (
     <div className="relative flex flex-col flex-auto items-center">
       {/* ================= Scene 1 ================= */}
       <div className="w-full max-w-7xl">
         <Card className="w-full py-32 mx-auto mt-24 rounded-2xl shadow">
           <CardContent className="p-24 pt-0 sm:p-48 sm:pt-0">
-          <Typography className="mt-32 mb-16 text-3xl font-bold tracking-tight leading-tight">
-              YOUR QUEST DESIGN! 
+            <Typography className="mt-32 mb-16 text-3xl font-bold tracking-tight leading-tight">
+              YOUR QUEST DESIGN!
             </Typography>
-          <Typography className="mt-32 mb-16 text-3xl font-bold tracking-tight leading-tight">
-              Quest 
+            <Typography className="mt-32 mb-16 text-3xl font-bold tracking-tight leading-tight">
+              Quest
             </Typography>
 
             {/* ===== location ===== */}
@@ -306,27 +313,27 @@ const QuestEngine = () => {
                   {...field}
                   label="Transaction Fee"
                   // placeholder="2%"
-                  value = "2%"
+                  value="2%"
                   // id="questName"
                   variant="outlined"
                   fullWidth
                   // readOnly={true}
                   disabled
-                  // required
+                // required
                 />
               )}
             />
-      
-            <br/>
+
+            <br />
             <LoadingButton
-                className="ml-8"
-                variant="contained"
-                color="secondary"
-                loading={loading}
-                onClick={handleSubmit(onSubmitQuest)}
-              >
-                Save
-              </LoadingButton>
+              className="ml-8"
+              variant="contained"
+              color="secondary"
+              loading={loading}
+              onClick={handleSubmit(onSubmitQuest)}
+            >
+              Save
+            </LoadingButton>
 
             <Typography className="mt-32 mb-16 text-3xl font-bold tracking-tight leading-tight">
               Event
@@ -368,7 +375,7 @@ const QuestEngine = () => {
               <br></br>
               <br></br>
 
-    
+
               {option.option ?
                 <Button className="ml-auto" color="secondary" variant="contained" onClick={handleAdd}>
                   Add Option
@@ -565,7 +572,7 @@ const QuestEngine = () => {
                 Save
               </LoadingButton>
 
-              {/* <LoadingButton
+              <LoadingButton
                 className="ml-8"
                 variant="contained"
                 color="secondary"
@@ -573,15 +580,28 @@ const QuestEngine = () => {
                 onClick={handleView}
               >
                 All Scene
-              </LoadingButton> */}
+              </LoadingButton>
+
+              <LoadingButton
+                className="ml-8"
+                variant="contained"
+                color="secondary"
+                loading={loading}
+                // onClick={handleView}
+              >
+                Review
+              </LoadingButton>
+
+
+
             </Box>
 
 
             {/* { openScene ? <SceneTable rows={viewAll}/> : <></>} */}
-            { openScene ? <RowOrderingGrid rows={viewAll} /> : <></>}
+            {openScene ? <RowOrderingGrid rows={viewAll} /> : <></>}
             {/* { openScene ? <DragDrop rows={viewAll} /> : <></>} */}
-            
-           
+
+
 
 
           </CardContent>
