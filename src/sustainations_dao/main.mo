@@ -3213,6 +3213,31 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     #err(#NotFound);
   };
 
+  public shared query ({ caller }) func getScenePreviewQuest(questId: Text) : async Response<Types.Scene> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsQuest = state.questEngine.quests.get(questId);
+      switch (rsQuest) {
+      case (?quest) {
+        let listScene = quest.listScene;
+        if (listScene == []) {
+          #err(#NotFound);
+        }
+        else {
+          let rsScene = state.questEngine.scenes.get(listScene[0]);
+          switch (rsScene){
+            case (?scene){
+              #ok(scene);
+            };
+            case (_) {#err(#NotFound)};
+          };
+        };
+      };
+      case (_) {#err(#NotFound)};
+    };
+  }; 
+
   func transferICP(amount : Nat64, fromPrincipal: Principal, toPrincipal : Principal) : async Ledger.TransferResult {
     let from_account = Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(fromPrincipal));
     let to_account = Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(toPrincipal));
