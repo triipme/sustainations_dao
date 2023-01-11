@@ -3214,9 +3214,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   };
 
   public shared query ({ caller }) func getScenePreviewQuest(questId: Text) : async Response<Types.Scene> {
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized); //isNotAuthorized
-    };
     let rsQuest = state.questEngine.quests.get(questId);
       switch (rsQuest) {
       case (?quest) {

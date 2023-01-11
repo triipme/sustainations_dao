@@ -210,10 +210,6 @@ const QuestEngine = () => {
 
   const onSubmitQuest = async (data) => {
     setLoading(true);
-    // for test transfer icp
-    let test = await user.actor.payQuestDesign("test")
-    console.log(test)
-    // 
     try {
       let checkCreateQuest = await user.actor.checkCreatedQuestOfUser()
       if (checkCreateQuest.ok?.id == undefined){
