@@ -29,6 +29,7 @@ import { setOptions } from 'leaflet';
 import SceneTable from './SceneTable';
 import RowOrderingGrid from './DragTable';
 import DragDrop from './DragDrop';
+import { useNavigate } from 'react-router-dom';
 
 // AWS3
 const AWS = require('aws-sdk');
@@ -252,11 +253,9 @@ const QuestEngine = () => {
   }
 
 
-
   //View all Scene
   const [viewAll, setViewAll] = useState({})
   const [openScene, setOpenScene] = useState(false)
-  const [id, setId] = useState([])
   const handleView = async () => {
     let checkCreateQuest = await user.actor.checkCreatedQuestOfUser()
     idQuest = checkCreateQuest.ok?.id
@@ -264,14 +263,30 @@ const QuestEngine = () => {
     let allScene = await getAllScenes(idQuest)
     setViewAll(allScene)
     setOpenScene(!openScene)
-    // const sceneInfo = (await user.actor.listSceneQuests(idQuest))?.ok
-    // setSceneInfoOutside(sceneInfo);
-    // console.log("sceneInfo", sceneInfo)
-    // return sceneInfo
-    // setId()
   }
 
+  const [id, setId] = useState()
+
+  useEffect(() => {
+    const fetchData = async () => {
+        try {
+          let checkCreateQuest = await user.actor.checkCreatedQuestOfUser()
+          idQuest = checkCreateQuest.ok?.id
+          setId(idQuest )
+        } catch (err) {
+            console.error(err)
+        }
+    }
+    fetchData();
+  }, []);
+
   // const sceneInfoOutside = handleView();
+
+  const navigate = useNavigate();
+
+  const handleReview = () => {
+    navigate(`/metaverse/quest-design/${id}/preview`);
+  };
 
   return (
     <div className="relative flex flex-col flex-auto items-center">
@@ -587,7 +602,7 @@ const QuestEngine = () => {
                 variant="contained"
                 color="secondary"
                 loading={loading}
-                // onClick={handleView}
+                onClick={handleReview}
               >
                 Review
               </LoadingButton>
