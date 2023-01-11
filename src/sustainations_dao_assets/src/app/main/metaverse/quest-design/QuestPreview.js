@@ -5,6 +5,14 @@ import Paper from '@mui/material/Paper';
 import FuseLoading from '@fuse/core/FuseLoading';
 import { canisterId, createActor } from "../../../../../../declarations/sustainations_dao";
 
+let AWS = require('aws-sdk');
+AWS.config.update({
+  accessKeyId: process.env.S3_ACCESS_KEY,
+  secretAccessKey: process.env.S3_SECRET_KEY,
+  region: process.env.S3_REGION,
+});
+let s3 = new AWS.S3();
+
 function QuestPreview() {
   const navigate = useNavigate();
   const routeParams = useParams();
@@ -17,7 +25,12 @@ function QuestPreview() {
     async function loadQuest() {
       const actor = createActor(canisterId);
       const res = await actor.readQuestEngine(questId);
-      console.log("res", res)
+      const scene = await actor.getScenePreviewQuest(questId);
+      console.log("scene: ", scene.ok.front)
+      console.log("front: ", s3.getSignedUrl('getObject', { Bucket: process.env.S3_BUCKET, Key: scene.ok.front }))
+      console.log("mid: ", s3.getSignedUrl('getObject', { Bucket: process.env.S3_BUCKET, Key: scene.ok.mid }))
+      console.log("back: ", s3.getSignedUrl('getObject', { Bucket: process.env.S3_BUCKET, Key: scene.ok.back  }))
+      console.log("obstacle: ", s3.getSignedUrl('getObject', { Bucket: process.env.S3_BUCKET, Key: scene.ok.obstacle }))
       if ('ok' in res) {
         setQuest(res.ok);
         setLoading(false);

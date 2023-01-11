@@ -212,13 +212,8 @@ const QuestEngine = () => {
   const onSubmitQuest = async (data) => {
     setLoading(true);
     try {
-      console.log("1")
       let checkCreateQuest = await user.actor.checkCreatedQuestOfUser()
-      console.log("2")
-      console.log("checkCreatedQuestOfUser: ", checkCreateQuest)
-      console.log("checkCreatedQuestOfUser: ", checkCreateQuest.ok?.id)
-      console.log("3")
-      if (checkCreateQuest.ok?.id == undefined) {
+      if (checkCreateQuest.ok?.id == undefined){
         // QUEST ENGINE
         let quest = {
           id: data.idQuest,
