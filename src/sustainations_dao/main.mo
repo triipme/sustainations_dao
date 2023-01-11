@@ -3226,35 +3226,35 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     });
   };
 
-  // public shared ({ caller }) func payQuestDesign(questId: Text) : async Response<Text> {
-  //   if (Principal.toText(caller) == "2vxsx-fae") {
-  //     return #err(#NotAuthorized); //isNotAuthorized
-  //   };
-  //   let rsQuest = state.questEngine.quests.get(questId);
-  //   switch (rsQuest) {
-  //     case null { #err(#NotFound) };
-  //     case (?quest) {
-  //       let transfer = await transferICP(quest.price, caller, quest.userId);
-  //       switch (transfer) {
-  //         case (#Ok(bIndex)) {
-  //           await recordTransaction(
-  //             caller,
-  //             quest.price,
-  //             caller,
-  //             quest.userId,
-  //             #payQuest,
-  //             ?questId,
-  //             bIndex
-  //           );
-  //           #ok("Success");
-  //         };
-  //         case (#Err(error)) {
-  //           #err(error);
-  //         };
-  //       };
-  //     };
-  //   };
-  // };
+  public shared ({ caller }) func payQuestDesign(questId: Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsQuest = state.questEngine.quests.get(questId);
+    switch (rsQuest) {
+      case null { #err(#NotFound) };
+      case (?quest) {
+        let transfer = await transferICPTest(quest.price, caller, quest.userId);
+        switch (transfer) {
+          case (#ok(bIndex)) {
+            await recordTransaction(
+              caller,
+              quest.price,
+              caller,
+              quest.userId,
+              #payQuest,
+              ?questId,
+              bIndex
+            );
+            #ok("Success");
+          };
+          case (#err(error)) {
+            #err(error);
+          };
+        };
+      };
+    };
+  };
 
   // as deposit
   private func transferICPTest(amount : Nat64, fromPrincipal: Principal, toPrincipal : Principal) : async Response<Nat64> {
@@ -3265,7 +3265,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
         memo : Nat64 = 0;
         from_subaccount = ?Account.principalToSubaccount(fromPrincipal);
         to = Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(toPrincipal));
-        amount = { e8s = amount };
+        amount = { e8s = amount-transferFee };
         fee = { e8s = transferFee };
         created_at_time = ?{ timestamp_nanos = Nat64.fromNat(Int.abs(Time.now())) };
       });
@@ -3286,9 +3286,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
 
 
   public shared query ({ caller }) func readQuestEngine(id : Text) : async Response<(Types.QuestEngine)> {
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized); //isNotAuthorized
-    };
     let rsQuestEngine = state.questEngine.quests.get(id);
     return Result.fromOption(rsQuestEngine, #NotFound);
   };
