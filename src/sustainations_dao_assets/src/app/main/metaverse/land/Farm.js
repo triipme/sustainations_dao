@@ -287,7 +287,9 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
       <UIFarm Carrot={carrot} Wheat={wheat} Tomato={tomato}></UIFarm>
       <Inventory
         key={Math.floor(Math.random() * 9999999)}
-        inventory={inventory}></Inventory>
+        inventory={inventory}>
+        inventoryStatus={inventoryStatus}
+      </Inventory>
     </>
   );
 };
