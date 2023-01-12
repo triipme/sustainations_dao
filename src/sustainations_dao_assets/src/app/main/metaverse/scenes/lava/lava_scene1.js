@@ -25,7 +25,11 @@ const btnBlank = 'metaverse/scenes/selection.png';
 const BtnExit = 'metaverse/scenes/UI_exit.png'
 const UI_Utility = 'metaverse/scenes/UI-utility.png'
 const UI_Utility_Sprite = 'metaverse/scenes/UI_Utility_Sprite.png'
-const item_potion = 'metaverse/scenes/item_ingame_HP.png'
+const item_hp = 'metaverse/farm/Sustaination_farm/farm-object/PNG/potion/HP_Potion.png'
+const item_stamina = 'metaverse/farm/Sustaination_farm/farm-object/PNG/potion/Stamina_Potion.png'
+const item_mana = 'metaverse/farm/Sustaination_farm/farm-object/PNG/potion/Mana_Potion.png'
+const item_morale = 'metaverse/farm/Sustaination_farm/farm-object/PNG/potion/Morale_Potion.png'
+const item_super = 'metaverse/farm/Sustaination_farm/farm-object/PNG/potion/Super_Potion.png'
 const item_carrot = 'metaverse/scenes/item_ingame_carrot.png'
 const item_tomato = 'metaverse/scenes/item_ingame_tomato.png'
 const item_wheat = 'metaverse/scenes/item_ingame_wheat.png'
@@ -70,7 +74,11 @@ export default class lava_scene1 extends BaseScene {
     //UI -- One time load
     this.load.image("BtnExit", BtnExit);
     this.load.spritesheet('UI_Utility_Sprite', UI_Utility_Sprite, { frameWidth: 192, frameHeight: 192 });
-    this.load.image("item_potion", item_potion);
+    this.load.image("item_hp", item_hp);
+    this.load.image("item_stamina", item_stamina);
+    this.load.image("item_morale", item_morale);
+    this.load.image("item_mana", item_mana);
+    this.load.image("item_super", item_super);
     this.load.image("item_carrot", item_carrot);
     this.load.image("item_tomato", item_tomato);
     this.load.image("item_wheat", item_wheat);
@@ -108,7 +116,10 @@ export default class lava_scene1 extends BaseScene {
   }
 
   async create() {
-    this.isUsedUsableItem = [false, '']
+    this.isUsedUsableItem = {
+      useUsableItem: false,
+      stashId: ""
+    }
     // add audios
     this.hoverSound = this.sound.add('hoverSound');
     this.clickSound = this.sound.add('clickSound');
@@ -294,7 +305,7 @@ export default class lava_scene1 extends BaseScene {
     if (this.player.x > 5100) {
       this.pregameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start("lava_scene2", { isUsedPotion: this.isUsedPotion, isUsedUsableItem: this.isUsedUsableItem });
+      this.scene.start("lava_scene2", {isUsedUsableItem: this.isUsedUsableItem });
     }
 
     if (this.player.x > 4450 && this.isInteracted == false) {

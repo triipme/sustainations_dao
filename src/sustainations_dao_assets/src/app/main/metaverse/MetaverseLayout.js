@@ -1,5 +1,4 @@
 import gameConfig from "./GameConfig";
-import GetData from "./GetData";
 class MetaverseQuests extends React.Component {
   componentDidMount() {
     this.slug = new Phaser.Game(gameConfig);

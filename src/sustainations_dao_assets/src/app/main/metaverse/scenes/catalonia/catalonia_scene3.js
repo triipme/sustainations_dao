@@ -42,25 +42,7 @@ export default class catalonia_scene3 extends BaseScene {
 
   preload() {
     this.addLoadingScreen();
-    if (this.isUsedUsableItem[0]){
-      this.load.rexAwait(function (successCallback, failureCallback) {
-        loadCharacter().then((result) => {
-          this.characterData = result.ok[1];
-          this.characterBefore = this.characterData;
-          this.load.rexAwait(function (successCallback, failureCallback) {
-            useUsableItem(this.characterData.id, this.isUsedUsableItem[1]).then((result) => {
-              this.initialLoad("e12");     
-              successCallback();         
-            });
-          }, this);
-          successCallback();
-       
-        });
-      }, this);
-    }
-    else {
-      this.initialLoad("e12");
-    }
+    this.characterBefore = this.useUsableItemScene(this.isUsedUsableItem, "e12");
 
     //Preload
     this.clearSceneCache();
@@ -222,7 +204,7 @@ export default class catalonia_scene3 extends BaseScene {
     }).setVisible(false).setScrollFactor(0);
 
     this.options = [];
-    if(this.characterBefore != undefined){
+    if (this.characterBefore != undefined) {
       this.showColorLossAllStat(this.characterBefore, this.characterData)
     }
 

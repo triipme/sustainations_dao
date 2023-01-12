@@ -22,7 +22,6 @@ import {
   // loadNation,
   unionLandSlots,
 } from '../LandApi'
-import { ConfigurationServicePlaceholders } from "aws-sdk/lib/config_service_placeholders";
 import BigMap from "./BigMap";
 import Land from "./Land";
 import { useNavigate } from "react-router-dom";
@@ -171,7 +170,7 @@ const Map = () => {
       landSlotRand = landBuyingStatus
     }
     else {
-      // if having enough ICP
+      //if having enough ICP
       let isBuy = (await user.actor.buyLandSlot())?.ok;
       if (isBuy !== undefined) {
         numRandom -= 1

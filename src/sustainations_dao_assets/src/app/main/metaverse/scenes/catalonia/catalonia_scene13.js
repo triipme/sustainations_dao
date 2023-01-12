@@ -50,25 +50,8 @@ export default class catalonia_scene13 extends BaseScene {
 
   preload() {
     this.addLoadingScreen();
-    if (this.isUsedUsableItem[0]){
-      this.load.rexAwait(function (successCallback, failureCallback) {
-        loadCharacter().then((result) => {
-          this.characterData = result.ok[1];
-          this.characterBefore = this.characterData;
-          this.load.rexAwait(function (successCallback, failureCallback) {
-            useUsableItem(this.characterData.id, this.isUsedUsableItem[1]).then((result) => {
-              this.initialLoad("e22");     
-              successCallback();         
-            });
-          }, this);
-          successCallback();
-       
-        });
-      }, this);
-    }
-    else {
-      this.initialLoad("e22");
-    }
+    this.characterBefore = this.useUsableItemScene(this.isUsedUsableItem, "e22");
+
     //Preload
     this.clearSceneCache();
     this.isInteracting = false;
@@ -267,7 +250,7 @@ export default class catalonia_scene13 extends BaseScene {
     if (this.player.x > 3800) {
       this.pregameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start("thanks", { isUsedPotion: this.isUsedPotion });
+      this.scene.start("thanks");
     }
 
     if (this.player.x > 2500 && this.isInteracted == false) {

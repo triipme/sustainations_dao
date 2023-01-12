@@ -23,8 +23,7 @@ export default class jungle_scene3 extends BaseScene {
     super('jungle_scene3');
   }
   init(data) {
-    this.isHealedPreviously = data.isUsedPotion;
-    console.log('healed', this.isHealedPreviously);
+    this.isUsedUsableItem = data.isUsedUsableItem;
   }
   clearSceneCache() {
     const textures_list = ['ground', 'background1', 'background2', 
@@ -35,7 +34,7 @@ export default class jungle_scene3 extends BaseScene {
   }
   preload() {
     this.addLoadingScreen();
-    this.initialLoad("e3");
+    this.characterBefore = this.useUsableItemScene(this.isUsedUsableItem, "e3");
 
     //Preload
     this.clearSceneCache();
@@ -121,6 +120,9 @@ export default class jungle_scene3 extends BaseScene {
     this.setValue(this.morale, this.characterData.currentMorale/this.characterData.maxMorale*100);
 
     this.options = [];
+    if (this.characterBefore != undefined) {
+      this.showColorLossAllStat(this.characterBefore, this.characterData)
+    }
     for (const idx in this.eventOptions){
       // can take option or not
       const takeable = this.eventOptions[idx][0];
@@ -152,6 +154,12 @@ export default class jungle_scene3 extends BaseScene {
           this.setValue(this.stamina, this.characterTakeOptions[idx].currentStamina/this.characterTakeOptions[idx].maxStamina*100);
           this.setValue(this.mana, this.characterTakeOptions[idx].currentMana/this.characterTakeOptions[idx].maxMana*100);
           this.setValue(this.morale, this.characterTakeOptions[idx].currentMorale/this.characterTakeOptions[idx].maxMorale*100);
+          //HP, Stamina, mana, morele in col       
+          let loss_stat = this.showLossStat(this.characterData, this.characterTakeOptions[idx])
+          this.showColorLossStat(423, 65, loss_stat[0]);
+          this.showColorLossStat(460 + 200, 65, loss_stat[1]);
+          this.showColorLossStat(470 + 200 * 2 + 20, 65, loss_stat[2]);
+          this.showColorLossStat(490 + 200 * 3 + 35, 65, loss_stat[3]);
           // update character after choose option
           updateCharacterStats(this.characterTakeOptions[idx]);
           // create charactercollectsmaterials after choose option
@@ -171,7 +179,7 @@ export default class jungle_scene3 extends BaseScene {
       this.ingameSound.stop();
       this.sfx_monkey.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start("jungle_scene4");
+      this.scene.start("jungle_scene4", {isUsedUsableItem: this.isUsedUsableItem });
     }
 
     if (this.player.x > gameConfig.scale.width*4 - 700 && this.isInteracted == false) {

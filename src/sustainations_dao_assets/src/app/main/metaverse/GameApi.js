@@ -3,7 +3,7 @@ import store from 'app/store';
 // call api
 
 // get user info
-function getUserInfo(){
+function getUserInfo() {
   return new Promise((resolve, reject) => {
     const { user } = store.getState();
     const rs = user.actor.getUserInfo();
@@ -27,17 +27,18 @@ export function getQuestGameInfo(eventId){
 //   });
 // };
 
+
 // character
 const characterClassId = "cc1";
 
-async function createDefautCharacter(){
+async function createDefautCharacter() {
   const { user } = store.getState();
   const create = async () => await user.actor.createCharacter(characterClassId);
   const character = (await create()).ok;
   return character;
 };
 
-function loadCharacter(){
+function loadCharacter() {
   return new Promise((resolve, reject) => {
     const { user } = store.getState();
     const rs = user.actor.readCharacter();
@@ -45,25 +46,36 @@ function loadCharacter(){
   });
 };
 
-async function loadCharacterAwait(){
+async function loadCharacterAwait() {
   const { user } = store.getState();
   const func = async () => await user.actor.readCharacter();
   const rs = (await func()).ok[1];
   return rs;
 };
 
-function updateCharacterStats(character){
+function updateCharacterStats(character) {
   const promise = new Promise((resolve, reject) => {
     const { user } = store.getState();
     const rs = user.actor.updateCharacter(character);
     resolve(rs);
   })
-  promise.then((data)=>{
+  promise.then((data) => {
     return data;
   })
 };
 
-function getCharacterStatus(){
+export function updateCharacterStatsEngine(character) {
+  const promise = new Promise((resolve, reject) => {
+    const { user } = store.getState();
+    const rs = user.actor.updateCharacterStatsEngine(character);
+    resolve(rs);
+  })
+  promise.then((data) => {
+    return data;
+  })
+};
+
+function getCharacterStatus() {
   return new Promise((resolve, reject) => {
     const { user } = store.getState();
     const rs = user.actor.getCharacterStatus();
@@ -71,7 +83,7 @@ function getCharacterStatus(){
   });
 };
 
-async function resetCharacter(){
+async function resetCharacter() {
   return new Promise((resolve, reject) => {
     const { user } = store.getState();
     const rs = user.actor.resetCharacterStat();
@@ -79,7 +91,7 @@ async function resetCharacter(){
   });
 };
 
-async function characterTakeOption(eventId){
+async function characterTakeOption(eventId) {
   const { user } = store.getState();
   const takeOption = async () => await user.actor.takeOption(eventId);
   const result = (await takeOption()).ok;
@@ -98,7 +110,7 @@ function gainCharacterExp(character) {
 };
 
 // character actions
-function useHpPotion(characterId){
+function useHpPotion(characterId) {
   return new Promise((resolve, reject) => {
     const { user } = store.getState();
     const rs = user.actor.useHpPotion(characterId);
@@ -107,18 +119,18 @@ function useHpPotion(characterId){
 };
 
 // character selects items
-function characterSelectsItems(characterId, itemIds){
+function characterSelectsItems(characterId, itemIds) {
   const promise = new Promise((resolve, reject) => {
     const { user } = store.getState();
     const rs = user.actor.createCharacterSelectsItems(characterId, itemIds);
     resolve(rs);
   })
-  promise.then((data)=>{
+  promise.then((data) => {
     return data;
   })
 };
 
-async function listCharacterSelectsItems(characterId){
+async function listCharacterSelectsItems(characterId) {
   const { user } = store.getState();
   const listItems = async () => await user.actor.listCharacterSelectsItems(characterId);
   const rs = (await listItems()).ok;
@@ -126,32 +138,32 @@ async function listCharacterSelectsItems(characterId){
 };
 
 // character collects materials
-async function characterCollectsMaterials(eventId){
+async function characterCollectsMaterials(eventId) {
   const { user } = store.getState();
   const collectsMaterials = async () => await user.actor.collectsMaterials(eventId);
   const result = (await collectsMaterials()).ok;
   return result;
 };
 
-async function createCharacterCollectsMaterials(characterCollectsMaterials){
+async function createCharacterCollectsMaterials(characterCollectsMaterials) {
   const promise = new Promise((resolve, reject) => {
     const { user } = store.getState();
     const rs = user.actor.createCharacterCollectsMaterials(characterCollectsMaterials);
     resolve(rs);
   })
-  promise.then((data)=>{
+  promise.then((data) => {
     return data;
   })
 };
 
-async function listCharacterCollectsMaterials(characterId){
+async function listCharacterCollectsMaterials(characterId) {
   const { user } = store.getState();
   const characterCollectsMaterials = async () => await user.actor.listCharacterCollectsMaterials(characterId);
   const result = (await characterCollectsMaterials()).ok;
   return result;
 };
 
-async function resetCharacterCollectsMaterials(characterId){
+async function resetCharacterCollectsMaterials(characterId) {
   return new Promise((resolve, reject) => {
     const { user } = store.getState();
     const rs = user.actor.resetCharacterCollectsMaterials(characterId);
@@ -160,7 +172,7 @@ async function resetCharacterCollectsMaterials(characterId){
 };
 
 // load quest items
-async function loadQuestItems(questId){
+async function loadQuestItems(questId) {
   const { user } = store.getState();
   const listQuestItems = async () => await user.actor.listQuestItems(questId);
   const questItems = (await listQuestItems()).ok;
@@ -168,7 +180,7 @@ async function loadQuestItems(questId){
 };
 
 // load event options
-async function loadEventOptions(eventId, selectedItemsIds){
+async function loadEventOptions(eventId, selectedItemsIds) {
   const { user } = store.getState();
   const listEventOptions = async () => await user.actor.listEventOptions(eventId, selectedItemsIds);
   const eventOptions = (await listEventOptions()).ok;
@@ -176,14 +188,14 @@ async function loadEventOptions(eventId, selectedItemsIds){
 };
 
 // load event items
-async function loadEventItem(){
+async function loadEventItem() {
   const { user } = store.getState();
   const func = async () => await user.actor.loadEventItem();
   const result = (await func()).ok;
   return result;
 };
 
-function getHpPotion(){
+function getHpPotion() {
   return new Promise((resolve, reject) => {
     const { user } = store.getState();
     const rs = user.actor.getHpPotion();
@@ -191,8 +203,36 @@ function getHpPotion(){
   });
 };
 
+async function getUsableItem() {
+  const { user } = store.getState();
+  const func = async () => await user.actor.getUsableItem();
+  const result = (await func());
+  return result;
+};
+
+async function listStash() {
+  const { user } = store.getState();
+  const func = async () => await user.actor.listStash();
+  const result = (await func()).ok;
+  return result;
+};
+
+export async function randomStashPotion() {
+  const { user } = store.getState();
+  const func = async () => await user.actor.randomStashPotion();
+  const result = (await func()).ok;
+  return result;
+};
+
+async function useUsableItem(characterId, stashId) {
+  const { user } = store.getState();
+  const func = async () => await user.actor.useUsableItem(characterId, stashId);
+  const result = (await func()).ok;
+  return result;
+};
+
 // get AR item
-function canGetARItemPromise(eventItemId){
+function canGetARItemPromise(eventItemId) {
   return new Promise((resolve, reject) => {
     const { user } = store.getState();
     const rs = user.actor.canGetARItem(eventItemId);
@@ -207,21 +247,15 @@ async function createInventory(characterId) {
     const rs = user.actor.createInventory(characterId);
     resolve(rs);
   })
-  promise.then((data)=>{
+  promise.then((data) => {
+    console.log(data)
     return data;
   })
 };
 
-async function openInventory(characterId){
+async function openInventory(characterId) {
   const { user } = store.getState();
   const func = async () => await user.actor.listInventory(characterId);
-  const rs = (await func()).ok;
-  return rs;
-};
-
-async function listStash(characterId){
-  const { user } = store.getState();
-  const func = async () => await user.actor.listStash();
   const rs = (await func()).ok;
   return rs;
 };
@@ -247,7 +281,7 @@ function loadItemUrl(key) {
 };
 
 // pay quest
-async function payQuest(questId){
+async function payQuest(questId) {
   const { user } = store.getState();
   const func = async () => await user.actor.payQuest(questId);
   const result = (await func()).ok;
@@ -256,10 +290,48 @@ async function payQuest(questId){
 
 //read event
 async function readEvent(eventId) {
-  const {user} = store.getState();
-  const func = async() => await user.actor.readEvent(eventId);
+  const { user } = store.getState();
+  const func = async () => await user.actor.readEvent(eventId);
   const event = (await func()).ok;
   return event;
+}
+
+//Engine
+//Engine
+//quest
+async function createQuestEngine(quest) {
+  const { user } = store.getState();
+  const func = async () => await user.actor.createQuestEngine(quest);
+  const rs = (await func()).ok;
+  return rs;
+}
+
+async function createEventEngine(event) {
+  const { user } = store.getState();
+  const func = async () => await user.actor.createEventEngine(event);
+  const rs = (await func()).ok;
+  return rs;
+}
+
+async function createEventOptionEngine(eventOption) {
+  const { user } = store.getState();
+  const func = async () => await user.actor.createEventOptionEngine(eventOption);
+  const rs = (await func()).ok;
+  return rs;
+}
+
+export async function createAllEventOptionEngine(idEvent, eventOptions) {
+  const { user } = store.getState();
+  const func = async () => await user.actor.createAllEventOptionEngine(idEvent, eventOptions);
+  const rs = (await func()).ok;
+  return rs;
+}
+
+async function createScene(scene) {
+  const { user } = store.getState();
+  const func = async () => await user.actor.createScene(scene);
+  const rs = (await func()).ok;
+  return rs;
 }
 
 // list scene of quest
@@ -270,6 +342,41 @@ async function listSceneQuests(idQuest) {
   return list_scene_quest;
 }
 
+async function loadEventOptionEngines(eventId, selectedItemsIds) {
+  const { user } = store.getState();
+  const listEventOptionEngines = async () => await user.actor.listEventOptionEngines(eventId, selectedItemsIds);
+  const eventOptions = (await listEventOptionEngines()).ok;
+  return eventOptions;
+};
+
+async function readEventEngine(eventId) {
+  const { user } = store.getState();
+  const func = async () => await user.actor.readEventEngine(eventId);
+  const event = (await func()).ok;
+  return event;
+}
+
+export async function readQuestEngine(id) {
+  const { user } = store.getState();
+  const func = async () => await user.actor.readQuestEngine(id);
+  const quest = (await func()).ok;
+  return quest;
+}
+
+export async function getAllScenes(idQuest) {
+  const { user } = store.getState();
+  const func = async () => await user.actor.getAllScenes(idQuest);
+  const rs = (await func()).ok;
+  return rs;
+}
+
+export async function getListEventQuest() {
+  const { user } = store.getState();
+  const func = async () => await user.actor.getListEventQuest();
+  const rs = (await func()).ok;
+  return rs;
+}
+
 async function addAllInventory(characterId, amount) {
   return new Promise((resolve, reject) => {
     const { user } = store.getState();
@@ -278,17 +385,40 @@ async function addAllInventory(characterId, amount) {
   });
 };
 
-
-async function useUsableItem(characterId, stashId) {
+async function readSceneEngine(sceneId) {
   const { user } = store.getState();
-  const func = async () => await user.actor.useUsableItem(characterId, stashId);
+  const func = async () => await user.actor.readSceneEngine(sceneId);
+  const scene = (await func()).ok;
+  return scene;
+}
+
+async function loadQuestItemEngines(idQuest) {
+  const { user } = store.getState();
+  const func = async () => await user.actor.listQuestItemEngines(idQuest);
+  const scene = (await func()).ok;
+  return scene;
+}
+
+async function characterTakeOptionEngine(eventId) {
+  const { user } = store.getState();
+  const takeOptionEngine = async () => await user.actor.takeOptionEngine(eventId);
+  const result = (await takeOptionEngine()).ok;
+  return result;
+};
+
+async function characterCollectsMaterialEngines(eventId) {
+  const { user } = store.getState();
+  const func = async () => await user.actor.collectsMaterialEngines(eventId);
   const result = (await func()).ok;
   return result;
 };
 
-
-
-
+export async function deleteSceneEventAndEventOption(idScene) {
+  const { user } = store.getState();
+  const func = async () => await user.actor.deleteSceneEventAndEventOption(idScene);
+  const result = (await func()).ok;
+  return result;
+};
 
 export {
   getUserInfo,
@@ -311,8 +441,11 @@ export {
   loadEventItem,
   getHpPotion,
   useHpPotion,
+  getUsableItem,
+  listStash,
   gainCharacterExp,
   resetCharacterCollectsMaterials,
+  characterCollectsMaterialEngines,
   createInventory,
   openInventory,
   getRemainingTime,
@@ -320,6 +453,14 @@ export {
   readEvent,
   listSceneQuests,
   addAllInventory,
-  listStash,
-  useUsableItem
+  useUsableItem,
+  createQuestEngine,
+  createEventEngine,
+  createEventOptionEngine,
+  createScene,
+  readEventEngine,
+  readSceneEngine,
+  loadEventOptionEngines,
+  loadQuestItemEngines,
+  characterTakeOptionEngine,
 }

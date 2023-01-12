@@ -7,8 +7,6 @@ import {
   listCharacterSelectsItems,
   createCharacterCollectsMaterials,
   readEvent,
-  loadCharacter,
-  useUsableItem
 } from '../../GameApi';
 import { settings } from '../settings';
 import { isThisSecond } from 'date-fns';
@@ -29,7 +27,6 @@ export default class catalonia_scene2_1 extends BaseScene {
     super('catalonia_scene2_1');
   }
   init(data) {
-    this.isHealedPreviously = data.isUsedPotion;
     this.isUsedUsableItem = data.isUsedUsableItem;
     console.log(data)
   }
@@ -43,26 +40,7 @@ export default class catalonia_scene2_1 extends BaseScene {
 
   preload() {
     this.addLoadingScreen();
-
-    if (this.isUsedUsableItem[0]){
-      this.load.rexAwait(function (successCallback, failureCallback) {
-        loadCharacter().then((result) => {
-          this.characterData = result.ok[1];
-          this.characterBefore = this.characterData;
-          this.load.rexAwait(function (successCallback, failureCallback) {
-            useUsableItem(this.characterData.id, this.isUsedUsableItem[1]).then((result) => {
-              this.initialLoad("e8");     
-              successCallback();         
-            });
-          }, this);
-          successCallback();
-       
-        });
-      }, this);
-    }
-    else {
-      this.initialLoad("e8");
-    }
+    this.characterBefore = this.useUsableItemScene(this.isUsedUsableItem, "e8");
 
     //Preload
     this.clearSceneCache();
@@ -107,8 +85,6 @@ export default class catalonia_scene2_1 extends BaseScene {
   }
 
   async create() {
-    console.log("before: ", this.characterBefore)
-    console.log("after: ", this.characterData)
     this.isExhausted();
     this.listMaterial();
     this.hoverSound = this.sound.add('hoverSound');
@@ -146,7 +122,6 @@ export default class catalonia_scene2_1 extends BaseScene {
     this.setValue(this.stamina, this.characterData.currentStamina / this.characterData.maxStamina * 100);
     this.setValue(this.mana, this.characterData.currentMana / this.characterData.maxMana * 100);
     this.setValue(this.morale, this.characterData.currentMorale / this.characterData.maxMorale * 100);
-
     //popup
     this.premiumPopupWindow = this.add.sprite(gameConfig.scale.width / 2, gameConfig.scale.height / 2, "popupWindo")
       .setScale(0.5).setVisible(false).setScrollFactor(0);
@@ -182,7 +157,7 @@ export default class catalonia_scene2_1 extends BaseScene {
 
     // load event options
     this.options = [];
-    if(this.characterBefore != undefined){
+    if (this.characterBefore != undefined) {
       this.showColorLossAllStat(this.characterBefore, this.characterData)
     }
 
@@ -237,7 +212,7 @@ export default class catalonia_scene2_1 extends BaseScene {
     if (this.player.x > 2779) {
       this.ingameSound.stop();
       this.sfx_char_footstep.stop();
-      this.scene.start('catalonia_scene2_2', { isUsedPotion: this.isUsedPotion, isUsedUsableItem: this.isUsedUsableItem});
+      this.scene.start('catalonia_scene2_2', {isUsedUsableItem: this.isUsedUsableItem });
     }
 
     if (this.player.x > 1400 && this.isInteracted == false) {

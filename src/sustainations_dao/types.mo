@@ -59,7 +59,9 @@ module {
   public type Vote = { #no; #yes };
   public type VoteArgs = { vote : Vote; proposalId : Text };
   public type Voter = {
-    uid : Principal; vote : Vote; timestamp : Time.Time
+    uid : Principal;
+    vote : Vote;
+    timestamp : Time.Time;
   };
   public type ProposalType = {
     #project;
@@ -159,9 +161,9 @@ module {
 
   public type CharacterCollectsMaterials = {
     id : Text;
-    characterId: Text;
-    materialId: Text;
-    amount: Int;
+    characterId : Text;
+    materialId : Text;
+    amount : Int;
   };
 
   //--------------------- Quest ---------------------//
@@ -171,6 +173,30 @@ module {
     price : Nat64;
     description : Text;
     images : Text;
+  };
+
+  //--------------------- Quest Engine---------------------//
+  public type QuestEngine = {
+    id : Text;
+    userId: Principal;
+    name : Text;
+    price : Float;
+    description : Text;
+    images : Text;
+    isActive : Bool;
+    dateCreate : Time.Time;
+    listScene : [Text];
+  };
+
+  //--------------------- Scene ---------------------//
+  public type Scene = {
+    id : Text;
+    idQuest : Text;
+    idEvent : Text;
+    front : Text;
+    mid : Text;
+    back : Text;
+    obstacle : Text;
   };
 
   //--------------------- Item ---------------------//
@@ -286,14 +312,12 @@ public type UsableItem = {
     amount : Int;
   };
 
-
-
   // Land
   //--------------------- Land Config -------------------//
   public type LandConfig = {
     id : Text;
     mapWidth : Int;
-    mapHeight: Int;
+    mapHeight : Int;
   };
 
   //--------------------- Land Slot ---------------------//
@@ -308,7 +332,7 @@ public type UsableItem = {
     zoneLetter : Text;
     easting : Nat;
     northing : Nat;
-    price: Float; 
+    price : Float;
   };
 
   public type Geometry = {
@@ -316,10 +340,10 @@ public type UsableItem = {
     zoneLetter : Text;
     i : Nat;
     j : Nat;
-    coordinates: [[[Float]]];
+    coordinates : [[[Float]]];
   };
 
-//--------------------- Land Transfer History ---------------------//
+  //--------------------- Land Transfer History ---------------------//
   public type LandTransferHistory = {
     id : Text;
     buyerId : Principal;
@@ -329,21 +353,20 @@ public type UsableItem = {
     price : Float;
   };
 
-
-//--------------------- Land Buying Status ---------------------//
+  //--------------------- Land Buying Status ---------------------//
   public type LandBuyingStatus = {
     id : Principal;
     geometry : Geometry;
     randomTimes : Nat;
   };
 
-//--------------------------Nation--------------------------//
+  //--------------------------Nation--------------------------//
   public type Nation = {
     id : Principal;
     landSlotIds : [Text];
     indexRow : Nat;
     indexColumn : Nat;
-    utms : [[Nat]]; 
+    utms : [[Nat]];
   };
 
   public type NationGeometry = {
@@ -376,6 +399,15 @@ public type UsableItem = {
     description : Text;
   };
 
+//--------------------- ProductStorage ---------------------//
+  public type ProductStorage = {
+    id : Text;
+    userId : Text;
+    productId : Text;
+    quality : Text;
+    amount : Int; 
+  };
+
 //--------------------- Stash ---------------------//
   public type Stash = {
     id : Text;
@@ -385,7 +417,7 @@ public type UsableItem = {
     amount : Int; 
   };
 
-//-------------------------Tile------------------------------//
+  //-------------------------Tile------------------------------//
   public type Tile = {
     id : Text;
     landSlotId : Text;
@@ -394,7 +426,7 @@ public type UsableItem = {
     objectId : Text;
   };
 
-//--------------------- Farm Object ---------------------//
+  //--------------------- Farm Object ---------------------//
   public type FarmObject = {
     id : Text;
     landSlotId : Text;
@@ -409,7 +441,7 @@ public type UsableItem = {
     remainingTime : Int;
   };
 
-//--------------------- Seed ---------------------//
+  //--------------------- Seed ---------------------//
   public type Seed = {
     id : Text;
     harvestedProductId : Text;
@@ -425,7 +457,7 @@ public type UsableItem = {
     maxAmount : Int;
   };
 
-//--------------------- Plant ---------------------//
+  //--------------------- Plant ---------------------//
   public type Plant = {
     id : Text;
     seedId : Text;
@@ -472,8 +504,8 @@ public type UsableItem = {
   public type AlchemyRecipeDetail = {
     id : Text;
     recipeId : Text;
-    productId: Text;
-    amount: Int;
+    productId : Text;
+    amount : Int;
   };
 
 //--------------------- BuildingType -------------//
@@ -509,6 +541,21 @@ public type UsableItem = {
     status : Text;
     buildTime : Int;
     startProducingTime : Int;
+  };
+
+//--------------------- Production Queue -------------//
+  public type ProductionQueue = {
+    id : Text;
+    nodeAmount : Int;
+    queueMaxSize : Int;
+  };
+
+//--------------- Production Queue Node -------------//
+  public type ProductionQueueNode = {
+    id : Text;
+    recipeId : Text;
+    status : Text;
+    startCraftingTime : Int;
   };
 
   // Error codes
@@ -548,11 +595,15 @@ public type UsableItem = {
   ];
 
   public let refillProductCategories = [
-    "Food", "Spices", "Body Care", "Household Goods"
+    "Food",
+    "Spices",
+    "Body Care",
+    "Household Goods"
   ];
 
   public let proposalFundingTypes = [
-    "100% Funded", "Partially Funded"
+    "100% Funded",
+    "Partially Funded"
   ];
 
   // Refill Stations

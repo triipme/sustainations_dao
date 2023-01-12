@@ -46,11 +46,11 @@ class thanks extends BaseScene {
         this.pregameSound.stop();
         this.scene.start('selectMap');
       });
-    createInventory(this.characterData.id);
+    await createInventory(this.characterData.id);
     resetCharacterCollectsMaterials(this.characterData.id);
     gainCharacterExp(this.characterData);
-    this.inventory = await openInventory(this.characterData.id);
+    // this.inventory = await openInventory(this.characterData.id);
   }
 
 }
-export default thanks;
+export default thanks; 

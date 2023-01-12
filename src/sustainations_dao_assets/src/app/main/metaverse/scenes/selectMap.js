@@ -8,8 +8,9 @@ import {
   getRemainingTime,
   payQuest,
   getUserInfo,
-  buyLandSlot
+  buyLandSlot,
 } from '../GameApi';
+
 
 const bg = 'metaverse/selectMap/background.png';
 const text = 'metaverse/selectMap/call_to_action.png';
@@ -18,7 +19,7 @@ const jungleLocationDetail = 'metaverse/selectMap/jungle_location_detail.png';
 const cataloniaLocationDetail = 'metaverse/selectMap/catalonia_location_detail.png';
 const lavaLocationDetail = 'metaverse/selectMap/lava_location_detail.png';
 const lakeLocationDetail = 'metaverse/selectMap/lake_location_detail.png'
-const cityLocationDetail = 'metaverse/selectMap/city_location_detail.png'
+const engineLocationDetail = 'metaverse/selectMap/lake_location_detail.png'
 const btnBack = 'metaverse/selectItems/UI_back.png';
 const popupWindow = 'metaverse/selectMap/Jungle_popup.png';
 const popupClose = 'metaverse/selectMap/UI_ingame_close.png';
@@ -38,6 +39,8 @@ class selectMap extends BaseScene {
     console.clear();
   }
 
+
+
   preload() {
     this.addLoadingScreen();
     this.load.rexAwait(function (successCallback, failureCallback) {
@@ -54,8 +57,7 @@ class selectMap extends BaseScene {
         successCallback();
       });
     }, this);
-
-
+    
     //preload
     this.clearCache();
     this.load.image('bg', bg);
@@ -64,7 +66,7 @@ class selectMap extends BaseScene {
     this.load.image('cataloniaLocationDetail', cataloniaLocationDetail);
     this.load.image('lavaLocationDetail', lavaLocationDetail);
     this.load.image('lakeLocationDetail', lakeLocationDetail);
-    this.load.image('cityLocationDetail', cityLocationDetail);
+    this.load.image('engineLocationDetail', engineLocationDetail); //enigne
     this.load.spritesheet('selectArea', selectArea, { frameWidth: 498, frameHeight: 800 });
     this.load.image("btnBack", btnBack);
     this.load.spritesheet('popupWindow', popupWindow, { frameWidth: 980, frameHeight: 799 });
@@ -87,7 +89,7 @@ class selectMap extends BaseScene {
       .setVisible(false).setInteractive();
     this.lakeLocationDetail = this.add.image(247, 167, 'lakeLocationDetail')
       .setVisible(false).setInteractive();
-    this.cityLocationDetail = this.add.image(247, 167, 'cityLocationDetail')
+    this.engineLocationDetail = this.add.image(247, 167, 'engineLocationDetail')
       .setVisible(false).setInteractive();
     this.btnBack = this.add.image(40, 25, 'btnBack')
       .setOrigin(0).setInteractive();
@@ -187,28 +189,29 @@ class selectMap extends BaseScene {
       };
     });
 
-
-    //addspriteX, addspriteY, nameMap
-    this.selectAreaCity = this.add.sprite(1000, 420, 'selectArea')
+    //Engine
+    this.selectAreaEngine = this.add.sprite(850, 305, 'selectArea')
       .setScale(0.18)
       .setInteractive();
-    this.selectAreaCity.on('pointerover', () => {
-      this.selectAreaCity.setFrame(1);
-      this.cityLocationDetail.setVisible(true);
+    this.selectAreaEngine.on('pointerover', () => {
+      this.selectAreaEngine.setFrame(1);
+      this.engineLocationDetail.setVisible(true);
       this.hoverSound.play();
     });
-    this.selectAreaCity.on('pointerout', () => {
-      this.selectAreaCity.setFrame(0);
-      this.cityLocationDetail.setVisible(false);
+    this.selectAreaEngine.on('pointerout', () => {
+      this.selectAreaEngine.setFrame(0);
+      this.engineLocationDetail.setVisible(false);
     });
-    this.selectAreaCity.on('pointerdown', () => {
+    this.selectAreaEngine.on('pointerdown', () => {
       this.clickSound.play();
       if (this.getRemainingTime != 0) this.scene.start('exhausted');
       else {
         resetCharacter();
-        this.scene.start('selectItemScene', { map: 'city' });
+        this.scene.start('selectItemScene', { map: 'test' });
       };
     });
+
+
 
     this.text = this.add.image(65, 425, 'text').setOrigin(0).setScale(0.7);
 

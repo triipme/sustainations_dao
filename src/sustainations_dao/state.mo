@@ -32,6 +32,12 @@ module {
       players : Map<Text, Types.MemoryCardEnginePlayer>;
       rewards : Map<Text, Types.MemoryCardEngineReward>;
     };
+    questEngine : {
+      quests : TrieMap.TrieMap<Text, Types.QuestEngine>;
+      events : TrieMap.TrieMap<Text, Types.Event>;
+      scenes : TrieMap.TrieMap<Text, Types.Scene>;
+      eventOptions : TrieMap.TrieMap<Text, Types.EventOption>;
+    };
     characterClasses : Map<Text, Types.CharacterClass>;
     characters : Map<Text, Types.Character>;
     characterTakesOptions : Map<Text, Types.CharacterTakesOption>;
@@ -41,24 +47,25 @@ module {
     items : Map<Text, Types.Item>;
     questItems : Map<Text, Types.QuestItem>;
     products: Map<Text, Types.Product>;
+    productStorages : Map<Text, Types.ProductStorage>;
     usableItems : Map<Text, Types.UsableItem>;
     eventItems : Map<Text, Types.EventItem>;
     arItems : Map<Text, Types.ARItem>;
     events : Map<Text, Types.Event>;
     eventOptions : Map<Text, Types.EventOption>;
-    gears : Map<Text,Types.Gear>;
-    gearClasses : Map<Text,Types.GearClass>;
+    gears : Map<Text, Types.Gear>;
+    gearClasses : Map<Text, Types.GearClass>;
     gearRarities : Map<Text, Types.GearRarity>;
     gearSubstats : Map<Text, Types.GearSubstat>;
     materials : Map<Text, Types.Material>;
     inventories : Map<Text, Types.Inventory>;
     stashes : Map<Text, Types.Stash>;
-    landSlots : Map<Text,Types.LandSlot>;
-    landTransferHistories : Map<Text,Types.LandTransferHistory>;
-    landBuyingStatuses : Map<Text,Types.LandBuyingStatus>;
-    landConfigs : Map<Text,Types.LandConfig>;
-    nations : Map<Text,Types.Nation>;
-    landEffects : Map<Text,Types.LandEffect>;
+    landSlots : Map<Text, Types.LandSlot>;
+    landTransferHistories : Map<Text, Types.LandTransferHistory>;
+    landBuyingStatuses : Map<Text, Types.LandBuyingStatus>;
+    landConfigs : Map<Text, Types.LandConfig>;
+    nations : Map<Text, Types.Nation>;
+    landEffects : Map<Text, Types.LandEffect>;
     userHasLandEffects : Map<Text, Types.UserHasLandEffect>;
     tiles : Map<Text, Types.Tile>;
     seeds : Map<Text, Types.Seed>;
@@ -72,6 +79,8 @@ module {
     buildingTypes : Map<Text, Types.BuildingType>;
     buildingBuyingHistories : Map<Text,Types.BuildingBuyingHistory>;
     buildings : Map<Text, Types.Building>;
+    productionQueues : Map<Text, Types.ProductionQueue>;
+    productionQueueNodes : Map<Text, Types.ProductionQueueNode>;
   };
 
   public func empty() : State {
@@ -91,12 +100,18 @@ module {
         products = TrieMap.TrieMap<Text, Types.RBProduct>(Text.equal, Text.hash);
         orders = TrieMap.TrieMap<Text, Types.RBOrder>(Text.equal, Text.hash);
       };
-      memoryCardEngine  = {
+      memoryCardEngine = {
         games = TrieMap.TrieMap<Text, Types.MemoryCardEngineGame>(Text.equal, Text.hash);
         stages = TrieMap.TrieMap<Text, Types.MemoryCardEngineStage>(Text.equal, Text.hash);
         cards = TrieMap.TrieMap<Text, Types.MemoryCardEngineCard>(Text.equal, Text.hash);
         players = TrieMap.TrieMap<Text, Types.MemoryCardEnginePlayer>(Text.equal, Text.hash);
         rewards = TrieMap.TrieMap<Text, Types.MemoryCardEngineReward>(Text.equal, Text.hash);
+      };
+      questEngine = {
+        quests = TrieMap.TrieMap<Text, Types.QuestEngine>(Text.equal, Text.hash);
+        events = TrieMap.TrieMap<Text, Types.Event>(Text.equal, Text.hash);
+        scenes = TrieMap.TrieMap<Text, Types.Scene>(Text.equal, Text.hash);
+        eventOptions = TrieMap.TrieMap<Text, Types.EventOption>(Text.equal, Text.hash);
       };
       characterClasses = TrieMap.TrieMap<Text, Types.CharacterClass>(Text.equal, Text.hash);
       characters = TrieMap.TrieMap<Text, Types.Character>(Text.equal, Text.hash);
@@ -107,6 +122,7 @@ module {
       items = TrieMap.TrieMap<Text, Types.Item>(Text.equal, Text.hash);
       questItems = TrieMap.TrieMap<Text, Types.QuestItem>(Text.equal, Text.hash);
       products = TrieMap.TrieMap<Text, Types.Product>(Text.equal, Text.hash);
+      productStorages = TrieMap.TrieMap<Text, Types.ProductStorage>(Text.equal, Text.hash);
       usableItems = TrieMap.TrieMap<Text, Types.UsableItem>(Text.equal, Text.hash);
       eventItems = TrieMap.TrieMap<Text, Types.EventItem>(Text.equal, Text.hash);
       arItems = TrieMap.TrieMap<Text, Types.ARItem>(Text.equal, Text.hash);
@@ -138,6 +154,8 @@ module {
       buildingTypes = TrieMap.TrieMap<Text, Types.BuildingType>(Text.equal,Text.hash);
       buildingBuyingHistories = TrieMap.TrieMap<Text, Types.BuildingBuyingHistory>(Text.equal,Text.hash);
       buildings = TrieMap.TrieMap<Text, Types.Building>(Text.equal,Text.hash);
+      productionQueues = TrieMap.TrieMap<Text, Types.ProductionQueue>(Text.equal,Text.hash);
+      productionQueueNodes = TrieMap.TrieMap<Text, Types.ProductionQueueNode>(Text.equal,Text.hash);
     };
   };
 };
