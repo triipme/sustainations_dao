@@ -29,6 +29,7 @@ import { setOptions } from 'leaflet';
 import SceneTable from './SceneTable';
 import RowOrderingGrid from './DragTable';
 import DragDrop from './DragDrop';
+import { useNavigate } from 'react-router-dom';
 
 // AWS3
 const AWS = require('aws-sdk');
@@ -195,7 +196,7 @@ const QuestEngine = () => {
         let createOptions = await createAllEventOptionEngine(data.idEvent, options);
         console.log("createOptions", createOptions)
         dispatch(showMessage({ message: 'Success!' }));
-        setSceneInfoOutside(true)
+        // setSceneInfoOutside(true)
       }
       else {
         console.log("quest not found")
@@ -212,7 +213,8 @@ const QuestEngine = () => {
     setLoading(true);
     try {
       let checkCreateQuest = await user.actor.checkCreatedQuestOfUser()
-      if (checkCreateQuest.ok?.id == undefined){
+      console.log("price: ", checkCreateQuest.ok?.price)
+      if (checkCreateQuest.ok?.id == undefined) {
         // QUEST ENGINE
         let quest = {
           id: data.idQuest,
@@ -247,11 +249,9 @@ const QuestEngine = () => {
   }
 
 
-
   //View all Scene
   const [viewAll, setViewAll] = useState({})
   const [openScene, setOpenScene] = useState(false)
-  const [id, setId] = useState([])
   const handleView = async () => {
     let checkCreateQuest = await user.actor.checkCreatedQuestOfUser()
     idQuest = checkCreateQuest.ok?.id
@@ -259,14 +259,30 @@ const QuestEngine = () => {
     let allScene = await getAllScenes(idQuest)
     setViewAll(allScene)
     setOpenScene(!openScene)
-    // const sceneInfo = (await user.actor.listSceneQuests(idQuest))?.ok
-    // setSceneInfoOutside(sceneInfo);
-    // console.log("sceneInfo", sceneInfo)
-    // return sceneInfo
-    // setId()
   }
 
+  const [id, setId] = useState()
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        let checkCreateQuest = await user.actor.checkCreatedQuestOfUser()
+        idQuest = checkCreateQuest.ok?.id
+        setId(idQuest)
+      } catch (err) {
+        console.error(err)
+      }
+    }
+    fetchData();
+  }, []);
+
   // const sceneInfoOutside = handleView();
+
+  const navigate = useNavigate();
+
+  const handleReview = () => {
+    navigate(`/metaverse/quest-design/${id}/preview`);
+  };
 
   return (
     <div className="relative flex flex-col flex-auto items-center">
@@ -319,16 +335,19 @@ const QuestEngine = () => {
               )}
             />
 
-            <br />
-            <LoadingButton
-              className="ml-8"
-              variant="contained"
-              color="secondary"
-              loading={loading}
-              onClick={handleSubmit(onSubmitQuest)}
-            >
-              Save
-            </LoadingButton>
+            <br></br>
+            <div style={{marginTop: "20px"}}>
+              <LoadingButton
+                className="ml-8"
+                variant="contained"
+                color="secondary"
+                loading={loading}
+                onClick={handleSubmit(onSubmitQuest)}
+              >
+                Save
+              </LoadingButton>
+            </div>
+
 
             <Typography className="mt-32 mb-16 text-3xl font-bold tracking-tight leading-tight">
               Event
@@ -582,7 +601,7 @@ const QuestEngine = () => {
                 variant="contained"
                 color="secondary"
                 loading={loading}
-                // onClick={handleView}
+                onClick={handleReview}
               >
                 Review
               </LoadingButton>
