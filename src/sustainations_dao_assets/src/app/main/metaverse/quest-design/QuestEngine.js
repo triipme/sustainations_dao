@@ -196,7 +196,7 @@ const QuestEngine = () => {
         let createOptions = await createAllEventOptionEngine(data.idEvent, options);
         console.log("createOptions", createOptions)
         dispatch(showMessage({ message: 'Success!' }));
-        setSceneInfoOutside(true)
+        // setSceneInfoOutside(true)
       }
       else {
         console.log("quest not found")
@@ -213,7 +213,8 @@ const QuestEngine = () => {
     setLoading(true);
     try {
       let checkCreateQuest = await user.actor.checkCreatedQuestOfUser()
-      if (checkCreateQuest.ok?.id == undefined){
+      console.log("price: ", checkCreateQuest.ok?.price)
+      if (checkCreateQuest.ok?.id == undefined) {
         // QUEST ENGINE
         let quest = {
           id: data.idQuest,
@@ -264,13 +265,13 @@ const QuestEngine = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-        try {
-          let checkCreateQuest = await user.actor.checkCreatedQuestOfUser()
-          idQuest = checkCreateQuest.ok?.id
-          setId(idQuest )
-        } catch (err) {
-            console.error(err)
-        }
+      try {
+        let checkCreateQuest = await user.actor.checkCreatedQuestOfUser()
+        idQuest = checkCreateQuest.ok?.id
+        setId(idQuest)
+      } catch (err) {
+        console.error(err)
+      }
     }
     fetchData();
   }, []);
@@ -334,16 +335,19 @@ const QuestEngine = () => {
               )}
             />
 
-            <br />
-            <LoadingButton
-              className="ml-8"
-              variant="contained"
-              color="secondary"
-              loading={loading}
-              onClick={handleSubmit(onSubmitQuest)}
-            >
-              Save
-            </LoadingButton>
+            <br></br>
+            <div style={{marginTop: "20px"}}>
+              <LoadingButton
+                className="ml-8"
+                variant="contained"
+                color="secondary"
+                loading={loading}
+                onClick={handleSubmit(onSubmitQuest)}
+              >
+                Save
+              </LoadingButton>
+            </div>
+
 
             <Typography className="mt-32 mb-16 text-3xl font-bold tracking-tight leading-tight">
               Event
