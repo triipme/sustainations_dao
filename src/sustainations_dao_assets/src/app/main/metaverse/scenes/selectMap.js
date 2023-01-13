@@ -207,7 +207,7 @@ class selectMap extends BaseScene {
       if (this.getRemainingTime != 0) this.scene.start('exhausted');
       else {
         resetCharacter();
-        this.scene.start('selectItemScene', { map: 'test' });
+        this.scene.start('selectItemScene', { map: 'quest-design' });
       };
     });
 
