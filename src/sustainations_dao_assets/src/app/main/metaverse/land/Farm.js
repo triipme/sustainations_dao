@@ -261,6 +261,7 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
     const [rcp, setRcp] = useState({})
     const [num, setNum] = useState(-1)
     const [queue, setQueue] = useState([])
+    const [loadingFarmProduce, setLoadingFarmProduce] = useState("")
 
     const style = {
       position: 'absolute',
@@ -390,7 +391,7 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
               <h3 style={{ backgroundColor: rcp.canCraft == true ? "#ffa200" : "#cccccc", }} onClick={async () => {
                 console.log(objectId)
                 if (rcp.canCraft === true && objectId !== "None") {
-                  setLoading(true)
+                  setLoadingFarmProduce("craft")
                   console.log(await user.actor.craftUsableItem(objectId, rcp.id))
                   setQueue((await user.actor.listProductionQueueNodesInfo(objectId))?.ok)
                   const listProductStorage = (await user.actor.listProductStorage()).ok
@@ -404,9 +405,9 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
                     }
                   }
                   listProductStorage.forEach(item => defineAmount(item, item.productName))
-                  setLoading(false)
+                  setLoadingFarmProduce("")
                 }
-              }}>{loading ? <i className="fa fa-spinner fa-spin" /> : <span>CRAFT</span>}</h3>
+              }}>{loadingFarmProduce === "craft" ? <i className="fa fa-spinner fa-spin" /> : <span>CRAFT</span>}</h3>
               <h3 style={{
                 backgroundColor: queue.filter(item => {
                   return item.status == "Completed"
@@ -416,13 +417,14 @@ const Farm = ({ mapFeatures, landSlotProperties }) => {
                   if (objectId !== "None" && queue.filter(item => {
                     return item.status == "Completed"
                   }).length > 0) {
-                    setLoading(true)
+                    setLoadingFarmProduce("collect")
                     await user.actor.collectUsableItems(objectId)
-                    setLoading(false)
+                    setQueue((await user.actor.listProductionQueueNodesInfo(objectId))?.ok)
+                    setLoadingFarmProduce("")
                   }
                 }}
 
-              >{loading ? <i className="fa fa-spinner fa-spin" /> : <span>Collect</span>}</h3>
+              >{loadingFarmProduce === "collect" ? <i className="fa fa-spinner fa-spin" /> : <span>Collect</span>}</h3>
             </div>
           </Box>
         </Modal>

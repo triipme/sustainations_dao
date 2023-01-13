@@ -39,7 +39,7 @@
 }
 
 /* Add Animation */
-@-webkit-keyframes animatetop {
+/* @-webkit-keyframes animatetop {
     from {
         top: -300px;
         opacity: 0
@@ -61,7 +61,7 @@
         top: 0;
         opacity: 1
     }
-}
+} */
 
 /* The Close Button */
 .close {
