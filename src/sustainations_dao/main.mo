@@ -34,6 +34,7 @@ import CharacterTakesOption "./game/characterTakesOption";
 import CharacterCollectsMaterials "./game/characterCollectsMaterials";
 import Quest "./game/quest";
 import QuestEngine "./game/questEngine";
+import QuestGame "./game/questGame";
 import EventEngine "./game/eventEngine";
 import EventOptionEngine "./game/eventOptionEngine";
 import Scene "./game/scene";
@@ -121,6 +122,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     scenes : [(Text, Types.Scene)] = [];
     eventOptions : [(Text, Types.EventOption)] = [];
   };
+  private stable var questGames : [(Text, Types.QuestGame)] = [];
   private stable var items : [(Text, Types.Item)] = [];
   private stable var questItems : [(Text, Types.QuestItem)] = [];
   private stable var products : [(Text, Types.Product)] = [];
@@ -189,6 +191,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       scenes = Iter.toArray(state.questEngine.scenes.entries());
       eventOptions = Iter.toArray(state.questEngine.eventOptions.entries());
     };
+    questGames := Iter.toArray(state.questGames.entries());
     characterClasses := Iter.toArray(state.characterClasses.entries());
     characters := Iter.toArray(state.characters.entries());
     characterTakesOptions := Iter.toArray(state.characterTakesOptions.entries());
@@ -302,6 +305,9 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
     for ((k, v) in Iter.fromArray(questEngine.eventOptions)) {
       state.questEngine.eventOptions.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(questGames)) {
+      state.questGames.put(k, v);
     };
     for ((k, v) in Iter.fromArray(characterClasses)) {
       state.characterClasses.put(k, v);
@@ -4012,6 +4018,57 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       };
     };
     #ok(result);
+  };
+
+  //Quest Game
+  public shared ({caller}) func createQuestGame(questGame: Types.QuestGame) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsQuestGame = state.questGames.get(questGame.id);
+    switch (rsQuestGame) {
+      case (?v) {#err(#AlreadyExisting)};
+      case null {
+        QuestGame.create(questGame, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared query({caller}) func readQuestGame(id: Text) : async Response<Types.QuestGame> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsQuestGame = state.questGames.get(id);
+    return Result.fromOption(rsQuestGame, #NotFound);
+  };
+
+  public shared ({ caller }) func updateQuestGame(questGame : Types.QuestGame) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsQuestGame = state.questGames.get(questGame.id);
+    switch (rsQuestGame) {
+      case null { #err(#NotFound) };
+      case (?V) {
+        QuestGame.update(questGame, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared ({ caller }) func deleteQuestGame(id : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsQuestGame = state.questGames.get(id);
+    switch (rsQuestGame) {
+      case (null) { #err(#NotFound) };
+      case (?V) {
+        let deletedQuestGame = state.questGames.delete(id);
+        #ok("Success");
+      };
+    };
   };
 
   // Item

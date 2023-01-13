@@ -188,6 +188,17 @@ module {
     listScene : [Text];
   };
 
+  public type QuestGame = {
+    id: Text;
+    questId: Text;
+    characterId: Text;
+    timestamp: Int;
+    hp: Float;
+    stamina: Float;
+    morale: Float;
+    mana: Float;
+  };
+
   //--------------------- Scene ---------------------//
   public type Scene = {
     id : Text;
