@@ -98,11 +98,8 @@ const QuestEngine = () => {
     setLoading(true);
     try {
       //get quest id
-      console.log("1")
       let checkCreateQuest = await user.actor.checkCreatedQuestOfUser()
-      console.log("2")
       idQuest = checkCreateQuest.ok?.id;
-      console.log("3")
       console.log("idQuet: ", idQuest)
       console.log("checkCreateQuest", checkCreateQuest)
       if (idQuest != undefined) {

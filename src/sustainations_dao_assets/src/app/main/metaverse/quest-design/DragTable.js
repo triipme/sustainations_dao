@@ -60,10 +60,12 @@ export default function RowOrderingGrid(props) {
   const handleUpdate = async () => {
     setLoadingButton(true)
     try{
-      console.log(idList)
-      const sceneInfo = (await user.actor.updateSceneQuest("test", idList))?.ok
+      let checkCreateQuest = await user.actor.checkCreatedQuestOfUser()
+      let idQuest = checkCreateQuest.ok?.id;
+      console.log("idList," , idList)
+      const sceneInfo = (await user.actor.updateSceneQuest(idQuest, idList))?.ok
       console.log(sceneInfo)
-    }catch{
+    }catch (err){
       console.log(err)
     }
     setLoadingButton(false)
