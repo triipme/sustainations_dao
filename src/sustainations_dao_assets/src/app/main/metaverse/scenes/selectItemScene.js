@@ -10,9 +10,8 @@ import {
   loadCharacterAwait,
   resetCharacterCollectsMaterials,
   loadQuestItemEngines,
-  getListEventQuest,
   getAllScenes,
-  listSceneQuests
+  checkCreatedQuestOfUser
 } from '../GameApi';
 import { throws } from 'assert';
 
@@ -67,13 +66,23 @@ class selectItemScene extends BaseScene {
       });
     }, this);
 
-    this.load.rexAwait(function (successCallback, failureCallback) {
-      getAllScenes(this.map).then((result) => {
-        this.listScene = result;
-        console.log(result);
-        successCallback();
-      });
-    }, this);
+    if (this.map == "quest-design"){
+      this.load.rexAwait(function (successCallback, failureCallback) {
+        checkCreatedQuestOfUser().then((result) => {
+          this.questId = result.id;
+          console.log("dao vao ham 0")
+          this.load.rexAwait(function (successCallback, failureCallback) {
+            getAllScenes(this.questId).then((result) => {
+              console.log("da vao ham")
+              this.listScene = result;
+              console.log(result);
+              successCallback();
+            });
+          }, this);
+          successCallback();
+        });
+      }, this);
+    }
 
     if (this.map == "engine") {
       this.load.rexAwait(function (successCallback, failureCallback) {
@@ -246,7 +255,7 @@ class selectItemScene extends BaseScene {
         case 'lake':
           this.scene.start('lake_scene1');
           break;
-        case 'test':
+        case 'quest-design':
           // this.scene.start('BaseEngine', {  listScene: await listSceneQuests("qe1")});
           // this.scene.start('Engine', {listScene: this.listScene, listEvent: this.listEvent});
           this.scene.start('Test', {listScene: this.listScene, listEvent: this.listEvent});

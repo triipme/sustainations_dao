@@ -26,6 +26,9 @@ const popupClose = 'metaverse/selectMap/UI_ingame_close.png';
 const popupAccept = 'metaverse/selectMap/UI_ingame_popup_accept.png';
 const itemnotice = 'metaverse/selectMap/item_notice.png';
 
+const popupWindowEngine = 'metaverse/selectMap/Jungle_popup.png';
+const popupCloseEngine = 'metaverse/selectMap/UI_ingame_close.png';
+const popupAcceptEngine = 'metaverse/selectMap/UI_ingame_popup_accept.png';
 class selectMap extends BaseScene {
   constructor() {
     super('selectMap');
@@ -57,7 +60,7 @@ class selectMap extends BaseScene {
         successCallback();
       });
     }, this);
-    
+
     //preload
     this.clearCache();
     this.load.image('bg', bg);
@@ -73,6 +76,12 @@ class selectMap extends BaseScene {
     this.load.image("popupClose", popupClose);
     this.load.image("popupAccept", popupAccept);
     this.load.image("itemnotice", itemnotice);
+
+    //engine
+    this.load.spritesheet('popupWindowEngine', popupWindowEngine, { frameWidth: 980, frameHeight: 799 });
+    this.load.image("popupCloseEngine", popupCloseEngine);
+    this.load.image("popupAcceptEngine", popupAcceptEngine);
+
   }
 
   async create() {
@@ -190,7 +199,7 @@ class selectMap extends BaseScene {
     });
 
     //Engine
-    this.selectAreaEngine = this.add.sprite(850, 305, 'selectArea')
+    this.selectAreaEngine = this.add.sprite(420, 393, 'selectArea')
       .setScale(0.18)
       .setInteractive();
     this.selectAreaEngine.on('pointerover', () => {
@@ -202,18 +211,57 @@ class selectMap extends BaseScene {
       this.selectAreaEngine.setFrame(0);
       this.engineLocationDetail.setVisible(false);
     });
-    this.selectAreaEngine.on('pointerdown', () => {
+    // this.selectAreaEngine.on('pointerdown', () => {
+    //   this.clickSound.play();
+    //   if (this.getRemainingTime != 0) this.scene.start('exhausted');
+    //   else {
+    //     resetCharacter();
+    //     this.scene.start('selectItemScene', { map: 'quest-design' });
+    //   };
+    // });
+    this.selectAreaEngine.on('pointerdown', async () => {
+      this.clickSound.play();
+      this.premiumPopupWindowEngine.setVisible(true);
+      this.premiumPopupCloseBtnEngine.setVisible(true);
+      if (this.currentICP >= this.requiredICP) {
+        this.premiumPopupAcceptBtnEngine.setVisible(true);
+      }
+      this.selectAreaEngine.disableInteractive();
+      this.selectAreaCatalonia.disableInteractive();
+      this.selectAreaEngine.disableInteractive();
+    });
+
+    //Engine popup
+    this.premiumPopupWindowEngine = this.add.sprite(gameConfig.scale.width / 2, gameConfig.scale.height / 2, "popupWindowEngine")
+      .setScale(0.5).setVisible(false);
+    if (this.currentICP < this.requiredICP) {
+      this.premiumPopupWindowEngine.setFrame(1);
+    }
+    this.premiumPopupCloseBtnEngine = this.add.image(gameConfig.scale.width / 2 + 230, gameConfig.scale.height / 2 - 150, "popupCloseEngine")
+      .setInteractive().setScale(0.25).setVisible(false);
+    this.premiumPopupAcceptBtnEngine = this.add.image(gameConfig.scale.width / 2, gameConfig.scale.height / 2 + 115, "popupAcceptEngine")
+      .setInteractive().setScale(0.5).setVisible(false);
+
+    this.premiumPopupCloseBtnEngine.on('pointerdown', () => {
+      this.clickSound.play();
+      this.premiumPopupWindowEngine.setVisible(false);
+      this.premiumPopupCloseBtnEngine.setVisible(false);
+      this.premiumPopupAcceptBtnEngine.setVisible(false);
+      this.selectAreaJungle.setInteractive();
+      this.selectAreaCatalonia.setInteractive();
+      this.selectAreaEngine.setInteractive();
+    });
+    this.premiumPopupAcceptBtnEngine.on('pointerdown', async () => {
       this.clickSound.play();
       if (this.getRemainingTime != 0) this.scene.start('exhausted');
       else {
         resetCharacter();
-        this.scene.start('selectItemScene', { map: 'test' });
+        this.scene.start('selectItemScene', { map: 'quest-design' });
+        // pay for jungle quest
+        // await payQuest("jungle");
       };
     });
 
-
-
-    this.text = this.add.image(65, 425, 'text').setOrigin(0).setScale(0.7);
 
     //jungle popup
     this.premiumPopupWindow = this.add.sprite(gameConfig.scale.width / 2, gameConfig.scale.height / 2, "popupWindow")
@@ -244,6 +292,7 @@ class selectMap extends BaseScene {
         await payQuest("jungle");
       };
     });
+
   }
 
 }

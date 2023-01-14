@@ -29,6 +29,7 @@ import { setOptions } from 'leaflet';
 import SceneTable from './SceneTable';
 import RowOrderingGrid from './DragTable';
 import DragDrop from './DragDrop';
+import { useNavigate } from 'react-router-dom';
 
 // AWS3
 const AWS = require('aws-sdk');
@@ -56,9 +57,11 @@ const QuestEngine = () => {
       idQuest: idQuest,
       idEvent: idEvent,
       idScene: idScene,
-      name: '',
-      price: 0,
-      description: '',
+      quest: {
+        name: '',
+        price: 0,
+        description: ''
+      },
       imageQuest: {
         base64data: '',
         path: ''
@@ -89,118 +92,112 @@ const QuestEngine = () => {
 
     }
   });
-
   const onSubmit = async (data) => {
     console.log("data: ", data)
     console.log(data.questEventName, "quest event name")
     setLoading(true);
     try {
+      //get quest id
       let checkCreateQuest = await user.actor.checkCreatedQuestOfUser()
-      console.log("checkCreatedQuestOfUser: ", checkCreateQuest.ok?.id)
-      if (checkCreateQuest.ok?.id == undefined){
-        // QUEST ENGINE
-        let quest = {
-          id : idQuest,
-          name : "MY QUEST DESIGN",
-          price : 0.02,
-          description : "This is my design",
-          images : "lake.png"
+      idQuest = checkCreateQuest.ok?.id;
+      console.log("idQuet: ", idQuest)
+      console.log("checkCreateQuest", checkCreateQuest)
+      if (idQuest != undefined) {
+        //EVENT
+        let event = {
+          id: data.idEvent,
+          questId: idQuest,
+          description: data.scene.description,
+          locationName: data.scene.location,
+          destinationName: data.scene.destination
+        };
+        console.log("quétId: ", idQuest)
+        console.log("event: ", event)
+        const resultEvent = await user.actor.createEventEngine(event);
+
+        //SCENE
+        let scene = {
+          id: data.idScene,
+          idEvent: data.idEvent,
+          idQuest: idQuest,
+          front: data.scene.imageFront.path,
+          mid: data.scene.imageMid.path,
+          back: data.scene.imageBack.path,
+          obstacle: data.scene.imageObstacle.path
         }
-        let resultEngine = await user.actor.createQuestEngine(quest);
-        console.log("resultEngine ", resultEngine)
+        if (scene.front == "" || scene.mid == "" || scene.back == "" || scene.obstacle == "") {
+          dispatch(showMessage({ message: 'Required fields cannot be left blank.' }));
+          return;
+        }
+        const resultScene = await createScene(scene);
+
+        if ('Success' == resultScene) {
+          let bufFront = Buffer.from(data.scene.imageFront.base64data, 'base64')
+          let bufMid = Buffer.from(data.scene.imageMid.base64data, 'base64')
+          let bufBack = Buffer.from(data.scene.imageBack.base64data, 'base64')
+          let bufObstacle = Buffer.from(data.scene.imageObstacle.base64data, 'base64')
+          let dataImageFront = {
+            Key: data.scene.imageFront.path,
+            Body: bufFront,
+            ContentEncoding: 'base64',
+            ContentType: 'image/jpeg'
+          };
+          let dataImageMid = {
+            Key: data.scene.imageMid.path,
+            Body: bufMid,
+            ContentEncoding: 'base64',
+            ContentType: 'image/jpeg'
+          };
+          let dataImageBack = {
+            Key: data.scene.imageBack.path,
+            Body: bufBack,
+            ContentEncoding: 'base64',
+            ContentType: 'image/jpeg'
+          };
+          let dataImageObstacle = {
+            Key: data.scene.imageObstacle.path,
+            Body: bufObstacle,
+            ContentEncoding: 'base64',
+            ContentType: 'image/jpeg'
+          };
+          s3Bucket.putObject(dataImageFront, function (err, data) {
+            if (err) {
+              console.log('Error uploading data!');
+            } else {
+              console.log('Successfully uploaded the image front!');
+            }
+          });
+          s3Bucket.putObject(dataImageMid, function (err, data) {
+            if (err) {
+              console.log('Error uploading data!');
+            } else {
+              console.log('Successfully uploaded the image mid!');
+            }
+          });
+          s3Bucket.putObject(dataImageBack, function (err, data) {
+            if (err) {
+              console.log('Error uploading data!');
+            } else {
+              console.log('Successfully uploaded the image back!');
+            }
+          });
+          s3Bucket.putObject(dataImageObstacle, function (err, data) {
+            if (err) {
+              console.log('Error uploading data!');
+            } else {
+              console.log('Successfully uploaded the image obstacle!');
+            }
+          });
+        }
+        console.log("test: ", resultEvent, resultScene)
+        let createOptions = await createAllEventOptionEngine(data.idEvent, options);
+        console.log("createOptions", createOptions)
+        dispatch(showMessage({ message: 'Success!' }));
+        // setSceneInfoOutside(true)
       }
       else {
-        idQuest = checkCreateQuest.ok?.id;
+        console.log("quest not found")
       }
-      //EVENT
-      let event = {
-        id: data.idEvent,
-        questId: data.idQuest,
-        description: data.scene.description,
-        locationName: data.scene.location,
-        destinationName: data.scene.destination
-      };
-      // const resultEvent = await createEventEngine(event);
-      const resultEvent =await user.actor.createEventEngine(event);
-
-      //SCENE
-      let scene = {
-        id: data.idScene,
-        idEvent: data.idEvent,
-        idQuest: data.idQuest,
-        front: data.scene.imageFront.path,
-        mid: data.scene.imageMid.path,
-        back: data.scene.imageBack.path,
-        obstacle: data.scene.imageObstacle.path
-      }
-      if(scene.front == "" || scene.mid == "" || scene.back == "" || scene.obstacle == "" ){
-        dispatch(showMessage({ message: 'Required fields cannot be left blank.' }));
-        return;
-      } 
-      const resultScene = await createScene(scene);
-
-      if ('Success' == resultScene) {
-        let bufFront = Buffer.from(data.scene.imageFront.base64data, 'base64')
-        let bufMid = Buffer.from(data.scene.imageMid.base64data, 'base64')
-        let bufBack = Buffer.from(data.scene.imageBack.base64data, 'base64')
-        let bufObstacle = Buffer.from(data.scene.imageObstacle.base64data, 'base64')
-        let dataImageFront = {
-          Key: data.scene.imageFront.path,
-          Body: bufFront,
-          ContentEncoding: 'base64',
-          ContentType: 'image/jpeg'
-        };
-        let dataImageMid = {
-          Key: data.scene.imageMid.path,
-          Body: bufMid,
-          ContentEncoding: 'base64',
-          ContentType: 'image/jpeg'
-        };
-        let dataImageBack = {
-          Key: data.scene.imageBack.path,
-          Body: bufBack,
-          ContentEncoding: 'base64',
-          ContentType: 'image/jpeg'
-        };
-        let dataImageObstacle = {
-          Key: data.scene.imageObstacle.path,
-          Body: bufObstacle,
-          ContentEncoding: 'base64',
-          ContentType: 'image/jpeg'
-        };
-        s3Bucket.putObject(dataImageFront, function (err, data) {
-          if (err) {
-            console.log('Error uploading data!');
-          } else {
-            console.log('Successfully uploaded the image front!');
-          }
-        });
-        s3Bucket.putObject(dataImageMid, function (err, data) {
-          if (err) {
-            console.log('Error uploading data!');
-          } else {
-            console.log('Successfully uploaded the image mid!');
-          }
-        });
-        s3Bucket.putObject(dataImageBack, function (err, data) {
-          if (err) {
-            console.log('Error uploading data!');
-          } else {
-            console.log('Successfully uploaded the image back!');
-          }
-        });
-        s3Bucket.putObject(dataImageObstacle, function (err, data) {
-          if (err) {
-            console.log('Error uploading data!');
-          } else {
-            console.log('Successfully uploaded the image obstacle!');
-          }
-        });
-      }
-      console.log("test: ", resultEvent, resultScene)
-      let createOptions = await createAllEventOptionEngine(data.idEvent, options);
-      console.log("createOptions", createOptions)
-      dispatch(showMessage({ message: 'Success!' }));
     }
     catch (err) {
       console.log(err)
@@ -209,6 +206,33 @@ const QuestEngine = () => {
     setLoading(false);
   };
 
+  const onSubmitQuest = async (data) => {
+    setLoading(true);
+    try {
+      let checkCreateQuest = await user.actor.checkCreatedQuestOfUser()
+      console.log("price: ", checkCreateQuest.ok?.price)
+      if (checkCreateQuest.ok?.id == undefined) {
+        // QUEST ENGINE
+        let quest = {
+          id: data.idQuest,
+          name: "",
+          price: parseFloat(data.quest.price) * 100000000,
+          description: "",
+          images: ""
+        }
+        let resultEngine = await user.actor.createQuestEngine(quest);
+        console.log("resultEngine ", resultEngine)
+      }
+      else {
+        idQuest = checkCreateQuest.ok?.id;
+      }
+    }
+    catch (err) {
+      console.log(err)
+      dispatch(showMessage({ message: 'Error!' }));
+    }
+    setLoading(false);
+  }
 
   //New Option
   const [option, setOption] = useState({ option: '', hp: 0.0, stamina: 0.0, mana: 0.0, morale: 0.0 })
@@ -222,46 +246,65 @@ const QuestEngine = () => {
   }
 
 
-
   //View all Scene
   const [viewAll, setViewAll] = useState({})
   const [openScene, setOpenScene] = useState(false)
-  const [id, setId] = useState([])
   const handleView = async () => {
+    let checkCreateQuest = await user.actor.checkCreatedQuestOfUser()
+    idQuest = checkCreateQuest.ok?.id
     console.log("idQuest", idQuest)
-    let allScene =  await getAllScenes(idQuest)
+    let allScene = await getAllScenes(idQuest)
     setViewAll(allScene)
     setOpenScene(!openScene)
-    const sceneInfo = (await user.actor.listSceneQuests(idQuest))?.ok
-    console.log(sceneInfo)
-    // setId()
   }
 
+  const [id, setId] = useState()
 
- 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        let checkCreateQuest = await user.actor.checkCreatedQuestOfUser()
+        idQuest = checkCreateQuest.ok?.id
+        setId(idQuest)
+      } catch (err) {
+        console.error(err)
+      }
+    }
+    fetchData();
+  }, []);
+
+  // const sceneInfoOutside = handleView();
+
+  const navigate = useNavigate();
+
+  const handleReview = () => {
+    navigate(`/metaverse/quest-design/${id}/preview`);
+  };
+
   return (
     <div className="relative flex flex-col flex-auto items-center">
       {/* ================= Scene 1 ================= */}
       <div className="w-full max-w-7xl">
         <Card className="w-full py-32 mx-auto mt-24 rounded-2xl shadow">
           <CardContent className="p-24 pt-0 sm:p-48 sm:pt-0">
-          <Typography className="mt-32 mb-16 text-3xl font-bold tracking-tight leading-tight">
-              YOUR QUEST DESIGN! 
+            <Typography className="mt-32 mb-16 text-3xl font-bold tracking-tight leading-tight">
+              YOUR QUEST DESIGN!
             </Typography>
-          <Typography className="mt-32 mb-16 text-3xl font-bold tracking-tight leading-tight">
-              Quest 
+            <Typography className="mt-32 mb-16 text-3xl font-bold tracking-tight leading-tight">
+              Quest
             </Typography>
 
             {/* ===== location ===== */}
             <Controller
               control={control}
-              name="scene.description"
+              name="quest.price"
               render={({ field }) => (
                 <TextField
+                  type='number'
                   className="mt-32"
                   {...field}
-                  label="Question Name"
-                  placeholder="Question"
+                  label="Quest Price"
+                  placeholder="ICP"
                   // id="questName"
                   variant="outlined"
                   fullWidth
@@ -269,7 +312,39 @@ const QuestEngine = () => {
                 />
               )}
             />
-            {/* <br> */}
+            <Controller
+              control={control}
+              name="scene.description"
+              render={({ field }) => (
+                <TextField
+                  className="mt-32"
+                  {...field}
+                  label="Transaction Fee"
+                  // placeholder="2%"
+                  value="2%"
+                  // id="questName"
+                  variant="outlined"
+                  fullWidth
+                  // readOnly={true}
+                  disabled
+                // required
+                />
+              )}
+            />
+
+            <br></br>
+            <div style={{marginTop: "20px"}}>
+              <LoadingButton
+                className="ml-8"
+                variant="contained"
+                color="secondary"
+                loading={loading}
+                onClick={handleSubmit(onSubmitQuest)}
+              >
+                Save
+              </LoadingButton>
+            </div>
+
 
             <Typography className="mt-32 mb-16 text-3xl font-bold tracking-tight leading-tight">
               Event
@@ -311,7 +386,7 @@ const QuestEngine = () => {
               <br></br>
               <br></br>
 
-    
+
               {option.option ?
                 <Button className="ml-auto" color="secondary" variant="contained" onClick={handleAdd}>
                   Add Option
@@ -517,14 +592,27 @@ const QuestEngine = () => {
               >
                 All Scene
               </LoadingButton>
+
+              <LoadingButton
+                className="ml-8"
+                variant="contained"
+                color="secondary"
+                loading={loading}
+                onClick={handleReview}
+              >
+                Review
+              </LoadingButton>
+
+
+
             </Box>
 
 
             {/* { openScene ? <SceneTable rows={viewAll}/> : <></>} */}
-            { openScene ? <RowOrderingGrid rows={viewAll} /> : <></>}
+            {openScene ? <RowOrderingGrid rows={viewAll} /> : <></>}
             {/* { openScene ? <DragDrop rows={viewAll} /> : <></>} */}
-            
-           
+
+
 
 
           </CardContent>

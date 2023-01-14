@@ -420,6 +420,13 @@ export async function deleteSceneEventAndEventOption(idScene) {
   return result;
 };
 
+export async function checkCreatedQuestOfUser() {
+  const {user} = store.getState();
+  const func = async () => await user.actor.checkCreatedQuestOfUser();
+  const rs = (await func()).ok;
+  return rs;
+}
+
 export {
   getUserInfo,
   loadQuestItems,

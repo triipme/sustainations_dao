@@ -34,6 +34,7 @@ import CharacterTakesOption "./game/characterTakesOption";
 import CharacterCollectsMaterials "./game/characterCollectsMaterials";
 import Quest "./game/quest";
 import QuestEngine "./game/questEngine";
+import QuestGame "./game/questGame";
 import EventEngine "./game/eventEngine";
 import EventOptionEngine "./game/eventOptionEngine";
 import Scene "./game/scene";
@@ -121,6 +122,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     scenes : [(Text, Types.Scene)] = [];
     eventOptions : [(Text, Types.EventOption)] = [];
   };
+  private stable var questGames : [(Text, Types.QuestGame)] = [];
   private stable var items : [(Text, Types.Item)] = [];
   private stable var questItems : [(Text, Types.QuestItem)] = [];
   private stable var products : [(Text, Types.Product)] = [];
@@ -189,6 +191,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       scenes = Iter.toArray(state.questEngine.scenes.entries());
       eventOptions = Iter.toArray(state.questEngine.eventOptions.entries());
     };
+    questGames := Iter.toArray(state.questGames.entries());
     characterClasses := Iter.toArray(state.characterClasses.entries());
     characters := Iter.toArray(state.characters.entries());
     characterTakesOptions := Iter.toArray(state.characterTakesOptions.entries());
@@ -302,6 +305,9 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
     for ((k, v) in Iter.fromArray(questEngine.eventOptions)) {
       state.questEngine.eventOptions.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(questGames)) {
+      state.questGames.put(k, v);
     };
     for ((k, v) in Iter.fromArray(characterClasses)) {
       state.characterClasses.put(k, v);
@@ -3174,14 +3180,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   //     };
   //   };
   // };
-  public type Quest = {
-    id : Text;
-    name : Text;
-    price : Float;
-    description : Text;
-    images : Text;
-  };
-   public shared ({ caller }) func createQuestEngine(questEngine : Quest) : async Response<Text> {
+   public shared ({ caller }) func createQuestEngine(questEngine : Types.Quest) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
@@ -3207,10 +3206,11 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
   };
 
-  public shared ({ caller }) func checkCreatedQuestOfUser() : async Response<Types.QuestEngine> {
+  public shared query ({ caller }) func checkCreatedQuestOfUser() : async Response<Types.QuestEngine> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
+    Debug.print(Principal.toText(caller));
     for (quest in state.questEngine.quests.vals()){
       if (quest.userId == caller){
         return #ok(quest);
@@ -3219,11 +3219,101 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     #err(#NotFound);
   };
 
+  public shared query ({ caller }) func getScenePreviewQuest(questId: Text) : async Response<Types.Scene> {
+    let rsQuest = state.questEngine.quests.get(questId);
+      switch (rsQuest) {
+      case (?quest) {
+        let listScene = quest.listScene;
+        if (listScene == []) {
+          #err(#NotFound);
+        }
+        else {
+          let rsScene = state.questEngine.scenes.get(listScene[0]);
+          switch (rsScene){
+            case (?scene){
+              #ok(scene);
+            };
+            case (_) {#err(#NotFound)};
+          };
+        };
+      };
+      case (_) {#err(#NotFound)};
+    };
+  }; 
 
-  public shared query ({ caller }) func readQuestEngine(id : Text) : async Response<(Types.QuestEngine)> {
+  func transferICP(amount : Nat64, fromPrincipal: Principal, toPrincipal : Principal) : async Ledger.TransferResult {
+    let from_account = Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(fromPrincipal));
+    let to_account = Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(toPrincipal));
+    await ledger.transfer({
+      memo : Nat64 = 0;
+      from_subaccount = ?from_account;
+      to = to_account;
+      amount = { e8s = amount };
+      fee = { e8s = transferFee };
+      created_at_time = ?{ timestamp_nanos = Nat64.fromNat(Int.abs(Time.now())) };
+    });
+  };
+
+  public shared ({ caller }) func payQuestDesign(questId: Text) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
+    let rsQuest = state.questEngine.quests.get(questId);
+    switch (rsQuest) {
+      case null { #err(#NotFound) };
+      case (?quest) {
+        let transfer = await transferICPTest(quest.price, caller, quest.userId);
+        switch (transfer) {
+          case (#ok(bIndex)) {
+            await recordTransaction(
+              caller,
+              quest.price,
+              caller,
+              quest.userId,
+              #payQuest,
+              ?questId,
+              bIndex
+            );
+            #ok("Success");
+          };
+          case (#err(error)) {
+            #err(error);
+          };
+        };
+      };
+    };
+  };
+
+  // as deposit
+  private func transferICPTest(amount : Nat64, fromPrincipal: Principal, toPrincipal : Principal) : async Response<Nat64> {
+    let accountId = Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(fromPrincipal));
+    let balance = await ledger.account_balance({ account = accountId });
+    let receipt = if (balance.e8s >= amount) {
+      await ledger.transfer({
+        memo : Nat64 = 0;
+        from_subaccount = ?Account.principalToSubaccount(fromPrincipal);
+        to = Account.accountIdentifier(Principal.fromActor(this), Account.principalToSubaccount(toPrincipal));
+        amount = { e8s = amount-transferFee };
+        fee = { e8s = transferFee };
+        created_at_time = ?{ timestamp_nanos = Nat64.fromNat(Int.abs(Time.now())) };
+      });
+    } else {
+      return #err(#BalanceLow);
+    };
+
+    switch receipt {
+      case (#Err _) {
+        #err(#TransferFailure);
+      };
+      case (#Ok(bIndex)) {
+        #ok(bIndex);
+      };
+    };
+  };
+
+
+
+  public shared query ({ caller }) func readQuestEngine(id : Text) : async Response<(Types.QuestEngine)> {
     let rsQuestEngine = state.questEngine.quests.get(id);
     return Result.fromOption(rsQuestEngine, #NotFound);
   };
@@ -3515,7 +3605,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
           case null {
             let updateQuest : Types.QuestEngine = {
               id = quest.id;
-              userId = caller;
+              userId = quest.userId;
               name = quest.name;
               price = quest.price;
               description = quest.description;
@@ -3928,6 +4018,57 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       };
     };
     #ok(result);
+  };
+
+  //Quest Game
+  public shared ({caller}) func createQuestGame(questGame: Types.QuestGame) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsQuestGame = state.questGames.get(questGame.id);
+    switch (rsQuestGame) {
+      case (?v) {#err(#AlreadyExisting)};
+      case null {
+        QuestGame.create(questGame, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared query({caller}) func readQuestGame(id: Text) : async Response<Types.QuestGame> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsQuestGame = state.questGames.get(id);
+    return Result.fromOption(rsQuestGame, #NotFound);
+  };
+
+  public shared ({ caller }) func updateQuestGame(questGame : Types.QuestGame) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsQuestGame = state.questGames.get(questGame.id);
+    switch (rsQuestGame) {
+      case null { #err(#NotFound) };
+      case (?V) {
+        QuestGame.update(questGame, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared ({ caller }) func deleteQuestGame(id : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsQuestGame = state.questGames.get(id);
+    switch (rsQuestGame) {
+      case (null) { #err(#NotFound) };
+      case (?V) {
+        let deletedQuestGame = state.questGames.delete(id);
+        #ok("Success");
+      };
+    };
   };
 
   // Item
