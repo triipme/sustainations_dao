@@ -39,7 +39,7 @@
 }
 
 /* Add Animation */
-@-webkit-keyframes animatetop {
+/* @-webkit-keyframes animatetop {
     from {
         top: -300px;
         opacity: 0
@@ -61,7 +61,7 @@
         top: 0;
         opacity: 1
     }
-}
+} */
 
 /* The Close Button */
 .close {
@@ -215,9 +215,9 @@ div.scrollmenu-chooser {
     /* align-items: center; */
     justify-content: center;
     cursor: pointer;
-    margin: 8px 320px 8px 320px;
+    margin: 20px 95px;
     box-shadow: 1px 1px 1px 1px rgb(0 0 0 / 28%);
-
+    flex: 3
 }
 
 .cal{

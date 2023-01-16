@@ -7194,9 +7194,9 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
           };
         };
         // update ProductionNode (remove all completed nodes)
-        if (processingNodes.size() == 0) {
-          return #ok("noneCompleted");
-        };
+        // if (processingNodes.size() == 0) {
+        //   return #ok("noneCompleted");
+        // };
         let nodeAmount = processingNodes.size();
         for ( key in processingNodes.keys()) {
           let newProductionQueueNode : Types.ProductionQueueNode = {
