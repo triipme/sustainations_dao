@@ -199,6 +199,13 @@ module {
     mana: Float;
   };
 
+  public type QuestGameReward = {
+    id: Text;
+    questId: Text;
+    player: Nat;
+    totalICP: Nat64;
+  };
+
   //--------------------- Scene ---------------------//
   public type Scene = {
     id : Text;

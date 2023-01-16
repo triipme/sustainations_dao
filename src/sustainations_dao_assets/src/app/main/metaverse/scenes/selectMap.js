@@ -7,8 +7,11 @@ import {
   loadCharacter,
   getRemainingTime,
   payQuest,
+  payQuestEngine,
   getUserInfo,
   buyLandSlot,
+  getAllScenes,
+  getAdminQuest
 } from '../GameApi';
 
 const bg = 'metaverse/selectMap/background.png';
@@ -60,6 +63,22 @@ class selectMap extends BaseScene {
       loadCharacter().then((result) => {
         this.characterData = result.ok[1];
         console.log(this.characterData);
+        successCallback();
+      });
+    }, this);
+
+    //just for quest-design
+    this.load.rexAwait(function (successCallback, failureCallback) {
+      getAdminQuest().then((result) => {
+        this.questId = result.id;
+        console.log("quest price: ", result.price)
+        this.load.rexAwait(function (successCallback, failureCallback) {
+          getAllScenes(this.questId).then((result) => {
+            this.listScene = result;
+            console.log(result);
+            successCallback();
+          });
+        }, this);
         successCallback();
       });
     }, this);
@@ -253,9 +272,8 @@ class selectMap extends BaseScene {
       if (this.getRemainingTime != 0) this.scene.start('exhausted');
       else {
         resetCharacter();
-        this.scene.start('selectItemScene', { map: 'quest-design' });
-        // pay for jungle quest
-        // await payQuest("jungle");
+        this.scene.start('selectItemScene', { map: 'quest-design'});
+        // await payQuestEngine(this.questId));
       };
     });
 
