@@ -35,6 +35,7 @@ import CharacterCollectsMaterials "./game/characterCollectsMaterials";
 import Quest "./game/quest";
 import QuestEngine "./game/questEngine";
 import QuestGame "./game/questGame";
+import QuestGameReward "./game/questGameReward";
 import EventEngine "./game/eventEngine";
 import EventOptionEngine "./game/eventOptionEngine";
 import Scene "./game/scene";
@@ -123,6 +124,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     eventOptions : [(Text, Types.EventOption)] = [];
   };
   private stable var questGames : [(Text, Types.QuestGame)] = [];
+  private stable var questGameRewards : [(Text, Types.QuestGameReward)] = [];
   private stable var items : [(Text, Types.Item)] = [];
   private stable var questItems : [(Text, Types.QuestItem)] = [];
   private stable var products : [(Text, Types.Product)] = [];
@@ -192,6 +194,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       eventOptions = Iter.toArray(state.questEngine.eventOptions.entries());
     };
     questGames := Iter.toArray(state.questGames.entries());
+    questGameRewards := Iter.toArray(state.questGameRewards.entries());
     characterClasses := Iter.toArray(state.characterClasses.entries());
     characters := Iter.toArray(state.characters.entries());
     characterTakesOptions := Iter.toArray(state.characterTakesOptions.entries());
@@ -308,6 +311,9 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
     for ((k, v) in Iter.fromArray(questGames)) {
       state.questGames.put(k, v);
+    };
+     for ((k, v) in Iter.fromArray(questGameRewards)) {
+      state.questGameRewards.put(k, v);
     };
     for ((k, v) in Iter.fromArray(characterClasses)) {
       state.characterClasses.put(k, v);
@@ -4066,6 +4072,57 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       case (null) { #err(#NotFound) };
       case (?V) {
         let deletedQuestGame = state.questGames.delete(id);
+        #ok("Success");
+      };
+    };
+  };
+
+  //Quest Game Reward
+  public shared ({caller}) func createQuestGameReward(questGameReward: Types.QuestGameReward) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsQuestGameReward = state.questGameRewards.get(questGameReward.id);
+    switch (rsQuestGameReward) {
+      case (?v) {#err(#AlreadyExisting)};
+      case null {
+        QuestGameReward.create(questGameReward, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared query({caller}) func readQuestGameReward(id: Text) : async Response<Types.QuestGameReward> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsQuestGameReward = state.questGameRewards.get(id);
+    return Result.fromOption(rsQuestGameReward, #NotFound);
+  };
+
+  public shared ({ caller }) func updateQuestGameReward(questGameReward : Types.QuestGameReward) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsQuestGameReward = state.questGameRewards.get(questGameReward.id);
+    switch (rsQuestGameReward) {
+      case null { #err(#NotFound) };
+      case (?V) {
+        QuestGameReward.update(questGameReward, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared ({ caller }) func deleteQuestGameReward(id : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsQuestGameReward = state.questGameRewards.get(id);
+    switch (rsQuestGameReward) {
+      case (null) { #err(#NotFound) };
+      case (?V) {
+        let deletedQuestGameReward = state.questGameRewards.delete(id);
         #ok("Success");
       };
     };
