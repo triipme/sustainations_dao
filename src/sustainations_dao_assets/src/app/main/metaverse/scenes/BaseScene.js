@@ -16,10 +16,11 @@ import {
   getUsableItem,
   useUsableItem,
   getQuestGameInfo,
-  getCharacterActions
+  listStash,
+  randomStashPotion,
+  listSceneQuests
 } from '../GameApi';
-
-import { listStash } from '../LandApi';
+import { random } from "lodash";
 
 class BaseScene extends Phaser.Scene {
   constructor(key) {
@@ -57,9 +58,17 @@ class BaseScene extends Phaser.Scene {
     //   });
     // }, this);
 
+    // this.load.rexAwait(function (successCallback, failureCallback) {
+    //   getCharacterStatus().then((result) => {
+    //     this.characterStatus = result.ok;
+    //     successCallback();
+    //   });
+    // }, this);
+
     this.load.rexAwait(function (successCallback, failureCallback) {
       characterCollectsMaterials(this.eventId).then((result) => {
         this.characterCollectMaterials = result;
+        console.log(result);
         successCallback();
       });
     }, this);
@@ -70,17 +79,18 @@ class BaseScene extends Phaser.Scene {
     //     successCallback();
     //   });
     // }, this);
-    // this.load.rexAwait(function (successCallback, failureCallback) {
-    //   getUsableItem().then((result) => {
-    //     this.usableItem = result.ok;
-    //     console.log("this.usableItem: ", this.usableItem);
-    //     successCallback();
-    //   });
-    // }, this);
+    this.load.rexAwait(function (successCallback, failureCallback) {
+      randomStashPotion().then((result) => {
+        this.usableItem = result?.[0];
+        this.usableItemName = result?.[1];
+        console.log(" this.usableItem: ",  this.usableItem);
+        successCallback();
+      });
+    }, this);
 
     // this.load.rexAwait(function (successCallback, failureCallback) {
     //   listStash().then((result) => {
-    //     this.listStash = result.ok;
+    //     this.listStash = result;
     //     console.log("this.listStash: ", this.listStash);
     //     successCallback();
     //   });
@@ -91,6 +101,7 @@ class BaseScene extends Phaser.Scene {
         this.questGameInfo = result.ok;
         this.userInfo = result.ok.userProfile.username[0];
         this.characterData = result.ok.characterData[0][1];
+        console.log("character: ", this.characterData)
         this.characterStatus = result.ok.characterStatus;
         this.characterTakeOptions = result.ok.characterTakesOption;
         this.listStash = result.ok.stashInfo;
@@ -186,69 +197,41 @@ class BaseScene extends Phaser.Scene {
     this.stamina = this.makeBar(325 + 235 * 2, 65, 100, 15, 0xcf315f).setScrollFactor(0);
     this.morale = this.makeBar(325 + 235 * 3, 65, 100, 15, 0x63dafb).setScrollFactor(0);
 
-    // load event item
-    if (!isDisabled) {
-      this.eventItem = await loadEventItem();
-      this.isHadPotion = false;
-      console.log("EVENT ITEM", this.eventItem);
-      if (this.eventItem != undefined) {
-        this.isHadPotion = true;
-      };
-    } else {
-      this.isHadPotion = false;
-    }
-    //Test
     this.itemSlot = [];
-    this.landItem = this.listStash
-    console.log("HAD POTION ", this.isHadPotion);
-    this.isUsedPotion = false;
     let imgLandItem = "";
-    let usableItemName = '';
-    if (this.landItem.length != 0) {
-      let randomItem = Math.floor(Math.random() * (this.landItem.length));
-      this.stashRandom = this.landItem[randomItem];
-      usableItemName = this.stashRandom?.usableItemName
-      console.log("this.isUsedUsableItem: ", this.isUsedUsableItem)
-      if (this.isUsedUsableItem?.[2] == true) {
-        this.isHadUsableItem = false
-        this.isUsedUsableItem[0] = false;
+    if (this.usableItem != undefined) {
+      if (this.isUsedUsableItem.usedUsableItem != true) {
+        this.stashRandom = this.usableItem
+        this.isUsedUsableItem.usedUsableItem = false;
       }
       else {
-        this.isUsedUsableItem = [false, '']
-        this.isHadUsableItem = true
+        this.isUsedUsableItem.useUsableItem = false;
       }
     }
     else {
-      this.isUsedUsableItem = [false, '']
-      this.isHadUsableItem = false;
+      this.isUsedUsableItem.usedUsableItem = true;
     }
-    switch (usableItemName) {
-      case "Tomato":
-        imgLandItem = "item_tomato";
+    console.log("usableItemName:", this.usableItemName)
+    switch (this.usableItemName) {
+      case "HP_Potion":
+        imgLandItem = "item_hp";
         break;
-      case "Carrot":
-        imgLandItem = "item_carrot";
+      case "Stamina_Potion":
+        imgLandItem = "item_stamina";
         break;
-      case "Wheat":
-        imgLandItem = "item_wheat";
+      case "Mana_Potion":
+        imgLandItem = "item_mana";
+        break;
+      case "Morale_Potion":
+        imgLandItem = "item_morale";
+        break;
+      case "Super_Potion":
+        imgLandItem = "item_super";
         break;
       default:
         imgLandItem = "";
     }
-
-    if (this.isHadPotion) {
-      this.itemSlot[0] = this.add.image(55, 550, "UI_Utility_Sprite")
-        .setOrigin(0).setScrollFactor(0).setScale(0.5).setFrame(1);
-      this.potion = this.add.image(68, 563, "item_potion")
-        .setOrigin(0).setInteractive().setScrollFactor(0).setScale(0.5);
-      this.potion.on('pointerdown', () => {
-        this.clickSound.play();
-        this.itemSlot[0].setFrame(0);
-        this.potion.setVisible(false);
-        this.isUsedPotion = true;
-        console.log("Used potion => ", useHpPotion(this.characterData.id));
-      });
-    } else if (this.isHadUsableItem) {
+    if (this.isUsedUsableItem.usedUsableItem == false && imgLandItem != "") {
       this.itemSlot[0] = this.add.image(55, 550, "UI_Utility_Sprite")
         .setOrigin(0).setScrollFactor(0).setScale(0.5).setFrame(1);
       this.potion = this.add.image(68, 563, imgLandItem)
@@ -257,7 +240,12 @@ class BaseScene extends Phaser.Scene {
         this.clickSound.play();
         this.itemSlot[0].setFrame(0);
         this.potion.setVisible(false);
-        this.isUsedUsableItem = [true, this.stashRandom.id, true];
+        this.isUsedUsableItem = {
+          useUsableItem: true,
+          stashId: this.stashRandom.id,
+          usedUsableItem: true,
+          statusCharacter: this.characterData
+        };
         this.itemnotice = this.add.image(gameConfig.scale.width / 2, gameConfig.scale.height / 2, "itemnotice").setScrollFactor(0).setScale(0.5).setOrigin(0.5);
         this.textnotice = this.make.text({
           x: gameConfig.scale.width / 2,
@@ -401,7 +389,7 @@ class BaseScene extends Phaser.Scene {
         stat = "+" + stat;
       }
 
-      this.statText =this.add.text(x, y, stat, {
+      this.statText = this.add.text(x, y, stat, {
         font: 'bold 13px Arial',
         fill: fill1
       }).setOrigin(0).setScrollFactor(0);
@@ -415,7 +403,7 @@ class BaseScene extends Phaser.Scene {
     }
   }
 
-  showColorLossAllStat(character_before, character_after){
+  showColorLossAllStat(character_before, character_after) {
     let loss_stat = this.showLossStat(character_before, character_after)
     this.showColorLossStat(423, 65, loss_stat[0]);
     this.showColorLossStat(460 + 200, 65, loss_stat[1]);
@@ -484,8 +472,8 @@ class BaseScene extends Phaser.Scene {
       this.pregameSound.stop();
       this.sfx_char_footstep.stop();
 
-      if (this.listScene.length === 0) this.scene.start("thanks", { isUsedPotion: this.isUsedPotion });
-      else this.scene.start(nextScene, { isUsedPotion: this.isUsedPotion, listScene: this.listScene });
+      if (this.listScene.length === 0) this.scene.start("thanks");
+      else this.scene.start(nextScene, {listScene: this.listScene });
     }
 
     if (this.player.x > locationInteract && this.isInteracted == false) { //4200
@@ -505,9 +493,29 @@ class BaseScene extends Phaser.Scene {
     this.bg_2.tilePositionX = this.myCam.scrollX * speedMid;
     this.obstacle.tilePositionX = this.myCam.scrollX * speedObstacle;
     this.bg_3.tilePositionX = this.myCam.scrollX * speedFront;
+  };
+
+  useUsableItemScene(isUsedUsableItem, eventId) {
+    let characterBefore;
+    if (isUsedUsableItem.useUsableItem == true) {
+      this.load.rexAwait(function (successCallback, failureCallback) {
+        loadCharacter().then((result) => {
+          this.characterData = result.ok[1];
+          this.characterBefore = this.characterData;
+          this.load.rexAwait(function (successCallback, failureCallback) {
+            useUsableItem(this.characterData.id, isUsedUsableItem.stashId).then((result) => {
+              this.initialLoad(eventId);
+              successCallback();
+            });
+          }, this);
+          successCallback();
+        });
+      }, this);
+    }
+    else {
+      this.initialLoad(eventId);
+    }
+    return characterBefore;
   }
-
-
-
 }
 export default BaseScene;

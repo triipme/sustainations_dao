@@ -1,212 +1,482 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import FuseLoading from '@fuse/core/FuseLoading';
+import { useState, useEffect } from 'react';
 import _ from '@lodash';
-import { Controller, useForm, useFormContext } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import Box from '@mui/system/Box';
-import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
+import BasicTable from './Table'
 import {
   Avatar,
   Button,
   Card,
   CardContent,
-  IconButton,
-  InputAdornment,
-  TextField
+  TextField,
 } from '@mui/material';
-import Typography from '@mui/material/Typography';
+
+import {
+  createQuestEngine,
+  createEventEngine,
+  createScene,
+  createAllEventOptionEngine,
+  getAllScenes
+} from '../../metaverse/GameApi';
 import LoadingButton from '@mui/lab/LoadingButton';
-import NavLinkAdapter from '@fuse/core/NavLinkAdapter';
-import { v4 as uuidv4 } from 'uuid';
+import Typography from '@mui/material/Typography';
+import { v4 as uuid } from 'uuid'
 
 import { useSelector, useDispatch } from "react-redux";
 import { selectUser, setUser } from 'app/store/userSlice';
-import QRCode from "react-qr-code";
-import { setS3Object, deleteS3Object } from "../../../hooks";
 import { showMessage } from 'app/store/fuse/messageSlice';
-import Event from './Event';
-import SceneImages from './SceneImages';
+import { setOptions } from 'leaflet';
+import SceneTable from './SceneTable';
+import RowOrderingGrid from './DragTable';
+import DragDrop from './DragDrop';
+
+// AWS3
+const AWS = require('aws-sdk');
+AWS.config.update({
+  accessKeyId: process.env.S3_ACCESS_KEY,
+  secretAccessKey: process.env.S3_SECRET_KEY,
+  region: process.env.S3_REGION,
+});
+
+var s3Bucket = new AWS.S3({ params: { Bucket: process.env.S3_BUCKET } });
 
 const QuestEngine = () => {
-  const navigate = useNavigate();
   const user = useSelector(selectUser);
-  const { profile } = user;
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
-  const currentAvatarPath = profile?.avatar[0];
-  const avatarUUID = currentAvatarPath ? currentAvatarPath.split("/")[2].split(".")[0] : uuidv4();
+  const idQuest = uuid()
+  const idEvent = uuid()
+  const idScene = uuid()
 
-  const { control, watch, handleSubmit, formState } = useForm({
+  // const [openOptions, setOpenOptions] = useState(false);
+
+  const { control, handleSubmit, formState } = useForm({
     mode: 'onChange',
     defaultValues: {
-      questName: '',
-      price: '',
+      idQuest: "test",
+      idEvent: idEvent,
+      idScene: idScene,
+      name: '',
+      price: 0,
       description: '',
-      backImage: {
-        id: '',
-        base64data: '',
-        path: ''
-      },
+      scene: {
+        location: '',
+        destination: '',
+        description: '',
+        location: '',
+        destination: '',
+        imageQuest: {
+          base64data: '',
+          path: ''
+        },
+        imageFront: {
+          base64data: '',
+          path: '',
+        },
+        imageMid: {
+          base64data: '',
+          path: '',
+        },
+        imageBack: {
+          base64data: '',
+          path: '',
+        },
+        imageObstacle: {
+          base64data: '',
+          path: '',
+        },
+      }
+
     }
   });
-  const avatar = watch('avatar');
-  const backImage = watch('backImage');
-  const { errors } = formState;
-
-  const [events, setEvents] = useState([]);
-  const [eventDatas, setEventDatas] = useState([{}]);
-  const handleAddEventData = (data) => {
-    setEventDatas(prevValues => {
-      return [...prevValues, data]
-    })
-  };
-  const handleAddEvent = () => {
-    setEvents(prevValues => {
-      return [...prevValues, <Event handleAddEventData = {handleAddEventData}/>]
-    })
-  };
-  console.log("Data event",eventDatas)
 
   const onSubmit = async (data) => {
+    console.log("data: ", data)
+    console.log(data.questEventName, "quest event name")
     setLoading(true);
     try {
-      const result = await user.actor.updateUserProfile(
-        [data.username], [data.phone], [data.avatar.path || '']
-      );
-      if ("ok" in result) {
-        let avatarChanged;
-        if (data.avatar.path) {
-          avatarChanged = await setS3Object({
-            file: data.avatar.base64data,
-            name: data.avatar.path
-          });
-        } else {
-          avatarChanged = await deleteS3Object(currentAvatarPath);
-        }
-        Promise.resolve(avatarChanged).then(() => {
-          const newUserState = {
-            role: user.role,
-            actor: user.actor,
-            depositAddress: user.depositAddress,
-            balance: user.balance,
-            principal: user.principal,
-            brandId: user.brandId,
-            profile: result.ok,
-            avatar: data.avatar.base64data
-          };
-          dispatch(setUser(newUserState));
-          dispatch(showMessage({ message: 'Success!' }));
-          navigate('/profile');
-        });
-      } else {
-        throw result?.err;
+      //EVENT
+      let event = {
+        id: data.idEvent,
+        questId: data.idQuest,
+        description: data.scene.description,
+        locationName: data.scene.location,
+        destinationName: data.scene.destination
+      };
+      // const resultEvent = await createEventEngine(event);
+      const resultEvent =await user.actor.createEventEngine(event);
+
+      //SCENE
+      let scene = {
+        id: data.idScene,
+        idEvent: data.idEvent,
+        idQuest: data.idQuest,
+        front: data.scene.imageFront.path,
+        mid: data.scene.imageMid.path,
+        back: data.scene.imageBack.path,
+        obstacle: data.scene.imageObstacle.path
       }
-    } catch (error) {
-      console.log(error);
-      const message = {
-        "NotAuthorized": "Please sign in!."
-      }[Object.keys(error)[0]] || 'Error! Please try again later!'
-      dispatch(showMessage({ message }));
+      if(scene.front == "" || scene.mid == "" || scene.back == "" || scene.obstacle == "" ){
+        dispatch(showMessage({ message: 'Required fields cannot be left blank.' }));
+        return;
+      } 
+      const resultScene = await createScene(scene);
+
+      if ('Success' == resultScene) {
+        let bufFront = Buffer.from(data.scene.imageFront.base64data, 'base64')
+        let bufMid = Buffer.from(data.scene.imageMid.base64data, 'base64')
+        let bufBack = Buffer.from(data.scene.imageBack.base64data, 'base64')
+        let bufObstacle = Buffer.from(data.scene.imageObstacle.base64data, 'base64')
+        let dataImageFront = {
+          Key: data.scene.imageFront.path,
+          Body: bufFront,
+          ContentEncoding: 'base64',
+          ContentType: 'image/jpeg'
+        };
+        let dataImageMid = {
+          Key: data.scene.imageMid.path,
+          Body: bufMid,
+          ContentEncoding: 'base64',
+          ContentType: 'image/jpeg'
+        };
+        let dataImageBack = {
+          Key: data.scene.imageBack.path,
+          Body: bufBack,
+          ContentEncoding: 'base64',
+          ContentType: 'image/jpeg'
+        };
+        let dataImageObstacle = {
+          Key: data.scene.imageObstacle.path,
+          Body: bufObstacle,
+          ContentEncoding: 'base64',
+          ContentType: 'image/jpeg'
+        };
+        s3Bucket.putObject(dataImageFront, function (err, data) {
+          if (err) {
+            console.log('Error uploading data!');
+          } else {
+            console.log('Successfully uploaded the image front!');
+          }
+        });
+        s3Bucket.putObject(dataImageMid, function (err, data) {
+          if (err) {
+            console.log('Error uploading data!');
+          } else {
+            console.log('Successfully uploaded the image mid!');
+          }
+        });
+        s3Bucket.putObject(dataImageBack, function (err, data) {
+          if (err) {
+            console.log('Error uploading data!');
+          } else {
+            console.log('Successfully uploaded the image back!');
+          }
+        });
+        s3Bucket.putObject(dataImageObstacle, function (err, data) {
+          if (err) {
+            console.log('Error uploading data!');
+          } else {
+            console.log('Successfully uploaded the image obstacle!');
+          }
+        });
+      }
+      console.log("test: ", resultEvent, resultScene)
+      let createOptions = await createAllEventOptionEngine(data.idEvent, options);
+      console.log("createOptions", createOptions)
+      dispatch(showMessage({ message: 'Success!' }));
+    }
+    catch (err) {
+      console.log(err)
+      dispatch(showMessage({ message: 'Error!' }));
     }
     setLoading(false);
   };
 
-  if (!user) {
-    return (<FuseLoading />)
+
+  //New Option
+  const [option, setOption] = useState({ option: '', hp: 0.0, stamina: 0.0, mana: 0.0, morale: 0.0 })
+  const [options, setOptions] = useState([])
+
+  const handleAdd = () => {
+    if (option !== null) {
+      setOptions(prev => [...prev, option])
+      setOption({ option: '', hp: 0, stamina: 0, mana: 0, morale: 0 })
+    }
   }
 
+
+
+  //View all Scene
+  const [viewAll, setViewAll] = useState({})
+  const [openScene, setOpenScene] = useState(false)
+  const [id, setId] = useState([])
+  const handleView = async () => {
+    let allScene =  await getAllScenes("test")
+    setViewAll(allScene)
+    setOpenScene(!openScene)
+    const sceneInfo = (await user.actor.listSceneQuests("test"))?.ok
+    console.log(sceneInfo)
+    // setId()
+  }
+
+
+ 
   return (
     <div className="relative flex flex-col flex-auto items-center">
+      {/* ================= Scene 1 ================= */}
       <div className="w-full max-w-7xl">
         <Card className="w-full py-32 mx-auto mt-24 rounded-2xl shadow">
           <CardContent className="p-24 pt-0 sm:p-48 sm:pt-0">
-            <Typography className="mt-32 mb-16 text-3xl font-bold tracking-tight leading-tight">
-              Quest info
+          <Typography className="mt-32 mb-16 text-3xl font-bold tracking-tight leading-tight">
+              Quest 
             </Typography>
-            <div className="text-lg mt-16 mb-8">
-              <span className="text-red-500">*</span>&nbsp;Quest Name
-            </div>
+
+            {/* ===== location ===== */}
             <Controller
-              name="questName"
               control={control}
+              name="scene.description"
               render={({ field }) => (
                 <TextField
+                  className="mt-32"
                   {...field}
-                  label="Quest Name"
-                  className="mt-8 mb-16"
-                  error={!!errors.questName}
-                  required
-                  helperText={errors?.questName?.message}
-                  autoFocus
-                  id="questName"
+                  label="Question Name"
+                  placeholder="Question"
+                  // id="questName"
                   variant="outlined"
                   fullWidth
+                  required
                 />
               )}
             />
-            <div className="text-lg mt-16 mb-8">
-              <span className="text-red-500">*</span>&nbsp;Price
-            </div>
+            {/* <br> */}
+
+            <Typography className="mt-32 mb-16 text-3xl font-bold tracking-tight leading-tight">
+              Event
+            </Typography>
+
+            {/* ===== location ===== */}
             <Controller
-              name="price"
               control={control}
+              name="scene.description"
               render={({ field }) => (
                 <TextField
+                  className="mt-32"
                   {...field}
-                  label="Price"
-                  className="mt-8 mb-16"
-                  error={!!errors.price}
-                  required
-                  helperText={errors?.price?.message}
-                  id="price"
+                  label="Question"
+                  placeholder="Question"
+                  // id="questName"
                   variant="outlined"
                   fullWidth
+                  required
                 />
               )}
             />
-            <div className="text-lg mt-16 mb-8">
-              <span className="text-red-500">*</span>&nbsp;Description
-            </div>
+            {/* <br> */}
+            <br></br>
+            <br></br>
+
+            <Typography className="mt-32 mb-16 text-3xl font-bold tracking-tight leading-tight">
+              Add option
+            </Typography>
+
+            <form>
+              <TextField required type='text' value={option.option || ''} className="mt-32" label="Option" placeholder="Option" variant="outlined" fullWidth
+                onChange={e => setOption({ ...option, option: e.target.value })}
+              />
+              <TextField type='number' value={option.hp || 0.0} placeholder="HP" onChange={e => setOption({ ...option, hp: parseInt(e.target.value) })} className="mt-32" label="HP" variant="outlined" fullWidth></TextField>
+              <TextField type='number' value={option.stamina || 0.0} placeholder="Stamina" onChange={e => setOption({ ...option, stamina: parseInt(e.target.value) })} className="mt-32" label="Stamina" variant="outlined" fullWidth></TextField>
+              <TextField type='number' value={option.mana || 0.0} placeholder="Mana" onChange={e => setOption({ ...option, mana: parseInt(e.target.value) })} className="mt-32" label="Mana" variant="outlined" fullWidth></TextField>
+              <TextField type='number' value={option.morale || 0.0} placeholder="Morale" onChange={e => setOption({ ...option, morale: parseInt(e.target.value) })} className="mt-32" label="Morale" variant="outlined" fullWidth></TextField>
+              <br></br>
+              <br></br>
+
+    
+              {option.option ?
+                <Button className="ml-auto" color="secondary" variant="contained" onClick={handleAdd}>
+                  Add Option
+                </Button> : ""}
+
+            </form>
+            <br></br>
+            <br></br>
+
+            {options.length != 0 ? <BasicTable rows={options} /> : <></>}
+
+
+
+            {/* ===== FRONT ===== */}
             <Controller
-              name="description"
               control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="Description"
-                  className="mt-8 mb-16"
-                  error={!!errors.description}
-                  required
-                  helperText={errors?.description?.message}
-                  id="description"
-                  variant="outlined"
-                  fullWidth
-                />
+              name="scene.imageFront"
+              render={({ field: { onChange } }) => (
+                <Box
+                  className='mt-32'
+                >
+                  <div>
+                    <h3>Image Front *</h3>
+                    <input
+                      required
+                      accept="image/*"
+                      type="file"
+                      onChange={async (e) => {
+                        function readFileAsync() {
+                          return new Promise((resolve, reject) => {
+                            const file = e.target.files[0];
+                            file.preview = URL.createObjectURL(file)
+                            // setAvatar(file)
+                            if (!file) {
+                              return;
+                            }
+                            const reader = new FileReader();
+                            reader.onload = () => {
+                              resolve({
+                                base64data: `${btoa(reader.result)}`,
+                                path: `development/quests/scene/front/${idScene}`
+                              });
+                            };
+                            reader.onerror = reject;
+                            reader.readAsBinaryString(file);
+                          });
+                        }
+                        const newImage = await readFileAsync();
+                        onChange(newImage)
+                      }}
+                    />
+                  </div>
+                </Box>
               )}
             />
-            <div className="text-lg mt-16 mb-8">
-              <span className="text-red-500">*</span>&nbsp;Scene Images
-            </div>
-            <div className="flex">
-              <SceneImages control={control} imageType={"Front"} image={backImage}/>
-              <SceneImages control={control} imageType={"Mid"} image={backImage}/>
-              <SceneImages control={control} imageType={"Back"} image={backImage}/>
-              <SceneImages control={control} imageType={"Obstacle"} image={backImage}/>
-            </div>
-            {events}
-            <Button
-              className="ml-auto" 
-              variant="contained"
-              color="success"
-              onClick={() => {handleAddEvent()}}>
-              + Event
-            </Button>
+            {/* ===== MID ===== */}
+            <Controller
+              control={control}
+              name="scene.imageMid"
+              render={({ field: { onChange } }) => (
+                <Box
+                  className='mt-32'
+                >
+                  <div>
+                    <h3>Image Mid *</h3>
+                    <input
+                      required
+                      accept="image/*"
+                      type="file"
+                      onChange={async (e) => {
+                        function readFileAsync() {
+                          return new Promise((resolve, reject) => {
+                            const file = e.target.files[0];
+                            file.preview = URL.createObjectURL(file)
+                            // setAvatar(file)
+                            if (!file) {
+                              return;
+                            }
+                            const reader = new FileReader();
+                            reader.onload = () => {
+                              resolve({
+                                base64data: `${btoa(reader.result)}`,
+                                path: `development/quests/scene/mid/${idScene}`
+                              });
+                            };
+                            reader.onerror = reject;
+                            reader.readAsBinaryString(file);
+                          });
+                        }
+                        const newImage = await readFileAsync();
+                        onChange(newImage)
+                      }}
+                    />
+                  </div>
+                </Box>
+              )}
+            />
+            {/* ===== BACK ===== */}
+            <Controller
+              control={control}
+              name="scene.imageBack"
+              render={({ field: { onChange } }) => (
+                <Box
+                  className='mt-32'
+                >
+                  <div>
+                    <h3>Image Back *</h3>
+                    <input
+                      required
+                      accept="image/*"
+                      type="file"
+                      onChange={async (e) => {
+                        function readFileAsync() {
+                          return new Promise((resolve, reject) => {
+                            const file = e.target.files[0];
+                            file.preview = URL.createObjectURL(file)
+                            // setAvatar(file)
+                            if (!file) {
+                              return;
+                            }
+                            const reader = new FileReader();
+                            reader.onload = () => {
+                              resolve({
+                                base64data: `${btoa(reader.result)}`,
+                                path: `development/quests/scene/back/${idScene}`
+                              });
+                            };
+                            reader.onerror = reject;
+                            reader.readAsBinaryString(file);
+                          });
+                        }
+                        const newImage = await readFileAsync();
+                        onChange(newImage)
+                      }}
+                    />
+                  </div>
+                </Box>
+              )}
+            />
+            {/* ===== OBSTACLE ===== */}
+            <Controller
+              control={control}
+              name="scene.imageObstacle"
+              render={({ field: { onChange } }) => (
+                <Box
+                  className='mt-32'
+                >
+                  <div>
+                    <h3>Image Obstacle *</h3>
+                    <input
+                      required
+                      accept="image/*"
+                      type="file"
+                      onChange={async (e) => {
+                        function readFileAsync() {
+                          return new Promise((resolve, reject) => {
+                            const file = e.target.files[0];
+                            file.preview = URL.createObjectURL(file)
+                            // setAvatar(file)
+                            if (!file) {
+                              return;
+                            }
+                            const reader = new FileReader();
+                            reader.onload = () => {
+                              resolve({
+                                base64data: `${btoa(reader.result)}`,
+                                path: `development/quests/scene/obstacle/${idScene}`
+                              });
+                            };
+                            reader.onerror = reject;
+                            reader.readAsBinaryString(file);
+                          });
+                        }
+                        const newImage = await readFileAsync();
+                        onChange(newImage)
+                      }}
+                    />
+                  </div>
+                </Box>
+              )}
+            />
+
+
             <Box
               className="flex items-center mt-40 py-14 pr-16 pl-4 sm:pr-48 sm:pl-36 border-t"
-            > 
-              <Button className="ml-auto" component={NavLinkAdapter} to={-1}>
-                Cancel
-              </Button>
+            >
               <LoadingButton
                 className="ml-8"
                 variant="contained"
@@ -216,12 +486,32 @@ const QuestEngine = () => {
               >
                 Save
               </LoadingButton>
+
+              <LoadingButton
+                className="ml-8"
+                variant="contained"
+                color="secondary"
+                loading={loading}
+                onClick={handleView}
+              >
+                All Scene
+              </LoadingButton>
             </Box>
+
+
+            {/* { openScene ? <SceneTable rows={viewAll}/> : <></>} */}
+            { openScene ? <RowOrderingGrid rows={viewAll} /> : <></>}
+            {/* { openScene ? <DragDrop rows={viewAll} /> : <></>} */}
+            
+           
+
+
           </CardContent>
         </Card>
       </div>
     </div>
   )
 }
+
 
 export default QuestEngine;

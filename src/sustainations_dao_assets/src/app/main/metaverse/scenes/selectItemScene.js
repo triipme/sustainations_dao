@@ -8,7 +8,10 @@ import {
   loadItemUrl,
   resetCharacter,
   loadCharacterAwait,
-  resetCharacterCollectsMaterials
+  resetCharacterCollectsMaterials,
+  loadQuestItemEngines,
+  getAllScenes,
+  checkCreatedQuestOfUser
 } from '../GameApi';
 import { throws } from 'assert';
 
@@ -62,17 +65,62 @@ class selectItemScene extends BaseScene {
         successCallback();
       });
     }, this);
-    this.load.rexAwait(function (successCallback, failureCallback) {
-      loadQuestItems(this.map).then((result) => {
-        this.questItems = result;
-        for (const index in result) {
-          this.itemNames.push(result[index].name);
-          this.itemStrength.push(result[index].strengthRequire);
-          this.load.image(result[index].name, loadItemUrl(result[index].images));
-        };
-        successCallback();
-      });
-    }, this);
+
+    if (this.map == "quest-design"){
+      this.load.rexAwait(function (successCallback, failureCallback) {
+        checkCreatedQuestOfUser().then((result) => {
+          this.questId = result.id;
+          console.log("dao vao ham 0")
+          this.load.rexAwait(function (successCallback, failureCallback) {
+            getAllScenes(this.questId).then((result) => {
+              console.log("da vao ham")
+              this.listScene = result;
+              console.log(result);
+              successCallback();
+            });
+          }, this);
+          successCallback();
+        });
+      }, this);
+    }
+
+    if (this.map == "engine") {
+      this.load.rexAwait(function (successCallback, failureCallback) {
+        loadQuestItemEngines(this.map).then((result) => {
+          if (result != []) { }
+          this.questItems = result;
+          console.log("result: ", result);
+          for (const index in result) {
+            this.itemNames.push(result[index].name);
+            this.itemStrength.push(result[index].strengthRequire);
+            this.load.image(result[index].name, loadItemUrl(result[index].images));
+          };
+          //For Engine
+          // this.load.rexAwait(function (successCallback, failureCallback) {
+          //   getListEventQuest().then((result) => { // for test
+          //     this.listEvent = result.listEvent;
+          //     this.listScene = result.listScene;
+          //     successCallback();
+          //   });
+          // }, this);
+          successCallback();
+        });
+      }, this)
+    }
+    else {
+      this.load.rexAwait(function (successCallback, failureCallback) {
+        loadQuestItems(this.map).then((result) => {
+          if (result != []) { }
+          this.questItems = result;
+          for (const index in result) {
+            this.itemNames.push(result[index].name);
+            this.itemStrength.push(result[index].strengthRequire);
+            this.load.image(result[index].name, loadItemUrl(result[index].images));
+          };
+          successCallback();
+        });
+      }, this)
+    }
 
     //preload
     this.clearCache();
@@ -189,8 +237,10 @@ class selectItemScene extends BaseScene {
     });
     this.btnGo.on('pointerout', () => {
       this.btnGo.setFrame(0);
+
     });
-    this.btnGo.on('pointerdown', () => {
+
+    this.btnGo.on('pointerdown', async () => {
       this.clickSound.play();
       switch (data.map) {
         case 'catalonia1':
@@ -205,8 +255,10 @@ class selectItemScene extends BaseScene {
         case 'lake':
           this.scene.start('lake_scene1');
           break;
-        case 'city':
-          this.scene.start('city_scene1');
+        case 'quest-design':
+          // this.scene.start('BaseEngine', {  listScene: await listSceneQuests("qe1")});
+          // this.scene.start('Engine', {listScene: this.listScene, listEvent: this.listEvent});
+          this.scene.start('Test', {listScene: this.listScene, listEvent: this.listEvent});
           break;
         default:
           console.log('invalid map name');

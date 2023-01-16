@@ -1,11 +1,13 @@
 import { lazy } from "react";
 import { Outlet } from "react-router-dom";
 import BootCamp from "./bootcamp/BootCamp";
+// import QuestPreview from "./quest-design/QuestPreview";
 
 const Metaverse = lazy(() => import("./Metaverse"));
 const MapContainer = lazy(() => import("./land/Map"));
 const FarmContainer = lazy(() => import("./land/Farm"));
 const MetaverseLayout = lazy(() => import("./MetaverseLayout"));
+const QuestPreview = lazy(() => import("./quest-design/QuestPreview"));
 const MemoryCardEnginePlay = lazy(() =>
   import("./bootcamp/memory-card-engine/MemoryCardEnginePlay")
 );
@@ -14,6 +16,7 @@ const MemoryCardEngineLayout = lazy(() =>
 );
 const AR = lazy(() => import("./ar/AR"));
 const Thanks = lazy(() => import("./ar/Thanks"));
+const QuestEngine = lazy(() => import("./quest-design/QuestEngine"));
 
 const MetaverseConfig = {
   settings: {
@@ -86,6 +89,15 @@ const MetaverseConfig = {
     {
       path: "metaverse/thanks",
       element: <Thanks />
+    },
+    {
+      path: "metaverse/quest-design",
+      element: <QuestEngine />
+    },
+    {
+      path: "metaverse/quest-design/:questId/preview",
+      element: <QuestPreview />,
+      auth: null
     }
   ]
 };
