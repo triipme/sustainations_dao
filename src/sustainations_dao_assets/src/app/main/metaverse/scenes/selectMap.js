@@ -67,15 +67,19 @@ class selectMap extends BaseScene {
     //just for quest-design
     this.load.rexAwait(function (successCallback, failureCallback) {
       getAdminQuest().then((result) => {
-        this.questId = result.id;
-        console.log("quest price: ", result.price)
-        this.load.rexAwait(function (successCallback, failureCallback) {
-          getAllScenes(this.questId).then((result) => {
-            this.listScene = result;
-            console.log(result);
-            successCallback();
-          });
-        }, this);
+        this.questId = result?.id;
+        this.questPrice = result?.price;
+        console.log("quest price: ", result?.price)
+        console.log("result: ", result)
+        if (result != undefined) {
+          this.load.rexAwait(function (successCallback, failureCallback) {
+            getAllScenes(this.questId).then((result) => {
+              this.listScene = result;
+              console.log(result);
+              successCallback();
+            });
+          }, this);
+        }
         successCallback();
       });
     }, this);
@@ -250,37 +254,6 @@ class selectMap extends BaseScene {
       this.selectAreaEngine.disableInteractive();
     });
 
-    //Engine popup
-    this.premiumPopupWindowEngine = this.add.sprite(gameConfig.scale.width / 2, gameConfig.scale.height / 2, "popupWindowEngine")
-      .setScale(0.5).setVisible(false);
-    if (this.currentICP < this.requiredICP) {
-      this.premiumPopupWindowEngine.setFrame(1);
-    }
-    this.premiumPopupCloseBtnEngine = this.add.image(gameConfig.scale.width / 2 + 230, gameConfig.scale.height / 2 - 150, "popupCloseEngine")
-      .setInteractive().setScale(0.25).setVisible(false);
-    this.premiumPopupAcceptBtnEngine = this.add.image(gameConfig.scale.width / 2, gameConfig.scale.height / 2 + 115, "popupAcceptEngine")
-      .setInteractive().setScale(0.5).setVisible(false);
-
-    this.premiumPopupCloseBtnEngine.on('pointerdown', () => {
-      this.clickSound.play();
-      this.premiumPopupWindowEngine.setVisible(false);
-      this.premiumPopupCloseBtnEngine.setVisible(false);
-      this.premiumPopupAcceptBtnEngine.setVisible(false);
-      this.selectAreaJungle.setInteractive();
-      this.selectAreaCatalonia.setInteractive();
-      this.selectAreaEngine.setInteractive();
-    });
-    this.premiumPopupAcceptBtnEngine.on('pointerdown', async () => {
-      this.clickSound.play();
-      if (this.getRemainingTime != 0) this.scene.start('exhausted');
-      else {
-        resetCharacter();
-        this.scene.start('selectItemScene', { map: 'quest-design'});
-        // await payQuestEngine(this.questId));
-      };
-    });
-
-
     //jungle popup
     this.premiumPopupWindow = this.add.sprite(gameConfig.scale.width / 2, gameConfig.scale.height / 2, "popupWindow")
       .setScale(0.5).setVisible(false);
@@ -311,6 +284,36 @@ class selectMap extends BaseScene {
       };
     });
 
+    //Engine popup
+    this.premiumPopupWindowEngine = this.add.sprite(gameConfig.scale.width / 2, gameConfig.scale.height / 2, "popupWindowEngine")
+    .setScale(0.5).setVisible(false);
+    console.log("engine popup: ", this.questPrice)
+    if (this.currentICP < this.requiredICP) {
+      this.premiumPopupWindowEngine.setFrame(1);
+    }
+    this.premiumPopupCloseBtnEngine = this.add.image(gameConfig.scale.width / 2 + 230, gameConfig.scale.height / 2 - 150, "popupCloseEngine")
+      .setInteractive().setScale(0.25).setVisible(false);
+    this.premiumPopupAcceptBtnEngine = this.add.image(gameConfig.scale.width / 2, gameConfig.scale.height / 2 + 115, "popupAcceptEngine")
+      .setInteractive().setScale(0.5).setVisible(false);
+
+    this.premiumPopupCloseBtnEngine.on('pointerdown', () => {
+      this.clickSound.play();
+      this.premiumPopupWindowEngine.setVisible(false);
+      this.premiumPopupCloseBtnEngine.setVisible(false);
+      this.premiumPopupAcceptBtnEngine.setVisible(false);
+      this.selectAreaJungle.setInteractive();
+      this.selectAreaCatalonia.setInteractive();
+      this.selectAreaEngine.setInteractive();
+    });
+    this.premiumPopupAcceptBtnEngine.on('pointerdown', async () => {
+      this.clickSound.play();
+      if (this.getRemainingTime != 0) this.scene.start('exhausted');
+      else {
+        resetCharacter();
+        this.scene.start('selectItemScene', { map: 'quest-design'});
+        // await payQuestEngine(this.questId));
+      };
+    });  
   }
 
 }

@@ -346,7 +346,6 @@ export default class Engine extends BaseScene {
     }
 
     if (this.player.x > 600 && this.isInteracted == false) { //default 4200
-
       this.premiumPopupWindow.setVisible(true);
       this.premiumPopupCloseBtn.setVisible(true);
       this.des.setVisible(true);
