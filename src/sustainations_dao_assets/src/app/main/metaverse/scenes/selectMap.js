@@ -84,19 +84,6 @@ class selectMap extends BaseScene {
     this.load.spritesheet('popupWindowEngine', popupWindowEngine, { frameWidth: 980, frameHeight: 799 });
     this.load.image("popupCloseEngine", popupCloseEngine);
     this.load.image("popupAcceptEngine", popupAcceptEngine);
-
-    //input form
-    this.htmlLoader = this.load.html('nameform', 'metaverse/selectMap/nameform.html');
-    this.htmlLoader.on('filecomplete', function (key, file) {
-      if (key === 'nameform') {
-        console.log("nameform.html loaded successfully!");
-      }
-    });
-    this.htmlLoader.on('fileerror', function (key, file) {
-      if (key === 'nameform') {
-        console.log("Failed to load nameform.html");
-      }
-    });
   }
 
 
