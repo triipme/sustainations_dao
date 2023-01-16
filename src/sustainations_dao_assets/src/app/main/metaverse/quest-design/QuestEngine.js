@@ -100,7 +100,7 @@ const QuestEngine = () => {
       //get quest id
       let checkCreateQuest = await user.actor.checkCreatedQuestOfUser()
       idQuest = checkCreateQuest.ok?.id;
-      console.log("idQuet: ", idQuest)
+      // console.log("idQuet: ", idQuest)
       console.log("checkCreateQuest", checkCreateQuest)
       if (idQuest != undefined) {
         //EVENT
@@ -111,8 +111,8 @@ const QuestEngine = () => {
           locationName: data.scene.location,
           destinationName: data.scene.destination
         };
-        console.log("quétId: ", idQuest)
-        console.log("event: ", event)
+        // console.log("quétId: ", idQuest)
+        // console.log("event: ", event)
         const resultEvent = await user.actor.createEventEngine(event);
 
         //SCENE

@@ -236,7 +236,7 @@ export default class Engine extends BaseScene {
 
   update() {
 
-    if (this.player.x > 1280) { //default 5100
+    if (this.player.x > 5100) { //default 5100
       console.log(this.sum)
       this.pregameSound.stop();
       this.sfx_char_footstep.stop();
@@ -246,7 +246,7 @@ export default class Engine extends BaseScene {
       // this.scene.start("Engine", { isUsedPotion: this.isUsedPotion, listScene: this.listScene, listEvent: this.listEvent});
     }
 
-    if (this.player.x > 600 && this.isInteracted == false) { //default 4200
+    if (this.player.x > 3000 && this.isInteracted == false) { //default 4200
 
       this.premiumPopupWindow.setVisible(true);
       this.premiumPopupCloseBtn.setVisible(true);

@@ -54,6 +54,9 @@ function QuestPreview() {
   }
   console.log(back)
   console.log(mid)
+  const urlParams = new URLSearchParams(window.location.search);
+  const myParam = urlParams.get('myParam');
+  console.log(myParam)
 
   // TODO: update html/css
   return (
@@ -114,7 +117,7 @@ function QuestPreview() {
           backgroundRepeat: 'no-repeat',
         }}
       />
-      <div style={{zIndex:"1"}}>
+      <div style={{ zIndex: "1" }}>
         <Paper className="w-full sm:w-auto min-h-full sm:min-h-auto rounded-0 py-32 px-16 sm:p-48 sm:rounded-2xl sm:shadow">
           <div className="w-full max-w-5xl sm\:w-auto mx-auto sm:mx-0">
             <Typography className="mt-32 justify-center">
