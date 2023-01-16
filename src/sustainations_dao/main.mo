@@ -5350,16 +5350,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     switch (rsTile) {
       case (null) { #err(#NotFound) };
       case (?tile) {
-        // update Farm Effect
-        let rsLand = state.landSlots.get(tile.landSlotId);
-        switch (rsLand) {
-          case null {
-          };
-          case (?landSlot) {
-            await createUserHasFarmEffect(tile.indexRow,tile.indexColumn,tile.objectId,landSlot,true); 
-          }
-        }; 
-
         let plantId = tile.objectId;
         let rsPlant = state.plants.get(plantId);
         switch (rsPlant) {
@@ -5384,6 +5374,20 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
         };
         // delete Tile
         let deletedTile = state.tiles.delete(tileId);
+        // update Farm Effect
+        let rsLand = state.landSlots.get(tile.landSlotId);
+        switch (rsLand) {
+          case null {
+          };
+          case (?landSlot) {
+            let adjacentTiles = Tile.getAdjacentTiles(tile.indexRow,tile.indexColumn,state);
+            Debug.print(Nat.toText(adjacentTiles.size()));
+            for (t in adjacentTiles.vals()) {
+              await createUserHasFarmEffect(t.indexRow, t.indexColumn, t.objectId, landSlot, false); 
+            };
+          };
+        }; 
+
         #ok("Success");
       };
     };

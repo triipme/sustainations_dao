@@ -89,7 +89,6 @@ module Tile {
 
   public func getAdjacentTiles(indexRow : Nat, indexColumn : Nat, state : State.State) : [Types.Tile] {
     var adjacentTiles : [Types.Tile] = [];
-
     // up Tile
     let rsUpTile = state.tiles.get(
       Nat.toText(indexRow-1) # "-" #Nat.toText(indexColumn)
@@ -125,7 +124,7 @@ module Tile {
 
     // right Tile
     let rsRightTile = state.tiles.get(
-      Nat.toText(indexRow+1) # "-" #Nat.toText(indexColumn)
+      Nat.toText(indexRow) # "-" #Nat.toText(indexColumn+1)
     );  
     switch (rsRightTile) {
       case null {};
