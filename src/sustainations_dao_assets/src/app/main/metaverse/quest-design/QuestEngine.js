@@ -224,7 +224,21 @@ const QuestEngine = () => {
         console.log("resultEngine ", resultEngine)
       }
       else {
-        idQuest = checkCreateQuest.ok?.id;
+        let questEngine = (await user.actor.readQuestEngine(checkCreateQuest.ok?.id)).ok;
+        console.log("questEngine: ", questEngine)
+        let quest = {
+          id : questEngine.id,
+          userId: questEngine.userId,
+          name : questEngine.name,
+          price : parseFloat(data.quest.price) * 100000000,
+          description : questEngine.description,
+          images : questEngine.images,
+          isActive : questEngine.isActive,
+          dateCreate : questEngine.dateCreate,
+          listScene : questEngine.listScene
+        }
+        let resultEngine = await user.actor.updateQuestEngine(quest);
+        console.log("updatedEngine ", resultEngine)
       }
     }
     catch (err) {
