@@ -28,12 +28,13 @@ const popupClose = 'metaverse/selectMap/UI_ingame_close.png';
 const popupAccept = 'metaverse/selectMap/UI_ingame_popup_accept.png';
 const itemnotice = 'metaverse/selectMap/item_notice.png';
 
-const popupWindowEngine = 'metaverse/selectMap/Jungle_popup.png';
+// const popupWindowEngine = 'metaverse/selectMap/Jungle_popup.png';
+const popupWindowEngine = 'metaverse/selectMap/Catalonia_popup.png';
 const popupCloseEngine = 'metaverse/selectMap/UI_ingame_close.png';
 const popupAcceptEngine = 'metaverse/selectMap/UI_ingame_popup_accept.png';
 
-var button = document.querySelector('.btn-primary');
-var input = document.querySelector('#formGroupExampleInput');
+
+
 
 class selectMap extends BaseScene {
   constructor() {

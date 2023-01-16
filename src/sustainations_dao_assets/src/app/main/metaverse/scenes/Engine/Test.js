@@ -71,6 +71,7 @@ export default class Engine extends BaseScene {
         this.load.image("background1", loadItemUrl(this.sceneEvent.back));
         this.load.image("background2", loadItemUrl(this.sceneEvent.mid));
         this.load.image("background3", loadItemUrl(this.sceneEvent.front));
+        this.load.image("obstacle", loadItemUrl(this.sceneEvent.obstacle));
         this.load.rexAwait(function (successCallback, failureCallback) {
           characterTakeOptionEngine(this.sceneEvent.idEvent).then((result) => {
             this.characterTakeOptions = result;
@@ -88,21 +89,6 @@ export default class Engine extends BaseScene {
         successCallback();
       });
     }, this);
-    // this.characterTakeOptions = await characterTakeOptionEngine(this.sceneEvent.idEvent);
-    // this.characterCollectMaterials = await characterCollectsMaterialEngines(this.sceneEvent.idEvent);
-    // this.load.rexAwait(function (successCallback, failureCallback) {
-    //   characterTakeOptionEngine(this.sceneEvent.idEvent).then((result) => {
-    //     this.characterTakeOptions = result;
-    //     successCallback();
-    //   });
-    // }, this);
-    // this.load.rexAwait(function (successCallback, failureCallback) {
-    //   characterCollectsMaterialEngines(this.sceneEvent.idEvent).then((result) => {
-    //     this.characterCollectMaterials = result;
-    //     successCallback();
-    //   });
-    // }, this);
-
 
     //Preload
     this.clearSceneCache();
