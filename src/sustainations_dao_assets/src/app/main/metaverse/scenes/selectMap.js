@@ -11,7 +11,6 @@ import {
   buyLandSlot,
 } from '../GameApi';
 
-
 const bg = 'metaverse/selectMap/background.png';
 const text = 'metaverse/selectMap/call_to_action.png';
 const selectArea = 'metaverse/selectMap/select-area.png';
@@ -29,6 +28,10 @@ const itemnotice = 'metaverse/selectMap/item_notice.png';
 const popupWindowEngine = 'metaverse/selectMap/Jungle_popup.png';
 const popupCloseEngine = 'metaverse/selectMap/UI_ingame_close.png';
 const popupAcceptEngine = 'metaverse/selectMap/UI_ingame_popup_accept.png';
+
+var button = document.querySelector('.btn-primary');
+var input = document.querySelector('#formGroupExampleInput');
+
 class selectMap extends BaseScene {
   constructor() {
     super('selectMap');
@@ -82,7 +85,22 @@ class selectMap extends BaseScene {
     this.load.image("popupCloseEngine", popupCloseEngine);
     this.load.image("popupAcceptEngine", popupAcceptEngine);
 
+    //input form
+   this.htmlLoader = this.load.html('nameform', 'metaverse/selectMap/nameform.html');
+   this.htmlLoader.on('filecomplete', function (key, file) {
+        if (key === 'nameform') {
+            console.log("nameform.html loaded successfully!");
+        }
+    });
+    this.htmlLoader.on('fileerror', function (key, file) {
+        if (key === 'nameform') {
+            console.log("Failed to load nameform.html");
+        }
+    });
   }
+  
+
+  
 
   async create() {
     // add audios
@@ -211,14 +229,6 @@ class selectMap extends BaseScene {
       this.selectAreaEngine.setFrame(0);
       this.engineLocationDetail.setVisible(false);
     });
-    // this.selectAreaEngine.on('pointerdown', () => {
-    //   this.clickSound.play();
-    //   if (this.getRemainingTime != 0) this.scene.start('exhausted');
-    //   else {
-    //     resetCharacter();
-    //     this.scene.start('selectItemScene', { map: 'quest-design' });
-    //   };
-    // });
     this.selectAreaEngine.on('pointerdown', async () => {
       this.clickSound.play();
       this.premiumPopupWindowEngine.setVisible(true);
@@ -229,6 +239,9 @@ class selectMap extends BaseScene {
       this.selectAreaEngine.disableInteractive();
       this.selectAreaCatalonia.disableInteractive();
       this.selectAreaEngine.disableInteractive();
+      var text = this.add.text(10, 10, 'Please login to play', { color: 'red', fontFamily: 'Arial', fontSize: '32px ' });
+
+      var element = this.add.dom(420, 393).createFromCache('nameform');
     });
 
     //Engine popup
@@ -293,7 +306,28 @@ class selectMap extends BaseScene {
       };
     });
 
+    //input form
+    var text = this.add.text(10, 10, 'Please login to play', { color: 'red', fontFamily: 'Arial', fontSize: '32px ' });
+
+    var element = this.add.dom(500, 500).createFromCache('nameform');
+
+    // element.addListener('click');
+
+    // element.on('click', function (event) {
+    //     if (event.target.name === 'questIdButton' && event.target.type === "button") {
+    //         var inputValue = event.target.parentElement.querySelector('#formGroupExampleInput').value;
+    //         if(!inputValue){
+    //             alert("Input value is empty or null");
+    //         }else{
+    //             event.target.parentElement.querySelector('#formGroupExampleInput').value = ''; // Clear the input field
+    //             alert("Success: " + inputValue);
+    //         }
+    //     }
+    // });
+    console.log(this.htmlLoader)
+
   }
+
 
 }
 export default selectMap;
