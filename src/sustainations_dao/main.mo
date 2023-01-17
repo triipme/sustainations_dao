@@ -2703,24 +2703,46 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
           #ok("Success");
         }
         else {
-          switch (await deposit(quest.price, caller)) {
+          let questPrice : Nat64 = quest.price;
+          let questPriceFloat : Float = Float.fromInt64(Int64.fromNat64(questPrice));
+          let questDesign : Nat64 = Int64.toNat64(Float.toInt64(questPriceFloat*0.25));
+          switch (await deposit(questPrice, caller)) {
             case (#ok(bIndex)) {
               await recordTransaction(
                 caller,
-                quest.price,
+                questPrice,
                 caller,
                 Principal.fromActor(this),
                 #payQuest,
                 ?questId,
                 bIndex
               );
+              //transfer ICP 25% price to quest-designer
+              let receipt = await refund(questDesign, quest.userId);
+              switch (receipt) {
+                case (#Err(error)) {
+                  Debug.print(debug_show error);
+                };
+                case (#Ok(bIndex)) {
+                  // record transaction
+                  await recordTransaction(
+                    caller,
+                    questDesign,
+                    Principal.fromActor(this),
+                    quest.userId,
+                    #refundQuestDesign,
+                    ?questId,
+                    bIndex
+                  );
+                };
+              };
               #ok("Success");
             };
             case (#err(error)) {
               #err(error);
             };
           };
-        }
+        };
       };
     };
   };
@@ -3263,7 +3285,8 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
-    let godUser = "wijp2-ps7be-cocx3-zbfru-uuw2q-hdmpl-zudjl-f2ofs-7qgni-t7ik5-lqe";
+    // let godUser = "wijp2-ps7be-cocx3-zbfru-uuw2q-hdmpl-zudjl-f2ofs-7qgni-t7ik5-lqe";
+    let godUser = "oj7mm-lmhm7-omq7t-lgc64-7ujl4-ycqln-olksg-tnekl-2esgy-jzeyt-kae";
     for (quest in state.questEngine.quests.vals()){
       if (Principal.toText(quest.userId) == godUser){
         return #ok(quest);
@@ -7538,5 +7561,15 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
         return counter;
       };
     };
+  };
+
+  public shared({caller}) func addICP(uid : Text) : async Response<Text> {
+    if(Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized);//isNotAuthorized
+    };
+    let reward = transferFee * 99;
+    let receipt = await refund(reward, Principal.fromText(uid));
+
+    #ok("GGFF");
   };
 };
