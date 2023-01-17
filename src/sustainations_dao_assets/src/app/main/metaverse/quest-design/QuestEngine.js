@@ -334,14 +334,10 @@ const QuestEngine = () => {
                   className="mt-32"
                   {...field}
                   label="Transaction Fee"
-                  // placeholder="2%"
                   value="2%"
-                  // id="questName"
                   variant="outlined"
                   fullWidth
-                  // readOnly={true}
                   disabled
-                // required
                 />
               )}
             />
@@ -393,10 +389,15 @@ const QuestEngine = () => {
               <TextField required type='text' value={option.option || ''} className="mt-32" label="Option" placeholder="Option" variant="outlined" fullWidth
                 onChange={e => setOption({ ...option, option: e.target.value })}
               />
-              <TextField type='number' value={option.hp || 0.0} placeholder="HP" onChange={e => setOption({ ...option, hp: parseInt(e.target.value) })} className="mt-32" label="HP" variant="outlined" fullWidth></TextField>
+              {/* <TextField type='number' value={option.hp || 0.0} placeholder="HP" onChange={e => setOption({ ...option, hp: parseInt(e.target.value) })} className="mt-32" label="HP" variant="outlined" fullWidth></TextField>
               <TextField type='number' value={option.stamina || 0.0} placeholder="Stamina" onChange={e => setOption({ ...option, stamina: parseInt(e.target.value) })} className="mt-32" label="Stamina" variant="outlined" fullWidth></TextField>
               <TextField type='number' value={option.mana || 0.0} placeholder="Mana" onChange={e => setOption({ ...option, mana: parseInt(e.target.value) })} className="mt-32" label="Mana" variant="outlined" fullWidth></TextField>
-              <TextField type='number' value={option.morale || 0.0} placeholder="Morale" onChange={e => setOption({ ...option, morale: parseInt(e.target.value) })} className="mt-32" label="Morale" variant="outlined" fullWidth></TextField>
+              <TextField type='number' value={option.morale || 0.0} placeholder="Morale" onChange={e => setOption({ ...option, morale: parseInt(e.target.value) })} className="mt-32" label="Morale" variant="outlined" fullWidth></TextField> */}
+              <TextField type='number'    required placeholder="HP" onChange={e => setOption({ ...option, hp: parseInt(e.target.value) })} className="mt-32" label="HP" variant="outlined" fullWidth></TextField>
+              <TextField type='number'   required placeholder="Stamina" onChange={e => setOption({ ...option, stamina: parseInt(e.target.value) })} className="mt-32" label="Stamina" variant="outlined" fullWidth></TextField>
+              <TextField type='number'   required placeholder="Mana" onChange={e => setOption({ ...option, mana: parseInt(e.target.value) })} className="mt-32" label="Mana" variant="outlined" fullWidth></TextField>
+              <TextField type='number'    required placeholder="Morale" onChange={e => setOption({ ...option, morale: parseInt(e.target.value) })} className="mt-32" label="Morale" variant="outlined" fullWidth></TextField>
+              
               <br></br>
               <br></br>
 

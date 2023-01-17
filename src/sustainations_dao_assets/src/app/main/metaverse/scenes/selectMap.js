@@ -39,6 +39,7 @@ const popupAcceptEngine = 'metaverse/selectMap/UI_ingame_popup_accept.png';
 class selectMap extends BaseScene {
   constructor() {
     super('selectMap');
+    // this.questPrice = 0;
   }
 
   clearCache() {
@@ -69,10 +70,12 @@ class selectMap extends BaseScene {
     }, this);
 
     //just for quest-design
+    this.questPrice
     this.load.rexAwait(function (successCallback, failureCallback) {
       getAdminQuest().then((result) => {
         this.questId = result.id;
-        console.log("quest price: ", result.price)
+        this.questPrice = result.price
+        // console.log("quest price: ", result.price)
         this.load.rexAwait(function (successCallback, failureCallback) {
           getAllScenes(this.questId).then((result) => {
             this.listScene = result;
@@ -83,7 +86,8 @@ class selectMap extends BaseScene {
         successCallback();
       });
     }, this);
-
+    console.log(this.questPrice)
+   
     //preload
     this.clearCache();
     this.load.image('bg', bg);
@@ -243,6 +247,7 @@ class selectMap extends BaseScene {
       if (this.currentICP >= this.requiredICP) {
         this.premiumPopupAcceptBtnEngine.setVisible(true);
       }
+      this.desPopup.setVisible(true)
       this.selectAreaEngine.disableInteractive();
       this.selectAreaCatalonia.disableInteractive();
       this.selectAreaEngine.disableInteractive();
@@ -264,6 +269,7 @@ class selectMap extends BaseScene {
       this.premiumPopupWindowEngine.setVisible(false);
       this.premiumPopupCloseBtnEngine.setVisible(false);
       this.premiumPopupAcceptBtnEngine.setVisible(false);
+      this.desPopup.setVisible(false)
       this.selectAreaJungle.setInteractive();
       this.selectAreaCatalonia.setInteractive();
       this.selectAreaEngine.setInteractive();
@@ -278,6 +284,22 @@ class selectMap extends BaseScene {
       };
     });
 
+      //Des
+      let price = Number(this.questPrice) * 0.00000001
+      this.desPopup = this.make.text({
+        x: gameConfig.scale.width / 2,
+        y: gameConfig.scale.height / 2 - 10,
+        text: `THIS QUEST REQUIRES ${price} $ICP TO PLAY.\nDO YOU AGREE?`,
+        origin: { x: 0.5, y: 0.5 },
+        style: {
+          font: 'bold 30px Arial',
+          fill: 'gray',
+          wordWrap: { width: 400 },
+          lineSpacing: 10
+        }
+      }).setVisible(false)
+
+      console.log("quest price: ", typeof this.questPrice)
 
     //jungle popup
     this.premiumPopupWindow = this.add.sprite(gameConfig.scale.width / 2, gameConfig.scale.height / 2, "popupWindow")
@@ -308,6 +330,8 @@ class selectMap extends BaseScene {
         await payQuest("jungle");
       };
     });
+
+  
 
     // const urlParams = new URLSearchParams(window.location.search);
     // const myParam = urlParams.get('questId');

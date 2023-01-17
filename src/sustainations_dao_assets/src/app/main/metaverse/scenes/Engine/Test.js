@@ -240,6 +240,7 @@ export default class Engine extends BaseScene {
       }
     }).setVisible(false).setScrollFactor(0);
 
+
     //scrolling
     this.graphics = this.make.graphics();
 
