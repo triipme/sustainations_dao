@@ -2699,48 +2699,43 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     switch (state.questEngine.quests.get(questId)) {
       case null { #err(#NotFound) };
       case (?quest) {
-        if (quest.userId == caller) {
-          #ok("Success");
-        }
-        else {
-          let questPrice : Nat64 = quest.price;
-          let questPriceFloat : Float = Float.fromInt64(Int64.fromNat64(questPrice));
-          let questDesign : Nat64 = Int64.toNat64(Float.toInt64(questPriceFloat*0.25))-transferFee;
-          switch (await deposit(questPrice, caller)) {
-            case (#ok(bIndex)) {
-              await recordTransaction(
-                caller,
-                questPrice,
-                caller,
-                Principal.fromActor(this),
-                #payQuest,
-                ?questId,
-                bIndex
-              );
-              //transfer ICP 25% price to quest-designer
-              let receipt = await refund(questDesign, quest.userId);
-              switch (receipt) {
-                case (#Err(error)) {
-                  Debug.print(debug_show error);
-                };
-                case (#Ok(bIndex)) {
-                  // record transaction
-                  await recordTransaction(
-                    caller,
-                    questDesign,
-                    Principal.fromActor(this),
-                    quest.userId,
-                    #refundQuestDesign,
-                    ?questId,
-                    bIndex
-                  );
-                };
+        let questPrice : Nat64 = quest.price;
+        let questPriceFloat : Float = Float.fromInt64(Int64.fromNat64(questPrice));
+        let questDesign : Nat64 = Int64.toNat64(Float.toInt64(questPriceFloat*0.25))-transferFee;
+        switch (await deposit(questPrice, caller)) {
+          case (#ok(bIndex)) {
+            await recordTransaction(
+              caller,
+              questPrice,
+              caller,
+              Principal.fromActor(this),
+              #payQuest,
+              ?questId,
+              bIndex
+            );
+            //transfer ICP 25% price to quest-designer
+            let receipt = await refund(questDesign, quest.userId);
+            switch (receipt) {
+              case (#Err(error)) {
+                Debug.print(debug_show error);
               };
-              #ok("Success");
+              case (#Ok(bIndex)) {
+                // record transaction
+                await recordTransaction(
+                  caller,
+                  questDesign,
+                  Principal.fromActor(this),
+                  quest.userId,
+                  #refundQuestDesign,
+                  ?questId,
+                  bIndex
+                );
+              };
             };
-            case (#err(error)) {
-              #err(error);
-            };
+            #ok("Success");
+          };
+          case (#err(error)) {
+            #err(error);
           };
         };
       };
