@@ -247,10 +247,12 @@ class selectMap extends BaseScene {
       this.clickSound.play();
       this.premiumPopupWindowEngine.setVisible(true);
       this.premiumPopupCloseBtnEngine.setVisible(true);
-      if (this.currentICP >= this.requiredICP) {
+      if (this.currentICP >= price*100000000) {
+        this.desPopup.setVisible(true)
         this.premiumPopupAcceptBtnEngine.setVisible(true);
+      }else{
+        this.desPopupFailure.setVisible(true)
       }
-      this.desPopup.setVisible(true)
       this.selectAreaEngine.disableInteractive();
       this.selectAreaCatalonia.disableInteractive();
       this.selectAreaEngine.disableInteractive();
@@ -273,6 +275,7 @@ class selectMap extends BaseScene {
       this.premiumPopupCloseBtnEngine.setVisible(false);
       this.premiumPopupAcceptBtnEngine.setVisible(false);
       this.desPopup.setVisible(false)
+      this.desPopupFailure.setVisible(false)
       this.selectAreaJungle.setInteractive();
       this.selectAreaCatalonia.setInteractive();
       this.selectAreaEngine.setInteractive();
@@ -289,11 +292,24 @@ class selectMap extends BaseScene {
     });
 
       //Des
-      let price = Number(this.questPrice) * 0.00000001
+      let price = Number(this.questPrice) * 0.00000001 + 0.0001
       this.desPopup = this.make.text({
         x: gameConfig.scale.width / 2,
         y: gameConfig.scale.height / 2 - 10,
         text: `THIS QUEST REQUIRES ${price} $ICP TO PLAY.\nDO YOU AGREE?`,
+        origin: { x: 0.5, y: 0.5 },
+        style: {
+          font: 'bold 30px Arial',
+          fill: 'gray',
+          wordWrap: { width: 400 },
+          lineSpacing: 10
+        }
+      }).setVisible(false)
+
+      this.desPopupFailure = this.make.text({
+        x: gameConfig.scale.width / 2,
+        y: gameConfig.scale.height / 2 - 10,
+        text: `YOU DON'T HAVE ENOUGH ${price} $ICP TO PLAY THIS QUEST.`,
         origin: { x: 0.5, y: 0.5 },
         style: {
           font: 'bold 30px Arial',
