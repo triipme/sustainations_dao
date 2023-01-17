@@ -5655,7 +5655,12 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
             };
             updateLandBuyingStatus(caller, Int.abs(i), Int.abs(j));
             return #ok(
-              await landSlotToGeometry(Int.abs(i), Int.abs(j))
+              {
+                zoneNumber = 20;
+                zoneLetter = "N";
+                i = Int.abs(j);
+                j = Int.abs(j);
+              }
             );
           };
         };
@@ -5673,7 +5678,12 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
 
             updateLandBuyingStatus(caller, Int.abs(result.i), Int.abs(result.j));
             return #ok(
-              await landSlotToGeometry(Int.abs(result.i), Int.abs(result.j))
+              {
+                zoneNumber = 20;
+                zoneLetter = "N";
+                i = Int.abs(result.i);
+                j = Int.abs(result.j);
+              }
             );
           };
         };
@@ -5868,10 +5878,12 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
         // return geometries list
         var geometries : [Types.NationGeometry] = [];
         for (value in list.vals()) {
-          var coordinates : [[Float]] = [];
+          //var coordinates : [[Float]] = [];
+          var coordinates : [[Nat]] = [];
           for (utm in value.utms.vals()) {
-            let lonlat = await utm2lonlat(Float.fromInt(utm[1]), Float.fromInt(utm[0]), 20, "N");
-            coordinates := Array.append(coordinates, [[lonlat.0, lonlat.1]]);
+            //let lonlat = await utm2lonlat(Float.fromInt(utm[1]), Float.fromInt(utm[0]), 20, "N");
+            //coordinates := Array.append(coordinates, [[lonlat.0, lonlat.1]]);
+            coordinates := Array.append(coordinates, [[ utm[0], utm[1] ]]);
           };
           let newGeometry : Types.NationGeometry = {
             id = Principal.toText(value.id);
@@ -6029,7 +6041,12 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
 
   // Land Buying Status
   public shared ({ caller }) func updateLandBuyingStatus(userId : Principal, indexRow : Nat, indexColumn : Nat) : () {
-    let newGeometry = await landSlotToGeometry(indexRow, indexColumn);
+    let newGeometry : Types.Geometry = {
+      i = indexRow;
+      j = indexColumn;
+      zoneNumber = 20;
+      zoneLetter = "N";
+    };
     let principalId = Principal.toText(userId);
     let rsLandBuyingStatus = state.landBuyingStatuses.get(principalId);
     switch (rsLandBuyingStatus) {
