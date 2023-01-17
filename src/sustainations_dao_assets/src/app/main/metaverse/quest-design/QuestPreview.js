@@ -117,10 +117,11 @@ function QuestPreview() {
           backgroundRepeat: 'no-repeat',
         }}
       />
-      <div style={{ zIndex: "1" }}>
-        <Paper className="w-full sm:w-auto min-h-full sm:min-h-auto rounded-0 py-32 px-16 sm:p-48 sm:rounded-2xl sm:shadow">
+     <div className="parent-container" style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", zIndex: "1" }}>
+        <Paper className="w-full sm:w-auto min-h-full sm:min-h-auto rounded-0 py-32 px-16 sm:p-48 sm:rounded-2xl sm:shadow position-absolute" style={{ width: "50%", margin: "auto"}}>
           <div className="w-full max-w-5xl sm\:w-auto mx-auto sm:mx-0">
-            <Typography className="mt-32 justify-center">
+          <Typography className="mt-32 justify-center text-center" style={{margin: 'auto', textAlign:'center'}}>
+
               Welcome to my newly designed Sustainations Quest ! We're excited to have you join us on this epic journey.
               <br />
               As a new player, you will take on the role of a pioneer traveling in search of a lost treasures . You will face many challenges along the way, from treacherous river crossings to harsh weather and unexpected events.
@@ -139,6 +140,8 @@ function QuestPreview() {
           </div>
         </Paper>
       </div>
+
+
 
     </div>
 
