@@ -73,7 +73,6 @@ class selectMap extends BaseScene {
     this.questPrice
     this.load.rexAwait(function (successCallback, failureCallback) {
       getAdminQuest().then((result) => {
-        this.quest = result;
         this.questId = result?.id;
         this.questPrice = result?.price;
         console.log("quest price: ", result?.price)
@@ -248,10 +247,7 @@ class selectMap extends BaseScene {
       this.clickSound.play();
       this.premiumPopupWindowEngine.setVisible(true);
       this.premiumPopupCloseBtnEngine.setVisible(true);
-      console.log("test", JSON.stringify(this.characterData.userId) === JSON.stringify(this.quest.userId))
-      console.log(this.characterData.userId._arr, this.quest.userId)
-      console.log(Object.keys(this.characterData.userId))
-      if ((this.currentICP >= price*100_000_000) || (JSON.stringify(this.characterData.userId) === JSON.stringify(this.quest.userId))) {
+      if (this.currentICP >= price*100_000_000) {
         console.log("this curent ICP: ", this.currentICP)
         this.premiumPopupAcceptBtnEngine.setVisible(true);
       }
