@@ -2705,7 +2705,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
         else {
           let questPrice : Nat64 = quest.price;
           let questPriceFloat : Float = Float.fromInt64(Int64.fromNat64(questPrice));
-          let questDesign : Nat64 = Int64.toNat64(Float.toInt64(questPriceFloat*0.25));
+          let questDesign : Nat64 = Int64.toNat64(Float.toInt64(questPriceFloat*0.25))-transferFee;
           switch (await deposit(questPrice, caller)) {
             case (#ok(bIndex)) {
               await recordTransaction(

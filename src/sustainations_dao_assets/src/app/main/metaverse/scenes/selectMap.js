@@ -283,7 +283,8 @@ class selectMap extends BaseScene {
       else {
         resetCharacter();
         this.scene.start('selectItemScene', { map: 'quest-design'});
-        // await payQuestEngine(this.questId));
+        let pay = await payQuestEngine(this.questId);
+        console.log("pay Quest: ", pay)
       };
     });
 
