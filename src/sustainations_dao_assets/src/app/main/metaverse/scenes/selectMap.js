@@ -57,7 +57,7 @@ class selectMap extends BaseScene {
     this.load.rexAwait(function (successCallback, failureCallback) {
       getUserInfo().then((result) => {
         this.userInfo = result.ok;
-        console.log(this.userInfo);
+        console.log("User info: ", this.userInfo);
         successCallback();
       });
     }, this);
@@ -73,6 +73,7 @@ class selectMap extends BaseScene {
     this.questPrice
     this.load.rexAwait(function (successCallback, failureCallback) {
       getAdminQuest().then((result) => {
+        this.quest = result;
         this.questId = result?.id;
         this.questPrice = result?.price;
         console.log("quest price: ", result?.price)
@@ -247,7 +248,11 @@ class selectMap extends BaseScene {
       this.clickSound.play();
       this.premiumPopupWindowEngine.setVisible(true);
       this.premiumPopupCloseBtnEngine.setVisible(true);
-      if (this.currentICP >= this.requiredICP) {
+      console.log("test", JSON.stringify(this.characterData.userId) === JSON.stringify(this.quest.userId))
+      console.log(this.characterData.userId._arr, this.quest.userId)
+      console.log(Object.keys(this.characterData.userId))
+      if ((this.currentICP >= price*100_000_000) || (JSON.stringify(this.characterData.userId) === JSON.stringify(this.quest.userId))) {
+        console.log("this curent ICP: ", this.currentICP)
         this.premiumPopupAcceptBtnEngine.setVisible(true);
       }
       this.desPopup.setVisible(true)
@@ -289,7 +294,7 @@ class selectMap extends BaseScene {
     });
 
       //Des
-      let price = Number(this.questPrice) * 0.00000001
+      let price = Number(this.questPrice) * 0.00000001 + 0.0001
       this.desPopup = this.make.text({
         x: gameConfig.scale.width / 2,
         y: gameConfig.scale.height / 2 - 10,
