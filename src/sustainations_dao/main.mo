@@ -2699,28 +2699,45 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     switch (state.questEngine.quests.get(questId)) {
       case null { #err(#NotFound) };
       case (?quest) {
-        if (quest.userId == caller) {
-          #ok("Success");
-        }
-        else {
-          switch (await deposit(quest.price, caller)) {
-            case (#ok(bIndex)) {
-              await recordTransaction(
-                caller,
-                quest.price,
-                caller,
-                Principal.fromActor(this),
-                #payQuest,
-                ?questId,
-                bIndex
-              );
-              #ok("Success");
+        let questPrice : Nat64 = quest.price;
+        let questPriceFloat : Float = Float.fromInt64(Int64.fromNat64(questPrice));
+        let questDesign : Nat64 = Int64.toNat64(Float.toInt64(questPriceFloat*0.25))-transferFee;
+        switch (await deposit(questPrice, caller)) {
+          case (#ok(bIndex)) {
+            await recordTransaction(
+              caller,
+              questPrice,
+              caller,
+              Principal.fromActor(this),
+              #payQuest,
+              ?questId,
+              bIndex
+            );
+            //transfer ICP 25% price to quest-designer
+            let receipt = await refund(questDesign, quest.userId);
+            switch (receipt) {
+              case (#Err(error)) {
+                Debug.print(debug_show error);
+              };
+              case (#Ok(bIndex)) {
+                // record transaction
+                await recordTransaction(
+                  caller,
+                  questDesign,
+                  Principal.fromActor(this),
+                  quest.userId,
+                  #refundQuestDesign,
+                  ?questId,
+                  bIndex
+                );
+              };
             };
-            case (#err(error)) {
-              #err(error);
-            };
+            #ok("Success");
           };
-        }
+          case (#err(error)) {
+            #err(error);
+          };
+        };
       };
     };
   };
@@ -3264,6 +3281,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       return #err(#NotAuthorized); //isNotAuthorized
     };
     let godUser = "wijp2-ps7be-cocx3-zbfru-uuw2q-hdmpl-zudjl-f2ofs-7qgni-t7ik5-lqe";
+    //let godUser = "nrulu-zov3c-5fjy3-pza5d-ysupr-vuwi5-gl3kk-uasar-yohik-njyf4-dqe";
     for (quest in state.questEngine.quests.vals()){
       if (Principal.toText(quest.userId) == godUser){
         return #ok(quest);
@@ -7539,4 +7557,5 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       };
     };
   };
+
 };

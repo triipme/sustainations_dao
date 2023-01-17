@@ -80,6 +80,7 @@ module {
     #rewardTop;
     #collectTreasuryContribution;
     #payQuest;
+    #refundQuestDesign;
     #buyLandSlot;
   };
   public type TxRecord = {

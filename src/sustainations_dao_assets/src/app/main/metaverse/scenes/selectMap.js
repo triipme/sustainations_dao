@@ -57,7 +57,7 @@ class selectMap extends BaseScene {
     this.load.rexAwait(function (successCallback, failureCallback) {
       getUserInfo().then((result) => {
         this.userInfo = result.ok;
-        console.log(this.userInfo);
+        console.log("User info: ", this.userInfo);
         successCallback();
       });
     }, this);
@@ -73,16 +73,19 @@ class selectMap extends BaseScene {
     this.questPrice
     this.load.rexAwait(function (successCallback, failureCallback) {
       getAdminQuest().then((result) => {
-        this.questId = result.id;
-        this.questPrice = result.price
-        // console.log("quest price: ", result.price)
-        this.load.rexAwait(function (successCallback, failureCallback) {
-          getAllScenes(this.questId).then((result) => {
-            this.listScene = result;
-            console.log(result);
-            successCallback();
-          });
-        }, this);
+        this.questId = result?.id;
+        this.questPrice = result?.price;
+        console.log("quest price: ", result?.price)
+        console.log("result: ", result)
+        if (result != undefined) {
+          this.load.rexAwait(function (successCallback, failureCallback) {
+            getAllScenes(this.questId).then((result) => {
+              this.listScene = result;
+              console.log(result);
+              successCallback();
+            });
+          }, this);
+        }
         successCallback();
       });
     }, this);
@@ -244,10 +247,13 @@ class selectMap extends BaseScene {
       this.clickSound.play();
       this.premiumPopupWindowEngine.setVisible(true);
       this.premiumPopupCloseBtnEngine.setVisible(true);
-      if (this.currentICP >= this.requiredICP) {
+      if (this.currentICP >= price*100_000_000) {
+        console.log("this curent ICP: ", this.currentICP)
+        this.desPopup.setVisible(true)
         this.premiumPopupAcceptBtnEngine.setVisible(true);
+      }else{
+        this.desPopupFailure.setVisible(true)
       }
-      this.desPopup.setVisible(true)
       this.selectAreaEngine.disableInteractive();
       this.selectAreaCatalonia.disableInteractive();
       this.selectAreaEngine.disableInteractive();
@@ -256,9 +262,9 @@ class selectMap extends BaseScene {
     //Engine popup
     this.premiumPopupWindowEngine = this.add.sprite(gameConfig.scale.width / 2, gameConfig.scale.height / 2, "popupWindowEngine")
       .setScale(0.5).setVisible(false);
-    if (this.currentICP < this.requiredICP) {
-      this.premiumPopupWindowEngine.setFrame(1);
-    }
+    // if (this.currentICP < this.requiredICP) {
+    //   this.premiumPopupWindowEngine.setFrame(1);
+    // }
     this.premiumPopupCloseBtnEngine = this.add.image(gameConfig.scale.width / 2 + 230, gameConfig.scale.height / 2 - 150, "popupCloseEngine")
       .setInteractive().setScale(0.25).setVisible(false);
     this.premiumPopupAcceptBtnEngine = this.add.image(gameConfig.scale.width / 2, gameConfig.scale.height / 2 + 115, "popupAcceptEngine")
@@ -270,6 +276,7 @@ class selectMap extends BaseScene {
       this.premiumPopupCloseBtnEngine.setVisible(false);
       this.premiumPopupAcceptBtnEngine.setVisible(false);
       this.desPopup.setVisible(false)
+      this.desPopupFailure.setVisible(false)
       this.selectAreaJungle.setInteractive();
       this.selectAreaCatalonia.setInteractive();
       this.selectAreaEngine.setInteractive();
@@ -280,16 +287,30 @@ class selectMap extends BaseScene {
       else {
         resetCharacter();
         this.scene.start('selectItemScene', { map: 'quest-design'});
-        // await payQuestEngine(this.questId));
+        let pay = await payQuestEngine(this.questId);
+        console.log("pay Quest: ", pay)
       };
     });
 
       //Des
-      let price = Number(this.questPrice) * 0.00000001
+      let price = Number(this.questPrice) * 0.00000001 + 0.0001
       this.desPopup = this.make.text({
         x: gameConfig.scale.width / 2,
         y: gameConfig.scale.height / 2 - 10,
-        text: `THIS QUEST REQUIRES ${price} $ICP TO PLAY.\nDO YOU AGREE?`,
+        text: `THIS QUEST REQUIRES ${Math.floor(price * 10000) / 10000} $ICP TO PLAY.\nDO YOU AGREE?`,
+        origin: { x: 0.5, y: 0.5 },
+        style: {
+          font: 'bold 30px Arial',
+          fill: 'gray',
+          wordWrap: { width: 400 },
+          lineSpacing: 10
+        }
+      }).setVisible(false)
+
+      this.desPopupFailure = this.make.text({
+        x: gameConfig.scale.width / 2,
+        y: gameConfig.scale.height / 2 - 10,
+        text: `YOU DON'T HAVE ENOUGH ${price} $ICP TO PLAY THIS QUEST.`,
         origin: { x: 0.5, y: 0.5 },
         style: {
           font: 'bold 30px Arial',
