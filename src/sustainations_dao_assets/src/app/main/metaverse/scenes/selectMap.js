@@ -57,7 +57,7 @@ class selectMap extends BaseScene {
     this.load.rexAwait(function (successCallback, failureCallback) {
       getUserInfo().then((result) => {
         this.userInfo = result.ok;
-        console.log(this.userInfo);
+        console.log("User info: ", this.userInfo);
         successCallback();
       });
     }, this);
@@ -73,6 +73,7 @@ class selectMap extends BaseScene {
     this.questPrice
     this.load.rexAwait(function (successCallback, failureCallback) {
       getAdminQuest().then((result) => {
+        this.quest = result;
         this.questId = result?.id;
         this.questPrice = result?.price;
         console.log("quest price: ", result?.price)
@@ -247,7 +248,7 @@ class selectMap extends BaseScene {
       this.clickSound.play();
       this.premiumPopupWindowEngine.setVisible(true);
       this.premiumPopupCloseBtnEngine.setVisible(true);
-      if (this.currentICP >= price*100000000) {
+      if (this.currentICP >= this.requiredICP) {
         this.desPopup.setVisible(true)
         this.premiumPopupAcceptBtnEngine.setVisible(true);
       }else{
@@ -261,9 +262,9 @@ class selectMap extends BaseScene {
     //Engine popup
     this.premiumPopupWindowEngine = this.add.sprite(gameConfig.scale.width / 2, gameConfig.scale.height / 2, "popupWindowEngine")
       .setScale(0.5).setVisible(false);
-    if (this.currentICP < this.requiredICP) {
-      this.premiumPopupWindowEngine.setFrame(1);
-    }
+    // if (this.currentICP < this.requiredICP) {
+    //   this.premiumPopupWindowEngine.setFrame(1);
+    // }
     this.premiumPopupCloseBtnEngine = this.add.image(gameConfig.scale.width / 2 + 230, gameConfig.scale.height / 2 - 150, "popupCloseEngine")
       .setInteractive().setScale(0.25).setVisible(false);
     this.premiumPopupAcceptBtnEngine = this.add.image(gameConfig.scale.width / 2, gameConfig.scale.height / 2 + 115, "popupAcceptEngine")
