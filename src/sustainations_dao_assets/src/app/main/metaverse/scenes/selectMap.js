@@ -7,10 +7,12 @@ import {
   loadCharacter,
   getRemainingTime,
   payQuest,
+  payQuestEngine,
   getUserInfo,
   buyLandSlot,
+  getAllScenes,
+  getAdminQuest
 } from '../GameApi';
-
 
 const bg = 'metaverse/selectMap/background.png';
 const text = 'metaverse/selectMap/call_to_action.png';
@@ -26,12 +28,18 @@ const popupClose = 'metaverse/selectMap/UI_ingame_close.png';
 const popupAccept = 'metaverse/selectMap/UI_ingame_popup_accept.png';
 const itemnotice = 'metaverse/selectMap/item_notice.png';
 
-const popupWindowEngine = 'metaverse/selectMap/Jungle_popup.png';
+// const popupWindowEngine = 'metaverse/selectMap/Jungle_popup.png';
+const popupWindowEngine = 'metaverse/selectMap/Catalonia_popup.png';
 const popupCloseEngine = 'metaverse/selectMap/UI_ingame_close.png';
 const popupAcceptEngine = 'metaverse/selectMap/UI_ingame_popup_accept.png';
+
+
+
+
 class selectMap extends BaseScene {
   constructor() {
     super('selectMap');
+    // this.questPrice = 0;
   }
 
   clearCache() {
@@ -61,6 +69,25 @@ class selectMap extends BaseScene {
       });
     }, this);
 
+    //just for quest-design
+    this.questPrice
+    this.load.rexAwait(function (successCallback, failureCallback) {
+      getAdminQuest().then((result) => {
+        this.questId = result.id;
+        this.questPrice = result.price
+        // console.log("quest price: ", result.price)
+        this.load.rexAwait(function (successCallback, failureCallback) {
+          getAllScenes(this.questId).then((result) => {
+            this.listScene = result;
+            console.log(result);
+            successCallback();
+          });
+        }, this);
+        successCallback();
+      });
+    }, this);
+    console.log(this.questPrice)
+   
     //preload
     this.clearCache();
     this.load.image('bg', bg);
@@ -81,8 +108,10 @@ class selectMap extends BaseScene {
     this.load.spritesheet('popupWindowEngine', popupWindowEngine, { frameWidth: 980, frameHeight: 799 });
     this.load.image("popupCloseEngine", popupCloseEngine);
     this.load.image("popupAcceptEngine", popupAcceptEngine);
-
   }
+
+
+
 
   async create() {
     // add audios
@@ -211,14 +240,6 @@ class selectMap extends BaseScene {
       this.selectAreaEngine.setFrame(0);
       this.engineLocationDetail.setVisible(false);
     });
-    // this.selectAreaEngine.on('pointerdown', () => {
-    //   this.clickSound.play();
-    //   if (this.getRemainingTime != 0) this.scene.start('exhausted');
-    //   else {
-    //     resetCharacter();
-    //     this.scene.start('selectItemScene', { map: 'quest-design' });
-    //   };
-    // });
     this.selectAreaEngine.on('pointerdown', async () => {
       this.clickSound.play();
       this.premiumPopupWindowEngine.setVisible(true);
@@ -226,6 +247,7 @@ class selectMap extends BaseScene {
       if (this.currentICP >= this.requiredICP) {
         this.premiumPopupAcceptBtnEngine.setVisible(true);
       }
+      this.desPopup.setVisible(true)
       this.selectAreaEngine.disableInteractive();
       this.selectAreaCatalonia.disableInteractive();
       this.selectAreaEngine.disableInteractive();
@@ -247,6 +269,7 @@ class selectMap extends BaseScene {
       this.premiumPopupWindowEngine.setVisible(false);
       this.premiumPopupCloseBtnEngine.setVisible(false);
       this.premiumPopupAcceptBtnEngine.setVisible(false);
+      this.desPopup.setVisible(false)
       this.selectAreaJungle.setInteractive();
       this.selectAreaCatalonia.setInteractive();
       this.selectAreaEngine.setInteractive();
@@ -256,12 +279,27 @@ class selectMap extends BaseScene {
       if (this.getRemainingTime != 0) this.scene.start('exhausted');
       else {
         resetCharacter();
-        this.scene.start('selectItemScene', { map: 'quest-design' });
-        // pay for jungle quest
-        // await payQuest("jungle");
+        this.scene.start('selectItemScene', { map: 'quest-design'});
+        // await payQuestEngine(this.questId));
       };
     });
 
+      //Des
+      let price = Number(this.questPrice) * 0.00000001
+      this.desPopup = this.make.text({
+        x: gameConfig.scale.width / 2,
+        y: gameConfig.scale.height / 2 - 10,
+        text: `THIS QUEST REQUIRES ${price} $ICP TO PLAY.\nDO YOU AGREE?`,
+        origin: { x: 0.5, y: 0.5 },
+        style: {
+          font: 'bold 30px Arial',
+          fill: 'gray',
+          wordWrap: { width: 400 },
+          lineSpacing: 10
+        }
+      }).setVisible(false)
+
+      console.log("quest price: ", typeof this.questPrice)
 
     //jungle popup
     this.premiumPopupWindow = this.add.sprite(gameConfig.scale.width / 2, gameConfig.scale.height / 2, "popupWindow")
@@ -293,7 +331,14 @@ class selectMap extends BaseScene {
       };
     });
 
+  
+
+    // const urlParams = new URLSearchParams(window.location.search);
+    // const myParam = urlParams.get('questId');
+    // console.log(myParam)
+
   }
+
 
 }
 export default selectMap;

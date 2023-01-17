@@ -288,6 +288,13 @@ async function payQuest(questId) {
   return result;
 };
 
+export async function payQuestEngine(questId) {
+  const { user } = store.getState();
+  const func = async () => await user.actor.payQuestEngine(questId);
+  const result = (await func()).ok;
+  return result;
+};
+
 //read event
 async function readEvent(eventId) {
   const { user } = store.getState();
@@ -423,6 +430,13 @@ export async function deleteSceneEventAndEventOption(idScene) {
 export async function checkCreatedQuestOfUser() {
   const {user} = store.getState();
   const func = async () => await user.actor.checkCreatedQuestOfUser();
+  const rs = (await func()).ok;
+  return rs;
+}
+
+export async function getAdminQuest() {
+  const {user} = store.getState();
+  const func = async () => await user.actor.getAdminQuest();
   const rs = (await func()).ok;
   return rs;
 }
