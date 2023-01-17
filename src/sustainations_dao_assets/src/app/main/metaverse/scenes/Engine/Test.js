@@ -71,6 +71,7 @@ export default class Engine extends BaseScene {
         this.load.image("background1", loadItemUrl(this.sceneEvent.back));
         this.load.image("background2", loadItemUrl(this.sceneEvent.mid));
         this.load.image("background3", loadItemUrl(this.sceneEvent.front));
+        this.load.image("obstacle", loadItemUrl(this.sceneEvent.obstacle));
         this.load.rexAwait(function (successCallback, failureCallback) {
           characterTakeOptionEngine(this.sceneEvent.idEvent).then((result) => {
             this.characterTakeOptions = result;
@@ -88,21 +89,6 @@ export default class Engine extends BaseScene {
         successCallback();
       });
     }, this);
-    // this.characterTakeOptions = await characterTakeOptionEngine(this.sceneEvent.idEvent);
-    // this.characterCollectMaterials = await characterCollectsMaterialEngines(this.sceneEvent.idEvent);
-    // this.load.rexAwait(function (successCallback, failureCallback) {
-    //   characterTakeOptionEngine(this.sceneEvent.idEvent).then((result) => {
-    //     this.characterTakeOptions = result;
-    //     successCallback();
-    //   });
-    // }, this);
-    // this.load.rexAwait(function (successCallback, failureCallback) {
-    //   characterCollectsMaterialEngines(this.sceneEvent.idEvent).then((result) => {
-    //     this.characterCollectMaterials = result;
-    //     successCallback();
-    //   });
-    // }, this);
-
 
     //Preload
     this.clearSceneCache();
@@ -198,7 +184,7 @@ export default class Engine extends BaseScene {
     this.physics.add.collider(this.player, platforms);
 
     this.createUIElements();
-    this.defineCamera(1280, gameConfig.scale.height); //default 5118
+    this.defineCamera(5118, gameConfig.scale.height); //default 5118
     this.createPauseScreen();
 
     // load selected items ids
@@ -228,14 +214,13 @@ export default class Engine extends BaseScene {
       .setInteractive().setScale(0.25).setVisible(false).setScrollFactor(0).setScale(0.25);
 
     this.premiumPopupCloseBtn.on('pointerdown', () => {
-      console.log("Hello World");
+      console.log("Close");
       this.clickSound.play();
       this.isInteracted = true;
       this.premiumPopupWindow.setVisible(false);
       this.premiumPopupCloseBtn.setVisible(false);
       this.des.setVisible(false);
       this.triggerPause();
-      console.log("Hello World");
     });
 
     // load description of event
@@ -254,6 +239,7 @@ export default class Engine extends BaseScene {
         wordWrap: { width: 400 }
       }
     }).setVisible(false).setScrollFactor(0);
+
 
     //scrolling
     this.graphics = this.make.graphics();
@@ -335,8 +321,7 @@ export default class Engine extends BaseScene {
       this.player.setVelocityX(settings.movementSpeed);
     }
 
-    if (this.player.x > 1280) { //default 5100
-      console.log(this.sum)
+    if (this.player.x > 5100) { //default 5100
       this.pregameSound.stop();
       this.sfx_char_footstep.stop();
 
@@ -345,7 +330,8 @@ export default class Engine extends BaseScene {
       // this.scene.start("Test", { isUsedPotion: this.isUsedPotion, listScene: this.listScene});
     }
 
-    if (this.player.x > 600 && this.isInteracted == false) { //default 4200
+    if (this.player.x > 4200 && this.isInteracted == false) { //default 4200
+
       this.premiumPopupWindow.setVisible(true);
       this.premiumPopupCloseBtn.setVisible(true);
       this.des.setVisible(true);
