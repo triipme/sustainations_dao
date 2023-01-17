@@ -73,7 +73,6 @@ class selectMap extends BaseScene {
     this.questPrice
     this.load.rexAwait(function (successCallback, failureCallback) {
       getAdminQuest().then((result) => {
-        this.quest = result;
         this.questId = result?.id;
         this.questPrice = result?.price;
         console.log("quest price: ", result?.price)
@@ -248,7 +247,8 @@ class selectMap extends BaseScene {
       this.clickSound.play();
       this.premiumPopupWindowEngine.setVisible(true);
       this.premiumPopupCloseBtnEngine.setVisible(true);
-      if (this.currentICP >= this.requiredICP) {
+      if (this.currentICP >= price*100_000_000) {
+        console.log("this curent ICP: ", this.currentICP)
         this.desPopup.setVisible(true)
         this.premiumPopupAcceptBtnEngine.setVisible(true);
       }else{
@@ -297,7 +297,7 @@ class selectMap extends BaseScene {
       this.desPopup = this.make.text({
         x: gameConfig.scale.width / 2,
         y: gameConfig.scale.height / 2 - 10,
-        text: `THIS QUEST REQUIRES ${price} $ICP TO PLAY.\nDO YOU AGREE?`,
+        text: `THIS QUEST REQUIRES ${Math.floor(price * 10000) / 10000} $ICP TO PLAY.\nDO YOU AGREE?`,
         origin: { x: 0.5, y: 0.5 },
         style: {
           font: 'bold 30px Arial',
