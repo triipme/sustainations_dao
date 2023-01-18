@@ -1,8 +1,14 @@
 
 const canvasConfig = (canvas) => {
     const canvasEle = canvas.current;
-    canvasEle.width = 1442;
-    canvasEle.height = 714;
+    canvasEle.width = 1280;
+    canvasEle.height = 720;
+    // if (canvasEle.width < canvasEle.height) {
+    //     let t = canvasEle.height
+    //     canvasEle.height = canvasEle.width
+    //     canvasEle.width = t
+    //   }
+    console.log(window.innerHeight)
     const ctx = canvasEle.getContext("2d");
     return [ctx, canvasEle]
 }
@@ -15,11 +21,11 @@ const init = (tileStyle, col, row) => {
     let result = [];
     let rx, cx = tileStyle.sX;
     let ry, cy = tileStyle.sY;
-    for (let j = tileStyle.n-1; j >= 0; j--) {
+    for (let j = tileStyle.n - 1; j >= 0; j--) {
         rx = cx;
         ry = cy;
         for (let i = 0; i < tileStyle.m; i++) {
-            result.push({ x: rx, y: ry, w: tileStyle.w, h: tileStyle.h, id: j * 10 + i, col: col+j, row: row+i });
+            result.push({ x: rx, y: ry, w: tileStyle.w, h: tileStyle.h, id: (col + j) * 10 + (row + i), col: col + j, row: row + i });
             rx = rx + tileStyle.w / 2;
             ry = ry + tileStyle.h / 2;
         }
@@ -31,7 +37,7 @@ const init = (tileStyle, col, row) => {
     }
 }
 
-const drawRhombusImage = (ctx, image, cx, cy, width, height) => {
+const drawRhombusImage = (ctx, image, cx, cy, width, height, rowSize, colSize) => {
     image.addEventListener(
         "load",
         (e) => {
@@ -100,6 +106,19 @@ const checkTilePosition = (event, listTile, sOft) => {
 
 }
 
+const defineAmount = (warehouses, item, productName) => {
+    if (productName === "Carrot") {
+        warehouses.carrot = Number(item.amount)
+        return warehouses
+    } else if (productName === "Wheat") {
+        warehouses.wheat = Number(item.amount)
+        return warehouses
+    } else {
+        warehouses.tomato = Number(item.amount)
+        return warehouses
+    }
+}
+
 const getCenterCoordinate = (coord) => {
     return { x: coord.x + coord.w / 2, y: coord.y + coord.h / 2 }
 }
@@ -113,5 +132,6 @@ export {
     drawRhombusImage,
     drawRhombus,
     checkTilePosition,
-    getCenterCoordinate
+    getCenterCoordinate,
+    defineAmount
 }

@@ -1,73 +1,91 @@
-import { Grid, IconButton, Paper } from '@mui/material';
-import { makeStyles } from '@mui/styles';
-import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight } from '@mui/icons-material';
+import { useState } from "react";
+import "../styles.css"
+let inventoryStatus = {};
 
-const useStyles = makeStyles((theme) => ({
-    root: {
-        flexGrow: 1,
-    },
-    paper: {
-        padding: theme.spacing(2),
-        textAlign: 'center',
-        color: theme.palette.text.secondary,
-    },
-    overflowContainer: {
-        overflowX: 'auto',
-    },
-    overflowContent: {
-        display: 'flex',
-        overflowX: 'auto',
-        padding: theme.spacing(0, 2),
-        position: "fixed",
-        left:"50%",
-        top: "89%",
-        transform: "translate(-50%, -50%)",
-    },
-}));
-
-const ITEM_NUM = 10;
-
-export default function Hotbar() {
-    const classes = useStyles();
-    const [selectedSlot, setSelectedSlot] = useState(0);
-    const [startIndex, setStartIndex] = useState(0);
-
-    const handleClick = (slot) => {
-        setSelectedSlot(slot);
-    };
-
-    const handleNext = () => {
-        setStartIndex((prev) => prev + 5 > ITEM_NUM - 5 ? prev : prev + 5);
-    };
-
-    const handlePrev = () => {
-        setStartIndex((prev) => prev - 5 < 0 ? 0 : prev - 5);
-    };
-
+const HotBar = ({ inventory, onUpdate }) => {
+    function initialInventory(item) {
+        for (const property in inventoryStatus) {
+            if (property !== item)
+                inventoryStatus[property] = false
+        }
+    }
+    const [color, setColor] = useState(-1)
+    const [render, setRender] = useState(false)
+    let path = "/metaverse/farm/Sustaination_farm/farm-object/PNG/"
     return (
-        <div className={classes.root}>
-            <IconButton onClick={handlePrev} disabled={startIndex === 0}>
-                <ChevronLeft />
-            </IconButton>
-            <div className={classes.overflowContainer}>
-                <div className={classes.overflowContent}>
-                    {[...Array(ITEM_NUM)].map((_, i) => (
-                        <Grid item xs={2} key={i}>
-                            <Paper
-                                className={classes.paper}
-                                onClick={() => handleClick(i)}
-                                style={{ backgroundColor: i === selectedSlot ? 'lightblue' : 'white' }}
-                            >
-                                Slot {i + 1}
-                            </Paper>
-                        </Grid>
-                    )).slice(startIndex, startIndex + 5)}
-                </div>
+        <div key={Math.floor(Math.random() * 9999999)} className="farmItem" style={{ overflow: "auto" }}>
+            <div className="imgItem" style={{
+                border: inventoryStatus["dig"] == true ? "2px" : "0px",
+                borderStyle: inventoryStatus["dig"] == true ? "dashed dashed dashed dashed" : "none"
+            }}>
+                <img
+                    onClick={() => {
+                        inventoryStatus["dig"] = !inventoryStatus["dig"]
+                        if (inventoryStatus["dig"] === true)
+                            onUpdate({ objectId: "dig" })
+                        else onUpdate({})
+                        initialInventory("dig")
+                        setRender(!render)
+                    }}
+                    src={"/metaverse/farm/Sustaination_farm/farm-object/PNG/shovel.png"}
+                    alt=""
+                />
             </div>
-            <IconButton onClick={handleNext} disabled={startIndex + 5 >= ITEM_NUM}>
-                <ChevronRight />
-            </IconButton>
+            <div className="imgItem" style={{
+                border: inventoryStatus["factory"] == true ? "2px" : "0px",
+                borderStyle: inventoryStatus["factory"] == true ? "dashed dashed dashed dashed" : "none",
+                width: "65px",
+                height: "65px"
+            }}>
+                <img
+                    onClick={() => {
+                        inventoryStatus["factory"] = !inventoryStatus["factory"]
+                        if (inventoryStatus["factory"] === true)
+                            onUpdate({ objectId: "factory", amount: 1 })
+                        else onUpdate({})
+                        initialInventory("factory")
+                        setRender(!render)
+                    }}
+                    src={"/metaverse/farm/Sustaination_farm/farm-object/PNG/factory-icon.png"}
+                    alt=""
+                />
+            </div>
+
+            {inventory.length > 0 ?
+                <>
+                    {inventory.map((value, i) => {
+                        if (value.materialName !== "wood" && value.materialName !== "seed") {
+
+                            let pathItem = path + value.materialName + '-icon.png'
+                            return (
+                                <div className="imgItem" key={i} style={{
+                                    border: i == color && inventoryStatus[value.materialName] == true ? "2px" : "0px",
+                                    borderStyle: i == color && inventoryStatus[value.materialName] == true ? "dashed dashed dashed dashed" : "none"
+                                }}>
+                                    <img
+
+                                        onClick={() => {
+                                            inventoryStatus[value.materialName] = !inventoryStatus[value.materialName]
+                                            if (inventoryStatus[value.materialName] === true)
+                                                onUpdate({id: value.id ,objectId: value.materialId, amount: value.amount })
+                                            else onUpdate({})
+                                            initialInventory(value.materialName)
+                                            setRender(!render)
+                                            setColor(i)
+                                        }}
+                                        src={pathItem}
+                                        alt=""
+                                    />
+                                    <div className="top-right">{value.amount.toString()}</div>
+                                </div>
+                            )
+                        } else {
+                            <></>
+                        }
+                    })}
+                </> : null}
         </div>
-    );
+    )
 }
+
+export default HotBar;

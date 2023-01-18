@@ -6,7 +6,7 @@ import { loadTileSlots } from '../LandApi';
 import Loading from './loading';
 import Back from './Back';
 import Farm from './layout/Farmfeatures';
-
+import "./styles.css"
 function FarmContainer() {
   const user = useSelector(selectUser);
   const { state: properties } = useLocation();
@@ -33,15 +33,13 @@ function FarmContainer() {
       setIsDone(true)
     })();
   }, [indexFarm]);
-
+  console.log(farmFeatures)
   return (
     <>
       {isDone ?
-        <>
-
+        <div>
           {farmFeatures ? <>
-            <Back />
-            
+
             {indexFarm > 0 ? <button
               className="btn-farm"
               style={{ top: "250px", left: "50px" }}
@@ -84,7 +82,7 @@ function FarmContainer() {
               </div>
             </div>
           )}
-        </>
+        </div>
         : (
           <Loading />)}
     </>)

@@ -11,6 +11,9 @@ var center = [0.0, -67.488694797721564];
 function Land({ children }) {
   const location = useLocation();
   const isFarmMode = useMemo(() => location.pathname.includes("farm"), []);
+  
+
+  
   return (
     <div style={{ height: "100%" }}>
       <MapContainer

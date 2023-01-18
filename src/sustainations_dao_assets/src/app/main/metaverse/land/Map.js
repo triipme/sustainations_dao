@@ -26,6 +26,7 @@ import { ConfigurationServicePlaceholders } from "aws-sdk/lib/config_service_pla
 import BigMap from "./BigMap";
 import Land from "./Land";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 var country = null
 var numRandom = 3
@@ -53,6 +54,20 @@ const Map = () => {
   const [position, setPosition] = useState(() => map.getCenter())
   const [hasEffect, setHasEffect] = useState(false)
   mapZoom = map.getZoom()
+  const [nation, setNation] = useState();
+
+  //axios 
+  useEffect(() => {
+    (() => {
+      axios.get(`http://127.0.0.1:7000/nations`)
+        .then(res => {
+          setNation(res);
+        })
+        .catch(error => console.log(error));
+    })();
+  }, [])
+
+  console.log("nation", nation)
   // position is value coord center screen
   useEffect(() => {
     const initial = async () => {
@@ -253,7 +268,10 @@ const Map = () => {
                   <button className="buttonload" style={{
                     display: purchaseBtn ? "block" : "none"
                   }}
-                    onClick={() => handlePurchase()}>Buy a new Land Slot</button>}
+                    onClick={() => {
+                      handlePurchase()
+                    }
+                    }>Buy a new Land Slot</button>}
               </div>
 
               <button className="button-85" style={{

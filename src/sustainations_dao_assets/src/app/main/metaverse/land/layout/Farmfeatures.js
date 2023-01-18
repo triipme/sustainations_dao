@@ -4,13 +4,17 @@ import { useSelector } from 'react-redux';
 import { selectUser } from "app/store/userSlice";
 import { useLocation } from 'react-router-dom';
 import { loadTileSlots } from '../../LandApi';
-import Loading from '../loading';
-import HotbarGame from './HotBar';
-import { init, drawRect, drawRhombusImage, sOft, checkTilePosition, drawRhombus, getCenterCoordinate, canvasConfig } from "./publicfuntion"
+import Loading from './loading';
+import Hotbar from './HotBar';
+import FarmProduce from './FarmProduce';
+import { init, drawRect, drawRhombusImage, sOft, checkTilePosition, drawRhombus, getCenterCoordinate, canvasConfig, defineAmount } from "./publicfuntion"
 
 let tileStyle = {};
 let ctx = null;
 let canvasEle;
+
+
+
 function Farm(props) {
   const user = useSelector(selectUser);
   const [tileplant, setTileplant] = useState(props.mapFeatures);
@@ -23,19 +27,17 @@ function Farm(props) {
     wheat: 0,
     tomato: 0,
   });
-  const [cantBuild, setCantBuild] = useState("")
   const [popupFactory, setPopupFactory] = useState(false)
-  const [objectId, setObjectId] = useState("None")
+  const [object, setObject] = useState({})
   const [listTile, setListTile] = useState([])
-  const [fillTile, setFillTile] = useState()
-
+  const [objectId, setObjectId] = useState("")
   const canvas = useRef();
 
-  //import image
-  const image = new Image();
-  image.src = "metaverse/farm25D/Ground.png";
-  const plant = new Image();
-  plant.src = "metaverse/farm25D/Eggplant03.png";
+  function loadImage(localurl) {
+    const image = new Image();
+    image.src = localurl;
+    return image
+  }
 
   // load data
   useEffect(() => {
@@ -52,69 +54,49 @@ function Farm(props) {
     )();
   }, []);
 
-
   //config canvas
   useEffect(() => {
     const cvConfig = canvasConfig(canvas)
     ctx = cvConfig[0]
     canvasEle = cvConfig[1]
-    if (canvasEle.width < canvasEle.height) {
-      let t = canvasEle.height
-      canvasEle.height = canvasEle.width
-      canvasEle.width = t
-    }
+
 
     //map  init
     tileStyle = sOft(canvasEle.width / 2 - 120 / 2, canvasEle.height / 6, 10, 10, canvasEle.width / 15, canvasEle.height / 15);
     let map = init(tileStyle, Number(landSlotProperties.j) * 10, Number(landSlotProperties.i) * 10)
-
     const plantedTile = tileplant.filter(tile => {
       return tile.properties.name !== "None";
     })
 
     map.forEach(tile => {
-      drawRhombusImage(ctx, image, tile.x, tile.y, tile.w, tile.h);
+      drawRhombusImage(ctx, loadImage("metaverse/farm25D/Ground.png"), tile.x, tile.y, tile.w, tile.h);
       const t = plantedTile.filter(object => {
         return object.properties.i === tile.row && object.properties.j === tile.col
       })
+      const arr = [0, 1, 2]
       if (t.length > 0) {
-        // drawRhombusImage(ctx, plant, tile.x, tile.y, tile.w, tile.h);
-        let cc = (getCenterCoordinate(tile));
-        drawRhombusImage(ctx, plant, cc.x - 780 / 15, cc.y - 870 / 15, 1350 / 15, 1271 / 15, 9);
-
+        t.forEach(obj => {
+          let cc = (getCenterCoordinate(tile));
+          if (obj.properties.name === "Factory") {
+            tile.object = "Factory"
+            tile.tileId = obj.properties.tileId
+            tile.objectId = obj.properties.objectId
+            drawRhombusImage(ctx, loadImage("metaverse/farm25D/Ground.png"), cc.x - (canvasEle.width / 15) / 2, cc.y - ((canvasEle.height / 15) / 2) * 3, canvasEle.width / 5, canvasEle.height / 5, obj.properties.rowSize, obj.properties.colSize);
+            drawRhombusImage(ctx, loadImage("metaverse/farm25D/building/" + obj.properties.name + ".png"), cc.x + (canvasEle.width / 15) - 3300 / 36, cc.y - (canvasEle.height / 15) / 3 - 3100 / 36, 8551 / 36, 5707 / 36, obj.properties.rowSize, obj.properties.colSize);
+          }
+          else {
+            tile.object = obj.properties.name
+            tile.tileId = obj.properties.tileId
+            tile.status = obj.properties.status
+            drawRhombusImage(ctx,
+              loadImage("metaverse/farm25D/plant/" + obj.properties.name + "/" + obj.properties.name + "_" + obj.properties.status + ".png"),
+              cc.x - 780 / 15, cc.y - 870 / 15, 1350 / 15, 1271 / 15, obj.properties.rowSize, obj.properties.colSize);
+          }
+        })
       }
-    })
+    });
     setListTile(map);
   }, [tileplant]);
-
-
-  // set object
-  const fillColor = (posT, listTile, numTile) => {
-    let filled = []
-    filled = listTile.filter(row => {
-      return row.id === posT.id;
-    })
-
-    if (filled.length === 0)
-      return filled
-    let cc = (getCenterCoordinate(filled[0]));
-    // drawRhombusImage(ctx, image, cc.x - (canvasEle.width / 15) / 2, cc.y - ((canvasEle.height / 15) / 2) * 3, canvasEle.width / 5, canvasEle.height / 5);
-    // drawRhombusImage(ctx, imageBuilding, cc.x + (canvasEle.width / 15) - 3300 / 36, cc.y - (canvasEle.height / 15) / 3 - 3100 / 36, 8551 / 36, 5707 / 36);
-    drawRhombusImage(ctx, plant, cc.x - 780 / 15, cc.y - 870 / 15, 1350 / 15, 1271 / 15, 9);
-
-    return filled
-  }
-
-  //set amount in warehouse
-  const defineAmount = (item, productName) => {
-    if (productName === "Carrot") {
-      setWarehouses(warehouses.carrot = Number(item.amount))
-    } else if (productName === "Wheat") {
-      setWarehouses(warehouses.wheat = Number(item.amount))
-    } else {
-      setWarehouses(warehouses.tomato = Number(item.amount))
-    }
-  }
 
 
   // useEffect(() => {
@@ -140,7 +122,7 @@ function Farm(props) {
       )
     } else {
       result = tileplant.filter(tile => {
-        return tile.properties.j == j && tile.properties.i >= i && tile.properties.i <= i + 1
+        return tile.properties.j == j && tile.properties.i == i
       }
       )
     }
@@ -154,34 +136,68 @@ function Farm(props) {
     return false
   }
 
+
   function handleClick(e) {
-    if (checkTilePosition(e, listTile, tileStyle)) {
-      const pos = checkTilePosition(e, listTile, tileStyle)
-      console.log(
-        landSlotProperties.id,
-        pos.row,
-        pos.col);
+    const pos = checkTilePosition(e, listTile, tileStyle)
+    console.log()
+    if (object.objectId === "dig" && pos.object) {
       (async () => {
-        console.log("Plant tree status: ", await user.actor.sowSeed(
-          landSlotProperties.id,
-          pos.row,
-          pos.col,
-          "m3tomato_seed"));
+        setLoading(true)
+        console.log("Remove: ", await user.actor.removeObject(pos.tileId))
+        setTileplant(await loadTileSlots(landSlotProperties));
+        setInventory((await user.actor.listInventory(characterId)).ok);
+        setLoading(false)
+      })();
+    }
+    else if (object.objectId === "factory" && pos && checkAvailablePosition(pos.row, pos.col, 9)) {
+      (async () => {
+        console.log("Build Factory: ", (await user.actor.constructBuilding(landSlotProperties.id, pos.row, pos.col, "c1")))
         setTileplant(await loadTileSlots(landSlotProperties));
       })();
     }
+    else if (pos && checkAvailablePosition(pos.row, pos.col, 1) &&
+      object.objectId != undefined && object.amount > 0) {
+      (async () => {
+        await user.actor.subtractInventory(object.id);
+        console.log("Plant tree status: ", await user.actor.sowSeed(landSlotProperties.id, pos.row, pos.col, object.objectId));
+        setTileplant(await loadTileSlots(landSlotProperties));
+        setInventory((await user.actor.listInventory(characterId)).ok);
+      })();
+    }
+    else if (pos) {
+      if (pos.object === "Factory") {
+        setObjectId(pos.objectId)
+        setPopupFactory(true)
+        console.log(pos)
+      } else if (pos.object !== "None" && pos.status === "fullGrown") {
+        (async () => {
+          console.log("Harvest", await user.actor.harvestPlant(pos.tileId))
+          setTileplant(await loadTileSlots(landSlotProperties));
+          const listProductStorage = (await user.actor.listProductStorage()).ok
+          listProductStorage.forEach(item => defineAmount(item, item.productName))
+        })();
+      }
+    }
+
   }
 
-  useEffect(() => {
-    fillColor(fillTile, listTile, 9)
-  }, [fillTile])
+  // useEffect(() => {
+  //   fillColor(fillTile, listTile, 9)
+  // }, [fillTile])
 
+  const handleChoose = (newObj) => {
+    setObject(newObj)
+  }
+
+  const handlePopupFactory = (opt) => {
+    setPopupFactory(opt)
+  }
+  console.log(objectId)
   return (
     <>
-      <div>
-        <canvas ref={canvas} onClick={handleClick}></canvas>
-        {/* <ObjectLayer tileplant={tileplant} landSlotProperties={landSlotProperties}></ObjectLayer> */}
-      </div>
+      {popupFactory ? <FarmProduce handlePopupFactory={handlePopupFactory} objectId={objectId} /> : <></>}
+      <Hotbar inventory={inventory} onUpdate={handleChoose} />
+      <canvas ref={canvas} onClick={handleClick}></canvas>
     </>
   );
 }
