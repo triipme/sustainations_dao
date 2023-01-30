@@ -80,6 +80,7 @@ module {
     #rewardTop;
     #collectTreasuryContribution;
     #payQuest;
+    #refundQuestDesign;
     #buyLandSlot;
   };
   public type TxRecord = {
@@ -197,6 +198,13 @@ module {
     stamina: Float;
     morale: Float;
     mana: Float;
+  };
+
+  public type QuestGameReward = {
+    id: Text;
+    questId: Text;
+    player: Nat;
+    totalICP: Nat64;
   };
 
   //--------------------- Scene ---------------------//

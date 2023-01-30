@@ -39,6 +39,7 @@ module {
       eventOptions : TrieMap.TrieMap<Text, Types.EventOption>;
     };
     questGames : TrieMap.TrieMap<Text, Types.QuestGame>;
+    questGameRewards : TrieMap.TrieMap<Text, Types.QuestGameReward>;
     characterClasses : Map<Text, Types.CharacterClass>;
     characters : Map<Text, Types.Character>;
     characterTakesOptions : Map<Text, Types.CharacterTakesOption>;
@@ -115,6 +116,7 @@ module {
         eventOptions = TrieMap.TrieMap<Text, Types.EventOption>(Text.equal, Text.hash);
       };
       questGames = TrieMap.TrieMap<Text, Types.QuestGame>(Text.equal, Text.hash);
+      questGameRewards = TrieMap.TrieMap<Text, Types.QuestGameReward>(Text.equal, Text.hash);
       characterClasses = TrieMap.TrieMap<Text, Types.CharacterClass>(Text.equal, Text.hash);
       characters = TrieMap.TrieMap<Text, Types.Character>(Text.equal, Text.hash);
       characterTakesOptions = TrieMap.TrieMap<Text, Types.CharacterTakesOption>(Text.equal, Text.hash);
