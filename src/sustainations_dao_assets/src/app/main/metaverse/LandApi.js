@@ -419,5 +419,5 @@ export {
   removeObject,
   loadUserLandSlots,
   constructBuilding,
-  craftUsableItem
+  craftUsableItem,
 }
