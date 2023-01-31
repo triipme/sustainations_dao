@@ -46,7 +46,7 @@ const HotBar = ({ inventory, onUpdate }) => {
                         initialInventory("factory")
                         setRender(!render)
                     }}
-                    src={"/metaverse/farm/Sustaination_farm/farm-object/PNG/factory-icon.png"}
+                    src={"/metaverse/farm25D/building/Factory.png"}
                     alt=""
                 />
             </div>

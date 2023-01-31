@@ -1,14 +1,10 @@
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
+import '@fortawesome/fontawesome-free/css/all.min.css';
 import { useEffect, useState } from "react"
 import { selectUser } from "app/store/userSlice";
-
 import "./farmproduce.css"
 import { useSelector } from 'react-redux';
-import { defineAmount } from './publicfuntion';
-
 const FarmProduce = (props) => {
   const user = useSelector(selectUser);
 
@@ -18,7 +14,7 @@ const FarmProduce = (props) => {
   const [num, setNum] = useState(-1)
   const [queue, setQueue] = useState([])
   const [loading, setLoading] = useState(false)
-
+  const [loadingFarmProduce, setLoadingFarmProduce] = useState("");
   const style = {
     position: 'absolute',
     top: '42%',
@@ -50,7 +46,6 @@ const FarmProduce = (props) => {
       var totalTime = Number(tTime[0].craftingTime)
     }
   }
-
   return (
     <div
       key={Math.floor(Math.random() * 9999999)}
@@ -141,23 +136,39 @@ const FarmProduce = (props) => {
               })}
             </div>
           </div>
-          <div className="modal-footer" >
+
+          <div className="modal-footer" style={{ display: "flex" }}>
             <h3 style={{ backgroundColor: rcp.canCraft == true ? "#ffa200" : "#cccccc", }} onClick={async () => {
-              console.log(objectId)
-              if (rcp.canCraft === true && objectId !== "None") {
-                setLoading(true)
-                await user.actor.craftUsableItem(objectId, rcp.id)
-                setQueue((await user.actor.listProductionQueueNodesInfo(objectId))?.ok)
-                const listProductStorage = (await user.actor.listProductStorage()).ok
-                listProductStorage.forEach(item => defineAmount(item, item.productName))
-                setLoading(false)
+              if (rcp.canCraft === true && props.objectId !== "None") {
+                setLoadingFarmProduce("craft")
+                await user.actor.craftUsableItem(props.objectId, rcp.id)
+                setQueue((await user.actor.listProductionQueueNodesInfo(props.objectId))?.ok)
+                setWarehouses((await user.actor.listProductStorage())?.ok)
+                setTileplant(await loadTileSlots(landSlotProperties));
+                loadingFarmProduce("")
               }
-            }}>{loading ? <i className="fa fa-spinner fa-spin" /> : <span>CRAFT</span>}</h3>
+            }}>{loadingFarmProduce === "craft" ? <div className="fa-1x"><i className="fas fa-cog fa-spin"></i></div> : <span>CRAFT</span>}</h3>
+            <h3 style={{
+              backgroundColor: queue.filter(item => {
+                return item.status == "Completed"
+              }).length > 0 ? "#ffa200" : "#cccccc",
+            }}
+              onClick={async () => {
+                if (props.objectId !== "None" && queue.filter(item => {
+                  return item.status == "Completed"
+                }).length > 0) {
+                  setLoadingFarmProduce("collect")
+                  await user.actor.collectUsableItems(props.objectId)
+                  setQueue((await user.actor.listProductionQueueNodesInfo(props.objectId))?.ok)
+                  setLoadingFarmProduce("")
+                }
+              }}
+            >{loadingFarmProduce === "collect" ? <div className="fa-1x"><i className="fas fa-cog fa-spin"></i></div> : <span>COLLECT</span>}</h3>
           </div>
         </Box>
       </Modal>
     </div>
   );
 }
-
+//  update realtime every second reactjs
 export default FarmProduce;

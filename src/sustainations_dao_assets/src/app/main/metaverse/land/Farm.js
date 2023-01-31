@@ -5,7 +5,7 @@ import { useLocation } from 'react-router-dom';
 import { loadTileSlots } from '../LandApi';
 import Loading from './loading';
 import Back from './Back';
-import Farm from './layout/Farmfeatures';
+import Farm from './farm-layout/Farmfeatures';
 import "./styles.css"
 function FarmContainer() {
   const user = useSelector(selectUser);
@@ -39,6 +39,7 @@ function FarmContainer() {
       {isDone ?
         <div>
           {farmFeatures ? <>
+            <Back />
 
             {indexFarm > 0 ? <button
               className="btn-farm"

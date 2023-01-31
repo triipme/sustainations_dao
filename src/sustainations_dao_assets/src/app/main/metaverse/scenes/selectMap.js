@@ -8,8 +8,9 @@ import {
   getRemainingTime,
   payQuest,
   getUserInfo,
-  buyLandSlot
+  buyLandSlot,
 } from '../GameApi';
+
 
 const bg = 'metaverse/selectMap/background.png';
 const text = 'metaverse/selectMap/call_to_action.png';
@@ -18,13 +19,16 @@ const jungleLocationDetail = 'metaverse/selectMap/jungle_location_detail.png';
 const cataloniaLocationDetail = 'metaverse/selectMap/catalonia_location_detail.png';
 const lavaLocationDetail = 'metaverse/selectMap/lava_location_detail.png';
 const lakeLocationDetail = 'metaverse/selectMap/lake_location_detail.png'
-const cityLocationDetail = 'metaverse/selectMap/city_location_detail.png'
+const engineLocationDetail = 'metaverse/selectMap/lake_location_detail.png'
 const btnBack = 'metaverse/selectItems/UI_back.png';
 const popupWindow = 'metaverse/selectMap/Jungle_popup.png';
 const popupClose = 'metaverse/selectMap/UI_ingame_close.png';
 const popupAccept = 'metaverse/selectMap/UI_ingame_popup_accept.png';
 const itemnotice = 'metaverse/selectMap/item_notice.png';
 
+const popupWindowEngine = 'metaverse/selectMap/Jungle_popup.png';
+const popupCloseEngine = 'metaverse/selectMap/UI_ingame_close.png';
+const popupAcceptEngine = 'metaverse/selectMap/UI_ingame_popup_accept.png';
 class selectMap extends BaseScene {
   constructor() {
     super('selectMap');
@@ -37,6 +41,8 @@ class selectMap extends BaseScene {
     }
     console.clear();
   }
+
+
 
   preload() {
     this.addLoadingScreen();
@@ -55,7 +61,6 @@ class selectMap extends BaseScene {
       });
     }, this);
 
-
     //preload
     this.clearCache();
     this.load.image('bg', bg);
@@ -64,13 +69,19 @@ class selectMap extends BaseScene {
     this.load.image('cataloniaLocationDetail', cataloniaLocationDetail);
     this.load.image('lavaLocationDetail', lavaLocationDetail);
     this.load.image('lakeLocationDetail', lakeLocationDetail);
-    this.load.image('cityLocationDetail', cityLocationDetail);
+    this.load.image('engineLocationDetail', engineLocationDetail); //enigne
     this.load.spritesheet('selectArea', selectArea, { frameWidth: 498, frameHeight: 800 });
     this.load.image("btnBack", btnBack);
     this.load.spritesheet('popupWindow', popupWindow, { frameWidth: 980, frameHeight: 799 });
     this.load.image("popupClose", popupClose);
     this.load.image("popupAccept", popupAccept);
     this.load.image("itemnotice", itemnotice);
+
+    //engine
+    this.load.spritesheet('popupWindowEngine', popupWindowEngine, { frameWidth: 980, frameHeight: 799 });
+    this.load.image("popupCloseEngine", popupCloseEngine);
+    this.load.image("popupAcceptEngine", popupAcceptEngine);
+
   }
 
   async create() {
@@ -87,7 +98,7 @@ class selectMap extends BaseScene {
       .setVisible(false).setInteractive();
     this.lakeLocationDetail = this.add.image(247, 167, 'lakeLocationDetail')
       .setVisible(false).setInteractive();
-    this.cityLocationDetail = this.add.image(247, 167, 'cityLocationDetail')
+    this.engineLocationDetail = this.add.image(247, 167, 'engineLocationDetail')
       .setVisible(false).setInteractive();
     this.btnBack = this.add.image(40, 25, 'btnBack')
       .setOrigin(0).setInteractive();
@@ -187,30 +198,70 @@ class selectMap extends BaseScene {
       };
     });
 
-
-    //addspriteX, addspriteY, nameMap
-    this.selectAreaCity = this.add.sprite(1000, 420, 'selectArea')
+    //Engine
+    this.selectAreaEngine = this.add.sprite(420, 393, 'selectArea')
       .setScale(0.18)
       .setInteractive();
-    this.selectAreaCity.on('pointerover', () => {
-      this.selectAreaCity.setFrame(1);
-      this.cityLocationDetail.setVisible(true);
+    this.selectAreaEngine.on('pointerover', () => {
+      this.selectAreaEngine.setFrame(1);
+      this.engineLocationDetail.setVisible(true);
       this.hoverSound.play();
     });
-    this.selectAreaCity.on('pointerout', () => {
-      this.selectAreaCity.setFrame(0);
-      this.cityLocationDetail.setVisible(false);
+    this.selectAreaEngine.on('pointerout', () => {
+      this.selectAreaEngine.setFrame(0);
+      this.engineLocationDetail.setVisible(false);
     });
-    this.selectAreaCity.on('pointerdown', () => {
+    // this.selectAreaEngine.on('pointerdown', () => {
+    //   this.clickSound.play();
+    //   if (this.getRemainingTime != 0) this.scene.start('exhausted');
+    //   else {
+    //     resetCharacter();
+    //     this.scene.start('selectItemScene', { map: 'quest-design' });
+    //   };
+    // });
+    this.selectAreaEngine.on('pointerdown', async () => {
+      this.clickSound.play();
+      this.premiumPopupWindowEngine.setVisible(true);
+      this.premiumPopupCloseBtnEngine.setVisible(true);
+      if (this.currentICP >= this.requiredICP) {
+        this.premiumPopupAcceptBtnEngine.setVisible(true);
+      }
+      this.selectAreaEngine.disableInteractive();
+      this.selectAreaCatalonia.disableInteractive();
+      this.selectAreaEngine.disableInteractive();
+    });
+
+    //Engine popup
+    this.premiumPopupWindowEngine = this.add.sprite(gameConfig.scale.width / 2, gameConfig.scale.height / 2, "popupWindowEngine")
+      .setScale(0.5).setVisible(false);
+    if (this.currentICP < this.requiredICP) {
+      this.premiumPopupWindowEngine.setFrame(1);
+    }
+    this.premiumPopupCloseBtnEngine = this.add.image(gameConfig.scale.width / 2 + 230, gameConfig.scale.height / 2 - 150, "popupCloseEngine")
+      .setInteractive().setScale(0.25).setVisible(false);
+    this.premiumPopupAcceptBtnEngine = this.add.image(gameConfig.scale.width / 2, gameConfig.scale.height / 2 + 115, "popupAcceptEngine")
+      .setInteractive().setScale(0.5).setVisible(false);
+
+    this.premiumPopupCloseBtnEngine.on('pointerdown', () => {
+      this.clickSound.play();
+      this.premiumPopupWindowEngine.setVisible(false);
+      this.premiumPopupCloseBtnEngine.setVisible(false);
+      this.premiumPopupAcceptBtnEngine.setVisible(false);
+      this.selectAreaJungle.setInteractive();
+      this.selectAreaCatalonia.setInteractive();
+      this.selectAreaEngine.setInteractive();
+    });
+    this.premiumPopupAcceptBtnEngine.on('pointerdown', async () => {
       this.clickSound.play();
       if (this.getRemainingTime != 0) this.scene.start('exhausted');
       else {
         resetCharacter();
-        this.scene.start('selectItemScene', { map: 'city' });
+        this.scene.start('selectItemScene', { map: 'quest-design' });
+        // pay for jungle quest
+        // await payQuest("jungle");
       };
     });
 
-    this.text = this.add.image(65, 425, 'text').setOrigin(0).setScale(0.7);
 
     //jungle popup
     this.premiumPopupWindow = this.add.sprite(gameConfig.scale.width / 2, gameConfig.scale.height / 2, "popupWindow")
@@ -241,6 +292,7 @@ class selectMap extends BaseScene {
         await payQuest("jungle");
       };
     });
+
   }
 
 }

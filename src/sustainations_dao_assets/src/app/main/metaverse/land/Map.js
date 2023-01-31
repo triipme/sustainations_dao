@@ -22,7 +22,6 @@ import {
   // loadNation,
   unionLandSlots,
 } from '../LandApi'
-import { ConfigurationServicePlaceholders } from "aws-sdk/lib/config_service_placeholders";
 import BigMap from "./BigMap";
 import Land from "./Land";
 import { useNavigate } from "react-router-dom";
@@ -56,18 +55,7 @@ const Map = () => {
   mapZoom = map.getZoom()
   const [nation, setNation] = useState();
 
-  //axios 
-  useEffect(() => {
-    (() => {
-      axios.get(`http://127.0.0.1:7000/nations`)
-        .then(res => {
-          setNation(res);
-        })
-        .catch(error => console.log(error));
-    })();
-  }, [])
-
-  console.log("nation", nation)
+  // console.log("nation", getNationLonLat(principal))
   // position is value coord center screen
   useEffect(() => {
     const initial = async () => {
@@ -78,7 +66,8 @@ const Map = () => {
           setLoading("none")
         } else {
           await loadNations(Number(country.indexRow), Number(country.indexColumn));
-          map.setView([Number(nationData[0].geometry.coordinates[0][0][1]), Number(nationData[0].geometry.coordinates[0][0][0])], 13)
+          console.log()
+          map.setView([Number(nationData[0].geometry.coordinates[0][0][0]), Number(nationData[0].geometry.coordinates[0][0][1])], 13)
           setLoading("none")
         }
         if ((await user.actor.readUserHasLandEffect())?.ok) {

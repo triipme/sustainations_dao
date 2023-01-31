@@ -6,7 +6,7 @@ import mapZoom from "./Map";
 import { Outlet, useLocation } from "react-router-dom";
 
 let zoom = 3;
-var center = [0.0, -67.488694797721564];
+var center = [0.0,-67.488694797721564];
 
 function Land({ children }) {
   const location = useLocation();

@@ -51,25 +51,7 @@ export default class catalonia_scene12 extends BaseScene {
 
   preload() {
     this.addLoadingScreen();
-    if (this.isUsedUsableItem[0]){
-      this.load.rexAwait(function (successCallback, failureCallback) {
-        loadCharacter().then((result) => {
-          this.characterData = result.ok[1];
-          this.characterBefore = this.characterData;
-          this.load.rexAwait(function (successCallback, failureCallback) {
-            useUsableItem(this.characterData.id, this.isUsedUsableItem[1]).then((result) => {
-              this.initialLoad("e21");     
-              successCallback();         
-            });
-          }, this);
-          successCallback();
-       
-        });
-      }, this);
-    }
-    else {
-      this.initialLoad("e21");
-    }
+    this.characterBefore = this.useUsableItemScene(this.isUsedUsableItem, "e21");
 
     //Preload
     this.clearSceneCache();
