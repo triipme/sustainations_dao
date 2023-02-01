@@ -19,6 +19,7 @@ function QuestPreview() {
   const routeParams = useParams();
   console.log(routeParams)
   const { questId } = routeParams;
+  const linkQuest = "/metaverse/quests?questId=" + questId
   const [quest, setQuest] = useState({});
   const [loading, setLoading] = useState(true)
 
@@ -133,9 +134,13 @@ function QuestPreview() {
               We wish you the best of luck on your journey, and we hope you have a great time exploring the wilds of Sustainations World.
             </Typography>
             <div className="text-center">
-              <Link className="block font-normal mt-48" to="/metaverse/quests">
+              {/* <Link className="block font-normal mt-48" to="/metaverse/quests">
+                Click here to login/sign up!
+              </Link> */}
+               <Link className="block font-normal mt-48" to={linkQuest}>
                 Click here to login/sign up!
               </Link>
+            
             </div>
           </div>
         </Paper>

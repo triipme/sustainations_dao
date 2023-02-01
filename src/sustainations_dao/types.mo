@@ -203,8 +203,11 @@ module {
   public type QuestGameReward = {
     id: Text;
     questId: Text;
-    player: Nat;
+    player: [Text];
     totalICP: Nat64;
+    beginDate: Time.Time;
+    endDate: Time.Time;
+    rewarded : Bool;
   };
 
   //--------------------- Scene ---------------------//
