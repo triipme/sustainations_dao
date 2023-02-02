@@ -33,7 +33,6 @@ function FarmContainer() {
       setIsDone(true)
     })();
   }, [indexFarm]);
-  console.log(farmFeatures)
   return (
     <>
       {isDone ?

@@ -4,11 +4,8 @@ import { GeoJSON, useMap } from "react-leaflet";
 import Back from "./Back";
 import Footer from "./footer";
 import "./styles.css";
-import Farm from "./Farm"
 import Loading from "./loading"
 import { selectUser } from "app/store/userSlice";
-
-
 import {
   // buyLandSlot,
   randomLandSlot,

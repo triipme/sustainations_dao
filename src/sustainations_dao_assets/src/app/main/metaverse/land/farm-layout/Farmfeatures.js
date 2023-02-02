@@ -46,7 +46,6 @@ function Farm(props) {
       const listProductStorage = user.actor.listProductStorage();
       const stash = user.actor.listStash();
       const result = await Promise.all([inv, listProductStorage, stash]);
-      console.log(result[1].ok)
       setWarehouses(result[1]?.ok)
       setChacterId(characterid.ok[0]);
       setInventory(result[0].ok);
@@ -123,7 +122,6 @@ function Farm(props) {
 
   function handleClick(e) {
     const pos = checkTilePosition(e, listTile, tileStyle)
-    console.log(pos)
     if (object.objectId === "dig" && pos.object) {
       (async () => {
         setLoading(true)
