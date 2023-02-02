@@ -1,6 +1,5 @@
 import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
-import '@fortawesome/fontawesome-free/css/all.min.css';
 import { useEffect, useState } from "react"
 import { selectUser } from "app/store/userSlice";
 import "./farmproduce.css"
@@ -13,7 +12,6 @@ const FarmProduce = (props) => {
   const [rcp, setRcp] = useState({})
   const [num, setNum] = useState(-1)
   const [queue, setQueue] = useState([])
-  const [loading, setLoading] = useState(false)
   const [loadingFarmProduce, setLoadingFarmProduce] = useState("");
   const style = {
     position: 'absolute',
@@ -28,11 +26,10 @@ const FarmProduce = (props) => {
 
   useEffect(() => {
     (async () => {
-      console.log(props.objectId)
       setRecipes((await user.actor.listAlchemyRecipesInfo())?.ok);
       setQueue((await user.actor.listProductionQueueNodesInfo(props.objectId))?.ok)
     })()
-  }, [])
+  }, [loadingFarmProduce])
 
   if (queue.length != 0) {
     let t = (queue.filter(item => {
@@ -139,15 +136,17 @@ const FarmProduce = (props) => {
 
           <div className="modal-footer" style={{ display: "flex" }}>
             <h3 style={{ backgroundColor: rcp.canCraft == true ? "#ffa200" : "#cccccc", }} onClick={async () => {
-              if (rcp.canCraft === true && props.objectId !== "None") {
+              if (rcp.canCraft !== true && props.objectId !== "None") {
                 setLoadingFarmProduce("craft")
                 await user.actor.craftUsableItem(props.objectId, rcp.id)
                 setQueue((await user.actor.listProductionQueueNodesInfo(props.objectId))?.ok)
-                setWarehouses((await user.actor.listProductStorage())?.ok)
-                // setTileplant(await loadTileSlots(landSlotProperties));
+                setRecipes((await user.actor.listAlchemyRecipesInfo())?.ok);
                 setLoadingFarmProduce("")
+                // setTileplant(await loadTileSlots(landSlotProperties));
               }
-            }}>{loadingFarmProduce === "craft" ? <div className="fa-1x"><i className="fas fa-cog fa-spin"></i></div> : <span>CRAFT</span>}</h3>
+            }}>{loadingFarmProduce === "craft" ? <span>CRAFTING...</span> : <span>CRAFT</span>}
+            </h3>
+
             <h3 style={{
               backgroundColor: queue.filter(item => {
                 return item.status == "Completed"
@@ -163,7 +162,7 @@ const FarmProduce = (props) => {
                   setLoadingFarmProduce("")
                 }
               }}
-            >{loadingFarmProduce === "collect" ? <div className="fa-1x"><i className="fas fa-cog fa-spin"></i></div> : <span>COLLECT</span>}</h3>
+            >{loadingFarmProduce === "collect" ? <span>COLLECTING...</span> : <span>COLLECT</span>}</h3>
           </div>
         </Box>
       </Modal>

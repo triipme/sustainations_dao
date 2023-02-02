@@ -1,6 +1,5 @@
 import "../styles.css";
 const UIFarm = (props) => {
-  console.log(props)
   const warehouses = [0, 0, 0]
   props.warehouses.map(product => {
     switch (product.productName) {
