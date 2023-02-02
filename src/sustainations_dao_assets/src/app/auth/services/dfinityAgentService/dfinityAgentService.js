@@ -3,8 +3,8 @@ import FuseUtils from '@fuse/utils/FuseUtils';
 /* eslint-disable camelcase */
 
 class DfinityAgentService extends FuseUtils.EventEmitter {
-  login = () => {
-    this.emit('onLogin', 'Signed in');
+  login = (uid) => {
+    this.emit('onLogin', 'Signed in', uid);
   };
 
   logout = () => {

@@ -1,5 +1,6 @@
-# yarn install
-# vessel install
+#!/bin/bash
+
+vessel install
 
 ### === DEPLOY LOCAL LEDGER =====
 dfx identity new minter
@@ -47,5 +48,7 @@ dfx canister call ledger transfer "(record { amount = record { e8s = 10_000_000_
 dfx canister call sustainations_dao getSystemBalance
 
 # dfx canister call sustainations_dao withdraw '(100000)'
+yarn install
+dfx generate frontend
 dfx deploy frontend
 # yarn start

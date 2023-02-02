@@ -56,6 +56,7 @@ const App = () => {
               <BrowserRouter>
                 <FuseAuthorization
                   userRole={user.role}
+                  inviter={user.inviter}
                   loginRedirectUrl={settingsConfig.loginRedirectUrl}
                 >
                   <SnackbarProvider

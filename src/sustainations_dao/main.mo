@@ -22,6 +22,8 @@ import Prim "mo:prim";
 import Object "./utils/object";
 
 import Account "./plugins/Account";
+import Base32 "./plugins/Base32";
+import CRC32 "./plugins/CRC32";
 import Moment "./plugins/Moment";
 import Types "types";
 import State "state";
@@ -34,6 +36,8 @@ import CharacterTakesOption "./game/characterTakesOption";
 import CharacterCollectsMaterials "./game/characterCollectsMaterials";
 import Quest "./game/quest";
 import QuestEngine "./game/questEngine";
+import QuestGame "./game/questGame";
+import QuestGameReward "./game/questGameReward";
 import EventEngine "./game/eventEngine";
 import EventOptionEngine "./game/eventOptionEngine";
 import Scene "./game/scene";
@@ -84,6 +88,8 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     questPlayCount = 0;
     questCompletedCount = 0;
   };
+  stable var referralAward : Nat64 = 40_000;
+  stable var referralLimit = 99;
 
   var state : State.State = State.empty();
 
@@ -121,6 +127,8 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     scenes : [(Text, Types.Scene)] = [];
     eventOptions : [(Text, Types.EventOption)] = [];
   };
+  private stable var questGames : [(Text, Types.QuestGame)] = [];
+  private stable var questGameRewards : [(Text, Types.QuestGameReward)] = [];
   private stable var items : [(Text, Types.Item)] = [];
   private stable var questItems : [(Text, Types.QuestItem)] = [];
   private stable var products : [(Text, Types.Product)] = [];
@@ -189,6 +197,8 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       scenes = Iter.toArray(state.questEngine.scenes.entries());
       eventOptions = Iter.toArray(state.questEngine.eventOptions.entries());
     };
+    questGames := Iter.toArray(state.questGames.entries());
+    questGameRewards := Iter.toArray(state.questGameRewards.entries());
     characterClasses := Iter.toArray(state.characterClasses.entries());
     characters := Iter.toArray(state.characters.entries());
     characterTakesOptions := Iter.toArray(state.characterTakesOptions.entries());
@@ -302,6 +312,12 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
     for ((k, v) in Iter.fromArray(questEngine.eventOptions)) {
       state.questEngine.eventOptions.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(questGames)) {
+      state.questGames.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(questGameRewards)) {
+      state.questGameRewards.put(k, v);
     };
     for ((k, v) in Iter.fromArray(characterClasses)) {
       state.characterClasses.put(k, v);
@@ -535,7 +551,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     #ok(result);
   };
 
-  public shared ({ caller }) func submitAgreement() : async Response<Text> {
+  public shared ({ caller }) func submitAgreement(inviterID : ?Text) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
@@ -549,6 +565,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
         };
         let result = state.userAgreements.put(caller, payload);
         let receipt = await rewardUserAgreement(caller);
+        let inviter = principalFromText(Option.get(inviterID, ""));
         let profile = state.profiles.put(
           caller,
           {
@@ -556,12 +573,95 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
             avatar = null;
             phone = null;
             role = #user;
+            inviter
           }
         );
+        switch (inviter) {
+          case null {};
+          case (?user) {
+            switch (state.userAgreements.get(user)) {
+              case null {};
+              case (_) {
+                await rewardReferral(user, caller);
+              };
+            };
+          };
+        };
         #ok("Success!");
       };
       case (?_v) {
         #ok("Success!");
+      };
+    };
+  };
+
+  func principalFromText(text : Text) : ?Principal {
+    var _text = Text.map(text , Prim.charToLower);
+    _text := Text.replace(_text , #text "-" , "");
+    let decodeResult = Base32.decode(#RFC4648({ padding=false; }),_text);
+    let bytes:[Nat8] = switch (decodeResult)
+    {
+      case null [];
+      case (?b) b;
+    };
+
+    let bytesSize = bytes.size();
+
+    if ( bytesSize < 4 ) { return null; }
+    else if ( bytesSize > 33) { return null; }
+    else if ( text == "aaaaa-aa") { return ?Principal.fromText(text); }
+    else {
+      let body = Array.init<Nat8>(bytesSize - 4, 0) ;
+    
+      for (k in bytes.keys()) {
+          if ( k > 3 ) { 
+            body[ k - 4 ] := bytes [ k ];
+          }
+      };
+
+      let crcResult : [Nat8] = CRC32.crc32(Array.freeze(body));
+
+      for (c in crcResult.keys()){
+        if ( bytes[c] != crcResult[c]) {
+          return null;
+        }
+      };
+
+      return ?Principal.fromText(text);
+    };
+  };
+
+  func rewardReferral(inviter : Principal, member : Principal) : async () {
+    var referralCount = 0;
+    for ((_uuid, referral) in state.referrals.entries()) {
+      if (referral.uid == inviter) {
+        referralCount := referralCount + 1;
+      };
+    };
+    if (referralCount <= referralLimit) {
+      let uuid = await createUUID();
+      let payload = {
+        uid = inviter;
+        member;
+      };
+      let referral = state.referrals.put(uuid, payload);
+      let receipt = await refund(referralAward, inviter);
+      switch (receipt) {
+        case (#Err(error)) {
+          Debug.print(debug_show error);
+        };
+        case (#Ok(bIndex)) {
+          // record transaction
+          await recordTransaction(
+            Principal.fromActor(this),
+            referralAward,
+            Principal.fromActor(this),
+            inviter,
+            #awardReferral,
+            ?uuid,
+            bIndex
+          );
+        };
       };
     };
   };
@@ -666,6 +766,19 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     #ok(userInfo);
   };
 
+  public query ({ caller }) func getReferralCount() : async Response<Int> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    var count : Int = 0;
+    for ((_uuid, referral) in state.referrals.entries()) {
+      if (referral.uid == caller) {
+        count := count + 1;
+      };
+    };
+    #ok(count);
+  };
+
   public shared ({ caller }) func updateUserProfile(
     username : ?Text,
     phone : ?Text,
@@ -681,6 +794,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
           phone;
           avatar;
           role = #user;
+          inviter = null;
         };
         let profile = state.profiles.put(caller, payload);
         #ok(payload);
@@ -691,6 +805,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
           phone;
           avatar;
           role = profile.role;
+          inviter = profile.inviter;
         };
         let updated = state.profiles.replace(caller, payload);
         #ok(payload);
@@ -1035,6 +1150,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
             username = null;
             avatar = null;
             phone = null;
+            inviter = null;
             role;
           };
           state.profiles.put(principal, profile);
@@ -1046,6 +1162,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
               username = profile.username;
               avatar = profile.avatar;
               phone = profile.phone;
+              inviter = profile.inviter;
               role;
             }
           );
@@ -2680,6 +2797,57 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
   };
 
+  public shared ({ caller }) func payQuestEngine(questId : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    switch (state.questEngine.quests.get(questId)) {
+      case null { #err(#NotFound) };
+      case (?quest) {
+        let questPrice : Nat64 = quest.price;
+        let questPriceFloat : Float = Float.fromInt64(Int64.fromNat64(questPrice));
+        let questDesign : Nat64 = Int64.toNat64(Float.toInt64(questPriceFloat*0.25))-transferFee;
+        switch (await deposit(questPrice, caller)) {
+          case (#ok(bIndex)) {
+            await recordTransaction(
+              caller,
+              questPrice,
+              caller,
+              Principal.fromActor(this),
+              #payQuest,
+              ?questId,
+              bIndex
+            );
+            //transfer ICP 25% price to quest-designer
+            let receipt = await refund(questDesign, quest.userId);
+            switch (receipt) {
+              case (#Err(error)) {
+                Debug.print(debug_show error);
+              };
+              case (#Ok(bIndex)) {
+                // record transaction
+                await recordTransaction(
+                  caller,
+                  questDesign,
+                  Principal.fromActor(this),
+                  quest.userId,
+                  #refundQuestDesign,
+                  ?questId,
+                  bIndex
+                );
+              };
+            };
+            #ok("Success");
+          };
+          case (#err(error)) {
+            #err(error);
+          };
+        };
+      };
+    };
+  };
+
+
   // Character Class
   public shared ({ caller }) func createCharacterClass(characterClass : Types.CharacterClass) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
@@ -3174,14 +3342,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   //     };
   //   };
   // };
-  public type Quest = {
-    id : Text;
-    name : Text;
-    price : Float;
-    description : Text;
-    images : Text;
-  };
-   public shared ({ caller }) func createQuestEngine(questEngine : Quest) : async Response<Text> {
+   public shared ({ caller }) func createQuestEngine(questEngine : Types.Quest) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
@@ -3207,10 +3368,11 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
   };
 
-  public shared ({ caller }) func checkCreatedQuestOfUser() : async Response<Types.QuestEngine> {
+  public shared query ({ caller }) func checkCreatedQuestOfUser() : async Response<Types.QuestEngine> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
+    Debug.print(Principal.toText(caller));
     for (quest in state.questEngine.quests.vals()){
       if (quest.userId == caller){
         return #ok(quest);
@@ -3219,11 +3381,43 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     #err(#NotFound);
   };
 
-
-  public shared query ({ caller }) func readQuestEngine(id : Text) : async Response<(Types.QuestEngine)> {
+  public shared query ({ caller }) func getAdminQuest() : async Response<Types.QuestEngine> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
+    let godUser = "wijp2-ps7be-cocx3-zbfru-uuw2q-hdmpl-zudjl-f2ofs-7qgni-t7ik5-lqe";
+    //let godUser = "nrulu-zov3c-5fjy3-pza5d-ysupr-vuwi5-gl3kk-uasar-yohik-njyf4-dqe";
+    for (quest in state.questEngine.quests.vals()){
+      if (Principal.toText(quest.userId) == godUser){
+        return #ok(quest);
+      };
+    };
+    #err(#NotFound);
+  };
+
+  public shared query ({ caller }) func getScenePreviewQuest(questId: Text) : async Response<Types.Scene> {
+    let rsQuest = state.questEngine.quests.get(questId);
+      switch (rsQuest) {
+      case (?quest) {
+        let listScene = quest.listScene;
+        if (listScene == []) {
+          #err(#NotFound);
+        }
+        else {
+          let rsScene = state.questEngine.scenes.get(listScene[0]);
+          switch (rsScene){
+            case (?scene){
+              #ok(scene);
+            };
+            case (_) {#err(#NotFound)};
+          };
+        };
+      };
+      case (_) {#err(#NotFound)};
+    };
+  }; 
+
+  public shared query ({ caller }) func readQuestEngine(id : Text) : async Response<(Types.QuestEngine)> {
     let rsQuestEngine = state.questEngine.quests.get(id);
     return Result.fromOption(rsQuestEngine, #NotFound);
   };
@@ -3515,7 +3709,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
           case null {
             let updateQuest : Types.QuestEngine = {
               id = quest.id;
-              userId = caller;
+              userId = quest.userId;
               name = quest.name;
               price = quest.price;
               description = quest.description;
@@ -3928,6 +4122,108 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       };
     };
     #ok(result);
+  };
+
+  //Quest Game
+  public shared ({caller}) func createQuestGame(questGame: Types.QuestGame) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsQuestGame = state.questGames.get(questGame.id);
+    switch (rsQuestGame) {
+      case (?v) {#err(#AlreadyExisting)};
+      case null {
+        QuestGame.create(questGame, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared query({caller}) func readQuestGame(id: Text) : async Response<Types.QuestGame> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsQuestGame = state.questGames.get(id);
+    return Result.fromOption(rsQuestGame, #NotFound);
+  };
+
+  public shared ({ caller }) func updateQuestGame(questGame : Types.QuestGame) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsQuestGame = state.questGames.get(questGame.id);
+    switch (rsQuestGame) {
+      case null { #err(#NotFound) };
+      case (?V) {
+        QuestGame.update(questGame, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared ({ caller }) func deleteQuestGame(id : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsQuestGame = state.questGames.get(id);
+    switch (rsQuestGame) {
+      case (null) { #err(#NotFound) };
+      case (?V) {
+        let deletedQuestGame = state.questGames.delete(id);
+        #ok("Success");
+      };
+    };
+  };
+
+  //Quest Game Reward
+  public shared ({caller}) func createQuestGameReward(questGameReward: Types.QuestGameReward) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsQuestGameReward = state.questGameRewards.get(questGameReward.id);
+    switch (rsQuestGameReward) {
+      case (?v) {#err(#AlreadyExisting)};
+      case null {
+        QuestGameReward.create(questGameReward, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared query({caller}) func readQuestGameReward(id: Text) : async Response<Types.QuestGameReward> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsQuestGameReward = state.questGameRewards.get(id);
+    return Result.fromOption(rsQuestGameReward, #NotFound);
+  };
+
+  public shared ({ caller }) func updateQuestGameReward(questGameReward : Types.QuestGameReward) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsQuestGameReward = state.questGameRewards.get(questGameReward.id);
+    switch (rsQuestGameReward) {
+      case null { #err(#NotFound) };
+      case (?V) {
+        QuestGameReward.update(questGameReward, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared ({ caller }) func deleteQuestGameReward(id : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsQuestGameReward = state.questGameRewards.get(id);
+    switch (rsQuestGameReward) {
+      case (null) { #err(#NotFound) };
+      case (?V) {
+        let deletedQuestGameReward = state.questGameRewards.delete(id);
+        #ok("Success");
+      };
+    };
   };
 
   // Item
@@ -6996,9 +7292,9 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
           };
         };
         // update ProductionNode (remove all completed nodes)
-        if (processingNodes.size() == 0) {
-          return #ok("noneCompleted");
-        };
+        // if (processingNodes.size() == 0) {
+        //   return #ok("noneCompleted");
+        // };
         let nodeAmount = processingNodes.size();
         for ( key in processingNodes.keys()) {
           let newProductionQueueNode : Types.ProductionQueueNode = {
@@ -7366,4 +7662,5 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       };
     };
   };
+
 };

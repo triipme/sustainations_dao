@@ -38,6 +38,8 @@ module {
       scenes : TrieMap.TrieMap<Text, Types.Scene>;
       eventOptions : TrieMap.TrieMap<Text, Types.EventOption>;
     };
+    questGames : TrieMap.TrieMap<Text, Types.QuestGame>;
+    questGameRewards : TrieMap.TrieMap<Text, Types.QuestGameReward>;
     characterClasses : Map<Text, Types.CharacterClass>;
     characters : Map<Text, Types.Character>;
     characterTakesOptions : Map<Text, Types.CharacterTakesOption>;
@@ -81,6 +83,7 @@ module {
     buildings : Map<Text, Types.Building>;
     productionQueues : Map<Text, Types.ProductionQueue>;
     productionQueueNodes : Map<Text, Types.ProductionQueueNode>;
+    referrals : Map<Text, Types.Referral>;
   };
 
   public func empty() : State {
@@ -113,6 +116,8 @@ module {
         scenes = TrieMap.TrieMap<Text, Types.Scene>(Text.equal, Text.hash);
         eventOptions = TrieMap.TrieMap<Text, Types.EventOption>(Text.equal, Text.hash);
       };
+      questGames = TrieMap.TrieMap<Text, Types.QuestGame>(Text.equal, Text.hash);
+      questGameRewards = TrieMap.TrieMap<Text, Types.QuestGameReward>(Text.equal, Text.hash);
       characterClasses = TrieMap.TrieMap<Text, Types.CharacterClass>(Text.equal, Text.hash);
       characters = TrieMap.TrieMap<Text, Types.Character>(Text.equal, Text.hash);
       characterTakesOptions = TrieMap.TrieMap<Text, Types.CharacterTakesOption>(Text.equal, Text.hash);
@@ -156,6 +161,7 @@ module {
       buildings = TrieMap.TrieMap<Text, Types.Building>(Text.equal,Text.hash);
       productionQueues = TrieMap.TrieMap<Text, Types.ProductionQueue>(Text.equal,Text.hash);
       productionQueueNodes = TrieMap.TrieMap<Text, Types.ProductionQueueNode>(Text.equal,Text.hash);
+      referrals = TrieMap.TrieMap<Text, Types.Referral>(Text.equal, Text.hash);
     };
   };
 };
