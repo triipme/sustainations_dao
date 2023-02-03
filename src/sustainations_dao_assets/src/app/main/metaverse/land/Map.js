@@ -11,13 +11,15 @@ import {
   randomLandSlot,
   // createLandSlot,
   loadLandBuyingStatus,
-  loadNationsfromCenter,
+  // loadNationsfromCenter,
   //loadLandSlotsfromCenter,
   // loadTileSlots,
   getLandIndex,
   // getUserInfo,
   // loadNation,
   unionLandSlots,
+  updateNationLonLat,
+  getNationLonLat
 } from '../LandApi'
 import BigMap from "./BigMap";
 import Land from "./Land";
@@ -33,6 +35,47 @@ const Map = () => {
 
   const user = useSelector(selectUser)
   const { principal } = user;
+
+  const loadNationsfromCenter = async (x, y) => {
+    const func = await user.actor.loadNationsArea(
+      x, y, 4
+    );
+    const nations = func?.ok;
+    var result = {
+      features: []
+    };
+    console.log('nations',nations)
+    if(nations) {
+      for (let nation of nations) {
+        console.log(nation.id)
+        const nationInfo = await updateNationLonLat(nation.id, nation.coordinates)
+        console.log('nationInfo',nationInfo)
+        // if(nationInfo == undefined) {
+        //   nationInfo = await updateNationLonLat(nation.id, nation.coordinates)
+        // };
+        let feature = {
+          type: "Feature",
+          properties: {
+            "id": nation.id,
+            "zoneNumber": nation.zoneNumber,
+            "zoneLetter": nation.zoneLetter,
+            "i": nation.i,
+            "j": nation.j
+          },
+          geometry: {
+            type: "Polygon", coordinates: [nationInfo.lonlats],
+          }
+        }
+        if (nation.id !== principal) {
+          result.features.push(feature)
+        } else {
+          result.features = [feature].concat(result.features)
+        }
+      }
+    }
+    return nations ? result.features : [];
+  }
+
   const loadNations = async (i, j) => {
     nationData = await loadNationsfromCenter(i, j);
   }
@@ -54,6 +97,7 @@ const Map = () => {
     const initial = async () => {
       if (loading === "loadingmap") {
         country = (await user.actor.readNation())?.ok;
+        console.log('country', country)
         if (country === undefined) {
           await loadNations(0, 0)
           setLoading("none")
@@ -62,6 +106,7 @@ const Map = () => {
           map.setView([Number(nationData[0].geometry.coordinates[0][0][1]), Number(nationData[0].geometry.coordinates[0][0][0])], 13)
           setLoading("none")
         }
+        console.log('EFFFFFFFFEECCTTTT',(await user.actor.readUserHasLandEffect())?.ok)
         if ((await user.actor.readUserHasLandEffect())?.ok) {
           setHasEffect(true)
         }
@@ -101,6 +146,7 @@ const Map = () => {
   }
   const onEachLandSlot = (country, layer) => {
     // set style for each poligon
+    console.log('hasEffect', hasEffect)
     if (country.properties.id === principal) {
       if (!hasEffect) {
         layer.setStyle({
@@ -187,7 +233,6 @@ const Map = () => {
     setLoading("accept")
     let landBuyingStatus = await loadLandBuyingStatus()
     let country = (await user.actor.readNation())?.ok
-
     //convert Bigint utms to Number utms
     let utms = undefined
     if (country !== undefined) {
