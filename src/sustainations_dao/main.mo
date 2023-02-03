@@ -22,6 +22,8 @@ import Prim "mo:prim";
 import Object "./utils/object";
 
 import Account "./plugins/Account";
+import Base32 "./plugins/Base32";
+import CRC32 "./plugins/CRC32";
 import Moment "./plugins/Moment";
 import Types "types";
 import State "state";
@@ -86,6 +88,8 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     questPlayCount = 0;
     questCompletedCount = 0;
   };
+  stable var referralAward : Nat64 = 40_000;
+  stable var referralLimit = 99;
 
   var state : State.State = State.empty();
 
@@ -312,7 +316,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     for ((k, v) in Iter.fromArray(questGames)) {
       state.questGames.put(k, v);
     };
-     for ((k, v) in Iter.fromArray(questGameRewards)) {
+    for ((k, v) in Iter.fromArray(questGameRewards)) {
       state.questGameRewards.put(k, v);
     };
     for ((k, v) in Iter.fromArray(characterClasses)) {
@@ -547,7 +551,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     #ok(result);
   };
 
-  public shared ({ caller }) func submitAgreement() : async Response<Text> {
+  public shared ({ caller }) func submitAgreement(inviterID : ?Text) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
@@ -561,6 +565,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
         };
         let result = state.userAgreements.put(caller, payload);
         let receipt = await rewardUserAgreement(caller);
+        let inviter = principalFromText(Option.get(inviterID, ""));
         let profile = state.profiles.put(
           caller,
           {
@@ -568,12 +573,95 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
             avatar = null;
             phone = null;
             role = #user;
+            inviter
           }
         );
+        switch (inviter) {
+          case null {};
+          case (?user) {
+            switch (state.userAgreements.get(user)) {
+              case null {};
+              case (_) {
+                await rewardReferral(user, caller);
+              };
+            };
+          };
+        };
         #ok("Success!");
       };
       case (?_v) {
         #ok("Success!");
+      };
+    };
+  };
+
+  func principalFromText(text : Text) : ?Principal {
+    var _text = Text.map(text , Prim.charToLower);
+    _text := Text.replace(_text , #text "-" , "");
+    let decodeResult = Base32.decode(#RFC4648({ padding=false; }),_text);
+    let bytes:[Nat8] = switch (decodeResult)
+    {
+      case null [];
+      case (?b) b;
+    };
+
+    let bytesSize = bytes.size();
+
+    if ( bytesSize < 4 ) { return null; }
+    else if ( bytesSize > 33) { return null; }
+    else if ( text == "aaaaa-aa") { return ?Principal.fromText(text); }
+    else {
+      let body = Array.init<Nat8>(bytesSize - 4, 0) ;
+    
+      for (k in bytes.keys()) {
+          if ( k > 3 ) { 
+            body[ k - 4 ] := bytes [ k ];
+          }
+      };
+
+      let crcResult : [Nat8] = CRC32.crc32(Array.freeze(body));
+
+      for (c in crcResult.keys()){
+        if ( bytes[c] != crcResult[c]) {
+          return null;
+        }
+      };
+
+      return ?Principal.fromText(text);
+    };
+  };
+
+  func rewardReferral(inviter : Principal, member : Principal) : async () {
+    var referralCount = 0;
+    for ((_uuid, referral) in state.referrals.entries()) {
+      if (referral.uid == inviter) {
+        referralCount := referralCount + 1;
+      };
+    };
+    if (referralCount <= referralLimit) {
+      let uuid = await createUUID();
+      let payload = {
+        uid = inviter;
+        member;
+      };
+      let referral = state.referrals.put(uuid, payload);
+      let receipt = await refund(referralAward, inviter);
+      switch (receipt) {
+        case (#Err(error)) {
+          Debug.print(debug_show error);
+        };
+        case (#Ok(bIndex)) {
+          // record transaction
+          await recordTransaction(
+            Principal.fromActor(this),
+            referralAward,
+            Principal.fromActor(this),
+            inviter,
+            #awardReferral,
+            ?uuid,
+            bIndex
+          );
+        };
       };
     };
   };
@@ -678,6 +766,19 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     #ok(userInfo);
   };
 
+  public query ({ caller }) func getReferralCount() : async Response<Int> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    var count : Int = 0;
+    for ((_uuid, referral) in state.referrals.entries()) {
+      if (referral.uid == caller) {
+        count := count + 1;
+      };
+    };
+    #ok(count);
+  };
+
   public shared ({ caller }) func updateUserProfile(
     username : ?Text,
     phone : ?Text,
@@ -693,6 +794,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
           phone;
           avatar;
           role = #user;
+          inviter = null;
         };
         let profile = state.profiles.put(caller, payload);
         #ok(payload);
@@ -703,6 +805,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
           phone;
           avatar;
           role = profile.role;
+          inviter = profile.inviter;
         };
         let updated = state.profiles.replace(caller, payload);
         #ok(payload);
@@ -1047,6 +1150,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
             username = null;
             avatar = null;
             phone = null;
+            inviter = null;
             role;
           };
           state.profiles.put(principal, profile);
@@ -1058,6 +1162,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
               username = profile.username;
               avatar = profile.avatar;
               phone = profile.phone;
+              inviter = profile.inviter;
               role;
             }
           );

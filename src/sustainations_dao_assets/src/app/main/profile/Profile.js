@@ -20,8 +20,49 @@ import { walletAddressLink } from '../../utils/TextFormat';
 const Profile = () => {
   const user = useSelector(selectUser);
   const { profile } = user;
+  const [isCopied, setIsCopied] = useState(false);
+  const [loading, setLoading] = useState(true)
+  const [referralCount, setReferralCount] = useState(0);
+  const referralLink = `${window.location.protocol}//${window.location.host}/sign-in?inviter=${user.principal}`;
 
-  if (!user) {
+  useEffect(() => {
+    async function loadReferralCount() {
+      let res = await user.actor.getReferralCount();
+      console.log(res);
+      if ('ok' in res) {
+        setReferralCount(res.ok);
+      }
+      setLoading(false);
+    }
+    loadReferralCount();
+  }, [user]);
+
+  // This is the function we wrote earlier
+  async function copyTextToClipboard() {
+    if ('clipboard' in navigator) {
+      return await navigator.clipboard.writeText(referralLink);
+    } else {
+      return document.execCommand('copy', true, referralLink);
+    }
+  }
+
+  // onClick handler function for the copy button
+  const handleCopyClick = () => {
+    // Asynchronously call copyTextToClipboard
+    copyTextToClipboard()
+      .then(() => {
+        // If successful, update the isCopied state value
+        setIsCopied(true);
+        setTimeout(() => {
+          setIsCopied(false);
+        }, 1500);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }
+
+  if (loading) {
     return (<FuseLoading />)
   }
 
@@ -87,6 +128,17 @@ const Profile = () => {
                   <div className="flex items-center leading-6">
                     <div className="ml-10 font-mono">{profile?.phone[0] || "N/A"}</div>
                   </div>
+                </div>
+              </div>
+
+              <div className="flex items-center">
+                <FuseSvgIcon>account_tree_outlined</FuseSvgIcon>
+                <div className="ml-24 leading-6 referralLink">
+                  <code>Referral Count: {parseInt(referralCount)}</code>
+                  <Button variant="text" color="secondary" sx={{ fontSize: 14 }} onClick={handleCopyClick}>
+                    <FuseSvgIcon sx={{ fontSize: 14 }}>content_copy_outlined</FuseSvgIcon>
+                    <span className="mx-4">{isCopied ? 'Copied!' : 'Copy Link'}</span>
+                  </Button>
                 </div>
               </div>
             </div>

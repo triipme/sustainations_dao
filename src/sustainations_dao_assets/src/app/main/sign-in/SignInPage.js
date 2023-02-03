@@ -8,11 +8,13 @@ import { useConnect } from "@connect2ic/react";
 
 function SignInPage() {
   const [authClient, setAuthClient] = useState(undefined);
+  const queryParams = new URLSearchParams(window.location.search)
+  const inviter = queryParams.get("inviter");
 
   const { connect } = useConnect({
     onConnect: (data) => {
       console.log("connected!", data);
-      DfinityAgentService.login();
+      DfinityAgentService.login(inviter);
     },
     onDisconnect: () => {
       console.log("disconnected!")
@@ -31,7 +33,7 @@ function SignInPage() {
     await authClient?.login({
       identityProvider: process.env.II_URL,
       onSuccess: async () => {
-        DfinityAgentService.login();
+        DfinityAgentService.login(inviter);
       },
       onError: error => {
         console.log(error);
