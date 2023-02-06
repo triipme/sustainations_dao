@@ -136,7 +136,7 @@ const FarmProduce = (props) => {
 
           <div className="modal-footer" style={{ display: "flex" }}>
             <h3 style={{ backgroundColor: rcp.canCraft == true ? "#ffa200" : "#cccccc", }} onClick={async () => {
-              if (rcp.canCraft !== true && props.objectId !== "None") {
+              if (rcp.canCraft === true && props.objectId !== "None") {
                 setLoadingFarmProduce("craft")
                 await user.actor.craftUsableItem(props.objectId, rcp.id)
                 setQueue((await user.actor.listProductionQueueNodesInfo(props.objectId))?.ok)
