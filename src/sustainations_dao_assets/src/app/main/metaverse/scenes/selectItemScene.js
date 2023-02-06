@@ -11,7 +11,8 @@ import {
   resetCharacterCollectsMaterials,
   loadQuestItemEngines,
   getAllScenes,
-  checkCreatedQuestOfUser
+  checkCreatedQuestOfUser,
+  getAdminQuest
 } from '../GameApi';
 import { throws } from 'assert';
 
@@ -68,12 +69,11 @@ class selectItemScene extends BaseScene {
 
     if (this.map == "quest-design"){
       this.load.rexAwait(function (successCallback, failureCallback) {
-        checkCreatedQuestOfUser().then((result) => {
+        getAdminQuest().then((result) => {
           this.questId = result.id;
-          console.log("dao vao ham 0")
+          console.log("this.questId: ", this.questId)
           this.load.rexAwait(function (successCallback, failureCallback) {
             getAllScenes(this.questId).then((result) => {
-              console.log("da vao ham")
               this.listScene = result;
               console.log(result);
               successCallback();

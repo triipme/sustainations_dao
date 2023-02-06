@@ -18,6 +18,7 @@ module {
     avatar : ?Text;
     phone : ?Text;
     role : Role;
+    inviter : ?Principal;
   };
   // User Agreement
   public type UserAgreement = {
@@ -80,7 +81,9 @@ module {
     #rewardTop;
     #collectTreasuryContribution;
     #payQuest;
+    #refundQuestDesign;
     #buyLandSlot;
+    #awardReferral;
   };
   public type TxRecord = {
     uuid : Text;
@@ -197,6 +200,13 @@ module {
     stamina: Float;
     morale: Float;
     mana: Float;
+  };
+
+  public type QuestGameReward = {
+    id: Text;
+    questId: Text;
+    player: Nat;
+    totalICP: Nat64;
   };
 
   //--------------------- Scene ---------------------//
@@ -661,5 +671,11 @@ public type UsableItem = {
     questPlayCount : Nat;
     questCompletedCount : Nat;
     // purchasedLandSlotsCount : ?Nat;
+  };
+
+  // referral
+  public type Referral = {
+    uid : Principal;
+    member : Principal;
   };
 };
