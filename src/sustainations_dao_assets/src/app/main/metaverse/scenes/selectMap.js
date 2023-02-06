@@ -12,7 +12,8 @@ import {
   buyLandSlot,
   getAllScenes,
   getAdminQuest,
-  readQuestEngine
+  readQuestEngine,
+  saveGameReward
 } from '../GameApi';
 
 const bg = 'metaverse/selectMap/background.png';
@@ -309,7 +310,11 @@ class selectMap extends BaseScene {
         const myParam = urlParams.get('questId');
         this.scene.start('selectItemScene', { map: 'quest-design', questId: myParam});
         let pay = await payQuestEngine(this.questId);
-        console.log("pay Quest: ", pay)
+        if (pay == "Success"){
+          let saveReward = await saveGameReward(this.questId);
+          console.log("saveReward: ", saveReward)
+          console.log("pay Quest: ", pay)
+        };
       };
     });
 

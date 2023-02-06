@@ -6,7 +6,8 @@ import {
   openInventory,
   createInventory,
   loadCharacter,
-  resetCharacterCollectsMaterials
+  resetCharacterCollectsMaterials,
+  saveGameScore
 } from '../GameApi';
 
 const bg = 'metaverse/UI_finish.png';
@@ -21,6 +22,11 @@ class thanks extends BaseScene {
     this.textures.remove('bg', 'popupWindow');
   }
 
+  init (data) {
+    this.questDesignId = data.questDesingId;
+    
+  }
+
   preload() {
     this.addLoadingScreen();
     this.clearSceneCache();
@@ -29,6 +35,11 @@ class thanks extends BaseScene {
       loadCharacter().then((result) => {
         this.characterData = result.ok[1];
         console.log(this.characterData);
+        console.log("this.questDesingId ", this.questDesignId)
+        if (this.questDesignId != undefined){
+          let game = saveGameScore(this.questDesignId, this.characterData);
+          console.log("saveQuest: ", game);
+        }
         successCallback();
       });
     }, this);
