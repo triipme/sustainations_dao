@@ -22,7 +22,7 @@ function AuthProvider({ children }) {
   const client = useSelector(selectClient);
 
   useEffect(() => {
-    const initAuthClient = async () => {
+    const initAuthClient = async (inviter) => {
       const authClient = await AuthClient.create();
       const authenticated = await authClient.isAuthenticated();
       const status = await client.status;
@@ -80,7 +80,8 @@ function AuthProvider({ children }) {
           principal,
           brandId: result?.ok?.brandId[0],
           profile,
-          avatar
+          avatar,
+          inviter
         };
         console.log('userState', userState);
         dispatch(setUser(userState));
@@ -110,8 +111,8 @@ function AuthProvider({ children }) {
 
     initAuthClient();
 
-    DfinityAgentService.on('onLogin', message => {
-      success(message);
+    DfinityAgentService.on('onLogin', (message, uid) => {
+      success(uid, message);
     });
 
     DfinityAgentService.on('onLogout', message => {
@@ -119,10 +120,9 @@ function AuthProvider({ children }) {
       dispatch(logoutUser());
     });
 
-    function success(message) {
+    function success(uid, message) {
       setWaitAuthCheck(true);
-      initAuthClient().then((logged) => {
-        console.log('result', logged);
+      initAuthClient(uid).then((logged) => {
         if (logged) {
           setWaitAuthCheck(false);
           setIsAuthenticated(true);

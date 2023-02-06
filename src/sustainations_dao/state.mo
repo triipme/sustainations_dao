@@ -83,6 +83,7 @@ module {
     buildings : Map<Text, Types.Building>;
     productionQueues : Map<Text, Types.ProductionQueue>;
     productionQueueNodes : Map<Text, Types.ProductionQueueNode>;
+    referrals : Map<Text, Types.Referral>;
   };
 
   public func empty() : State {
@@ -160,6 +161,7 @@ module {
       buildings = TrieMap.TrieMap<Text, Types.Building>(Text.equal,Text.hash);
       productionQueues = TrieMap.TrieMap<Text, Types.ProductionQueue>(Text.equal,Text.hash);
       productionQueueNodes = TrieMap.TrieMap<Text, Types.ProductionQueueNode>(Text.equal,Text.hash);
+      referrals = TrieMap.TrieMap<Text, Types.Referral>(Text.equal, Text.hash);
     };
   };
 };

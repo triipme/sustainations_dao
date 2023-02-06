@@ -18,6 +18,7 @@ module {
     avatar : ?Text;
     phone : ?Text;
     role : Role;
+    inviter : ?Principal;
   };
   // User Agreement
   public type UserAgreement = {
@@ -83,6 +84,7 @@ module {
     #awardQuestDesigner;
     #awardQuestWinner;
     #buyLandSlot;
+    #awardReferral;
   };
   public type TxRecord = {
     uuid : Text;
@@ -673,5 +675,11 @@ public type UsableItem = {
     questPlayCount : Nat;
     questCompletedCount : Nat;
     // purchasedLandSlotsCount : ?Nat;
+  };
+
+  // referral
+  public type Referral = {
+    uid : Principal;
+    member : Principal;
   };
 };

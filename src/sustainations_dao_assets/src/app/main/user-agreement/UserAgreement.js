@@ -12,11 +12,13 @@ function UserAgreement() {
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
   const [loading, setLoading] = useState(false);
+  const queryParams = new URLSearchParams(window.location.search)
+  const inviter = queryParams.get("inviter");
 
   const handleSignAgreement = async () => {
     setLoading(true);
     try {
-      const result = await user.actor.submitAgreement();
+      const result = await user.actor.submitAgreement([user.inviter || inviter || '']);
       if ("ok" in result) {
         dispatch(showMessage({ message: "Now you are offically our member. Please accept 0.0004 ICP as our gift for your kindness ❤️" }));
         setTimeout(() => {
