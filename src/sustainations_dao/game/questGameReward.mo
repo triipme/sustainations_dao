@@ -10,6 +10,9 @@ module QuestGameReward{
         questId = questGameReward.questId;
         player = questGameReward.player;
         totalICP = questGameReward.totalICP;
+        beginDate = questGameReward.beginDate;
+        endDate = questGameReward.endDate;
+        rewarded = questGameReward.rewarded;
     };
     return newQuestGameReward;
   };
