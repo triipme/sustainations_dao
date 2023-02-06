@@ -453,6 +453,13 @@ export async function saveGameReward(questId){
   return rs;
 }
 
+export async function getTopOne(questId){
+  const {user} = store.getState();
+  const func = async () => await user.actor.getTopOne(questId);
+  const rs = (await func()).ok;
+  return rs;
+}
+
 export {
   getUserInfo,
   loadQuestItems,

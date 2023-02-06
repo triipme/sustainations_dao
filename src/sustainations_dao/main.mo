@@ -3387,8 +3387,8 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
-    let godUser = "wijp2-ps7be-cocx3-zbfru-uuw2q-hdmpl-zudjl-f2ofs-7qgni-t7ik5-lqe";
-    //let godUser = "nrulu-zov3c-5fjy3-pza5d-ysupr-vuwi5-gl3kk-uasar-yohik-njyf4-dqe";
+    // let godUser = "wijp2-ps7be-cocx3-zbfru-uuw2q-hdmpl-zudjl-f2ofs-7qgni-t7ik5-lqe";
+    let godUser = "oj7mm-lmhm7-omq7t-lgc64-7ujl4-ycqln-olksg-tnekl-2esgy-jzeyt-kae";
     for (quest in state.questEngine.quests.vals()){
       if (Principal.toText(quest.userId) == godUser){
         return #ok(quest);
@@ -4282,7 +4282,43 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
   };
 
-  private func getWinner(questGameReward: Types.QuestGameReward) : ?Text { //return characterId
+  // private func getWinner(questGameReward: Types.QuestGameReward) : ?Text { //return characterId
+  //   var listQuestGame : [Types.QuestGame] = [];
+  //   //get all quest game for game reward
+  //   for (questGame in state.questGames.vals()){
+  //     if (questGame.questId == questGameReward.questId and questGame.timestamp >= questGameReward.beginDate 
+  //     and questGame.timestamp <= questGameReward.endDate) {
+  //       listQuestGame := Array.append<Types.QuestGame>(listQuestGame, [questGame]);
+  //     };
+  //   };
+  //   if (listQuestGame != []){
+  //     var bestGame : Types.QuestGame = listQuestGame[0];
+  //     for (game in listQuestGame.vals()){
+  //       if (game.hp > bestGame.hp){
+  //         bestGame := game;
+  //       }
+  //       else if (game.hp == bestGame.hp) {
+  //         if (game.stamina > bestGame.stamina){
+  //           bestGame := game;
+  //         }
+  //         else if (game.stamina == bestGame.stamina){
+  //           if (game.morale > bestGame.morale){
+  //             bestGame := game;
+  //           }
+  //           else if (game.morale == bestGame.morale){
+  //             if (game.timestamp < bestGame.timestamp){
+  //               bestGame := game;
+  //             };
+  //           };
+  //         };
+  //       };
+  //     };
+  //     return ?bestGame.userId;
+  //   };
+  //   return null;
+  // };
+
+   private func getWinner(questGameReward: Types.QuestGameReward) :  ?Types.QuestGame { //return characterId
     var listQuestGame : [Types.QuestGame] = [];
     //get all quest game for game reward
     for (questGame in state.questGames.vals()){
@@ -4313,9 +4349,29 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
           };
         };
       };
-      return ?bestGame.userId;
+      return ?bestGame;
     };
     return null;
+  };
+
+  public shared ({caller}) func getTopOne(questId: Text) : async Response<Types.QuestGame> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    for (reward in state.questGameRewards.vals()){
+      let now = Time.now();
+      if (reward.rewarded == false and reward.questId == questId
+        and now >= reward.beginDate and now <= reward.endDate){
+        let rs = getWinner(reward);
+        switch (rs) {
+          case (null) {return #err(#NotFound)};
+          case (?winner) {
+            return #ok(winner);
+          };
+        };
+      };
+    };
+    #err(#NotFound);
   };
 
   public shared ({caller}) func rewardToWinner() : async Response<Text> {
@@ -4338,7 +4394,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
             rewarded = questGameReward.rewarded;
           };
           let updated = state.questGameRewards.replace(updateReward.id, updateReward);
-          return #ok("Success1");
+          return #ok("Success");
         }
         else { //refund to winner and questDesign
           let rsQuest = state.questEngine.quests.get(questGameReward.questId);
@@ -4381,10 +4437,10 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
               };
 
               //transfer 65% ICP to quest-winner
-              let rsWinner : ?Text = getWinner(questGameReward);
+              let rsWinner : ?Types.QuestGame = getWinner(questGameReward);
               switch (rsWinner) {
                 case (?winner) {
-                  let receiptWinner = await refund(awardToWinner, Principal.fromText(winner));
+                  let receiptWinner = await refund(awardToWinner, Principal.fromText(winner.userId));
                   switch (receiptWinner) {
                     case (#Err(error)) {
                       Debug.print(debug_show error);
@@ -4395,7 +4451,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
                         caller,
                         awardToWinner,
                         Principal.fromActor(this),
-                        Principal.fromText(winner),
+                        Principal.fromText(winner.userId),
                         #awardQuestWinner,
                         ?quest.id,
                         bIndex
@@ -4422,7 +4478,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
         };
       };
     };
-    #ok("Success3");
+    #ok("Success");
   };
 
   func checkBeginOfDay() : async () {

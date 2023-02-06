@@ -13,7 +13,8 @@ import {
   getAllScenes,
   getAdminQuest,
   readQuestEngine,
-  saveGameReward
+  saveGameReward,
+  getTopOne
 } from '../GameApi';
 
 const bg = 'metaverse/selectMap/background.png';
@@ -75,10 +76,20 @@ class selectMap extends BaseScene {
     const urlParams = new URLSearchParams(window.location.search);
     const myParam = urlParams.get('questId');
     if (myParam != null) {
+      //get quest with param id 
       this.load.rexAwait(function (successCallback, failureCallback) {
         readQuestEngine(myParam).then((result) => {
           this.questId = result?.id;
           this.questPrice = result?.price;
+
+          //get top one of quest id
+          this.load.rexAwait(function (successCallback, failureCallback) {
+            getTopOne(this.questId).then((result) => {
+              console.log("Top one: ", result);
+              successCallback();
+            });
+          }, this);
+
           if (result != undefined) {
             this.load.rexAwait(function (successCallback, failureCallback) {
               getAllScenes(this.questId).then((result) => {
@@ -93,9 +104,19 @@ class selectMap extends BaseScene {
       }, this);
     }
     else {
+      //get quest default admin
       this.load.rexAwait(function (successCallback, failureCallback) {
         getAdminQuest().then((result) => {
           this.questId = result?.id;
+
+          //get top one of quest id
+          this.load.rexAwait(function (successCallback, failureCallback) {
+            getTopOne(this.questId).then((result) => {
+              console.log("Top one: ", result);
+              successCallback();
+            });
+          }, this);
+
           this.questPrice = result?.price;
           console.log("quest price: ", result?.price)
           console.log("result: ", result)
