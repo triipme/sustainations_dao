@@ -51,7 +51,7 @@ function Farm(props) {
       setInventory(result[0].ok);
 
 
-      const cvConfig = canvasConfig(canvas)
+      const cvConfig = canvasConfig(canvas, props.dimensions)
       ctx = cvConfig[0]
       canvasEle = cvConfig[1]
       //map init
