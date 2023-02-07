@@ -241,7 +241,9 @@ export default class Engine extends BaseScene {
       this.pregameSound.stop();
       this.sfx_char_footstep.stop();
       console.log("length: ", this.listScene.length)
-      if (this.listEvent.length === 0) this.scene.start("thanks", { isUsedPotion: this.isUsedPotion });
+      if (this.listEvent.length === 0){
+        this.scene.start("thanks", { isUsedPotion: this.isUsedPotion });
+      }
       else this.scene.start("Engine", { isUsedPotion: this.isUsedPotion, listScene: this.listScene, listEvent: this.listEvent});
       // this.scene.start("Engine", { isUsedPotion: this.isUsedPotion, listScene: this.listScene, listEvent: this.listEvent});
     }

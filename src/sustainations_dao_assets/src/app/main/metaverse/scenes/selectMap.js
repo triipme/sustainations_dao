@@ -11,7 +11,8 @@ import {
   getUserInfo,
   buyLandSlot,
   getAllScenes,
-  getAdminQuest
+  getAdminQuest,
+  readQuestEngine
 } from '../GameApi';
 
 const bg = 'metaverse/selectMap/background.png';
@@ -70,25 +71,46 @@ class selectMap extends BaseScene {
     }, this);
 
     //just for quest-design
-    this.questPrice
-    this.load.rexAwait(function (successCallback, failureCallback) {
-      getAdminQuest().then((result) => {
-        this.questId = result?.id;
-        this.questPrice = result?.price;
-        console.log("quest price: ", result?.price)
-        console.log("result: ", result)
-        if (result != undefined) {
-          this.load.rexAwait(function (successCallback, failureCallback) {
-            getAllScenes(this.questId).then((result) => {
-              this.listScene = result;
-              console.log(result);
-              successCallback();
-            });
-          }, this);
-        }
-        successCallback();
-      });
-    }, this);
+    const urlParams = new URLSearchParams(window.location.search);
+    const myParam = urlParams.get('questId');
+    if (myParam != null) {
+      this.load.rexAwait(function (successCallback, failureCallback) {
+        readQuestEngine(myParam).then((result) => {
+          this.questId = result?.id;
+          this.questPrice = result?.price;
+          if (result != undefined) {
+            this.load.rexAwait(function (successCallback, failureCallback) {
+              getAllScenes(this.questId).then((result) => {
+                this.listScene = result;
+                console.log(result);
+                successCallback();
+              });
+            }, this);
+          }
+          successCallback();
+        });
+      }, this);
+    }
+    else {
+      this.load.rexAwait(function (successCallback, failureCallback) {
+        getAdminQuest().then((result) => {
+          this.questId = result?.id;
+          this.questPrice = result?.price;
+          console.log("quest price: ", result?.price)
+          console.log("result: ", result)
+          if (result != undefined) {
+            this.load.rexAwait(function (successCallback, failureCallback) {
+              getAllScenes(this.questId).then((result) => {
+                this.listScene = result;
+                console.log(result);
+                successCallback();
+              });
+            }, this);
+          }
+          successCallback();
+        });
+      }, this);
+    }
     console.log(this.questPrice)
    
     //preload
@@ -286,7 +308,9 @@ class selectMap extends BaseScene {
       if (this.getRemainingTime != 0) this.scene.start('exhausted');
       else {
         resetCharacter();
-        this.scene.start('selectItemScene', { map: 'quest-design'});
+        const urlParams = new URLSearchParams(window.location.search);
+        const myParam = urlParams.get('questId');
+        this.scene.start('selectItemScene', { map: 'quest-design', questId: myParam});
         let pay = await payQuestEngine(this.questId);
         console.log("pay Quest: ", pay)
       };
@@ -351,15 +375,6 @@ class selectMap extends BaseScene {
         await payQuest("jungle");
       };
     });
-
-  
-
-    // const urlParams = new URLSearchParams(window.location.search);
-    // const myParam = urlParams.get('questId');
-    // console.log(myParam)
-
   }
-
-
 }
 export default selectMap;
