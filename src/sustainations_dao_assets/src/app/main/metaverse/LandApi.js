@@ -14,7 +14,7 @@ function unionLandSlots(utm1, utm2) {
 export const getNationLonLat = async (nationId) => {
   let nation = null
   try {
-    const response = await axios.get("http://127.0.0.1:7000/nations/"+nationId)
+    const response = await axios.get(process.env.NATION_API_URL+"/"+nationId)
     nation = response.data.data
   }
   catch (err) {
@@ -36,7 +36,7 @@ export const updateNationLonLat = async (nationId, coordinates) => {
   };
   let nationlonlat = null;
   try {
-    const response = await axios.post("http://127.0.0.1:7000/nations",nation)
+    const response = await axios.post(process.env.NATION_API_URL,nation)
     nationlonlat = response.data.data;
   } catch (err) {
     console.error(err);
