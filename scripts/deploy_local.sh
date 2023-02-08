@@ -20,6 +20,7 @@ dfx deploy ledger --argument '(record {
   send_whitelist = vec {}
   })'
 dfx deploy georust
+dfx deploy internet_identity
 
 # Replace with public api
 rm src/ledger/ledger.did
