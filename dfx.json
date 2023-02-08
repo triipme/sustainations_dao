@@ -15,11 +15,6 @@
       "type": "motoko",
       "dependencies": ["ledger", "georust"]
     },
-    "bitcoin": {
-      "type": "motoko",
-      "candid": "src/bitcoin/src/basic_bitcoin/basic_bitcoin.did",
-      "main": "src/bitcoin/src/basic_bitcoin/src/Main.mo"
-    },
     "internet_identity": {
       "type": "custom",
       "candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
