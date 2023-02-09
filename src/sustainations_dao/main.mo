@@ -166,6 +166,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   private stable var buildings : [(Text, Types.Building)] = [];
   private stable var productionQueues : [(Text, Types.ProductionQueue)] = [];
   private stable var productionQueueNodes : [(Text, Types.ProductionQueueNode)] = [];
+  private stable var referrals : [(Text, Types.Referral)] = [];
 
   system func preupgrade() {
     Debug.print("Begin preupgrade");
@@ -242,6 +243,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     buildings := Iter.toArray(state.buildings.entries());
     productionQueues := Iter.toArray(state.productionQueues.entries());
     productionQueueNodes := Iter.toArray(state.productionQueueNodes.entries());
+    referrals := Iter.toArray(state.referrals.entries());
     Debug.print("End preupgrade");
   };
 
@@ -447,6 +449,9 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
     for ((k, v) in Iter.fromArray(productionQueueNodes)) {
       state.productionQueueNodes.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(referrals)) {
+      state.referrals.put(k, v);
     };
     Debug.print("End postupgrade");
   };
