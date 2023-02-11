@@ -6,11 +6,9 @@ import Hotbar from "./HotBar";
 import FarmProduce from "./FarmProduce";
 import {
   init,
-  drawRect,
   drawImageOnCanvas,
   sOft,
   checkTilePosition,
-  drawRhombus,
   getCenterCoordinate,
   canvasConfig,
   loadImage
@@ -19,12 +17,11 @@ import UIFarm from "./FarmUI";
 
 let tileStyle = {};
 let ctx = null;
-let canvasEle;
-
+let canvasEle = null;
+const zoomLevel = [1, 1.2, 1.4, 1.6];
 function Farm(props) {
   const user = useSelector(selectUser);
   const [tileplant, setTileplant] = useState(props.mapFeatures);
-  const [landSlotProperties, setLandSlotProperties] = useState(props.landSlotProperties);
   const [inventory, setInventory] = useState([]);
   const [characterId, setChacterId] = useState("");
   const [loading, setLoading] = useState(false);
@@ -33,19 +30,63 @@ function Farm(props) {
   const [object, setObject] = useState({});
   const [listTile, setListTile] = useState([]);
   const [objectId, setObjectId] = useState("");
-  const [render, setRender] = useState(false);
+  const [scroll, setScroll] = useState(0);
   const canvas = useRef();
 
-  const [time, setTime] = useState(Date.now());
+  // const [time, setTime] = useState(Date.now());
   useEffect(() => {
-    const interval = setInterval(async () => {
-      setTime(Date.now());
-      let tile = await loadTileSlots(landSlotProperties);
-      setTileplant(tile);
-    }, 20000);
+    const cvConfig = canvasConfig(canvas, zoomLevel[scroll]);
+    ctx = cvConfig[0];
+    canvasEle = cvConfig[1];
+    ctx.scale(zoomLevel[scroll], zoomLevel[scroll]);
+    console.log(zoomLevel[scroll]);
+  }, [scroll]);
+
+  function checkChangePlantStatus(prevState, curState) {
+    console.log("cur, prev:", curState[0].properties.status, prevState[0].properties.status);
+    const differences = curState.filter((key, idx) => {
+      return prevState[idx].properties.status !== key.properties.status;
+    });
+    if (differences.length > 0) {
+      setTileplant(curState);
+    }
+  }
+  console.log(canvasEle);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      (async () => {
+        // setTime(Date.now());
+        checkChangePlantStatus(tileplant, await loadTileSlots(props.landSlotProperties));
+      })();
+    }, 4000);
     return () => {
       clearInterval(interval);
     };
+  }, [tileplant]);
+
+  useEffect(() => {
+    tileStyle = sOft(
+      canvasEle.width / 2 - 120 / 2,
+      canvasEle.height / 6,
+      10,
+      10,
+      canvasEle.width / 15,
+      canvasEle.height / 15
+    );
+    let map = init(
+      tileStyle,
+      Number(props.landSlotProperties.j) * 10,
+      Number(props.landSlotProperties.i) * 10
+    );
+    map.forEach((tile, idx) => {
+      loadImage("metaverse/farm25D/Ground.png").then(ground => {
+        ctx.drawImage(ground, tile.x, tile.y, tile.w, tile.h);
+      });
+    });
+    (async () => {
+      let tile = await loadTileSlots(props.landSlotProperties);
+      setTileplant(tile);
+    })();
   }, []);
 
   // load data
@@ -54,15 +95,13 @@ function Farm(props) {
       const characterid = await user.actor.readCharacter();
       const inv = user.actor.listInventory(characterid.ok[0]);
       const listProductStorage = user.actor.listProductStorage();
+
       const stash = user.actor.listStash();
       const result = await Promise.all([inv, listProductStorage, stash]);
       setWarehouses(result[1]?.ok);
       setChacterId(characterid.ok[0]);
       setInventory(result[0].ok);
 
-      const cvConfig = canvasConfig(canvas, props.dimensions);
-      ctx = cvConfig[0];
-      canvasEle = cvConfig[1];
       //map init
 
       tileStyle = sOft(
@@ -75,10 +114,10 @@ function Farm(props) {
       );
       let map = init(
         tileStyle,
-        Number(landSlotProperties.j) * 10,
-        Number(landSlotProperties.i) * 10
+        Number(props.landSlotProperties.j) * 10,
+        Number(props.landSlotProperties.i) * 10
       );
-      ctx.clearRect(0, 0, canvasEle.width, canvasEle.height);
+      // ctx.clearRect(0, 0, canvasEle.width, canvasEle.height);
 
       const plantedTile = tileplant.filter(tile => {
         return tile.properties.name !== "None";
@@ -110,20 +149,43 @@ function Farm(props) {
             // if amount of tile have object > 0
             // Loop list tile have object
             let cc = getCenterCoordinate(tile);
-            if (t[0].properties.name !== "Factory" && t[0].properties.name !== "p6_seed") {
+            if (t[0].properties.status === "newlyPlanted") {
+              tile.object = t[0].properties.name;
+              tile.tileId = t[0].properties.tileId;
+              tile.status = t[0].properties.status;
+              tile.objectId = t[0].properties.objectId;
+              drawImageOnCanvas(
+                ctx,
+                "metaverse/farm25D/plant/newlyPlanted.png",cc.x - canvasEle.width / 35,
+                cc.y - canvasEle.height / 16,
+                canvasEle.width / 20,
+                canvasEle.height / 11,
+                t[0].properties.rowSize,
+                t[0].properties.colSize
+              );
+            } else if (t[0].properties.name !== "Factory" && t[0].properties.name !== "p6_seed") {
               // if object name is not Factory
               tile.object = t[0].properties.name;
               tile.tileId = t[0].properties.tileId;
               tile.status = t[0].properties.status;
+              tile.objectId = t[0].properties.objectId;
+
+              // ctx.clearRect(
+              //   cc.x - canvasEle.width / 35,
+              //   cc.y - canvasEle.height / 16,
+              //   canvasEle.width / 20,
+              //   canvasEle.height / 11
+              // );
+              // ctx.drawImage(ground, tile.x, tile.y, tile.w, tile.h);
               drawImageOnCanvas(
                 ctx,
-                "metaverse/farm25D/plant/" +
+                "metaverse/farm25D/plant_svg/" +
                   t[0].properties.name +
                   "/" +
                   t[0].properties.name +
                   "_" +
                   t[0].properties.status +
-                  ".png",
+                  ".svg",
                 cc.x - canvasEle.width / 35,
                 cc.y - canvasEle.height / 16,
                 canvasEle.width / 20,
@@ -138,8 +200,8 @@ function Farm(props) {
               drawImageOnCanvas(
                 ctx,
                 "metaverse/farm25D/Ground.png",
-                cc.x - canvasEle.width / 15 / 2,
-                cc.y - (canvasEle.height / 15 / 2) * 3,
+                cc.x - canvasEle.width / 10,
+                cc.y - canvasEle.height / 15 / 2,
                 canvasEle.width / 5,
                 canvasEle.height / 5,
                 t[0].properties.rowSize,
@@ -148,8 +210,8 @@ function Farm(props) {
               drawImageOnCanvas(
                 ctx,
                 "metaverse/farm25D/building/Factory.png",
-                cc.x - canvasEle.width / 240,
-                cc.y - (57 * canvasEle.height) / 500,
+                cc.x - canvasEle.width / 20,
+                cc.y - (57 * canvasEle.height) / 1200,
                 canvasEle.width / 8,
                 canvasEle.height / 6,
                 t[0].properties.rowSize,
@@ -160,27 +222,22 @@ function Farm(props) {
         });
       });
 
-      console.log(arr);
-
       arr.map(e => {
-        console.log(e);
         map.forEach((tile, idx) => {
           if (
-            (idx >= e.idx - 20 && idx <= e.idx - 18) ||
-            (idx >= e.idx - 10 && idx <= e.idx - 8) ||
+            (idx >= e.idx + 10 && idx <= e.idx + 12) ||
+            (idx >= e.idx + 20 && idx <= e.idx + 22) ||
             (idx > e.idx && idx <= e.idx + 2)
           ) {
             tile.object = "Factory";
             tile.tileId = e.tileId;
             tile.objectId = e.objectId;
-            console.log(e.objectId);
           }
         });
       });
-      console.log(map);
       setListTile(map);
     })();
-  }, [tileplant]);
+  }, [tileplant, scroll]);
 
   const checkAvailablePosition = (i, j, x) => {
     let result = [];
@@ -210,16 +267,17 @@ function Farm(props) {
 
   function handleClick(e) {
     const pos = checkTilePosition(e, listTile, tileStyle);
-    // if (object.objectId === "m6pine_seed") {
-    //   (async () => {
-    //     console.log("Remove: ", await user.actor.removeObject(pos.tileId));
-    //   })();
-    // }
+    console.log(pos);
+    if (pos.object === "Pine_Seed") {
+      (async () => {
+        console.log("Remove: ", await user.actor.removeObject(pos.tileId));
+      })();
+    }
     if (object.objectId === "dig" && pos.object) {
       (async () => {
         setLoading(true);
         console.log("Remove: ", await user.actor.removeObject(pos.tileId));
-        setTileplant(await loadTileSlots(landSlotProperties));
+        setTileplant(await loadTileSlots(props.landSlotProperties));
         setInventory((await user.actor.listInventory(characterId)).ok);
         setLoading(false);
       })();
@@ -231,9 +289,9 @@ function Farm(props) {
       (async () => {
         console.log(
           "Build Factory: ",
-          await user.actor.constructBuilding(landSlotProperties.id, pos.row, pos.col, "c1")
+          await user.actor.constructBuilding(props.landSlotProperties.id, pos.row, pos.col, "c1")
         );
-        setTileplant(await loadTileSlots(landSlotProperties));
+        setTileplant(await loadTileSlots(props.landSlotProperties));
       })();
     } else if (
       pos &&
@@ -246,9 +304,9 @@ function Farm(props) {
         await user.actor.subtractInventory(object.id);
         console.log(
           "Plant tree status: ",
-          await user.actor.sowSeed(landSlotProperties.id, pos.row, pos.col, object.objectId)
+          await user.actor.sowSeed(props.landSlotProperties.id, pos.row, pos.col, object.objectId)
         );
-        setTileplant(await loadTileSlots(landSlotProperties));
+        setTileplant(await loadTileSlots(props.landSlotProperties));
         setInventory((await user.actor.listInventory(characterId)).ok);
       })();
     } else if (pos) {
@@ -259,7 +317,7 @@ function Farm(props) {
         (async () => {
           console.log("Harvest", await user.actor.harvestPlant(pos.tileId));
           setWarehouses((await user.actor.listProductStorage())?.ok);
-          setTileplant(await loadTileSlots(landSlotProperties));
+          setTileplant(await loadTileSlots(props.landSlotProperties));
         })();
       }
     }
@@ -273,6 +331,19 @@ function Farm(props) {
     setPopupFactory(opt);
   };
 
+  function handleWheel(e) {
+    if (e.deltaY > 0 && scroll != 4) {
+      ctx.restore();
+      ctx.clearRect(0, 0, canvasEle.width, canvasEle.height);
+      setScroll(prevScroll => (prevScroll == 4 ? prevScroll : prevScroll + 1));
+    }
+
+    if (e.deltaY < 0 && scroll != 0) {
+      ctx.restore();
+      ctx.clearRect(0, 0, canvasEle.width, canvasEle.height);
+      setScroll(prevScroll => (prevScroll == 0 ? prevScroll : prevScroll - 1));
+    }
+  }
   return (
     <div>
       {popupFactory ? (
@@ -280,8 +351,8 @@ function Farm(props) {
       ) : (
         <></>
       )}
+      <canvas ref={canvas} onClick={handleClick} onWheel={handleWheel}></canvas>
       <Hotbar inventory={inventory} onUpdate={handleChoose} />
-      <canvas ref={canvas} onClick={handleClick}></canvas>
       <UIFarm warehouses={warehouses}></UIFarm>
     </div>
   );
