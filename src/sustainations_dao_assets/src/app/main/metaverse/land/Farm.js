@@ -35,7 +35,7 @@ function FarmContainer() {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
-
+  
   useEffect(() => {
     (async () => {
       let myFarmProperties = (await user.actor.listUserLandSlots())?.ok;
