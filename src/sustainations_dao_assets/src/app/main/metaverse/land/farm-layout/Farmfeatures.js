@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { selectUser } from "app/store/userSlice";
 import { loadTileSlots } from "../../LandApi";
@@ -18,7 +18,7 @@ import UIFarm from "./FarmUI";
 let tileStyle = {};
 let ctx = null;
 let canvasEle = null;
-const zoomLevel = [1, 1.2, 1.4, 1.6];
+const zoomLevel = [1, 1.2, 1.4, 1.6, 1.8];
 function Farm(props) {
   const user = useSelector(selectUser);
   const [tileplant, setTileplant] = useState(props.mapFeatures);
@@ -156,7 +156,8 @@ function Farm(props) {
               tile.objectId = t[0].properties.objectId;
               drawImageOnCanvas(
                 ctx,
-                "metaverse/farm25D/plant/newlyPlanted.png",cc.x - canvasEle.width / 35,
+                "metaverse/farm25D/plant/newlyPlanted.png",
+                cc.x - canvasEle.width / 35,
                 cc.y - canvasEle.height / 16,
                 canvasEle.width / 20,
                 canvasEle.height / 11,
@@ -265,15 +266,15 @@ function Farm(props) {
     return false;
   };
 
-  function handleClick(e) {
-    const pos = checkTilePosition(e, listTile, tileStyle);
+  const handleClick = e => {
+    const pos = checkTilePosition(e, listTile, tileStyle, zoomLevel[scroll]);
     console.log(pos);
-    if (pos.object === "Pine_Seed") {
+    if (pos !== null && pos.object === "Pine_Seed") {
       (async () => {
         console.log("Remove: ", await user.actor.removeObject(pos.tileId));
       })();
     }
-    if (object.objectId === "dig" && pos.object) {
+    if (pos !== null && object.objectId === "dig" && pos.object) {
       (async () => {
         setLoading(true);
         console.log("Remove: ", await user.actor.removeObject(pos.tileId));
@@ -321,7 +322,7 @@ function Farm(props) {
         })();
       }
     }
-  }
+  };
 
   const handleChoose = newObj => {
     setObject(newObj);
@@ -344,6 +345,32 @@ function Farm(props) {
       setScroll(prevScroll => (prevScroll == 0 ? prevScroll : prevScroll - 1));
     }
   }
+
+  // const [isDragging, setIsDragging] = useState(false);
+  // const [offset, setOffset] = useState({ x: 0, y: 0 });
+
+  // const handleMouseDown = useCallback(event => {
+  //   setIsDragging(true);
+  //   setOffset({
+  //     x: event.clientX - ctx.current.offsetLeft,
+  //     y: event.clientY - ctx.current.offsetTop
+  //   });
+  // }, []);
+
+  // const handleMouseMove = useCallback(event => {
+  //   if (!isDragging) {
+  //     return;
+  //   }
+  //   console.log("drag")
+  // }, []);
+
+  // const handleMouseUp = () => {
+  //   setIsDragging(false);
+  // };
+
+  const handleTouchEnd = e => {
+    console.log("Touch event");
+  };
   return (
     <div>
       {popupFactory ? (
@@ -351,7 +378,11 @@ function Farm(props) {
       ) : (
         <></>
       )}
-      <canvas ref={canvas} onClick={handleClick} onWheel={handleWheel}></canvas>
+      <canvas
+        ref={canvas}
+        onClick={handleClick}
+        onWheel={handleWheel}
+        onTouchEnd={handleTouchEnd}></canvas>
       <Hotbar inventory={inventory} onUpdate={handleChoose} />
       <UIFarm warehouses={warehouses}></UIFarm>
     </div>
