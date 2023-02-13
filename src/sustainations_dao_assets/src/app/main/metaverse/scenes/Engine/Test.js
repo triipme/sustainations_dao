@@ -312,10 +312,6 @@ export default class Engine extends BaseScene {
           updateCharacterStatsEngine(this.characterTakeOptions[idx]);
           // create charactercollectsmaterials after choose option
           // createCharacterCollectsMaterials(this.characterCollectMaterials[idx]);
-          if (this.listScene.length === 0){
-            let game = saveGameScore(this.rsEvent[0].questId, this.characterData)
-            console.log("savsGameScore: ", game)
-          }; 
         ;}
       });
     };
@@ -342,7 +338,7 @@ export default class Engine extends BaseScene {
         // }, this);
         // let saveGameScore = await saveGameScore(this.rsEvent[0].questId, this.characterData)
         // console.log("savsGameScore: ", saveGameScore)
-        this.scene.start("thanks");
+        this.scene.start("thanks", {questDesingId: this.rsEvent[0].questId});
       } 
       else this.scene.start("Test", {listScene: this.listScene, isUsedUsableItem: this.isUsedUsableItem });
       // this.scene.start("Test", { isUsedPotion: this.isUsedPotion, listScene: this.listScene});
