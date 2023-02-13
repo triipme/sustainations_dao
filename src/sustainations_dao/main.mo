@@ -166,6 +166,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   private stable var buildings : [(Text, Types.Building)] = [];
   private stable var productionQueues : [(Text, Types.ProductionQueue)] = [];
   private stable var productionQueueNodes : [(Text, Types.ProductionQueueNode)] = [];
+  private stable var referrals : [(Text, Types.Referral)] = [];
 
   system func preupgrade() {
     Debug.print("Begin preupgrade");
@@ -242,6 +243,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     buildings := Iter.toArray(state.buildings.entries());
     productionQueues := Iter.toArray(state.productionQueues.entries());
     productionQueueNodes := Iter.toArray(state.productionQueueNodes.entries());
+    referrals := Iter.toArray(state.referrals.entries());
     Debug.print("End preupgrade");
   };
 
@@ -448,11 +450,15 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     for ((k, v) in Iter.fromArray(productionQueueNodes)) {
       state.productionQueueNodes.put(k, v);
     };
+    for ((k, v) in Iter.fromArray(referrals)) {
+      state.referrals.put(k, v);
+    };
     Debug.print("End postupgrade");
   };
 
   system func heartbeat() : async () {
     await setOutDateProposals();
+    // await checkEndOfMinute();
   };
 
   type Response<Ok> = Result.Result<Ok, Types.Error>;
@@ -1125,6 +1131,18 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
         await refundVoters(updated);
       };
     };
+  };
+
+  func checkEndOfMinute() : async () {
+    let time_now = (Time.now()/60_000_000_000*60_000_000_000);
+    Debug.print(debug_show(time_now));
+    let end_minute = ((time_now) + 60_000_000_000);
+    Debug.print(debug_show(end_minute));
+    Debug.print(debug_show(Time.now()));
+    if ((Time.now()) - time_now < 700_000_000){
+      Debug.print("Test chia het");
+    };
+    Debug.print("=================");
   };
 
   //verify admin
@@ -3385,8 +3403,8 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
-    let godUser = "wijp2-ps7be-cocx3-zbfru-uuw2q-hdmpl-zudjl-f2ofs-7qgni-t7ik5-lqe";
-    //let godUser = "nrulu-zov3c-5fjy3-pza5d-ysupr-vuwi5-gl3kk-uasar-yohik-njyf4-dqe";
+    // let godUser = "wijp2-ps7be-cocx3-zbfru-uuw2q-hdmpl-zudjl-f2ofs-7qgni-t7ik5-lqe";
+    let godUser = "nrulu-zov3c-5fjy3-pza5d-ysupr-vuwi5-gl3kk-uasar-yohik-njyf4-dqe";
     for (quest in state.questEngine.quests.vals()){
       if (Principal.toText(quest.userId) == godUser){
         return #ok(quest);
@@ -4174,6 +4192,119 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       };
     };
   };
+
+  public shared query ({ caller }) func listQuestGame() : async Response<[(Text, Types.QuestGame)]> {
+    var list : [(Text, Types.QuestGame)] = [];
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    for ((K, V) in state.questGames.entries()) {
+      list := Array.append<(Text, Types.QuestGame)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+
+  public func testInOfDay() : async () {
+    let beginDate =  Time.now() / (864 * (10 ** 11)) * (864 * (10 ** 11));
+    let endDate = beginDate + (864 * (10 ** 11));
+    Debug.print(debug_show(beginDate));
+    Debug.print(debug_show(endDate));
+    Debug.print(debug_show(Time.now()));
+  };
+
+  //save game score of user in day
+  public shared ({caller}) func saveGameScore(questId: Text, character: Types.Character): async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let beginDate =  Time.now() / (864 * (10 ** 11)) * (864 * (10 ** 11));
+    let endDate = beginDate + (864 * (10 ** 11));
+    for (game in state.questGames.vals()){
+      if (game.characterId == character.id and game.timestamp >= beginDate and game.timestamp <= endDate){
+        let updateQuestGame : Types.QuestGame = {
+          id = game.id;
+          questId = questId;
+          characterId = character.id;
+          timestamp = game.timestamp;
+          hp = Float.max(game.hp, character.currentHP);
+          stamina = Float.max(game.stamina, character.currentStamina);
+          morale = Float.max(game.morale, character.currentMorale);
+          mana = Float.max(game.mana, character.currentMana);
+        };
+        let updated = state.questGames.replace(updateQuestGame.id, updateQuestGame);
+        return #ok("Success");
+      };
+    };
+    //create
+    let newQuestGame : Types.QuestGame = {
+      id = await createUUID();
+      questId = questId;
+      characterId = character.id;
+      timestamp = Time.now();
+      hp = character.currentHP;
+      stamina = character.currentStamina;
+      morale = character.currentMorale;
+      mana = character.currentMana;
+    };
+    let created = state.questGames.put(newQuestGame.id, newQuestGame);
+    #ok("Success");
+  };
+
+  //save game reward of the quest
+  public shared ({caller}) func saveGameReward(questId: Text): async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsQuest = state.questEngine.quests.get(questId);
+    switch (rsQuest){
+      case (?quest) {
+        let timestamp = Time.now;
+        let endOfYesterday = Time.now() / (864 * (10 ** 11)) * (864 * (10 ** 11));
+        let beginDate = endOfYesterday;
+        let endDate = beginDate + (864 * (10 ** 11));
+        for (reward in state.questGameRewards.vals()){
+          if (reward.endDate == endOfYesterday and reward.rewarded == false){//update
+            //check user play already 
+            var check : Bool = true; 
+            for (player in reward.player.vals()){
+              if (player == Principal.toText(caller)){
+                check := false;
+              };
+            };
+            var listPlayer : [Text] = reward.player;
+            if (check == false){
+              listPlayer := Array.append<Text>(listPlayer, [Principal.toText(caller)]);
+            };
+            let updateGameReward : Types.QuestGameReward = {
+              id = reward.id;
+              questId = reward.questId;
+              player = listPlayer;
+              totalICP = reward.totalICP + quest.price;
+              beginDate = reward.beginDate;
+              endDate = endDate;
+              rewarded = reward.rewarded;
+            };
+            let updated = state.questGameRewards.replace(updateGameReward.id, updateGameReward);
+            return #ok("Success");
+          };
+        };
+        //create
+        let createGameReward : Types.QuestGameReward = {
+          id = await createUUID();
+          questId = questId;
+          player = [Principal.toText(caller)];
+          totalICP = quest.price;
+          beginDate = beginDate;
+          endDate = endDate;
+          rewarded = false;
+        };
+        let created = state.questGameRewards.put(createGameReward.id, createGameReward);
+        #ok("Success");
+      };
+      case (null) {return #err(#NotFound)};
+    };
+  };
+
 
   //Quest Game Reward
   public shared ({caller}) func createQuestGameReward(questGameReward: Types.QuestGameReward) : async Response<Text> {
@@ -5810,7 +5941,12 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
             };
             updateLandBuyingStatus(caller, Int.abs(i), Int.abs(j));
             return #ok(
-              await landSlotToGeometry(Int.abs(i), Int.abs(j))
+              {
+                zoneNumber = 20;
+                zoneLetter = "N";
+                i = Int.abs(j);
+                j = Int.abs(j);
+              }
             );
           };
         };
@@ -5828,7 +5964,12 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
 
             updateLandBuyingStatus(caller, Int.abs(result.i), Int.abs(result.j));
             return #ok(
-              await landSlotToGeometry(Int.abs(result.i), Int.abs(result.j))
+              {
+                zoneNumber = 20;
+                zoneLetter = "N";
+                i = Int.abs(result.i);
+                j = Int.abs(result.j);
+              }
             );
           };
         };
@@ -6023,10 +6164,12 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
         // return geometries list
         var geometries : [Types.NationGeometry] = [];
         for (value in list.vals()) {
-          var coordinates : [[Float]] = [];
+          //var coordinates : [[Float]] = [];
+          var coordinates : [[Nat]] = [];
           for (utm in value.utms.vals()) {
-            let lonlat = await utm2lonlat(Float.fromInt(utm[1]), Float.fromInt(utm[0]), 20, "N");
-            coordinates := Array.append(coordinates, [[lonlat.0, lonlat.1]]);
+            //let lonlat = await utm2lonlat(Float.fromInt(utm[1]), Float.fromInt(utm[0]), 20, "N");
+            //coordinates := Array.append(coordinates, [[lonlat.0, lonlat.1]]);
+            coordinates := Array.append(coordinates, [[ utm[0], utm[1] ]]);
           };
           let newGeometry : Types.NationGeometry = {
             id = Principal.toText(value.id);
@@ -6184,7 +6327,12 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
 
   // Land Buying Status
   public shared ({ caller }) func updateLandBuyingStatus(userId : Principal, indexRow : Nat, indexColumn : Nat) : () {
-    let newGeometry = await landSlotToGeometry(indexRow, indexColumn);
+    let newGeometry : Types.Geometry = {
+      i = indexRow;
+      j = indexColumn;
+      zoneNumber = 20;
+      zoneLetter = "N";
+    };
     let principalId = Principal.toText(userId);
     let rsLandBuyingStatus = state.landBuyingStatuses.get(principalId);
     switch (rsLandBuyingStatus) {
@@ -7649,5 +7797,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       };
     };
   };
+
 
 };

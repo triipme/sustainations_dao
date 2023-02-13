@@ -205,8 +205,11 @@ module {
   public type QuestGameReward = {
     id: Text;
     questId: Text;
-    player: Nat;
+    player: [Text];
     totalICP: Nat64;
+    beginDate: Time.Time;
+    endDate: Time.Time;
+    rewarded : Bool;
   };
 
   //--------------------- Scene ---------------------//
@@ -361,7 +364,6 @@ public type UsableItem = {
     zoneLetter : Text;
     i : Nat;
     j : Nat;
-    coordinates : [[[Float]]];
   };
 
   //--------------------- Land Transfer History ---------------------//
@@ -396,7 +398,7 @@ public type UsableItem = {
     zoneLetter : Text;
     i : Nat;
     j : Nat;
-    coordinates: [[[Float]]];
+    coordinates: [[[Nat]]]; // Float
   };
 //--------------------------Land Effect-------------//
   public type LandEffect = {

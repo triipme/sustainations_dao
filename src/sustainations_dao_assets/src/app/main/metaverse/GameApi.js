@@ -304,8 +304,6 @@ async function readEvent(eventId) {
 }
 
 //Engine
-//Engine
-//quest
 async function createQuestEngine(quest) {
   const { user } = store.getState();
   const func = async () => await user.actor.createQuestEngine(quest);
@@ -437,6 +435,13 @@ export async function checkCreatedQuestOfUser() {
 export async function getAdminQuest() {
   const {user} = store.getState();
   const func = async () => await user.actor.getAdminQuest();
+  const rs = (await func()).ok;
+  return rs;
+}
+
+export async function saveGameScore(questId, characterData){
+  const {user} = store.getState();
+  const func = async () => await user.actor.saveGameScore(questId, characterData);
   const rs = (await func()).ok;
   return rs;
 }

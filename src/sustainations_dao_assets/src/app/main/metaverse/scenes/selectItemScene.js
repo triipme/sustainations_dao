@@ -48,6 +48,7 @@ class selectItemScene extends BaseScene {
 
   init(data) {
     this.map = data.map;
+    this.questIdParam = data.questId;
   }
 
   preload() {
@@ -69,9 +70,8 @@ class selectItemScene extends BaseScene {
 
     if (this.map == "quest-design"){
       this.load.rexAwait(function (successCallback, failureCallback) {
-        getAdminQuest().then((result) => {
-          this.questId = result.id;
-          console.log("this.questId: ", this.questId)
+        if (this.questIdParam != null) {
+          this.questId = this.questIdParam;
           this.load.rexAwait(function (successCallback, failureCallback) {
             getAllScenes(this.questId).then((result) => {
               this.listScene = result;
@@ -79,8 +79,22 @@ class selectItemScene extends BaseScene {
               successCallback();
             });
           }, this);
-          successCallback();
-        });
+        }
+        else {
+          getAdminQuest().then((result) => {
+            this.questId = result.id;
+            console.log("this.questId: ", this.questId)
+            console.log("questIdParam: ", this.questIdParam)
+            this.load.rexAwait(function (successCallback, failureCallback) {
+              getAllScenes(this.questId).then((result) => {
+                this.listScene = result;
+                console.log(result);
+                successCallback();
+              });
+            }, this);
+          });
+        }
+      successCallback();
       }, this);
     }
 
