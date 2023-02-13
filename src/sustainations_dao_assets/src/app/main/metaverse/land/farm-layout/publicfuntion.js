@@ -1,8 +1,9 @@
 const canvasConfig = (canvas, size) => {
   const canvasEle = canvas.current;
-  canvasEle.width = size.width;
-  canvasEle.height = size.height;
+  canvasEle.width = window.innerWidth;
+  canvasEle.height = window.innerHeight;
   const ctx = canvasEle.getContext("2d");
+  ctx.save();
   return [ctx, canvasEle];
 };
 
@@ -16,7 +17,7 @@ const init = (tileStyle, col, row) => {
     cx = tileStyle.sX;
   let ry,
     cy = tileStyle.sY;
-  for (let j = tileStyle.n - 1; j >= 0; j--) {
+  for (let j = 0; j < tileStyle.n; j++) {
     rx = cx;
     ry = cy;
     for (let i = 0; i < tileStyle.m; i++) {
@@ -32,7 +33,7 @@ const init = (tileStyle, col, row) => {
       rx = rx + tileStyle.w / 2;
       ry = ry + tileStyle.h / 2;
     }
-    if (j === 0) {
+    if (j === tileStyle.n - 1) {
       return result;
     }
     cx = cx - tileStyle.w / 2;
@@ -92,6 +93,7 @@ const checkTilePosition = (event, listTile, sOft) => {
   let maxX = sOft.sX + sOft.w * ((sOft.m - 1) / 2);
   let maxY = sOft.sY + sOft.h * (sOft.n - 1);
   let result = [];
+  console.log(event.pageX, event.pageY);
   if (minX < event.pageX < maxX && minY < event.pageY < maxY) {
     result = listTile.filter(tile => {
       return (

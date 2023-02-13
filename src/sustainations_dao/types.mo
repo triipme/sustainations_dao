@@ -365,7 +365,6 @@ public type UsableItem = {
     zoneLetter : Text;
     i : Nat;
     j : Nat;
-    coordinates : [[[Float]]];
   };
 
   //--------------------- Land Transfer History ---------------------//
@@ -400,7 +399,7 @@ public type UsableItem = {
     zoneLetter : Text;
     i : Nat;
     j : Nat;
-    coordinates: [[[Float]]];
+    coordinates: [[[Nat]]]; // Float
   };
 //--------------------------Land Effect-------------//
   public type LandEffect = {

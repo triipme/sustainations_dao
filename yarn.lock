@@ -2254,15 +2254,21 @@
     simple-cbor "^0.4.1"
     ts-node "^10.8.2"
 
-"@dfinity/auth-client@^0.11.3":
-  version "0.11.3"
-  resolved "https://registry.npmjs.org/@dfinity/auth-client/-/auth-client-0.11.3.tgz"
-  integrity sha512-+wwjoucE8ZIjcA1IG+OQ8OxFoAajYfnELbSMZE1p3FGlbC0X3gpab0bbXqh8VKou8Ng1eRU+sAwItruCLiIBHg==
-
 "@dfinity/auth-client@^0.13.1":
   version "0.13.3"
   resolved "https://registry.npmjs.org/@dfinity/auth-client/-/auth-client-0.13.3.tgz"
   integrity sha512-AVnZwJYbFKXa4MQp7F5opKtngEpxXONZmRgHv15XuKvkxpZb1kkllKHExSs6V6aF92ThDfJUZVMoYRG7PaLZqQ==
+  dependencies:
+    "@types/jest" "^28.1.4"
+    idb "^7.0.2"
+    jest "^28.1.2"
+    ts-jest "^28.0.5"
+    ts-node "^10.8.2"
+
+"@dfinity/auth-client@^0.14.0":
+  version "0.14.1"
+  resolved "https://registry.yarnpkg.com/@dfinity/auth-client/-/auth-client-0.14.1.tgz#528fd3dfcad4fba01158365422eeceefb90b0627"
+  integrity sha512-7fzKrxcFo90nq6uOFE0HjSeDX1XuFIfLDrP2KwGH+qA38VDl/72+AGoajqzc93WS8/+AHnUh1mRSw+Jb9MlXoA==
   dependencies:
     "@types/jest" "^28.1.4"
     idb "^7.0.2"
