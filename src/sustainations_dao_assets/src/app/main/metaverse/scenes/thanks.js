@@ -8,7 +8,7 @@ import {
   loadCharacter,
   resetCharacterCollectsMaterials,
   saveGameScore,
-  getTopOne
+  getLeaderBoard
 } from '../GameApi';
 
 const bg = 'metaverse/UI_finish.png';
@@ -42,7 +42,7 @@ class thanks extends BaseScene {
             saveGameScore(this.questDesignId, this.characterData).then((result) => {
               console.log("saveGame: ", result);
               this.load.rexAwait(function (successCallback, failureCallback) {
-                getTopOne(this.questDesignId).then((result) => {
+                getLeaderBoard(this.questDesignId).then((result) => {
                   console.log("Top one: ", result);
                   successCallback();
                 });
