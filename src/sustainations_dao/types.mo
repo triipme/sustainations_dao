@@ -13,12 +13,22 @@ module {
     #user;
     #admin;
   };
+  public type Chain = {
+    #BTC;
+    #ICP;
+  };
+  public type Wallet = {
+    address: Text;
+    chain: Chain;
+  };
+
   public type Profile = {
     username : ?Text;
     avatar : ?Text;
     phone : ?Text;
     role : Role;
     inviter : ?Principal;
+    wallets : ?[Wallet];
   };
   // User Agreement
   public type UserAgreement = {

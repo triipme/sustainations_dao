@@ -582,7 +582,8 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
             avatar = null;
             phone = null;
             role = #user;
-            inviter
+            inviter;
+            wallets = null;
           }
         );
         switch (inviter) {
@@ -804,6 +805,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
           avatar;
           role = #user;
           inviter = null;
+          wallets = null;
         };
         let profile = state.profiles.put(caller, payload);
         #ok(payload);
@@ -815,6 +817,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
           avatar;
           role = profile.role;
           inviter = profile.inviter;
+          wallets = profile.wallets;
         };
         let updated = state.profiles.replace(caller, payload);
         #ok(payload);
@@ -1160,6 +1163,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
             avatar = null;
             phone = null;
             inviter = null;
+            wallets = null;
             role;
           };
           state.profiles.put(principal, profile);
@@ -1172,6 +1176,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
               avatar = profile.avatar;
               phone = profile.phone;
               inviter = profile.inviter;
+              wallets = profile.wallets;
               role;
             }
           );

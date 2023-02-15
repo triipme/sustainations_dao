@@ -37,6 +37,7 @@ FILE="./src/sustainations_dao/.env.mo"
 module Env {
   public let LEDGER_ID = "${LEDGER_ID}";
   public let GEORUST_ID = "${GEORUST_ID}";
+  public let BTC_ID = "r7inp-6aaaa-aaaaa-aaabq-cai";
 }
 EOM
 
