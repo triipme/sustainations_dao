@@ -88,6 +88,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     questPlayCount = 0;
     questCompletedCount = 0;
   };
+  stable var checkRewardToWinner : Bool = false;
   stable var referralAward : Nat64 = 40_000;
   stable var referralLimit = 99;
 
@@ -166,6 +167,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   private stable var buildings : [(Text, Types.Building)] = [];
   private stable var productionQueues : [(Text, Types.ProductionQueue)] = [];
   private stable var productionQueueNodes : [(Text, Types.ProductionQueueNode)] = [];
+  private stable var referrals : [(Text, Types.Referral)] = [];
 
   system func preupgrade() {
     Debug.print("Begin preupgrade");
@@ -242,6 +244,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     buildings := Iter.toArray(state.buildings.entries());
     productionQueues := Iter.toArray(state.productionQueues.entries());
     productionQueueNodes := Iter.toArray(state.productionQueueNodes.entries());
+    referrals := Iter.toArray(state.referrals.entries());
     Debug.print("End preupgrade");
   };
 
@@ -448,11 +451,15 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     for ((k, v) in Iter.fromArray(productionQueueNodes)) {
       state.productionQueueNodes.put(k, v);
     };
+    for ((k, v) in Iter.fromArray(referrals)) {
+      state.referrals.put(k, v);
+    };
     Debug.print("End postupgrade");
   };
 
   system func heartbeat() : async () {
     await setOutDateProposals();
+    await checkBeginOfDay();
   };
 
   type Response<Ok> = Result.Result<Ok, Types.Error>;
@@ -2819,24 +2826,24 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
               bIndex
             );
             //transfer ICP 25% price to quest-designer
-            let receipt = await refund(questDesign, quest.userId);
-            switch (receipt) {
-              case (#Err(error)) {
-                Debug.print(debug_show error);
-              };
-              case (#Ok(bIndex)) {
-                // record transaction
-                await recordTransaction(
-                  caller,
-                  questDesign,
-                  Principal.fromActor(this),
-                  quest.userId,
-                  #refundQuestDesign,
-                  ?questId,
-                  bIndex
-                );
-              };
-            };
+            // let receipt = await refund(questDesign, quest.userId);
+            // switch (receipt) {
+            //   case (#Err(error)) {
+            //     Debug.print(debug_show error);
+            //   };
+            //   case (#Ok(bIndex)) {
+            //     // record transaction
+            //     await recordTransaction(
+            //       caller,
+            //       questDesign,
+            //       Principal.fromActor(this),
+            //       quest.userId,
+            //       #refundQuestDesign,
+            //       ?questId,
+            //       bIndex
+            //     );
+            //   };
+            // };
             #ok("Success");
           };
           case (#err(error)) {
@@ -3386,7 +3393,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       return #err(#NotAuthorized); //isNotAuthorized
     };
     let godUser = "wijp2-ps7be-cocx3-zbfru-uuw2q-hdmpl-zudjl-f2ofs-7qgni-t7ik5-lqe";
-    //let godUser = "nrulu-zov3c-5fjy3-pza5d-ysupr-vuwi5-gl3kk-uasar-yohik-njyf4-dqe";
+    // let godUser = "er6vc-e6wpu-j5rhx-nalco-a5pko-5yff7-2exmn-6qe4v-tbrnz-6bhvb-yae";
     for (quest in state.questEngine.quests.vals()){
       if (Principal.toText(quest.userId) == godUser){
         return #ok(quest);
@@ -4175,6 +4182,325 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
   };
 
+  public shared query ({ caller }) func listQuestGame() : async Response<[(Text, Types.QuestGame)]> {
+    var list : [(Text, Types.QuestGame)] = [];
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    for ((K, V) in state.questGames.entries()) {
+      list := Array.append<(Text, Types.QuestGame)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+
+  //save game score of user in day
+  public shared ({caller}) func saveGameScore(questId: Text, character: Types.Character): async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let beginDate =  Time.now() / (864 * (10 ** 11)) * (864 * (10 ** 11));
+    let endDate = beginDate + (864 * (10 ** 11));
+    for (game in state.questGames.vals()){
+      if (game.userId == Principal.toText(character.userId) and game.timestamp >= beginDate and game.timestamp <= endDate){
+        let updateQuestGame : Types.QuestGame = {
+          id = game.id;
+          questId = questId;
+          userId = Principal.toText(character.userId);
+          timestamp = game.timestamp;
+          hp = Float.max(game.hp, character.currentHP);
+          stamina = Float.max(game.stamina, character.currentStamina);
+          morale = Float.max(game.morale, character.currentMorale);
+          mana = Float.max(game.mana, character.currentMana);
+        };
+        let updated = state.questGames.replace(updateQuestGame.id, updateQuestGame);
+        return #ok("Success");
+      };
+    };
+    //create
+    let newQuestGame : Types.QuestGame = {
+      id = await createUUID();
+      questId = questId;
+      userId = Principal.toText(character.userId);
+      timestamp = Time.now();
+      hp = character.currentHP;
+      stamina = character.currentStamina;
+      morale = character.currentMorale;
+      mana = character.currentMana;
+    };
+    let created = state.questGames.put(newQuestGame.id, newQuestGame);
+    #ok("Success");
+  };
+
+  //save game reward of the quest
+  public shared ({caller}) func saveGameReward(questId: Text): async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsQuest = state.questEngine.quests.get(questId);
+    switch (rsQuest){
+      case (?quest) {
+        let timestamp = Time.now;
+        let endOfYesterday = Time.now() / (864 * (10 ** 11)) * (864 * (10 ** 11));
+        let beginDate = endOfYesterday;
+        let endDate = beginDate + (864 * (10 ** 11));
+        for (reward in state.questGameRewards.vals()){
+          if ((reward.rewarded == false)){//update
+            //check user play already 
+            var check : Bool = false; 
+            label checkPlayer for (player in reward.player.vals()){
+              if (player == Principal.toText(caller)){
+                check := true;
+                break checkPlayer;
+              };
+            };
+            var listPlayer : [Text] = reward.player;
+            if (check == false){
+              listPlayer := Array.append<Text>(listPlayer, [Principal.toText(caller)]);
+            };
+            let updateGameReward : Types.QuestGameReward = {
+              id = reward.id;
+              questId = reward.questId;
+              player = listPlayer;
+              totalICP = reward.totalICP + quest.price;
+              beginDate = reward.beginDate;
+              endDate = endDate;
+              rewarded = reward.rewarded;
+            };
+            let updated = state.questGameRewards.replace(updateGameReward.id, updateGameReward);
+            return #ok("Success");
+          };
+        };
+        //create
+        let createGameReward : Types.QuestGameReward = {
+          id = await createUUID();
+          questId = questId;
+          player = [Principal.toText(caller)];
+          totalICP = quest.price;
+          beginDate = beginDate;
+          endDate = endDate;
+          rewarded = false;
+        };
+        let created = state.questGameRewards.put(createGameReward.id, createGameReward);
+        #ok("Success");
+      };
+      case (null) {return #err(#NotFound)};
+    };
+  };
+
+  // private func getWinner(questGameReward: Types.QuestGameReward) : ?Text { //return characterId
+  //   var listQuestGame : [Types.QuestGame] = [];
+  //   //get all quest game for game reward
+  //   for (questGame in state.questGames.vals()){
+  //     if (questGame.questId == questGameReward.questId and questGame.timestamp >= questGameReward.beginDate 
+  //     and questGame.timestamp <= questGameReward.endDate) {
+  //       listQuestGame := Array.append<Types.QuestGame>(listQuestGame, [questGame]);
+  //     };
+  //   };
+  //   if (listQuestGame != []){
+  //     var bestGame : Types.QuestGame = listQuestGame[0];
+  //     for (game in listQuestGame.vals()){
+  //       if (game.hp > bestGame.hp){
+  //         bestGame := game;
+  //       }
+  //       else if (game.hp == bestGame.hp) {
+  //         if (game.stamina > bestGame.stamina){
+  //           bestGame := game;
+  //         }
+  //         else if (game.stamina == bestGame.stamina){
+  //           if (game.morale > bestGame.morale){
+  //             bestGame := game;
+  //           }
+  //           else if (game.morale == bestGame.morale){
+  //             if (game.timestamp < bestGame.timestamp){
+  //               bestGame := game;
+  //             };
+  //           };
+  //         };
+  //       };
+  //     };
+  //     return ?bestGame.userId;
+  //   };
+  //   return null;
+  // };
+
+   private func getWinner(questGameReward: Types.QuestGameReward) :  ?Types.QuestGame { //return characterId
+    var listQuestGame : [Types.QuestGame] = [];
+    //get all quest game for game reward
+    for (questGame in state.questGames.vals()){
+      if (questGame.questId == questGameReward.questId and questGame.timestamp >= questGameReward.beginDate 
+      and questGame.timestamp <= questGameReward.endDate) {
+        listQuestGame := Array.append<Types.QuestGame>(listQuestGame, [questGame]);
+      };
+    };
+    if (listQuestGame != []){
+      var bestGame : Types.QuestGame = listQuestGame[0];
+      for (game in listQuestGame.vals()){
+        if (game.hp > bestGame.hp){
+          bestGame := game;
+        }
+        else if (game.hp == bestGame.hp) {
+          if (game.stamina > bestGame.stamina){
+            bestGame := game;
+          }
+          else if (game.stamina == bestGame.stamina){
+            if (game.morale > bestGame.morale){
+              bestGame := game;
+            }
+            else if (game.morale == bestGame.morale){
+              if (game.timestamp < bestGame.timestamp){
+                bestGame := game;
+              };
+            };
+          };
+        };
+      };
+      return ?bestGame;
+    };
+    return null;
+  };
+
+  public shared ({caller}) func getTopOne(questId: Text) : async Response<Types.QuestGame> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    for (reward in state.questGameRewards.vals()){
+      let now = Time.now();
+      if (reward.rewarded == false and reward.questId == questId
+        and now >= reward.beginDate and now <= reward.endDate){
+        let rs = getWinner(reward);
+        switch (rs) {
+          case (null) {return #err(#NotFound)};
+          case (?winner) {
+            return #ok(winner);
+          };
+        };
+      };
+    };
+    #err(#NotFound);
+  };
+
+  public shared ({caller}) func rewardToWinner() : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    for (questGameReward in state.questGameRewards.vals()){
+      if (questGameReward.rewarded == false) {
+        //check min 2 user
+        //check totalICP min 10_000
+        let endDate = Time.now() / (864 * (10 ** 11)) * (864 * (10 ** 11)) + (864 * (10 ** 11));
+        if (List.size(List.fromArray(questGameReward.player)) < 2 or questGameReward.totalICP < 100_000){
+          let updateReward : Types.QuestGameReward = {
+            id = questGameReward.id;
+            questId = questGameReward.questId;
+            player = questGameReward.player;
+            totalICP = questGameReward.totalICP;
+            beginDate = questGameReward.beginDate;
+            endDate = endDate;
+            rewarded = questGameReward.rewarded;
+          };
+          let updated = state.questGameRewards.replace(updateReward.id, updateReward);
+          return #ok("Success");
+        }
+        else { //refund to winner and questDesign
+          let rsQuest = state.questEngine.quests.get(questGameReward.questId);
+          switch (rsQuest) {
+            case (null) {return #err(#NotFound)};
+            case (?quest) {
+              let totalICP : Nat64 = questGameReward.totalICP;
+              let totalIcpFloat : Float = Float.fromInt64(Int64.fromNat64(totalICP));
+              let awardToDesigner : Nat64 = Int64.toNat64(Float.toInt64(totalIcpFloat*0.25))-transferFee;
+              let awardToWinner : Nat64 = Int64.toNat64(Float.toInt64(totalIcpFloat*0.65))-transferFee;
+              // let designer = quest.userId;
+              // let winner = getWinner(questGameReward);
+              Debug.print("=======================");
+              Debug.print("Total ICP");
+              Debug.print(debug_show(questGameReward.totalICP));
+              Debug.print("Designer");
+              Debug.print(debug_show(awardToDesigner));
+              Debug.print("Winner");
+              Debug.print(debug_show(awardToWinner));
+              Debug.print("=======================");
+              
+              //transfer 25% ICP to quest-designer
+              let receiptDesigner = await refund(awardToDesigner, quest.userId);
+              switch (receiptDesigner) {
+                case (#Err(error)) {
+                  Debug.print(debug_show error);
+                };
+                case (#Ok(bIndex)) {
+                  // record transaction
+                  await recordTransaction(
+                    caller,
+                    awardToDesigner,
+                    Principal.fromActor(this),
+                    quest.userId,
+                    #awardQuestDesigner,
+                    ?quest.id,
+                    bIndex
+                  );
+                };
+              };
+
+              //transfer 65% ICP to quest-winner
+              let rsWinner : ?Types.QuestGame = getWinner(questGameReward);
+              switch (rsWinner) {
+                case (?winner) {
+                  let receiptWinner = await refund(awardToWinner, Principal.fromText(winner.userId));
+                  switch (receiptWinner) {
+                    case (#Err(error)) {
+                      Debug.print(debug_show error);
+                    };
+                    case (#Ok(bIndex)) {
+                      // record transaction
+                      await recordTransaction(
+                        caller,
+                        awardToWinner,
+                        Principal.fromActor(this),
+                        Principal.fromText(winner.userId),
+                        #awardQuestWinner,
+                        ?quest.id,
+                        bIndex
+                      );
+                    };
+                  };
+                };
+                case null {};
+              };
+
+              //update game awarded
+              let updateReward : Types.QuestGameReward = {
+                id = questGameReward.id;
+                questId = questGameReward.questId;
+                player = questGameReward.player;
+                totalICP = questGameReward.totalICP;
+                beginDate = questGameReward.beginDate;
+                endDate = questGameReward.endDate;
+                rewarded = true;
+              };
+              let updated = state.questGameRewards.replace(updateReward.id, updateReward);
+            };
+          };
+        };
+      };
+    };
+    #ok("Success");
+  };
+
+  func checkBeginOfDay() : async () {
+    let time_now = (Time.now()/(864 * (10 ** 11))*(864 * (10 ** 11)));
+    let end_minute = ((time_now) + (864 * (10 ** 11)));
+    if ((Time.now()) - time_now < 1_000_000_000){
+      if (checkRewardToWinner == false) {
+        checkRewardToWinner := true;
+        let rs = await rewardToWinner();
+        switch (rs){
+          case (#ok(result)) {checkRewardToWinner := false};
+          case _ {};
+        };
+      };
+    };
+  };
+
   //Quest Game Reward
   public shared ({caller}) func createQuestGameReward(questGameReward: Types.QuestGameReward) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
@@ -4224,6 +4550,17 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
         #ok("Success");
       };
     };
+  };
+
+  public shared query ({ caller }) func listQuestGameReward() : async Response<[(Text, Types.QuestGameReward)]> {
+    var list : [(Text, Types.QuestGameReward)] = [];
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    for ((K, V) in state.questGameRewards.entries()) {
+      list := Array.append<(Text, Types.QuestGameReward)>(list, [(K, V)]);
+    };
+    #ok((list));
   };
 
   // Item
@@ -6442,7 +6779,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
           case (?landSlot) {
             let objectId = await createPlant(caller,materialId);
             createTile(landId, indexRow, indexColumn, objectId);
-            await createUserHasFarmEffect(indexRow,indexColumn,objectId,landSlot,false);     
+            await createUserHasFarmEffect(indexRow,indexColumn,objectId,landSlot);     
             return #ok("Success"); 
           };
         };
@@ -6538,7 +6875,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
             let adjacentTiles = Tile.getAdjacentTiles(tile.indexRow,tile.indexColumn,state);
             Debug.print(Nat.toText(adjacentTiles.size()));
             for (t in adjacentTiles.vals()) {
-              await createUserHasFarmEffect(t.indexRow, t.indexColumn, t.objectId, landSlot, false); 
+              await createUserHasFarmEffect(t.indexRow, t.indexColumn, t.objectId, landSlot); 
             };
           };
         }; 
@@ -6844,7 +7181,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   };
 
   // user has farm effect
-  public shared ({ caller }) func createUserHasFarmEffect(indexTileRow : Nat, indexTileColumn : Nat, objectId : Text, landSlot : Types.LandSlot, isRemoveTree: Bool) : async () { 
+  public shared ({ caller }) func createUserHasFarmEffect(indexTileRow : Nat, indexTileColumn : Nat, objectId : Text, landSlot : Types.LandSlot) : async () { 
     let rsPlant = state.plants.get(objectId);
     switch (rsPlant) {
       case null {};
@@ -6852,19 +7189,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
         var plantsInLandSlot : [Types.FarmObject] = LandSlot.listFarmObjectsFromLandSlot( landSlot.indexRow, landSlot.indexColumn, state);
         var farmObjects : [Types.FarmObject] = Tile.getFarmObjectsFromFarmObject( indexTileRow, indexTileColumn, plant.seedId, plantsInLandSlot);
         
-        // if this function is used in removeTree, remove the deleted farmObject in farmObjects
-        if (isRemoveTree==true) {
-          let rsFarmObject = Array.find<Types.FarmObject>(farmObjects, func (val : Types.FarmObject) : Bool {val.indexRow == indexTileRow and val.indexColumn == indexTileColumn and val.objectId == plant.seedId});
-          switch (rsFarmObject) {
-            case null {};
-            case (?V) {
-              farmObjects := Array.filter<Types.FarmObject>(
-                farmObjects,
-                func(val : Types.FarmObject) : Bool { val != V }
-              );
-            };
-          };
-        };
         // if list of farmObjects is not Empty
         if (farmObjects != []) {
           // create new HasFarmEffect for user if the result effect is not "None"
@@ -7670,5 +7994,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       };
     };
   };
+
 
 };

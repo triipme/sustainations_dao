@@ -6,7 +6,9 @@ import {
   openInventory,
   createInventory,
   loadCharacter,
-  resetCharacterCollectsMaterials
+  resetCharacterCollectsMaterials,
+  saveGameScore,
+  getTopOne
 } from '../GameApi';
 
 const bg = 'metaverse/UI_finish.png';
@@ -21,6 +23,11 @@ class thanks extends BaseScene {
     this.textures.remove('bg', 'popupWindow');
   }
 
+  init (data) {
+    this.questDesignId = data.questDesingId;
+    
+  }
+
   preload() {
     this.addLoadingScreen();
     this.clearSceneCache();
@@ -29,6 +36,25 @@ class thanks extends BaseScene {
       loadCharacter().then((result) => {
         this.characterData = result.ok[1];
         console.log(this.characterData);
+        console.log("this.questDesingId ", this.questDesignId)
+        if (this.questDesignId != undefined){
+          this.load.rexAwait(function (successCallback, failureCallback) {
+            saveGameScore(this.questDesignId, this.characterData).then((result) => {
+              console.log("saveGame: ", result);
+              this.load.rexAwait(function (successCallback, failureCallback) {
+                getTopOne(this.questDesignId).then((result) => {
+                  console.log("Top one: ", result);
+                  successCallback();
+                });
+              }, this);
+              successCallback();
+            });
+          }, this);
+          // let game = saveGameScore(this.questDesignId, this.characterData);
+          // console.log("saveQuest: ", game);
+          // let top1 = getTopOne(this.questDesignId);
+          // console.log("Get top one: ", top1);
+        }
         successCallback();
       });
     }, this);

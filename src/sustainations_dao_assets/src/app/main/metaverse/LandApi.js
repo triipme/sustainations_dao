@@ -11,15 +11,19 @@ function unionLandSlots(utm1, utm2) {
 };
 
 // function from nation api
-function getNationLonLat(nationId) {
-  axios.get("http://127.0.0.1:7000/nations/"+nationId).then((response) => {
-    console.log(response);
-  }).catch((errors) => {
-    console.log(errors);
-  });
+export const getNationLonLat = async (nationId) => {
+  let nation = null
+  try {
+    const response = await axios.get(process.env.NATION_API_URL+"/"+nationId)
+    nation = response.data.data
+  }
+  catch (err) {
+    console.error(err);
+  }
+  return nation;
 }
 
-function updateNationLonLat(nationId, coordinates) {
+export const updateNationLonLat = async (nationId, coordinates) => {
   let utms = []
   for (let coord of coordinates[0]) {
     console.log(coord)
@@ -30,13 +34,16 @@ function updateNationLonLat(nationId, coordinates) {
     nationId: nationId,
     utms: utms, 
   };
-  axios.post("http://127.0.0.1:7000/nations",nation).then((response) => {
-    console.log(response)
-  }).catch((errors) => {
-    console.log(errors)
-  });
-}
+  let nationlonlat = null;
+  try {
+    const response = await axios.post(process.env.NATION_API_URL,nation)
+    nationlonlat = response.data.data;
+  } catch (err) {
+    console.error(err);
+  }
 
+  return nationlonlat;
+}
 
 // get user info
 function getUserInfo() {
@@ -131,45 +138,45 @@ async function createLandSlot(i, j, nationUTMS) {
   return result;
 };
 
-
-async function loadNationsfromCenter(x, y) {
-  const { user } = store.getState();
-  const { principal } = user;
-  // const func = await user.actor.loadNationsArea(
-  //   x - 100, y - 100, x + 100, y + 100
-  // );
-  const func = await user.actor.loadNationsArea(
-    x, y, 4
-  );
-  const nations = func?.ok;
-  var result = {
-    features: []
-  };
-  if (nations) {
-    for (let nation of nations) {
-      console.log(nation.id)
-      let feature = {
-        type: "Feature",
-        properties: {
-          "id": nation.id,
-          "zoneNumber": nation.zoneNumber,
-          "zoneLetter": nation.zoneLetter,
-          "i": nation.i,
-          "j": nation.j
-        },
-        geometry: {
-          type: "Polygon", coordinates: [[nation.coordinates]],
-        }
-      }
-      if (nation.id !== principal) {
-        result.features.push(feature)
-      } else {
-        result.features = [feature].concat(result.features)
-      }
-    }
-  }
-  return nations ? result.features : [];
-}
+// async function loadNationsfromCenter(x, y) {
+//   const { user } = store.getState();
+//   const { principal } = user;
+//   // const func = await user.actor.loadNationsArea(
+//   //   x - 100, y - 100, x + 100, y + 100
+//   // );
+//   const func = await user.actor.loadNationsArea(
+//     x, y, 4
+//   );
+//   const nations = func?.ok;
+//   var result = {
+//     features: []
+//   };
+//   if (nations) {
+//     for (let nation of nations) {
+//       console.log(nation.id)
+//       console.log(nation.coordinates)
+//       let feature = {
+//         type: "Feature",
+//         properties: {
+//           "id": nation.id,
+//           "zoneNumber": nation.zoneNumber,
+//           "zoneLetter": nation.zoneLetter,
+//           "i": nation.i,
+//           "j": nation.j
+//         },
+//         geometry: {
+//           type: "Polygon", coordinates: [[nation.coordinates]],
+//         }
+//       }
+//       if (nation.id !== principal) {
+//         result.features.push(feature)
+//       } else {
+//         result.features = [feature].concat(result.features)
+//       }
+//     }
+//   }
+//   return nations ? result.features : [];
+// }
 
 function utm2lonlat(utmX, utmY) {
   let zoneNumber = 20
@@ -241,11 +248,11 @@ async function loadLandBuyingStatus() {
   const { user } = store.getState();
   const readLandBuyingStatus = await user.actor.readLandBuyingStatus();
   const landBuyingStatus = readLandBuyingStatus?.ok;
-  let d = 1000;
-  let latlng1 = utm2lonlat(d * Number(landBuyingStatus.geometry.j), d * Number(landBuyingStatus.geometry.i));
-  let latlng2 = utm2lonlat(d * (Number(landBuyingStatus.geometry.j) + 1), d * (Number(landBuyingStatus.geometry.i) + 1));  
   var feature = undefined
   if (landBuyingStatus != undefined) {
+    let d = 1000;
+    let latlng1 = utm2lonlat(d * Number(landBuyingStatus.geometry.j), d * Number(landBuyingStatus.geometry.i));
+    let latlng2 = utm2lonlat(d * (Number(landBuyingStatus.geometry.j) + 1), d * (Number(landBuyingStatus.geometry.i) + 1));  
     feature = {
       type: "Feature",
       properties: {
@@ -407,7 +414,7 @@ export {
   loadLandTransferHistories,
   buyLandSlot,
   loadLandBuyingStatus,
-  loadNationsfromCenter,
+  // loadNationsfromCenter,
   //loadLandSlotsfromCenter,
   getLandIndex,
   loadTileSlots,

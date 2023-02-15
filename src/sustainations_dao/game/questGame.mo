@@ -8,7 +8,7 @@ module QuestGame{
     let newQuestGame : Types.QuestGame = {
         id = questGame.id;
         questId = questGame.questId;
-        characterId = questGame.characterId;
+        userId = questGame.userId;
         timestamp = questGame.timestamp;
         hp = questGame.hp;
         stamina = questGame.stamina;

@@ -81,7 +81,8 @@ module {
     #rewardTop;
     #collectTreasuryContribution;
     #payQuest;
-    #refundQuestDesign;
+    #awardQuestDesigner;
+    #awardQuestWinner;
     #buyLandSlot;
     #awardReferral;
   };
@@ -194,7 +195,7 @@ module {
   public type QuestGame = {
     id: Text;
     questId: Text;
-    characterId: Text;
+    userId: Text;
     timestamp: Int;
     hp: Float;
     stamina: Float;
@@ -205,8 +206,11 @@ module {
   public type QuestGameReward = {
     id: Text;
     questId: Text;
-    player: Nat;
+    player: [Text];
     totalICP: Nat64;
+    beginDate: Time.Time;
+    endDate: Time.Time;
+    rewarded : Bool;
   };
 
   //--------------------- Scene ---------------------//

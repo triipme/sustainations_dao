@@ -9,7 +9,9 @@ import {
   characterTakeOptionEngine,
   characterCollectsMaterialEngines,
   readSceneEngine,
-  readEventEngine 
+  readEventEngine,
+  readQuestEngine,
+  saveGameScore,
 } from '../../GameApi';
 import { settings } from '../settings';
 import { func } from 'prop-types';
@@ -310,12 +312,12 @@ export default class Engine extends BaseScene {
           updateCharacterStatsEngine(this.characterTakeOptions[idx]);
           // create charactercollectsmaterials after choose option
           // createCharacterCollectsMaterials(this.characterCollectMaterials[idx]);
-        }
+        ;}
       });
     };
   }
 
-  update() {
+  async update() {
     //new player logic
     if (this.player.body.touching.down && this.isInteracting == false) {
       this.player.setVelocityX(settings.movementSpeed);
@@ -325,7 +327,19 @@ export default class Engine extends BaseScene {
       this.pregameSound.stop();
       this.sfx_char_footstep.stop();
 
-      if (this.listScene.length === 0) this.scene.start("thanks");
+      if (this.listScene.length === 0){
+        // console.log("this.characterData: ", this.characterData)
+        // console.log("questId: ", this.rsEvent[0].questId)
+        // this.load.rexAwait(function (successCallback, failureCallback) {
+        //   saveGameScore(this.rsEvent[0].questId, this.characterData).then((result) => {
+        //     console.log("save game: ", result);
+        //     successCallback();
+        //   });
+        // }, this);
+        // let saveGameScore = await saveGameScore(this.rsEvent[0].questId, this.characterData)
+        // console.log("savsGameScore: ", saveGameScore)
+        this.scene.start("thanks", {questDesingId: this.rsEvent[0].questId});
+      } 
       else this.scene.start("Test", {listScene: this.listScene, isUsedUsableItem: this.isUsedUsableItem });
       // this.scene.start("Test", { isUsedPotion: this.isUsedPotion, listScene: this.listScene});
     }
