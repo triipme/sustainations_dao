@@ -89,7 +89,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     questCompletedCount = 0;
   };
   stable var checkRewardToWinner : Bool = false;
-  stable var referralAward : Nat64 = 40_000;
   stable var referralAwards : [Types.ReferralAward] = [
     {
       refType : Text = "icp";
