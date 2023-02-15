@@ -92,12 +92,12 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   stable var referralAward : Nat64 = 40_000;
   stable var referralAwards : [Types.ReferralAward] = [
     {
-      refType = "icp";
-      refId = "icp";
-      amount = 0.0004;
+      refType : Text = "icp";
+      refId : Text = "icp";
+      amount : Float = 0.0004;
     }
   ];
-  stable var referralLimit = 99;
+  stable var referralLimit : Int = 99;
 
   var state : State.State = State.empty();
 
@@ -646,7 +646,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   };
 
   func rewardReferral(inviter : Principal, member : Principal) : async () {
-    var referralCount = 0;
+    var referralCount : Int = 0;
     for ((_uuid, referral) in state.referrals.entries()) {
       if (referral.uid == inviter) {
         referralCount := referralCount + 1;
@@ -659,22 +659,42 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
         member;
       };
       let referral = state.referrals.put(uuid, payload);
-      let receipt = await refund(referralAward, inviter);
-      switch (receipt) {
-        case (#Err(error)) {
-          Debug.print(debug_show error);
-        };
-        case (#Ok(bIndex)) {
-          // record transaction
-          await recordTransaction(
-            Principal.fromActor(this),
-            referralAward,
-            Principal.fromActor(this),
-            inviter,
-            #awardReferral,
-            ?uuid,
-            bIndex
-          );
+      for (award in Iter.fromArray(referralAwards)) {
+        if (award.refType == "icp") {
+          // send ICP
+          let amount = Int64.toNat64(Float.toInt64(award.amount  * (10 ** 8)));
+          let receipt = await refund(amount, inviter);
+          switch (receipt) {
+            case (#Err(error)) {
+              Debug.print(debug_show error);
+            };
+            case (#Ok(bIndex)) {
+              // record transaction
+              await recordTransaction(
+                Principal.fromActor(this),
+                amount,
+                Principal.fromActor(this),
+                inviter,
+                #awardReferral,
+                ?uuid,
+                bIndex
+              );
+            };
+          };
+        } else if (award.refType == "usableItem") {
+          switch (state.usableItems.get(award.refId)) {
+            case (?usableItem) {
+              let stash : Types.Stash = {
+                id = await createUUID();
+                userId = Principal.toText(inviter);
+                usableItemId = award.refId;
+                quality = "Good";
+                amount = Float.toInt(award.amount);
+              };
+              let created = Stash.create(stash, state);
+            };
+            case (null) {};
+          };
         };
       };
     };
@@ -1320,15 +1340,23 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
 
   type SystemParams = {
     treasuryContribution : Float;
+    referralAwards : [Types.ReferralAward];
+    referralLimit : Int;
   };
   public query func getSystemParams() : async Response<SystemParams> {
     let systemParams : SystemParams = {
       treasuryContribution;
+      referralAwards;
+      referralLimit;
     };
     #ok(systemParams);
   };
 
-  public shared ({ caller }) func updateSystemParams(treasuryContributionValue : Float) : async Response<Text> {
+  public shared ({ caller }) func updateSystemParams(
+    treasuryContributionValue : Float,
+    referralAwardsValue : [Types.ReferralAward],
+    referralLimitValue : Int
+  ) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
@@ -1341,7 +1369,25 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       return #err(#InvalidData);
     };
 
+    if (referralLimitValue < 0) {
+      return #err(#InvalidData);
+    };
+
+    for (award in Iter.fromArray(referralAwardsValue)) {
+      if (award.amount <= 0) {
+        return #err(#InvalidData);
+      };
+      if (award.refType == "usableItem") {
+        switch (state.usableItems.get(award.refId)) {
+          case (null) { return #err(#InvalidData); };
+          case _ {};
+        };
+      };
+    };
+
     treasuryContribution := treasuryContributionValue;
+    referralAwards := referralAwardsValue;
+    referralLimit := referralLimitValue;
     #ok("Success");
   };
 
