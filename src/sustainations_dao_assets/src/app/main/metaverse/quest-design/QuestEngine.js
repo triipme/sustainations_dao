@@ -100,7 +100,7 @@ const QuestEngine = () => {
       //get quest id
       let checkCreateQuest = await user.actor.checkCreatedQuestOfUser()
       idQuest = checkCreateQuest.ok?.id;
-      console.log("idQuet: ", idQuest)
+      // console.log("idQuet: ", idQuest)
       console.log("checkCreateQuest", checkCreateQuest)
       if (idQuest != undefined) {
         //EVENT
@@ -111,8 +111,8 @@ const QuestEngine = () => {
           locationName: data.scene.location,
           destinationName: data.scene.destination
         };
-        console.log("quétId: ", idQuest)
-        console.log("event: ", event)
+        // console.log("quétId: ", idQuest)
+        // console.log("event: ", event)
         const resultEvent = await user.actor.createEventEngine(event);
 
         //SCENE
@@ -224,7 +224,21 @@ const QuestEngine = () => {
         console.log("resultEngine ", resultEngine)
       }
       else {
-        idQuest = checkCreateQuest.ok?.id;
+        let questEngine = (await user.actor.readQuestEngine(checkCreateQuest.ok?.id)).ok;
+        console.log("questEngine: ", questEngine)
+        let quest = {
+          id: questEngine.id,
+          userId: questEngine.userId,
+          name: questEngine.name,
+          price: parseFloat(data.quest.price) * 100000000,
+          description: questEngine.description,
+          images: questEngine.images,
+          isActive: questEngine.isActive,
+          dateCreate: questEngine.dateCreate,
+          listScene: questEngine.listScene
+        }
+        let resultEngine = await user.actor.updateQuestEngine(quest);
+        console.log("updatedEngine ", resultEngine)
       }
     }
     catch (err) {
@@ -281,6 +295,17 @@ const QuestEngine = () => {
     navigate(`/metaverse/quest-design/${id}/preview`);
   };
 
+
+  const [error, setError] = useState(null);
+  const validatePrice = (value) => {
+    if (value < 0.0004) {
+      setError("Quest price must be greater than 0.0004 ICP");
+      return "Quest price must be greater than 0.0004 ICP";
+    }
+    return true;
+  };
+
+
   return (
     <div className="relative flex flex-col flex-auto items-center">
       {/* ================= Scene 1 ================= */}
@@ -304,13 +329,19 @@ const QuestEngine = () => {
                   className="mt-32"
                   {...field}
                   label="Quest Price"
-                  placeholder="ICP"
+                  placeholder="Min 0.0004 ICP"
                   // id="questName"
                   variant="outlined"
                   fullWidth
                   required
+                  min={0.0004}
+                  error={error !== null}
+                  helperText={error}
+                  onBlur={() => setError(null)}
+                  // onChange={() => setError(null)}
                 />
               )}
+              rules={{ validate: validatePrice }}
             />
             <Controller
               control={control}
@@ -320,20 +351,16 @@ const QuestEngine = () => {
                   className="mt-32"
                   {...field}
                   label="Transaction Fee"
-                  // placeholder="2%"
                   value="2%"
-                  // id="questName"
                   variant="outlined"
                   fullWidth
-                  // readOnly={true}
                   disabled
-                // required
                 />
               )}
             />
 
             <br></br>
-            <div style={{marginTop: "20px"}}>
+            <div style={{ marginTop: "20px" }}>
               <LoadingButton
                 className="ml-8"
                 variant="contained"
@@ -379,10 +406,15 @@ const QuestEngine = () => {
               <TextField required type='text' value={option.option || ''} className="mt-32" label="Option" placeholder="Option" variant="outlined" fullWidth
                 onChange={e => setOption({ ...option, option: e.target.value })}
               />
-              <TextField type='number' value={option.hp || 0.0} placeholder="HP" onChange={e => setOption({ ...option, hp: parseInt(e.target.value) })} className="mt-32" label="HP" variant="outlined" fullWidth></TextField>
+              {/* <TextField type='number' value={option.hp || 0.0} placeholder="HP" onChange={e => setOption({ ...option, hp: parseInt(e.target.value) })} className="mt-32" label="HP" variant="outlined" fullWidth></TextField>
               <TextField type='number' value={option.stamina || 0.0} placeholder="Stamina" onChange={e => setOption({ ...option, stamina: parseInt(e.target.value) })} className="mt-32" label="Stamina" variant="outlined" fullWidth></TextField>
               <TextField type='number' value={option.mana || 0.0} placeholder="Mana" onChange={e => setOption({ ...option, mana: parseInt(e.target.value) })} className="mt-32" label="Mana" variant="outlined" fullWidth></TextField>
-              <TextField type='number' value={option.morale || 0.0} placeholder="Morale" onChange={e => setOption({ ...option, morale: parseInt(e.target.value) })} className="mt-32" label="Morale" variant="outlined" fullWidth></TextField>
+              <TextField type='number' value={option.morale || 0.0} placeholder="Morale" onChange={e => setOption({ ...option, morale: parseInt(e.target.value) })} className="mt-32" label="Morale" variant="outlined" fullWidth></TextField> */}
+              <TextField type='number' required placeholder="HP" onChange={e => setOption({ ...option, hp: parseInt(e.target.value) })} className="mt-32" label="HP" variant="outlined" fullWidth></TextField>
+              <TextField type='number' required placeholder="Stamina" onChange={e => setOption({ ...option, stamina: parseInt(e.target.value) })} className="mt-32" label="Stamina" variant="outlined" fullWidth></TextField>
+              <TextField type='number' required placeholder="Mana" onChange={e => setOption({ ...option, mana: parseInt(e.target.value) })} className="mt-32" label="Mana" variant="outlined" fullWidth></TextField>
+              <TextField type='number' required placeholder="Morale" onChange={e => setOption({ ...option, morale: parseInt(e.target.value) })} className="mt-32" label="Morale" variant="outlined" fullWidth></TextField>
+
               <br></br>
               <br></br>
 

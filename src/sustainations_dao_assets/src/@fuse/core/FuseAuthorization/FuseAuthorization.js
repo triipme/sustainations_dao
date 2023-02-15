@@ -47,7 +47,7 @@ class FuseAuthorization extends Component {
   }
 
   redirectRoute() {
-    const { location, userRole } = this.props;
+    const { location, userRole, inviter } = this.props;
     const { pathname } = location;
     const redirectUrl = loginRedirectUrl || this.defaultLoginRedirectUrl;
 
@@ -59,7 +59,7 @@ class FuseAuthorization extends Component {
       setTimeout(() => history.push("/sign-in"), 0);
       loginRedirectUrl = pathname;
     } else if (userRole.includes("needAgreement")) {
-      setTimeout(() => history.push("/user-agreement"), 0);
+      setTimeout(() => history.push(`/user-agreement?inviter=${inviter}`), 0);
       loginRedirectUrl = pathname;
     } else {
       /*
