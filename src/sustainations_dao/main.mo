@@ -90,6 +90,13 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   };
   stable var checkRewardToWinner : Bool = false;
   stable var referralAward : Nat64 = 40_000;
+  stable var referralAwards : [Types.ReferralAward] = [
+    {
+      refType = "icp";
+      refId = "icp";
+      amount = 0.0004;
+    }
+  ];
   stable var referralLimit = 99;
 
   var state : State.State = State.empty();
@@ -645,7 +652,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
         referralCount := referralCount + 1;
       };
     };
-    if (referralCount <= referralLimit) {
+    if (referralCount < referralLimit) {
       let uuid = await createUUID();
       let payload = {
         uid = inviter;
