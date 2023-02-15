@@ -1,8 +1,9 @@
 const canvasConfig = (canvas, size) => {
   const canvasEle = canvas.current;
-  canvasEle.width = size.width;
-  canvasEle.height = size.height;
+  canvasEle.width = window.innerWidth;
+  canvasEle.height = window.innerHeight;
   const ctx = canvasEle.getContext("2d");
+  ctx.save();
   return [ctx, canvasEle];
 };
 
@@ -16,7 +17,7 @@ const init = (tileStyle, col, row) => {
     cx = tileStyle.sX;
   let ry,
     cy = tileStyle.sY;
-  for (let j = tileStyle.n - 1; j >= 0; j--) {
+  for (let j = 0; j < tileStyle.n; j++) {
     rx = cx;
     ry = cy;
     for (let i = 0; i < tileStyle.m; i++) {
@@ -32,7 +33,7 @@ const init = (tileStyle, col, row) => {
       rx = rx + tileStyle.w / 2;
       ry = ry + tileStyle.h / 2;
     }
-    if (j === 0) {
+    if (j === tileStyle.n - 1) {
       return result;
     }
     cx = cx - tileStyle.w / 2;
@@ -44,6 +45,7 @@ const drawImageOnCanvas = (ctx, imageObj, cx, cy, width, height, rowSize, colSiz
   const image = new Image();
   image.src = imageObj;
   image.onload = function () {
+    ctx.imageSmoothingEnabled = true;
     ctx.drawImage(image, cx, cy, width, height);
   };
 };
@@ -86,19 +88,21 @@ const drawRect = (ctx, info, style = {}) => {
   ctx.stroke();
 };
 
-const checkTilePosition = (event, listTile, sOft) => {
-  let minX = sOft.sX - sOft.w * ((sOft.m - 1) / 2);
-  let minY = sOft.sY;
-  let maxX = sOft.sX + sOft.w * ((sOft.m - 1) / 2);
-  let maxY = sOft.sY + sOft.h * (sOft.n - 1);
+const checkTilePosition = (event, listTile, sOft, ratio) => {
+  let minX = (sOft.sX * ratio) - (sOft.w * ratio) * ((sOft.m - 1) / 2);
+  let minY = (sOft.sY * ratio);
+  let maxX = (sOft.sX * ratio) + (sOft.w * ratio) * ((sOft.m - 1) / 2);
+  let maxY = (sOft.sY * ratio) + (sOft.h * ratio) * (sOft.n - 1);
   let result = [];
+  console.log(event.pageX, event.pageY);
   if (minX < event.pageX < maxX && minY < event.pageY < maxY) {
+    console.log(listTile);
     result = listTile.filter(tile => {
       return (
-        tile.x < event.pageX &&
-        event.pageX < tile.x + sOft.w &&
-        tile.y < event.pageY &&
-        event.pageY < tile.y + sOft.h
+        tile.x * ratio < event.pageX &&
+        event.pageX < tile.x * ratio + sOft.w * ratio &&
+        tile.y * ratio < event.pageY &&
+        event.pageY < tile.y * ratio + sOft.h * ratio
       );
     });
   }
@@ -108,7 +112,10 @@ const checkTilePosition = (event, listTile, sOft) => {
   };
 
   for (let i = 0; i < result.length; i++) {
-    let coord = { x: result[i].x + result[i].w / 2, y: result[i].y + result[i].h / 2 };
+    let coord = {
+      x: result[i].x * ratio + (result[i].w * ratio) / 2,
+      y: result[i].y * ratio + (result[i].h * ratio) / 2
+    };
     if (positionTile === undefined) {
       positionTile = { ...coord };
       pos = i;
