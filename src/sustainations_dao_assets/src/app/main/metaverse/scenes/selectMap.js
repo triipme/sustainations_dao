@@ -14,7 +14,7 @@ import {
   getAdminQuest,
   readQuestEngine,
   saveGameReward,
-  getTopOne
+  getLeaderBoard
 } from "../GameApi";
 
 const bg = "metaverse/selectMap/background.png";
@@ -97,8 +97,10 @@ class selectMap extends BaseScene {
 
           //get top one of quest id
           this.load.rexAwait(function (successCallback, failureCallback) {
-            getTopOne(this.questId).then(result => {
+            getLeaderBoard(this.questId).then(result => {
               console.log("Top one: ", result);
+              let user_index = result.find(element => element = this.characterData.userId)
+              console.log("current user ", result.indexOf(user_index))
               successCallback();
             });
           }, this);
@@ -123,7 +125,7 @@ class selectMap extends BaseScene {
 
           //get top one of quest id
           this.load.rexAwait(function (successCallback, failureCallback) {
-            getTopOne(this.questId).then(result => {
+            getLeaderBoard(this.questId).then(result => {
               console.log("Top one: ", result);
               this.topone = result;
               successCallback();

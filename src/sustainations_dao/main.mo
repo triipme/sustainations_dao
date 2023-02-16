@@ -4287,43 +4287,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
   };
 
-  // private func getWinner(questGameReward: Types.QuestGameReward) : ?Text { //return characterId
-  //   var listQuestGame : [Types.QuestGame] = [];
-  //   //get all quest game for game reward
-  //   for (questGame in state.questGames.vals()){
-  //     if (questGame.questId == questGameReward.questId and questGame.timestamp >= questGameReward.beginDate 
-  //     and questGame.timestamp <= questGameReward.endDate) {
-  //       listQuestGame := Array.append<Types.QuestGame>(listQuestGame, [questGame]);
-  //     };
-  //   };
-  //   if (listQuestGame != []){
-  //     var bestGame : Types.QuestGame = listQuestGame[0];
-  //     for (game in listQuestGame.vals()){
-  //       if (game.hp > bestGame.hp){
-  //         bestGame := game;
-  //       }
-  //       else if (game.hp == bestGame.hp) {
-  //         if (game.stamina > bestGame.stamina){
-  //           bestGame := game;
-  //         }
-  //         else if (game.stamina == bestGame.stamina){
-  //           if (game.morale > bestGame.morale){
-  //             bestGame := game;
-  //           }
-  //           else if (game.morale == bestGame.morale){
-  //             if (game.timestamp < bestGame.timestamp){
-  //               bestGame := game;
-  //             };
-  //           };
-  //         };
-  //       };
-  //     };
-  //     return ?bestGame.userId;
-  //   };
-  //   return null;
-  // };
-
-   private func getWinner(questGameReward: Types.QuestGameReward) :  ?Types.QuestGame { //return characterId
+  private func getWinner(questGameReward: Types.QuestGameReward) :  [Types.QuestGame] { //return characterId
     var listQuestGame : [Types.QuestGame] = [];
     //get all quest game for game reward
     for (questGame in state.questGames.vals()){
@@ -4332,34 +4296,45 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
         listQuestGame := Array.append<Types.QuestGame>(listQuestGame, [questGame]);
       };
     };
-    if (listQuestGame != []){
-      var bestGame : Types.QuestGame = listQuestGame[0];
-      for (game in listQuestGame.vals()){
-        if (game.hp > bestGame.hp){
-          bestGame := game;
-        }
-        else if (game.hp == bestGame.hp) {
-          if (game.stamina > bestGame.stamina){
-            bestGame := game;
+    let n : Nat = Iter.size<Types.QuestGame>(Iter.fromArray<Types.QuestGame>(listQuestGame));
+    if (listQuestGame != [] and n >= 2){
+      var thawListQuestGame : [var Types.QuestGame] = Array.thaw<Types.QuestGame>(listQuestGame);
+      for (i in Iter.range(0, n-1)){
+        for (j in Iter.range(i+1, n-1)){
+          if (thawListQuestGame[i].hp < thawListQuestGame[j].hp){
+            let temp = thawListQuestGame[i];
+            thawListQuestGame[i] := thawListQuestGame[j];
+            thawListQuestGame[j] := temp;
           }
-          else if (game.stamina == bestGame.stamina){
-            if (game.morale > bestGame.morale){
-              bestGame := game;
+          else if (thawListQuestGame[i].hp == thawListQuestGame[j].hp){
+            if (thawListQuestGame[i].stamina < thawListQuestGame[j].stamina){
+              let temp = thawListQuestGame[i];
+              thawListQuestGame[i] := thawListQuestGame[j];
+              thawListQuestGame[j] := temp;
             }
-            else if (game.morale == bestGame.morale){
-              if (game.timestamp < bestGame.timestamp){
-                bestGame := game;
+            else if (thawListQuestGame[i].stamina == thawListQuestGame[j].stamina){
+              if (thawListQuestGame[i].morale < thawListQuestGame[j].morale){
+                let temp = thawListQuestGame[i];
+                thawListQuestGame[i] := thawListQuestGame[j];
+                thawListQuestGame[j] := temp;
+              }
+              else if (thawListQuestGame[i].morale == thawListQuestGame[j].morale){
+                if (thawListQuestGame[i].timestamp > thawListQuestGame[j].timestamp){
+                  let temp = thawListQuestGame[i];
+                  thawListQuestGame[i] := thawListQuestGame[j];
+                  thawListQuestGame[j] := temp;
+                };
               };
             };
           };
         };
       };
-      return ?bestGame;
+      return listQuestGame;
     };
-    return null;
+    return listQuestGame;
   };
 
-  public shared ({caller}) func getTopOne(questId: Text) : async Response<Types.QuestGame> {
+  public shared ({caller}) func getLeaderBoard(questId: Text) : async Response<[Types.QuestGame]> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
@@ -4368,12 +4343,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       if (reward.rewarded == false and reward.questId == questId
         and now >= reward.beginDate and now <= reward.endDate){
         let rs = getWinner(reward);
-        switch (rs) {
-          case (null) {return #err(#NotFound)};
-          case (?winner) {
-            return #ok(winner);
-          };
-        };
+        return #ok(rs);
       };
     };
     #err(#NotFound);
@@ -4442,29 +4412,25 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
               };
 
               //transfer 65% ICP to quest-winner
-              let rsWinner : ?Types.QuestGame = getWinner(questGameReward);
-              switch (rsWinner) {
-                case (?winner) {
-                  let receiptWinner = await refund(awardToWinner, Principal.fromText(winner.userId));
-                  switch (receiptWinner) {
-                    case (#Err(error)) {
-                      Debug.print(debug_show error);
-                    };
-                    case (#Ok(bIndex)) {
-                      // record transaction
-                      await recordTransaction(
-                        caller,
-                        awardToWinner,
-                        Principal.fromActor(this),
-                        Principal.fromText(winner.userId),
-                        #awardQuestWinner,
-                        ?quest.id,
-                        bIndex
-                      );
-                    };
-                  };
+              let rsWinner : [Types.QuestGame] = getWinner(questGameReward);
+              let winner : Types.QuestGame = rsWinner[0];
+              let receiptWinner = await refund(awardToWinner, Principal.fromText(winner.userId));
+              switch (receiptWinner) {
+                case (#Err(error)) {
+                  Debug.print(debug_show error);
                 };
-                case null {};
+                case (#Ok(bIndex)) {
+                  // record transaction
+                  await recordTransaction(
+                    caller,
+                    awardToWinner,
+                    Principal.fromActor(this),
+                    Principal.fromText(winner.userId),
+                    #awardQuestWinner,
+                    ?quest.id,
+                    bIndex
+                  );
+                };
               };
 
               //update game awarded

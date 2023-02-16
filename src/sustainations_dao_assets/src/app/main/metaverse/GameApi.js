@@ -453,9 +453,9 @@ export async function saveGameReward(questId){
   return rs;
 }
 
-export async function getTopOne(questId){
+export async function getLeaderBoard(questId){
   const {user} = store.getState();
-  const func = async () => await user.actor.getTopOne(questId);
+  const func = async () => await user.actor.getLeaderBoard(questId);
   const rs = (await func()).ok;
   return rs;
 }
