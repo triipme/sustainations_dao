@@ -6156,6 +6156,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
           null,
           bIndex
         );
+        ignore await randomLandSlot(?caller);
         #ok("Success");
       };
       case (#err(error)) {
@@ -6164,7 +6165,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
   };
 
-  public shared ({ caller }) func randomLandSlot() : async Response<Types.Geometry> {
+  public shared ({ caller }) func randomLandSlot(userId : ?Principal) : async Response<Types.Geometry> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
@@ -6184,7 +6185,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
             label whileloop loop {
               while (true) {
                 let rsLandSlot = state.landSlots.get(Int.toText(i) # "-" # Int.toText(j));
-
                 switch (rsLandSlot) {
                   case null {
                     break whileloop;
@@ -6197,7 +6197,10 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
                 };
               };
             };
-            updateLandBuyingStatus(caller, Int.abs(i), Int.abs(j));
+            switch (userId) {
+              case (null) { updateLandBuyingStatus(caller, Int.abs(i), Int.abs(j)); };
+              case (?id) { updateLandBuyingStatus(id, Int.abs(i), Int.abs(j)); };
+            };
             return #ok(
               {
                 zoneNumber = 20;
@@ -6220,7 +6223,11 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
             let index = await randomIndex(0.0, Float.fromInt(adjacentLandSlots.size() -1));
             let result = adjacentLandSlots[Int.abs(index)];
 
-            updateLandBuyingStatus(caller, Int.abs(result.i), Int.abs(result.j));
+            switch (userId) {
+              case (null) { updateLandBuyingStatus(caller, Int.abs(result.i), Int.abs(result.j)); };
+              case (?id) { updateLandBuyingStatus(id, Int.abs(result.i), Int.abs(result.j)); };
+            };
+            
             return #ok(
               {
                 zoneNumber = 20;
