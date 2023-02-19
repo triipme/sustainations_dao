@@ -438,7 +438,7 @@ public type UsableItem = {
     userId : Text;
     usableItemId : Text;
     quality : Text;
-    amount : Int; 
+    amount : Int;
   };
 
   //-------------------------Tile------------------------------//
@@ -680,5 +680,11 @@ public type UsableItem = {
   public type Referral = {
     uid : Principal;
     member : Principal;
+  };
+
+  public type ReferralAward = {
+    refType : Text;
+    refId : Text;
+    amount : Float;
   };
 };

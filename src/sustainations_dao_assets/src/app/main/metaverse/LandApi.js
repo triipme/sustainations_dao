@@ -106,7 +106,7 @@ async function buyLandSlot() {
 // random LandSlot
 async function randomLandSlot() {
   const { user } = store.getState();
-  const func = await user.actor.randomLandSlot()
+  const func = await user.actor.randomLandSlot([])
   const result = func?.ok;
   let d = 1000;
   let latlng1 = utm2lonlat(d * Number(result.j), d * Number(result.i));
