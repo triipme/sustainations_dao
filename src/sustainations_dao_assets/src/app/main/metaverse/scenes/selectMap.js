@@ -99,8 +99,11 @@ class selectMap extends BaseScene {
           this.load.rexAwait(function (successCallback, failureCallback) {
             getLeaderBoard(this.questId).then(result => {
               console.log("Top one: ", result);
-              let user_index = result.find(element => element = this.characterData.userId)
-              console.log("current user ", result.indexOf(user_index))
+              if (result != undefined){
+                let user_index = result.find(element => element = this.characterData.userId)
+                console.log("current user ", result.indexOf(user_index))
+              }
+              this.topone = result;
               successCallback();
             });
           }, this);

@@ -4339,13 +4339,106 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
   };
 
+  // private func getWinner(questGameReward: Types.QuestGameReward) :  [Types.QuestGame] { //return characterId
+  //   var listQuestGame : [Types.QuestGame] = [];
+  //   //get all quest game for game reward
+  //   for (questGame in state.questGames.vals()){
+  //     if (questGame.questId == questGameReward.questId and questGame.timestamp >= questGameReward.beginDate 
+  //     and questGame.timestamp <= questGameReward.endDate) {
+  //       listQuestGame := Array.append<Types.QuestGame>(listQuestGame, [questGame]);
+  //     };
+  //   };
+  //   let n : Nat = Iter.size<Types.QuestGame>(Iter.fromArray<Types.QuestGame>(listQuestGame));
+  //   if (listQuestGame != [] and n >= 2){
+  //     var thawListQuestGame : [var Types.QuestGame] = Array.thaw<Types.QuestGame>(listQuestGame);
+  //     for (i in Iter.range(0, n-1)){
+  //       for (j in Iter.range(i+1, n-1)){
+  //         if (thawListQuestGame[i].hp < thawListQuestGame[j].hp){
+  //           let temp = thawListQuestGame[i];
+  //           thawListQuestGame[i] := thawListQuestGame[j];
+  //           thawListQuestGame[j] := temp;
+  //         }
+  //         else if (thawListQuestGame[i].hp == thawListQuestGame[j].hp){
+  //           if (thawListQuestGame[i].stamina < thawListQuestGame[j].stamina){
+  //             let temp = thawListQuestGame[i];
+  //             thawListQuestGame[i] := thawListQuestGame[j];
+  //             thawListQuestGame[j] := temp;
+  //           }
+  //           else if (thawListQuestGame[i].stamina == thawListQuestGame[j].stamina){
+  //             if (thawListQuestGame[i].morale < thawListQuestGame[j].morale){
+  //               let temp = thawListQuestGame[i];
+  //               thawListQuestGame[i] := thawListQuestGame[j];
+  //               thawListQuestGame[j] := temp;
+  //             }
+  //             else if (thawListQuestGame[i].morale == thawListQuestGame[j].morale){
+  //               if (thawListQuestGame[i].timestamp > thawListQuestGame[j].timestamp){
+  //                 let temp = thawListQuestGame[i];
+  //                 thawListQuestGame[i] := thawListQuestGame[j];
+  //                 thawListQuestGame[j] := temp;
+  //               };
+  //             };
+  //           };
+  //         };
+  //       };
+  //     };
+  //     return listQuestGame;
+  //   };
+  //   return listQuestGame;
+  // };
+
+  private func getBestGameOfPlayer(userId: Text, questGameReward: Types.QuestGameReward) : ?Types.QuestGame {
+    var list : [Types.QuestGame] = [];
+    for (game in state.questGames.vals()){
+      if (game.userId == userId and game.timestamp >= questGameReward.beginDate
+          and game.timestamp <= questGameReward.endDate) {
+        list := Array.append<Types.QuestGame>(list, [game]);
+      };
+    };
+    //find best
+    if (list != []){
+      var best = list[0];
+      for (game in list.vals()){
+        if (game.hp > best.hp){
+          best := game;
+        }
+        else if (game.hp == best.hp){
+          if (game.stamina > best.stamina){
+            best := game;
+          }
+          else if (game.stamina == best.stamina){
+            if (game.morale > best.morale){
+              best := game;
+            }
+            else if (game.morale == best.morale){
+              if (game.timestamp < best.timestamp){
+                best := game;
+              };
+            };
+          };
+        };
+      };
+      return ?best;
+    };
+    return null;
+  };
+
   private func getWinner(questGameReward: Types.QuestGameReward) :  [Types.QuestGame] { //return characterId
     var listQuestGame : [Types.QuestGame] = [];
     //get all quest game for game reward
-    for (questGame in state.questGames.vals()){
-      if (questGame.questId == questGameReward.questId and questGame.timestamp >= questGameReward.beginDate 
-      and questGame.timestamp <= questGameReward.endDate) {
-        listQuestGame := Array.append<Types.QuestGame>(listQuestGame, [questGame]);
+    // for (questGame in state.questGames.vals()){
+    //   if (questGame.questId == questGameReward.questId and questGame.timestamp >= questGameReward.beginDate 
+    //   and questGame.timestamp <= questGameReward.endDate) {
+    //     listQuestGame := Array.append<Types.QuestGame>(listQuestGame, [questGame]);
+    //   };
+    // }; 
+
+    for (player in questGameReward.player.vals()){
+      var bestGame = getBestGameOfPlayer(player, questGameReward);
+      switch (bestGame){
+        case (?best){
+          listQuestGame := Array.append<Types.QuestGame>(listQuestGame, [best]);
+        };
+        case (null) {};
       };
     };
     let n : Nat = Iter.size<Types.QuestGame>(Iter.fromArray<Types.QuestGame>(listQuestGame));
@@ -4410,7 +4503,9 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
         //check min 2 user
         //check totalICP min 10_000
         let endDate = Time.now() / (864 * (10 ** 11)) * (864 * (10 ** 11)) + (864 * (10 ** 11));
-        if (List.size(List.fromArray(questGameReward.player)) < 2 or questGameReward.totalICP < 100_000){
+        let rsWinner : [Types.QuestGame] = getWinner(questGameReward);
+        if (List.size(List.fromArray(questGameReward.player)) < 2 or questGameReward.totalICP < 100_000
+            or rsWinner == []){
           let updateReward : Types.QuestGameReward = {
             id = questGameReward.id;
             questId = questGameReward.questId;
@@ -4464,7 +4559,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
               };
 
               //transfer 65% ICP to quest-winner
-              let rsWinner : [Types.QuestGame] = getWinner(questGameReward);
+              // let rsWinner : [Types.QuestGame] = getWinner(questGameReward);
               let winner : Types.QuestGame = rsWinner[0];
               let receiptWinner = await refund(awardToWinner, Principal.fromText(winner.userId));
               switch (receiptWinner) {
@@ -8028,6 +8123,4 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       };
     };
   };
-
-
 };
