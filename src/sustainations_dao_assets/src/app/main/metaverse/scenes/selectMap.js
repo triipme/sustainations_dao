@@ -371,10 +371,28 @@ class selectMap extends BaseScene {
     var row5 = 300;
     var row6 = 325;
 
+    const numUser = 0;
+    // const heightLB = 0.6; //when have greate than 4 user
+    // const heightLB = 0.1;
+    if (numUser == 0) {
+      var heightLB = 0.4;
+    } else if (numUser == 4) {
+      var heightLB = 0.6;
+    }
+
     this.premiumPopupWindowLeaderBoard = this.add
-      .sprite(gameConfig.scale.width / 2, gameConfig.scale.height / 2 + 30, "popupWindowLeaderBoard")
-      .setScale(0.5, 0.6)
-      .setVisible(this.visible);
+      .sprite(gameConfig.scale.width / 1.5 + 40, gameConfig.scale.height / 4 - 30 , "popupWindowLeaderBoard")
+      .setScale(0.5, heightLB)
+      .setVisible(this.visible)
+      .setOrigin(1, 0)
+    // this.premiumPopupWindowLeaderBoard = this.add
+    //   .sprite(gameConfig.scale.width / 2, gameConfig.scale.height / 2 + 30, "popupWindowLeaderBoard")
+    //   .setScale(0.5, 0.6)
+    //   .setVisible(this.visible)
+    //   .serOrigin(0,0.5)
+
+
+
     this.popupCloseLeaderBoard = this.add
       .image(
         gameConfig.scale.width / 2 + 230,
@@ -551,9 +569,8 @@ class selectMap extends BaseScene {
       .text({
         x: gameConfig.scale.width / 2,
         y: gameConfig.scale.height / 2 - 10,
-        text: `THIS QUEST REQUIRES ${
-          Math.floor(this.price * 10000) / 10000
-        } $ICP TO PLAY.\nDO YOU AGREE?`,
+        text: `THIS QUEST REQUIRES ${Math.floor(this.price * 10000) / 10000
+          } $ICP TO PLAY.\nDO YOU AGREE?`,
         origin: { x: 0.5, y: 0.5 },
         style: {
           font: "bold 30px Arial",
