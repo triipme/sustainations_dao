@@ -31,6 +31,10 @@ function Farm(props) {
   const [listTile, setListTile] = useState([]);
   const [objectId, setObjectId] = useState("");
   const [scroll, setScroll] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startTime, setStartTime] = useState(null);
+  const [duration, setDuration] = useState(null);
+  const [offCoord, setOffCoord] = useState({ x: 0, y: 0 });
   const canvas = useRef();
 
   // const [time, setTime] = useState(Date.now());
@@ -38,12 +42,11 @@ function Farm(props) {
     const cvConfig = canvasConfig(canvas, zoomLevel[scroll]);
     ctx = cvConfig[0];
     canvasEle = cvConfig[1];
-    ctx.scale(zoomLevel[scroll], zoomLevel[scroll]);
-    console.log(zoomLevel[scroll]);
-  }, [scroll]);
+    ctx.setTransform(zoomLevel[scroll], 0, 0, zoomLevel[scroll], offCoord.x, offCoord.y);
+    console.log(zoomLevel[scroll], offCoord);
+  }, [scroll, offCoord]);
 
   function checkChangePlantStatus(prevState, curState) {
-    console.log("cur, prev:", curState[0].properties.status, prevState[0].properties.status);
     const differences = curState.filter((key, idx) => {
       return prevState[idx].properties.status !== key.properties.status;
     });
@@ -51,7 +54,9 @@ function Farm(props) {
       setTileplant(curState);
     }
   }
-  console.log(canvasEle);
+
+  console.log("cur, prev:", offCoord);
+
   useEffect(() => {
     const interval = setInterval(() => {
       (async () => {
@@ -238,7 +243,7 @@ function Farm(props) {
       });
       setListTile(map);
     })();
-  }, [tileplant, scroll]);
+  }, [tileplant, scroll, offCoord]);
 
   const checkAvailablePosition = (i, j, x) => {
     let result = [];
@@ -266,64 +271,6 @@ function Farm(props) {
     return false;
   };
 
-  const handleClick = e => {
-    const pos = checkTilePosition(e, listTile, tileStyle, zoomLevel[scroll]);
-    console.log(pos);
-    if (pos !== null && pos.object === "Pine_Seed") {
-      (async () => {
-        console.log("Remove: ", await user.actor.removeObject(pos.tileId));
-      })();
-    }
-    if (pos !== null && object.objectId === "dig" && pos.object) {
-      (async () => {
-        setLoading(true);
-        console.log("Remove: ", await user.actor.removeObject(pos.tileId));
-        setTileplant(await loadTileSlots(props.landSlotProperties));
-        setInventory((await user.actor.listInventory(characterId)).ok);
-        setLoading(false);
-      })();
-    } else if (
-      object.objectId === "factory" &&
-      pos &&
-      checkAvailablePosition(pos.row, pos.col, 9)
-    ) {
-      (async () => {
-        console.log(
-          "Build Factory: ",
-          await user.actor.constructBuilding(props.landSlotProperties.id, pos.row, pos.col, "c1")
-        );
-        setTileplant(await loadTileSlots(props.landSlotProperties));
-      })();
-    } else if (
-      pos &&
-      checkAvailablePosition(pos.row, pos.col, 1) &&
-      object.objectId != undefined &&
-      object.amount > 0 &&
-      object.objectId !== "m6pine_seed"
-    ) {
-      (async () => {
-        await user.actor.subtractInventory(object.id);
-        console.log(
-          "Plant tree status: ",
-          await user.actor.sowSeed(props.landSlotProperties.id, pos.row, pos.col, object.objectId)
-        );
-        setTileplant(await loadTileSlots(props.landSlotProperties));
-        setInventory((await user.actor.listInventory(characterId)).ok);
-      })();
-    } else if (pos) {
-      if (pos.object === "Factory") {
-        setObjectId(pos.objectId);
-        setPopupFactory(true);
-      } else if (pos.object !== "None" && pos.status === "fullGrown") {
-        (async () => {
-          console.log("Harvest", await user.actor.harvestPlant(pos.tileId));
-          setWarehouses((await user.actor.listProductStorage())?.ok);
-          setTileplant(await loadTileSlots(props.landSlotProperties));
-        })();
-      }
-    }
-  };
-
   const handleChoose = newObj => {
     setObject(newObj);
   };
@@ -346,31 +293,89 @@ function Farm(props) {
     }
   }
 
-  // const [isDragging, setIsDragging] = useState(false);
-  // const [offset, setOffset] = useState({ x: 0, y: 0 });
+  function handleMouseDown(e) {
+    setStartTime(Date.now());
+    setIsDragging(true);
+  }
 
-  // const handleMouseDown = useCallback(event => {
-  //   setIsDragging(true);
-  //   setOffset({
-  //     x: event.clientX - ctx.current.offsetLeft,
-  //     y: event.clientY - ctx.current.offsetTop
-  //   });
-  // }, []);
+  function handleMouseMove(e) {
+    if (!isDragging) {
+      return;
+    }
+    setOffCoord({
+      x: e.pageX - (canvasEle.width / 2 - 120 / 2) * zoomLevel[scroll],
+      y: e.pageY - (canvasEle.height / 3) * zoomLevel[scroll]
+    });
 
-  // const handleMouseMove = useCallback(event => {
-  //   if (!isDragging) {
-  //     return;
-  //   }
-  //   console.log("drag")
-  // }, []);
+    setDuration(startTime - Date.now());
+  }
 
-  // const handleMouseUp = () => {
-  //   setIsDragging(false);
-  // };
+  function handleMouseUp(e) {
+    setIsDragging(false);
+    if (duration === null) {
+      console.log(duration);
+      const pos = checkTilePosition(e, listTile, tileStyle, zoomLevel[scroll], offCoord);
+      console.log(pos);
+      if (pos !== null && pos.object === "Pine_Seed") {
+        (async () => {
+          console.log("Remove: ", await user.actor.removeObject(pos.tileId));
+        })();
+      }
+      if (pos !== null && object.objectId === "dig" && pos.object) {
+        (async () => {
+          setLoading(true);
+          console.log("Remove: ", await user.actor.removeObject(pos.tileId));
+          setTileplant(await loadTileSlots(props.landSlotProperties));
+          setInventory((await user.actor.listInventory(characterId)).ok);
+          setLoading(false);
+        })();
+      } else if (
+        object.objectId === "factory" &&
+        pos &&
+        checkAvailablePosition(pos.row, pos.col, 9)
+      ) {
+        (async () => {
+          console.log(
+            "Build Factory: ",
+            await user.actor.constructBuilding(props.landSlotProperties.id, pos.row, pos.col, "c1")
+          );
+          setTileplant(await loadTileSlots(props.landSlotProperties));
+        })();
+      } else if (
+        pos &&
+        checkAvailablePosition(pos.row, pos.col, 1) &&
+        object.objectId != undefined &&
+        object.amount > 0 &&
+        object.objectId !== "m6pine_seed"
+      ) {
+        (async () => {
+          await user.actor.subtractInventory(object.id);
+          console.log(
+            "Plant tree status: ",
+            await user.actor.sowSeed(props.landSlotProperties.id, pos.row, pos.col, object.objectId)
+          );
+          setTileplant(await loadTileSlots(props.landSlotProperties));
+          setInventory((await user.actor.listInventory(characterId)).ok);
+        })();
+      } else if (pos) {
+        if (pos.object === "Factory") {
+          setObjectId(pos.objectId);
+          setPopupFactory(true);
+        } else if (pos.object !== "None" && pos.status === "fullGrown") {
+          (async () => {
+            console.log("Harvest", await user.actor.harvestPlant(pos.tileId));
+            setWarehouses((await user.actor.listProductStorage())?.ok);
+            setTileplant(await loadTileSlots(props.landSlotProperties));
+          })();
+        }
+      }
+    } else {
+      // ctx.restore();
+      // ctx.clearRect(0, 0, canvasEle.width, canvasEle.height);
+    }
+    setDuration(null);
+  }
 
-  const handleTouchEnd = e => {
-    console.log("Touch event");
-  };
   return (
     <div>
       {popupFactory ? (
@@ -380,9 +385,10 @@ function Farm(props) {
       )}
       <canvas
         ref={canvas}
-        onClick={handleClick}
         onWheel={handleWheel}
-        onTouchEnd={handleTouchEnd}></canvas>
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}></canvas>
       <Hotbar inventory={inventory} onUpdate={handleChoose} />
       <UIFarm warehouses={warehouses}></UIFarm>
     </div>

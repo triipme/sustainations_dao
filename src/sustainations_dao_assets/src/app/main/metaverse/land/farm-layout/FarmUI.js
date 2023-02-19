@@ -20,11 +20,12 @@ const UIFarm = (props) => {
         <ul style={{
           position: "fixed",
           left: "50%",
-          zIndex: "10000",
+          zIndex: "0",
           height: "80px",
           width: "79%",
           transform: "translateX(-50%)",
           top: "8%",
+        
         }} key={Math.floor(Math.random() * 9999999)}>
           <li>
             <div style={{ scale: 0.8 }}>

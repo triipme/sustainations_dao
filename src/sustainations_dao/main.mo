@@ -89,8 +89,14 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     questCompletedCount = 0;
   };
   stable var checkRewardToWinner : Bool = false;
-  stable var referralAward : Nat64 = 40_000;
-  stable var referralLimit = 99;
+  stable var referralAwards : [Types.ReferralAward] = [
+    {
+      refType : Text = "icp";
+      refId : Text = "icp";
+      amount : Float = 0.0004;
+    }
+  ];
+  stable var referralLimit : Int = 99;
 
   var state : State.State = State.empty();
 
@@ -639,35 +645,55 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   };
 
   func rewardReferral(inviter : Principal, member : Principal) : async () {
-    var referralCount = 0;
+    var referralCount : Int = 0;
     for ((_uuid, referral) in state.referrals.entries()) {
       if (referral.uid == inviter) {
         referralCount := referralCount + 1;
       };
     };
-    if (referralCount <= referralLimit) {
+    if (referralCount < referralLimit) {
       let uuid = await createUUID();
       let payload = {
         uid = inviter;
         member;
       };
       let referral = state.referrals.put(uuid, payload);
-      let receipt = await refund(referralAward, inviter);
-      switch (receipt) {
-        case (#Err(error)) {
-          Debug.print(debug_show error);
-        };
-        case (#Ok(bIndex)) {
-          // record transaction
-          await recordTransaction(
-            Principal.fromActor(this),
-            referralAward,
-            Principal.fromActor(this),
-            inviter,
-            #awardReferral,
-            ?uuid,
-            bIndex
-          );
+      for (award in Iter.fromArray(referralAwards)) {
+        if (award.refType == "icp") {
+          // send ICP
+          let amount = Int64.toNat64(Float.toInt64(award.amount  * (10 ** 8)));
+          let receipt = await refund(amount, inviter);
+          switch (receipt) {
+            case (#Err(error)) {
+              Debug.print(debug_show error);
+            };
+            case (#Ok(bIndex)) {
+              // record transaction
+              await recordTransaction(
+                Principal.fromActor(this),
+                amount,
+                Principal.fromActor(this),
+                inviter,
+                #awardReferral,
+                ?uuid,
+                bIndex
+              );
+            };
+          };
+        } else if (award.refType == "usableItem") {
+          switch (state.usableItems.get(award.refId)) {
+            case (?usableItem) {
+              let stash : Types.Stash = {
+                id = await createUUID();
+                userId = Principal.toText(inviter);
+                usableItemId = award.refId;
+                quality = "Good";
+                amount = Float.toInt(award.amount);
+              };
+              let created = Stash.create(stash, state);
+            };
+            case (null) {};
+          };
         };
       };
     };
@@ -1313,15 +1339,23 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
 
   type SystemParams = {
     treasuryContribution : Float;
+    referralAwards : [Types.ReferralAward];
+    referralLimit : Int;
   };
   public query func getSystemParams() : async Response<SystemParams> {
     let systemParams : SystemParams = {
       treasuryContribution;
+      referralAwards;
+      referralLimit;
     };
     #ok(systemParams);
   };
 
-  public shared ({ caller }) func updateSystemParams(treasuryContributionValue : Float) : async Response<Text> {
+  public shared ({ caller }) func updateSystemParams(
+    treasuryContributionValue : Float,
+    referralAwardsValue : [Types.ReferralAward],
+    referralLimitValue : Int
+  ) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
@@ -1334,7 +1368,25 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       return #err(#InvalidData);
     };
 
+    if (referralLimitValue < 0) {
+      return #err(#InvalidData);
+    };
+
+    for (award in Iter.fromArray(referralAwardsValue)) {
+      if (award.amount <= 0) {
+        return #err(#InvalidData);
+      };
+      if (award.refType == "usableItem") {
+        switch (state.usableItems.get(award.refId)) {
+          case (null) { return #err(#InvalidData); };
+          case _ {};
+        };
+      };
+    };
+
     treasuryContribution := treasuryContributionValue;
+    referralAwards := referralAwardsValue;
+    referralLimit := referralLimitValue;
     #ok("Success");
   };
 
@@ -6070,6 +6122,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
           null,
           bIndex
         );
+        ignore await randomLandSlot(?caller);
         #ok("Success");
       };
       case (#err(error)) {
@@ -6078,7 +6131,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
   };
 
-  public shared ({ caller }) func randomLandSlot() : async Response<Types.Geometry> {
+  public shared ({ caller }) func randomLandSlot(userId : ?Principal) : async Response<Types.Geometry> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
@@ -6098,7 +6151,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
             label whileloop loop {
               while (true) {
                 let rsLandSlot = state.landSlots.get(Int.toText(i) # "-" # Int.toText(j));
-
                 switch (rsLandSlot) {
                   case null {
                     break whileloop;
@@ -6111,7 +6163,10 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
                 };
               };
             };
-            updateLandBuyingStatus(caller, Int.abs(i), Int.abs(j));
+            switch (userId) {
+              case (null) { updateLandBuyingStatus(caller, Int.abs(i), Int.abs(j)); };
+              case (?id) { updateLandBuyingStatus(id, Int.abs(i), Int.abs(j)); };
+            };
             return #ok(
               {
                 zoneNumber = 20;
@@ -6134,7 +6189,11 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
             let index = await randomIndex(0.0, Float.fromInt(adjacentLandSlots.size() -1));
             let result = adjacentLandSlots[Int.abs(index)];
 
-            updateLandBuyingStatus(caller, Int.abs(result.i), Int.abs(result.j));
+            switch (userId) {
+              case (null) { updateLandBuyingStatus(caller, Int.abs(result.i), Int.abs(result.j)); };
+              case (?id) { updateLandBuyingStatus(id, Int.abs(result.i), Int.abs(result.j)); };
+            };
+            
             return #ok(
               {
                 zoneNumber = 20;

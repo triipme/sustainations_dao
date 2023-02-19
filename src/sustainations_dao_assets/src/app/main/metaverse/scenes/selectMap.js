@@ -368,10 +368,12 @@ class selectMap extends BaseScene {
     var row2 = 175;
     var row3 = 225;
     var row4 = 275;
+    var row5 = 300;
+    var row6 = 325;
 
     this.premiumPopupWindowLeaderBoard = this.add
-      .sprite(gameConfig.scale.width / 2, gameConfig.scale.height / 2, "popupWindowLeaderBoard")
-      .setScale(0.5)
+      .sprite(gameConfig.scale.width / 2, gameConfig.scale.height / 2 + 30, "popupWindowLeaderBoard")
+      .setScale(0.5, 0.6)
       .setVisible(this.visible);
     this.popupCloseLeaderBoard = this.add
       .image(
@@ -393,11 +395,11 @@ class selectMap extends BaseScene {
     this.popupAcceptLeaderBoard = this.add
       .image(
         gameConfig.scale.width / 2,
-        gameConfig.scale.height / 2 + 145,
+        gameConfig.scale.height / 2 + 205,
         "popupAcceptLeaderBoard"
       )
       .setInteractive()
-      .setScale(0.2)
+      .setScale(0.25)
       .setVisible(true);
     this.popupAcceptLeaderBoard.on("pointerdown", async () => {
       this.clickSound.play();
@@ -448,7 +450,7 @@ class selectMap extends BaseScene {
     // this.text6 = this.add
     //   .text(col3 + move_x, row2 + move_y, completedAtTop1, style)
     //   .setVisible(this.visible);
-     this.text6 = this.add
+    this.text6 = this.add
       .text(col3 + move_x, row2 + move_y, "2/12/2023, 7:52:16 PM", style)
       .setVisible(this.visible);
 
@@ -468,10 +470,23 @@ class selectMap extends BaseScene {
       .text(col3 + move_x, row4 + move_y, "2/12/2023, 3:30:23 PM", style)
       .setVisible(this.visible);
 
+    this.text13 = this.add.text(col1 + move_x, row5 + move_y, ". . .", style).setVisible(this.visible);
+    this.text14 = this.add.text(col2 + move_x, row5 + move_y, ". . .", style).setVisible(this.visible);
+    this.text15 = this.add
+      .text(col3 + move_x, row5 + move_y, ". . .", style)
+      .setVisible(this.visible);
+
+    this.text19 = this.add.text(col0 + move_x, row6 + move_y, "5", style).setVisible(this.visible);
+    this.text16 = this.add.text(col1 + move_x, row6 + move_y, "You", style).setVisible(this.visible);
+    this.text17 = this.add.text(col2 + move_x, row6 + move_y, "1", style).setVisible(this.visible);
+    this.text18 = this.add
+      .text(col3 + move_x, row6 + move_y, "2/14/2023, 3:26:26 PM", style)
+      .setVisible(this.visible);
+
     this.firstPlayer = this.make
       .text({
         x: gameConfig.scale.width / 2,
-        y: gameConfig.scale.height / 2 + 110,
+        y: row6 + move_y + 50,
         text: `Be the best player to get rewards`,
         origin: { x: 0.5, y: 0.5 },
         style: {
@@ -483,11 +498,23 @@ class selectMap extends BaseScene {
       })
       .setVisible(this.visible);
 
-     //add icoin
-     this.icoinWinner = this.add.image(470, 220, "icoinWinner").setScale(0.3).setVisible(this.visible);
-     this.icoinGold = this.add.image(col0 + move_x, row2 + move_y + 10, "icoinGold").setScale(0.3).setVisible(this.visible);
-     this.icoinSilver = this.add.image(col0 + move_x, row3 + move_y + 10, "icoinSilver").setScale(0.3).setVisible(this.visible);
-     this.icoinBronze = this.add.image(col0 + move_x, row4 + move_y + 10, "icoinBronze").setScale(0.3).setVisible(this.visible);
+    //add icoin
+    this.icoinWinner = this.add
+      .image(470, 220, "icoinWinner")
+      .setScale(0.3)
+      .setVisible(this.visible);
+    this.icoinGold = this.add
+      .image(col0 + move_x, row2 + move_y + 10, "icoinGold")
+      .setScale(0.3)
+      .setVisible(this.visible);
+    this.icoinSilver = this.add
+      .image(col0 + move_x, row3 + move_y + 10, "icoinSilver")
+      .setScale(0.3)
+      .setVisible(this.visible);
+    this.icoinBronze = this.add
+      .image(col0 + move_x, row4 + move_y + 10, "icoinBronze")
+      .setScale(0.3)
+      .setVisible(this.visible);
 
     this.premiumPopupCloseBtnEngine.on("pointerdown", () => {
       this.clickSound.play();
@@ -606,15 +633,22 @@ class selectMap extends BaseScene {
       this.text10.setVisible(true);
       this.text11.setVisible(true);
       this.text12.setVisible(true);
+      this.text13.setVisible(true);
+      this.text14.setVisible(true);
+      this.text15.setVisible(true);
+      this.text16.setVisible(true);
+      this.text17.setVisible(true);
+      this.text18.setVisible(true);
+      this.text19.setVisible(true);
       this.firstPlayer.setVisible(true);
       this.premiumPopupWindowLeaderBoard.setVisible(true);
       this.desPopupLeaderBoard.setVisible(true);
       this.popupCloseLeaderBoard.setVisible(true);
       this.popupAcceptLeaderBoard.setVisible(true);
-      this.icoinWinner.setVisible(true)
-      this.icoinGold.setVisible(true)
-      this.icoinSilver.setVisible(true)
-      this.icoinBronze.setVisible(true)
+      this.icoinWinner.setVisible(true);
+      this.icoinGold.setVisible(true);
+      this.icoinSilver.setVisible(true);
+      this.icoinBronze.setVisible(true);
     }
     if (this.visible === false) {
       this.text0.setVisible(false);
@@ -630,27 +664,32 @@ class selectMap extends BaseScene {
       this.text10.setVisible(false);
       this.text11.setVisible(false);
       this.text12.setVisible(false);
+      this.text13.setVisible(false);
+      this.text14.setVisible(false);
+      this.text15.setVisible(false);
+      this.text16.setVisible(false);
+      this.text17.setVisible(false);
+      this.text18.setVisible(false);
+      this.text19.setVisible(false);
       this.firstPlayer.setVisible(false);
       this.premiumPopupWindowLeaderBoard.setVisible(false);
       this.desPopupLeaderBoard.setVisible(false);
       this.popupCloseLeaderBoard.setVisible(false);
       this.popupAcceptLeaderBoard.setVisible(false);
-      this.icoinWinner.setVisible(false)
-      this.icoinGold.setVisible(false)
-      this.icoinSilver.setVisible(false)
-      this.icoinBronze.setVisible(false)
+      this.icoinWinner.setVisible(false);
+      this.icoinGold.setVisible(false);
+      this.icoinSilver.setVisible(false);
+      this.icoinBronze.setVisible(false);
     }
     if (this.visibleEnginePopup === true) {
       this.premiumPopupWindowEngine.setVisible(true);
       this.premiumPopupCloseBtnEngine.setVisible(true);
       this.premiumPopupAcceptBtnEngine.setVisible(true);
-      // this.desPopup.setVisible(true);
     }
     if (this.visibleEnginePopup === false) {
       this.premiumPopupWindowEngine.setVisible(false);
       this.premiumPopupCloseBtnEngine.setVisible(false);
       this.premiumPopupAcceptBtnEngine.setVisible(false);
-      // this.desPopup.setVisible(false);
     }
   }
 }
