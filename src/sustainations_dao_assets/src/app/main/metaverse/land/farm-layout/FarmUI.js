@@ -25,7 +25,6 @@ const UIFarm = (props) => {
           width: "79%",
           transform: "translateX(-50%)",
           top: "8%",
-        
         }} key={Math.floor(Math.random() * 9999999)}>
           <li>
             <div style={{ scale: 0.8 }}>
