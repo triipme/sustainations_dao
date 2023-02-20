@@ -193,8 +193,10 @@ class selectMap extends BaseScene {
 
   async create() {
     console.log("Get Top One", this?.topone);
-    console.log("Get Top One", typeof this.topone?.timestamp);
-    const nanoseconds = Number(this.topone?.timestamp);
+    console.log("Get Top One", this.topone[0]?.id);
+    const id = this.topone[0]?.id;
+    const truncatedId = id ? `${id.substring(0, 3)}...${id.substring(29)}` : '';
+    const nanoseconds = Number(this.topone[0]?.timestamp);
     const milliseconds = nanoseconds / 1000000;
     const date = new Date(milliseconds);
     const dateString = date.toLocaleDateString();
@@ -365,7 +367,7 @@ class selectMap extends BaseScene {
     var move_y = 150;
     var col0 = 100;
     var col1 = 150;
-    var col2 = 265;
+    var col2 = 275;
     var col3 = 350;
     var row1 = 125;
     var row2 = 175;
@@ -378,7 +380,7 @@ class selectMap extends BaseScene {
     // const heightLB = 0.6; //when have greate than 4 user
     // const heightLB = 0.1;
     if (numUser == 0) {
-      var heightLB = 0.4;
+      var heightLB = 0.5;
     } else if (numUser == 4) {
       var heightLB = 0.6;
     }
@@ -388,12 +390,6 @@ class selectMap extends BaseScene {
       .setScale(0.5, heightLB)
       .setVisible(this.visible)
       .setOrigin(1, 0)
-    // this.premiumPopupWindowLeaderBoard = this.add
-    //   .sprite(gameConfig.scale.width / 2, gameConfig.scale.height / 2 + 30, "popupWindowLeaderBoard")
-    //   .setScale(0.5, 0.6)
-    //   .setVisible(this.visible)
-    //   .serOrigin(0,0.5)
-
 
 
     this.popupCloseLeaderBoard = this.add
@@ -416,7 +412,8 @@ class selectMap extends BaseScene {
     this.popupAcceptLeaderBoard = this.add
       .image(
         gameConfig.scale.width / 2,
-        gameConfig.scale.height / 2 + 205,
+        // gameConfig.scale.height / 2 + 205,
+        row5 + move_y + 30,
         "popupAcceptLeaderBoard"
       )
       .setInteractive()
@@ -465,15 +462,15 @@ class selectMap extends BaseScene {
       .setVisible(this.visible);
 
     this.text4 = this.add
-      .text(col1 + move_x, row2 + move_y, "Alice", style)
+      .text(col1 + move_x, row2 + move_y, truncatedId, style)
       .setVisible(this.visible);
-    this.text5 = this.add.text(col2 + move_x, row2 + move_y, "5", style).setVisible(this.visible);
-    // this.text6 = this.add
-    //   .text(col3 + move_x, row2 + move_y, completedAtTop1, style)
-    //   .setVisible(this.visible);
+    this.text5 = this.add.text(col2 + move_x, row2 + move_y, this.topone[0]?.hp, style).setVisible(this.visible);
     this.text6 = this.add
-      .text(col3 + move_x, row2 + move_y, "2/12/2023, 7:52:16 PM", style)
+      .text(col3 + move_x, row2 + move_y, completedAtTop1, style)
       .setVisible(this.visible);
+    // this.text6 = this.add
+    //   .text(col3 + move_x, row2 + move_y, "2/12/2023, 7:52:16 PM", style)
+    //   .setVisible(this.visible);
 
     this.text7 = this.add
       .text(col1 + move_x, row3 + move_y, "Beck", style)
@@ -507,7 +504,7 @@ class selectMap extends BaseScene {
     this.firstPlayer = this.make
       .text({
         x: gameConfig.scale.width / 2,
-        y: row6 + move_y + 50,
+        y: row4 + move_y,
         text: `Be the best player to get rewards`,
         origin: { x: 0.5, y: 0.5 },
         style: {
@@ -647,19 +644,19 @@ class selectMap extends BaseScene {
       this.text4.setVisible(true);
       this.text5.setVisible(true);
       this.text6.setVisible(true);
-      this.text7.setVisible(true);
-      this.text8.setVisible(true);
-      this.text9.setVisible(true);
-      this.text10.setVisible(true);
-      this.text11.setVisible(true);
-      this.text12.setVisible(true);
-      this.text13.setVisible(true);
-      this.text14.setVisible(true);
-      this.text15.setVisible(true);
-      this.text16.setVisible(true);
-      this.text17.setVisible(true);
-      this.text18.setVisible(true);
-      this.text19.setVisible(true);
+      // this.text7.setVisible(true);
+      // this.text8.setVisible(true);
+      // this.text9.setVisible(true);
+      // this.text10.setVisible(true);
+      // this.text11.setVisible(true);
+      // this.text12.setVisible(true);
+      // this.text13.setVisible(true);
+      // this.text14.setVisible(true);
+      // this.text15.setVisible(true);
+      // this.text16.setVisible(true);
+      // this.text17.setVisible(true);
+      // this.text18.setVisible(true);
+      // this.text19.setVisible(true);
       this.firstPlayer.setVisible(true);
       this.premiumPopupWindowLeaderBoard.setVisible(true);
       this.desPopupLeaderBoard.setVisible(true);
@@ -667,8 +664,8 @@ class selectMap extends BaseScene {
       this.popupAcceptLeaderBoard.setVisible(true);
       this.icoinWinner.setVisible(true);
       this.icoinGold.setVisible(true);
-      this.icoinSilver.setVisible(true);
-      this.icoinBronze.setVisible(true);
+      // this.icoinSilver.setVisible(true);
+      // this.icoinBronze.setVisible(true);
     }
     if (this.visible === false) {
       this.text0.setVisible(false);
@@ -678,19 +675,19 @@ class selectMap extends BaseScene {
       this.text4.setVisible(false);
       this.text5.setVisible(false);
       this.text6.setVisible(false);
-      this.text7.setVisible(false);
-      this.text8.setVisible(false);
-      this.text9.setVisible(false);
-      this.text10.setVisible(false);
-      this.text11.setVisible(false);
-      this.text12.setVisible(false);
-      this.text13.setVisible(false);
-      this.text14.setVisible(false);
-      this.text15.setVisible(false);
-      this.text16.setVisible(false);
-      this.text17.setVisible(false);
-      this.text18.setVisible(false);
-      this.text19.setVisible(false);
+      // this.text7.setVisible(false);
+      // this.text8.setVisible(false);
+      // this.text9.setVisible(false);
+      // this.text10.setVisible(false);
+      // this.text11.setVisible(false);
+      // this.text12.setVisible(false);
+      // this.text13.setVisible(false);
+      // this.text14.setVisible(false);
+      // this.text15.setVisible(false);
+      // this.text16.setVisible(false);
+      // this.text17.setVisible(false);
+      // this.text18.setVisible(false);
+      // this.text19.setVisible(false);
       this.firstPlayer.setVisible(false);
       this.premiumPopupWindowLeaderBoard.setVisible(false);
       this.desPopupLeaderBoard.setVisible(false);
@@ -698,8 +695,8 @@ class selectMap extends BaseScene {
       this.popupAcceptLeaderBoard.setVisible(false);
       this.icoinWinner.setVisible(false);
       this.icoinGold.setVisible(false);
-      this.icoinSilver.setVisible(false);
-      this.icoinBronze.setVisible(false);
+      // this.icoinSilver.setVisible(false);
+      // this.icoinBronze.setVisible(false);
     }
     if (this.visibleEnginePopup === true) {
       this.premiumPopupWindowEngine.setVisible(true);
