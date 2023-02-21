@@ -41,9 +41,7 @@ const init = (tileStyle, col, row) => {
   }
 };
 
-const drawImageOnCanvas = (ctx, imageObj, cx, cy, width, height, rowSize, colSize) => {
-  const image = new Image();
-  image.src = imageObj;
+const drawImageOnCanvas = (ctx, image, cx, cy, width, height) => {
   image.onload = function () {
     ctx.imageSmoothingEnabled = true;
     ctx.drawImage(image, cx, cy, width, height);
