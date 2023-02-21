@@ -20,7 +20,8 @@ dfx deploy ledger --argument '(record {
   send_whitelist = vec {}
   })'
 dfx deploy georust
-# dfx deploy internet_identity
+dfx deploy internet_identity
+dfx deploy basic_bitcoin --argument '(variant { Regtest })'
 
 # Replace with public api
 rm src/ledger/ledger.did
@@ -30,6 +31,7 @@ dfx canister call ledger account_balance '(record { account = '$(python3 -c 'pri
 # update ./src/sustainations_dao/.env.mo
 LEDGER_ID=$(dfx canister id ledger)
 GEORUST_ID=$(dfx canister id georust)
+BTC_ID=$(dfx canister id basic_bitcoin)
 
 FILE="./src/sustainations_dao/.env.mo"
 
@@ -37,7 +39,7 @@ FILE="./src/sustainations_dao/.env.mo"
 module Env {
   public let LEDGER_ID = "${LEDGER_ID}";
   public let GEORUST_ID = "${GEORUST_ID}";
-  public let BTC_ID = "r7inp-6aaaa-aaaaa-aaabq-cai";
+  public let BTC_ID = "${BTC_ID}";
 }
 EOM
 

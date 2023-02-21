@@ -1,0 +1,44 @@
+type Utxo = 
+ record {
+   height: nat32;
+   outpoint: OutPoint;
+   value: Satoshi;
+ };
+type SendRequest = 
+ record {
+   amount_in_satoshi: Satoshi;
+   destination_address: text;
+ };
+type Satoshi__1 = nat64;
+type Satoshi = nat64;
+type Page = vec nat8;
+type OutPoint = 
+ record {
+   txid: blob;
+   vout: nat32;
+ };
+type Network = 
+ variant {
+   Mainnet;
+   Regtest;
+   Testnet;
+ };
+type MillisatoshiPerByte = nat64;
+type GetUtxosResponse = 
+ record {
+   next_page: opt Page;
+   tip_block_hash: BlockHash;
+   tip_height: nat32;
+   utxos: vec Utxo;
+ };
+type BlockHash = vec nat8;
+type BitcoinAddress = text;
+type BasicBitcoin = 
+ service {
+   get_balance: (BitcoinAddress) -> (Satoshi__1);
+   get_current_fee_percentiles: () -> (vec MillisatoshiPerByte);
+   get_p2pkh_address: () -> (BitcoinAddress);
+   get_utxos: (BitcoinAddress) -> (GetUtxosResponse);
+   send: (SendRequest) -> (text);
+ };
+service : (Network) -> BasicBitcoin

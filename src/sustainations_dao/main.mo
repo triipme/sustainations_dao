@@ -738,6 +738,79 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     );
   };
 
+  private func validateWallet(wallet : Types.Wallet) : async Result.Result<Any, Text> {
+    switch(wallet.chain) {
+      case(#BTC) { 
+        let rs = await btc.get_balance(wallet.address);
+        #ok(rs);
+      };
+    };
+    // #err("Fuck u");
+  };
+  public shared ({ caller }) func updateUserWallet(
+    wallet : Types.Wallet
+  ) : async Response<Types.Profile> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    switch (state.profiles.get(caller)) {
+      case null {
+        #err(#NotFound);
+      };
+      case (?profile) {
+        var updated_wallets : ?[Types.Wallet] = profile.wallets;
+        let validated = Result.isOk(await validateWallet(wallet)); //validate address wallet
+        if (validated) {
+          if (Option.isNull(updated_wallets)) {
+            updated_wallets := ?[wallet];
+          } else {
+            updated_wallets := ?Array.map<Types.Wallet, Types.Wallet>(Option.get(updated_wallets, []), func (w : Types.Wallet) : Types.Wallet {
+              Debug.print(debug_show(w.chain == wallet.chain));
+              if (w.chain == wallet.chain) {
+                return wallet;
+              } else {
+                return w;
+              }
+            })
+          };
+        };
+        let payload : Types.Profile = {
+          username = profile.username;
+          phone = profile.phone;
+          avatar = profile.avatar;
+          role = profile.role;
+          inviter = profile.inviter;
+          wallets = updated_wallets;
+        };
+        let updated = state.profiles.replace(caller, payload);
+        #ok(payload);
+      };
+    };
+  };
+
+  type Balance = {
+    address : Text;
+    chain : Types.Chain;
+    balance : BTC.Satoshi__1;
+  };
+
+  public func getBalanceWallet(wallets : [Types.Wallet]) : async Response<[Balance]> {
+    var balances : [Balance] = [];
+    for(w in Iter.fromArray(wallets)) {
+      switch(w.chain) {
+        case(#BTC) {
+          let value : Balance = {
+            address = w.address;
+            chain = w.chain;
+            balance = (await btc.get_balance(w.address))
+          };
+          balances := Array.append(balances, [value])
+        };
+      };
+    };
+    #ok(balances);
+  };
+
   type UserInfo = {
     depositAddress : Text;
     balance : Nat64;

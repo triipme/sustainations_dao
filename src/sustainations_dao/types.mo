@@ -15,7 +15,6 @@ module {
   };
   public type Chain = {
     #BTC;
-    #ICP;
   };
   public type Wallet = {
     address: Text;

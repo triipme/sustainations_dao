@@ -11,6 +11,7 @@ import {
 import NavLinkAdapter from '@fuse/core/NavLinkAdapter';
 import FuseLoading from '@fuse/core/FuseLoading';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
+import EditWallets from './EditWallets';
 import { useSelector } from "react-redux";
 import { selectUser } from 'app/store/userSlice';
 import QRCode from "react-qr-code";
@@ -61,6 +62,18 @@ const Profile = () => {
         console.log(err);
       });
   }
+  // const userState = {
+  //   role: result?.ok?.agreement ? _.union(profileRole, brandRole) : ['needAgreement'],
+  //   actor,
+  //   depositAddress: result?.ok?.depositAddress,
+  //   balance: result?.ok?.balance,
+  //   principal,
+  //   brandId: result?.ok?.brandId[0],
+  //   profile,
+  //   avatar,
+  //   inviter
+  // };
+  // dispatch(setUser(userState));
 
   if (loading) {
     return (<FuseLoading />)
@@ -121,6 +134,7 @@ const Profile = () => {
                 <FuseSvgIcon>account_balance_wallet_outlined</FuseSvgIcon>
                 <div className="ml-24 leading-6">{walletAddressLink(user.depositAddress)}</div>
               </div>
+              <EditWallets />
 
               <div className="flex">
                 <FuseSvgIcon>local_phone_outlined</FuseSvgIcon>
