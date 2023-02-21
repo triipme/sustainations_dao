@@ -17,24 +17,6 @@ function FarmContainer() {
   const [isDone, setIsDone] = useState(false);
   const [listFarm, setListFarm] = useState(0);
 
-  const [dimensions, setDimensions] = useState({
-    width: window.innerWidth,
-    height: window.innerHeight
-  });
-
-  useEffect(() => {
-    const handleResize = () => {
-      setDimensions({
-        width: window.innerWidth,
-        height: window.innerHeight
-      });
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
   
   useEffect(() => {
     (async () => {
@@ -88,7 +70,7 @@ function FarmContainer() {
               ) : (
                 <></>
               )}
-              <Farm mapFeatures={farmFeatures} landSlotProperties={farmProperties} dimensions={dimensions}/>
+              <Farm mapFeatures={farmFeatures} landSlotProperties={farmProperties}/>
             </>
           ) : (
             <div

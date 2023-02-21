@@ -19,7 +19,21 @@ let tileStyle = {};
 let ctx = null;
 let canvasEle = null;
 const zoomLevel = [1, 1.2, 1.4, 1.6, 1.8];
+
+const URL_IMAGE = {
+  Factory: "metaverse/farm25D/building/Factory.png",
+  Ground: "metaverse/farm25D/Ground.png",
+  newlyPlanted: "metaverse/farm25D/plant/newlyPlanted.png",
+  Carrot_Seed_growing: "metaverse/farm25D/plant_svg/Carrot_Seed/Carrot_Seed_growing.svg",
+  Carrot_Seed_fullGrown: "metaverse/farm25D/plant_svg/Carrot_Seed/Carrot_Seed_fullGrown.svg",
+  Tomato_Seed_growing: "metaverse/farm25D/plant_svg/Tomato_Seed/Tomato_Seed_growing.svg",
+  Tomato_Seed_fullGrown: "metaverse/farm25D/plant_svg/Tomato_Seed/Tomato_Seed_fullGrown.svg",
+  Wheat_Seed_growing: "metaverse/farm25D/plant_svg/Wheat_Seed/Wheat_Seed_growing.svg",
+  Wheat_Seed_fullGrown: "metaverse/farm25D/plant_svg/Wheat_Seed/Wheat_Seed_fullGrown.svg",
+}
+
 function Farm(props) {
+
   const user = useSelector(selectUser);
   const [tileplant, setTileplant] = useState(props.mapFeatures);
   const [inventory, setInventory] = useState([]);
@@ -35,15 +49,32 @@ function Farm(props) {
   const [startTime, setStartTime] = useState(null);
   const [duration, setDuration] = useState(null);
   const [offCoord, setOffCoord] = useState({ x: 0, y: 0 });
+  const [isMobile, setIsMobile] = useState(false);
+  const [listImg, setListImg] = useState({})
   const canvas = useRef();
 
-  // const [time, setTime] = useState(Date.now());
   useEffect(() => {
-    const cvConfig = canvasConfig(canvas, zoomLevel[scroll]);
+    const userAgent = window.navigator.userAgent;
+    setIsMobile(/Mobi|Android/i.test(userAgent));
+
+    const cvConfig = canvasConfig(canvas);
     ctx = cvConfig[0];
     canvasEle = cvConfig[1];
+
     ctx.setTransform(zoomLevel[scroll], 0, 0, zoomLevel[scroll], offCoord.x, offCoord.y);
-    console.log(zoomLevel[scroll], offCoord);
+
+    (async () => {
+      let tile = await loadTileSlots(props.landSlotProperties);
+      setTileplant(tile);
+      const characterid = await user.actor.readCharacter();
+      const inv = user.actor.listInventory(characterid.ok[0]);
+      const listProductStorage = user.actor.listProductStorage();
+      const stash = user.actor.listStash();
+      const result = await Promise.all([inv, listProductStorage, stash]);
+      setWarehouses(result[1]?.ok);
+      setChacterId(characterid.ok[0]);
+      setInventory(result[0].ok);
+    })();
   }, [scroll, offCoord]);
 
   function checkChangePlantStatus(prevState, curState) {
@@ -55,7 +86,22 @@ function Farm(props) {
     }
   }
 
-  console.log("cur, prev:", offCoord);
+  const loadImage = (url, obj) => {
+    const img = new Image();
+    img.src = url;
+    img.onload = () => {
+      setListImg(prevState => ({
+        ...prevState,
+        [obj]: img
+      }))
+    };
+  };
+
+  useEffect(() => {
+    for (let key in URL_IMAGE) {
+      loadImage(URL_IMAGE[key], key);
+    }
+  }, [])
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -69,66 +115,37 @@ function Farm(props) {
     };
   }, [tileplant]);
 
-  useEffect(() => {
-    tileStyle = sOft(
-      canvasEle.width / 2 - 120 / 2,
-      canvasEle.height / 6,
-      10,
-      10,
-      canvasEle.width / 15,
-      canvasEle.height / 15
-    );
-    let map = init(
-      tileStyle,
-      Number(props.landSlotProperties.j) * 10,
-      Number(props.landSlotProperties.i) * 10
-    );
-    map.forEach((tile, idx) => {
-      loadImage("metaverse/farm25D/Ground.png").then(ground => {
-        ctx.drawImage(ground, tile.x, tile.y, tile.w, tile.h);
-      });
-    });
-    (async () => {
-      let tile = await loadTileSlots(props.landSlotProperties);
-      setTileplant(tile);
-    })();
-  }, []);
 
   // load data
   useEffect(() => {
-    (async () => {
-      const characterid = await user.actor.readCharacter();
-      const inv = user.actor.listInventory(characterid.ok[0]);
-      const listProductStorage = user.actor.listProductStorage();
-
-      const stash = user.actor.listStash();
-      const result = await Promise.all([inv, listProductStorage, stash]);
-      setWarehouses(result[1]?.ok);
-      setChacterId(characterid.ok[0]);
-      setInventory(result[0].ok);
-
+    const draw = async () => {
       //map init
-
+      let startPointX = canvasEle.width / 2 - 120 / 2;
+      let startPointY = canvasEle.height / 6;
+      let width = canvasEle.width / 15;
+      let height = canvasEle.height / 15;
       tileStyle = sOft(
-        canvasEle.width / 2 - 120 / 2,
-        canvasEle.height / 6,
+        startPointX,
+        startPointY,
         10,
         10,
-        canvasEle.width / 15,
-        canvasEle.height / 15
+        width,
+        height
       );
       let map = init(
         tileStyle,
         Number(props.landSlotProperties.j) * 10,
         Number(props.landSlotProperties.i) * 10
       );
-      // ctx.clearRect(0, 0, canvasEle.width, canvasEle.height);
 
       const plantedTile = tileplant.filter(tile => {
         return tile.properties.name !== "None";
       });
 
       var arr = [];
+      map.forEach((tile, idx) =>
+        ctx.drawImage(listImg.Ground, tile.x, tile.y, tile.w, tile.h)
+      );
 
       map.forEach((tile, idx) => {
         let t = plantedTile.filter(object => {
@@ -147,85 +164,53 @@ function Farm(props) {
             });
           }
         }
+        if (t.length > 0) {
+          let cc = getCenterCoordinate(tile);
+          if (t[0].properties.status === "newlyPlanted") {
+            tile.object = t[0].properties.name;
+            tile.tileId = t[0].properties.tileId;
+            tile.status = t[0].properties.status;
+            tile.objectId = t[0].properties.objectId;
+            let startPointNewlyPlanted = { x: cc.x - canvasEle.width / 35, y: cc.y - canvasEle.height / 16, width: canvasEle.width / 20, height: canvasEle.height / 11 };
+            ctx.drawImage(
+              listImg.newlyPlanted,
+              startPointNewlyPlanted.x,
+              startPointNewlyPlanted.y,
+              startPointNewlyPlanted.width,
+              startPointNewlyPlanted.height,
+            );
+          } else if (t[0].properties.name !== "Factory" && t[0].properties.name !== "p6_seed") {
+            // if object name is not Factory
+            tile.object = t[0].properties.name;
+            tile.tileId = t[0].properties.tileId;
+            tile.status = t[0].properties.status;
+            tile.objectId = t[0].properties.objectId;
+            let key = t[0].properties.name + '_' + t[0].properties.status
+            ctx.drawImage(listImg[key],
+              cc.x - canvasEle.width / 35,
+              cc.y - canvasEle.height / 16,
+              canvasEle.width / 20,
+              canvasEle.height / 11,)
 
-        loadImage("metaverse/farm25D/Ground.png").then(ground => {
-          ctx.drawImage(ground, tile.x, tile.y, tile.w, tile.h);
-          if (t.length > 0) {
-            // if amount of tile have object > 0
-            // Loop list tile have object
-            let cc = getCenterCoordinate(tile);
-            if (t[0].properties.status === "newlyPlanted") {
-              tile.object = t[0].properties.name;
-              tile.tileId = t[0].properties.tileId;
-              tile.status = t[0].properties.status;
-              tile.objectId = t[0].properties.objectId;
-              drawImageOnCanvas(
-                ctx,
-                "metaverse/farm25D/plant/newlyPlanted.png",
-                cc.x - canvasEle.width / 35,
-                cc.y - canvasEle.height / 16,
-                canvasEle.width / 20,
-                canvasEle.height / 11,
-                t[0].properties.rowSize,
-                t[0].properties.colSize
-              );
-            } else if (t[0].properties.name !== "Factory" && t[0].properties.name !== "p6_seed") {
-              // if object name is not Factory
-              tile.object = t[0].properties.name;
-              tile.tileId = t[0].properties.tileId;
-              tile.status = t[0].properties.status;
-              tile.objectId = t[0].properties.objectId;
-
-              // ctx.clearRect(
-              //   cc.x - canvasEle.width / 35,
-              //   cc.y - canvasEle.height / 16,
-              //   canvasEle.width / 20,
-              //   canvasEle.height / 11
-              // );
-              // ctx.drawImage(ground, tile.x, tile.y, tile.w, tile.h);
-              drawImageOnCanvas(
-                ctx,
-                "metaverse/farm25D/plant_svg/" +
-                  t[0].properties.name +
-                  "/" +
-                  t[0].properties.name +
-                  "_" +
-                  t[0].properties.status +
-                  ".svg",
-                cc.x - canvasEle.width / 35,
-                cc.y - canvasEle.height / 16,
-                canvasEle.width / 20,
-                canvasEle.height / 11,
-                t[0].properties.rowSize,
-                t[0].properties.colSize
-              );
-            } else {
-              tile["object"] = "Factory";
-              tile["tileId"] = t[0].properties.tileId;
-              tile["objectId"] = t[0].properties.objectId;
-              drawImageOnCanvas(
-                ctx,
-                "metaverse/farm25D/Ground.png",
-                cc.x - canvasEle.width / 10,
-                cc.y - canvasEle.height / 15 / 2,
-                canvasEle.width / 5,
-                canvasEle.height / 5,
-                t[0].properties.rowSize,
-                t[0].properties.colSize
-              );
-              drawImageOnCanvas(
-                ctx,
-                "metaverse/farm25D/building/Factory.png",
-                cc.x - canvasEle.width / 20,
-                cc.y - (57 * canvasEle.height) / 1200,
-                canvasEle.width / 8,
-                canvasEle.height / 6,
-                t[0].properties.rowSize,
-                t[0].properties.colSize
-              );
-            }
+          } else {
+            tile["object"] = "Factory";
+            tile["tileId"] = t[0].properties.tileId;
+            tile["objectId"] = t[0].properties.objectId;
+            ctx.drawImage(listImg.Ground,
+              cc.x - canvasEle.width / 10,
+              cc.y - canvasEle.height / 15 / 2,
+              canvasEle.width / 5,
+              canvasEle.height / 5,
+            );
+            ctx.drawImage(listImg.Factory,
+              cc.x - canvasEle.width / 22,
+              cc.y - canvasEle.height / 15,
+              canvasEle.width / 10,
+              canvasEle.height / 5,
+            );
           }
-        });
+        }
+        // });
       });
 
       arr.map(e => {
@@ -242,7 +227,8 @@ function Farm(props) {
         });
       });
       setListTile(map);
-    })();
+    }
+    Object.keys(listImg).length !== 0 ? draw() : console.log("do nothing");
   }, [tileplant, scroll, offCoord]);
 
   const checkAvailablePosition = (i, j, x) => {
@@ -281,14 +267,9 @@ function Farm(props) {
 
   function handleWheel(e) {
     if (e.deltaY > 0 && scroll != 4) {
-      ctx.restore();
-      ctx.clearRect(0, 0, canvasEle.width, canvasEle.height);
       setScroll(prevScroll => (prevScroll == 4 ? prevScroll : prevScroll + 1));
     }
-
     if (e.deltaY < 0 && scroll != 0) {
-      ctx.restore();
-      ctx.clearRect(0, 0, canvasEle.width, canvasEle.height);
       setScroll(prevScroll => (prevScroll == 0 ? prevScroll : prevScroll - 1));
     }
   }
@@ -302,10 +283,17 @@ function Farm(props) {
     if (!isDragging) {
       return;
     }
-    setOffCoord({
-      x: e.pageX - (canvasEle.width / 2 - 120 / 2) * zoomLevel[scroll],
-      y: e.pageY - (canvasEle.height / 3) * zoomLevel[scroll]
-    });
+    if (isMobile) {
+      setOffCoord({
+        x: e.touches[0].pageX - (canvasEle.width / 2 - 120 / 2) * zoomLevel[scroll],
+        y: e.touches[0].pageY - (canvasEle.height / 3) * zoomLevel[scroll]
+      });
+    } else {
+      setOffCoord({
+        x: e.pageX - (canvasEle.width / 2 - 120 / 2) * zoomLevel[scroll],
+        y: e.pageY - (canvasEle.height / 3) * zoomLevel[scroll]
+      });
+    }
 
     setDuration(startTime - Date.now());
   }
@@ -313,21 +301,13 @@ function Farm(props) {
   function handleMouseUp(e) {
     setIsDragging(false);
     if (duration === null) {
-      console.log(duration);
-      const pos = checkTilePosition(e, listTile, tileStyle, zoomLevel[scroll], offCoord);
-      console.log(pos);
-      if (pos !== null && pos.object === "Pine_Seed") {
-        (async () => {
-          console.log("Remove: ", await user.actor.removeObject(pos.tileId));
-        })();
-      }
+      const pos = checkTilePosition(isMobile ? e.changedTouches[0] : e, listTile, tileStyle, zoomLevel[scroll], offCoord);
+
       if (pos !== null && object.objectId === "dig" && pos.object) {
         (async () => {
-          setLoading(true);
           console.log("Remove: ", await user.actor.removeObject(pos.tileId));
           setTileplant(await loadTileSlots(props.landSlotProperties));
           setInventory((await user.actor.listInventory(characterId)).ok);
-          setLoading(false);
         })();
       } else if (
         object.objectId === "factory" &&
@@ -376,6 +356,7 @@ function Farm(props) {
     setDuration(null);
   }
 
+
   return (
     <div>
       {popupFactory ? (
@@ -388,7 +369,12 @@ function Farm(props) {
         onWheel={handleWheel}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}></canvas>
+        onMouseUp={handleMouseUp}
+
+        onTouchStart={handleMouseDown}
+        onTouchMove={handleMouseMove}
+        onTouchEnd={handleMouseUp}
+      ></canvas>
       <Hotbar inventory={inventory} onUpdate={handleChoose} />
       <UIFarm warehouses={warehouses}></UIFarm>
     </div>
