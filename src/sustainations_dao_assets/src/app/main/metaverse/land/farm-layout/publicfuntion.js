@@ -1,7 +1,7 @@
-const canvasConfig = (canvas, size) => {
+const canvasConfig = (canvas) => {
   const canvasEle = canvas.current;
-  canvasEle.width = window.innerWidth;
-  canvasEle.height = window.innerHeight;
+  canvasEle.width = screen.width;
+  canvasEle.height = screen.height;
   const ctx = canvasEle.getContext("2d");
   ctx.save();
   return [ctx, canvasEle];
@@ -41,9 +41,7 @@ const init = (tileStyle, col, row) => {
   }
 };
 
-const drawImageOnCanvas = (ctx, imageObj, cx, cy, width, height, rowSize, colSize) => {
-  const image = new Image();
-  image.src = imageObj;
+const drawImageOnCanvas = (ctx, image, cx, cy, width, height) => {
   image.onload = function () {
     ctx.imageSmoothingEnabled = true;
     ctx.drawImage(image, cx, cy, width, height);
@@ -94,9 +92,7 @@ const checkTilePosition = (event, listTile, sOft, ratio, d) => {
   let maxX = sOft.sX * ratio + d.x + sOft.w * ratio * ((sOft.m - 1) / 2);
   let maxY = sOft.sY * ratio + d.y + sOft.h * ratio * (sOft.n - 1);
   let result = [];
-  console.log(event.pageX, event.pageY);
   if (minX < event.pageX < maxX && minY < event.pageY < maxY) {
-    console.log(listTile);
     result = listTile.filter(tile => {
       return (
         (tile.x * ratio + d.x) < event.pageX &&
