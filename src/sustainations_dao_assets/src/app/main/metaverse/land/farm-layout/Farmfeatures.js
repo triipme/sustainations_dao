@@ -272,16 +272,18 @@ function Farm(props) {
   };
 
   function handleWheel(e) {
-    if (e.deltaY > 0 && scroll != zoomLevel.length) {
+    if (e.deltaY < 0 && scroll != zoomLevel.length) {
       setScroll(prevScroll => (prevScroll == zoomLevel.length - 1 ? prevScroll : prevScroll + 1));
     }
-    if (e.deltaY < 0 && scroll != 0) {
+    if (e.deltaY > 0 && scroll != 0) {
       setScroll(prevScroll => (prevScroll == 0 ? prevScroll : prevScroll - 1));
     }
   }
 
   const [coordStart, setCoordStart] = useState({ x: 0, y: 0 })
+  const [date, setDate] = useState()
   function handleMouseDown(e) {
+    setDate(Date.now())
     setIsDragging(true);
     if (e.type !== 'mousedown')
       setCoordStart({ x: e.touches[0].pageX, y: e.touches[0].pageY })
@@ -290,6 +292,7 @@ function Farm(props) {
 
   }
   function handleMouseMove(e) {
+
     if (!isDragging) {
       return;
     }
@@ -309,7 +312,7 @@ function Farm(props) {
 
   function handleMouseUp(e) {
     setIsDragging(false);
-    if (e.type === "mouseup") {
+    if (Date.now() - date < 200) {
       const pos = checkTilePosition(e, listTile, tileStyle, zoomLevel[scroll], offCoord);
 
       if (pos !== null && object.objectId === "dig" && pos.object) {
