@@ -3,6 +3,10 @@ const canvasConfig = (canvas) => {
   canvasEle.width = screen.width;
   canvasEle.height = screen.height;
   const ctx = canvasEle.getContext("2d");
+  // ctx.mozImageSmoothingEnabled = false;
+  // ctx.webkitImageSmoothingEnabled = false;
+  // ctx.msImageSmoothingEnabled = false;
+  // ctx.imageSmoothingEnabled = false;
   ctx.save();
   return [ctx, canvasEle];
 };

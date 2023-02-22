@@ -18,18 +18,25 @@ import UIFarm from "./FarmUI";
 let tileStyle = {};
 let ctx = null;
 let canvasEle = null;
-const zoomLevel = [1, 1.2, 1.4, 1.6, 1.8];
+const zoomLevel = [];
+let startPointX = (screen.width / 2 - 120 / 2);
+let startPointY = (screen.height / 6);
+let width = screen.width / 15;
+let height = screen.height / 15;
+for (let i = 1; i < 2; i += 0.1) {
+  zoomLevel.push(i);
+}
 
 const URL_IMAGE = {
   Factory: "metaverse/farm25D/building/Factory.png",
   Ground: "metaverse/farm25D/Ground.png",
   newlyPlanted: "metaverse/farm25D/plant/newlyPlanted.png",
-  Carrot_Seed_growing: "metaverse/farm25D/plant_svg/Carrot_Seed/Carrot_Seed_growing.svg",
-  Carrot_Seed_fullGrown: "metaverse/farm25D/plant_svg/Carrot_Seed/Carrot_Seed_fullGrown.svg",
-  Tomato_Seed_growing: "metaverse/farm25D/plant_svg/Tomato_Seed/Tomato_Seed_growing.svg",
-  Tomato_Seed_fullGrown: "metaverse/farm25D/plant_svg/Tomato_Seed/Tomato_Seed_fullGrown.svg",
-  Wheat_Seed_growing: "metaverse/farm25D/plant_svg/Wheat_Seed/Wheat_Seed_growing.svg",
-  Wheat_Seed_fullGrown: "metaverse/farm25D/plant_svg/Wheat_Seed/Wheat_Seed_fullGrown.svg",
+  Carrot_Seed_growing: "metaverse/farm25D/plant/Carrot_Seed/Carrot_Seed_growing.png",
+  Carrot_Seed_fullGrown: "metaverse/farm25D/plant/Carrot_Seed/Carrot_Seed_fullGrown.png",
+  Tomato_Seed_growing: "metaverse/farm25D/plant/Tomato_Seed/Tomato_Seed_growing.png",
+  Tomato_Seed_fullGrown: "metaverse/farm25D/plant/Tomato_Seed/Tomato_Seed_fullGrown.png",
+  Wheat_Seed_growing: "metaverse/farm25D/plant/Wheat_Seed/Wheat_Seed_growing.png",
+  Wheat_Seed_fullGrown: "metaverse/farm25D/plant/Wheat_Seed/Wheat_Seed_fullGrown.png",
 }
 
 function Farm(props) {
@@ -38,7 +45,6 @@ function Farm(props) {
   const [tileplant, setTileplant] = useState(props.mapFeatures);
   const [inventory, setInventory] = useState([]);
   const [characterId, setChacterId] = useState("");
-  const [loading, setLoading] = useState(false);
   const [warehouses, setWarehouses] = useState([]);
   const [popupFactory, setPopupFactory] = useState(false);
   const [object, setObject] = useState({});
@@ -46,23 +52,16 @@ function Farm(props) {
   const [objectId, setObjectId] = useState("");
   const [scroll, setScroll] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-  const [startTime, setStartTime] = useState(null);
-  const [duration, setDuration] = useState(null);
+  const [newStartPoint, setNewStartPoint] = useState({ x: startPointX, y: startPointY })
   const [offCoord, setOffCoord] = useState({ x: 0, y: 0 });
   const [isMobile, setIsMobile] = useState(false);
   const [listImg, setListImg] = useState({})
   const canvas = useRef();
 
+
   useEffect(() => {
     const userAgent = window.navigator.userAgent;
     setIsMobile(/Mobi|Android/i.test(userAgent));
-
-    const cvConfig = canvasConfig(canvas);
-    ctx = cvConfig[0];
-    canvasEle = cvConfig[1];
-
-    ctx.setTransform(zoomLevel[scroll], 0, 0, zoomLevel[scroll], offCoord.x, offCoord.y);
-
     (async () => {
       let tile = await loadTileSlots(props.landSlotProperties);
       setTileplant(tile);
@@ -75,6 +74,15 @@ function Farm(props) {
       setChacterId(characterid.ok[0]);
       setInventory(result[0].ok);
     })();
+  }, [])
+
+  useEffect(() => {
+    const cvConfig = canvasConfig(canvas);
+    ctx = cvConfig[0];
+    canvasEle = cvConfig[1];
+    // ctx.setTransform(zoomLevel[scroll], 0, 0, zoomLevel[scroll],);
+    ctx.translate(offCoord.x, offCoord.y)
+    ctx.scale(zoomLevel[scroll], zoomLevel[scroll])
   }, [scroll, offCoord]);
 
   function checkChangePlantStatus(prevState, curState) {
@@ -120,10 +128,8 @@ function Farm(props) {
   useEffect(() => {
     const draw = async () => {
       //map init
-      let startPointX = canvasEle.width / 2 - 120 / 2;
-      let startPointY = canvasEle.height / 6;
-      let width = canvasEle.width / 15;
-      let height = canvasEle.height / 15;
+      startPointX = newStartPoint.x;
+      startPointY = newStartPoint.y;
       tileStyle = sOft(
         startPointX,
         startPointY,
@@ -266,42 +272,48 @@ function Farm(props) {
   };
 
   function handleWheel(e) {
-    if (e.deltaY > 0 && scroll != 4) {
-      setScroll(prevScroll => (prevScroll == 4 ? prevScroll : prevScroll + 1));
+    if (e.deltaY < 0 && scroll != zoomLevel.length) {
+      setScroll(prevScroll => (prevScroll == zoomLevel.length - 1 ? prevScroll : prevScroll + 1));
     }
-    if (e.deltaY < 0 && scroll != 0) {
+    if (e.deltaY > 0 && scroll != 0) {
       setScroll(prevScroll => (prevScroll == 0 ? prevScroll : prevScroll - 1));
     }
   }
 
+  const [coordStart, setCoordStart] = useState({ x: 0, y: 0 })
+  const [date, setDate] = useState()
   function handleMouseDown(e) {
-    setStartTime(Date.now());
+    setDate(Date.now())
     setIsDragging(true);
-  }
+    if (e.type !== 'mousedown')
+      setCoordStart({ x: e.touches[0].pageX, y: e.touches[0].pageY })
+    else
+      setCoordStart({ x: e.pageX, y: e.pageY })
 
+  }
   function handleMouseMove(e) {
+
     if (!isDragging) {
       return;
     }
     if (isMobile) {
       setOffCoord({
-        x: e.touches[0].pageX - (canvasEle.width / 2 - 120 / 2) * zoomLevel[scroll],
-        y: e.touches[0].pageY - (canvasEle.height / 3) * zoomLevel[scroll]
+        x: (e.touches[0].pageX - coordStart.x),
+        y: (e.touches[0].pageY - coordStart.y)
       });
     } else {
       setOffCoord({
-        x: e.pageX - (canvasEle.width / 2 - 120 / 2) * zoomLevel[scroll],
-        y: e.pageY - (canvasEle.height / 3) * zoomLevel[scroll]
+        x: (e.pageX - coordStart.x),
+        y: (e.pageY - coordStart.y)
       });
     }
 
-    setDuration(startTime - Date.now());
   }
 
   function handleMouseUp(e) {
     setIsDragging(false);
-    if (duration === null) {
-      const pos = checkTilePosition(isMobile ? e.changedTouches[0] : e, listTile, tileStyle, zoomLevel[scroll], offCoord);
+    if (Date.now() - date < 200) {
+      const pos = checkTilePosition(e, listTile, tileStyle, zoomLevel[scroll], offCoord);
 
       if (pos !== null && object.objectId === "dig" && pos.object) {
         (async () => {
@@ -350,10 +362,9 @@ function Farm(props) {
         }
       }
     } else {
-      // ctx.restore();
-      // ctx.clearRect(0, 0, canvasEle.width, canvasEle.height);
+      setNewStartPoint({ x: (newStartPoint.x + offCoord.x), y: (newStartPoint.y + offCoord.y) });
+      setOffCoord({ x: 0, y: 0 });
     }
-    setDuration(null);
   }
 
 

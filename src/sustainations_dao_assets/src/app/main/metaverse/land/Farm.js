@@ -17,7 +17,7 @@ function FarmContainer() {
   const [isDone, setIsDone] = useState(false);
   const [listFarm, setListFarm] = useState(0);
 
-  
+
   useEffect(() => {
     (async () => {
       let myFarmProperties = (await user.actor.listUserLandSlots())?.ok;
@@ -39,6 +39,8 @@ function FarmContainer() {
 
   return (
     <>
+      <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"></meta>
       {isDone ? (
         <div>
           {farmFeatures ? (
@@ -70,7 +72,7 @@ function FarmContainer() {
               ) : (
                 <></>
               )}
-              <Farm mapFeatures={farmFeatures} landSlotProperties={farmProperties}/>
+              <Farm mapFeatures={farmFeatures} landSlotProperties={farmProperties} />
             </>
           ) : (
             <div
