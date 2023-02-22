@@ -78,6 +78,19 @@ const Settings = () => {
     return result;
   }, [user]);
 
+  const materials = useAsyncMemo(async () => {
+    setLoading(true);
+    const res = await user.actor.listMaterials();
+    const result = res.ok.map(item => {
+      return {
+        id: item[0],
+        name: item[1].name
+      }
+    });
+    setLoading(false);
+    return result;
+  }, [user]);
+
   useEffect(() => {
     (async () => {
       setLoading(true);
@@ -190,7 +203,7 @@ const Settings = () => {
               <Typography className="mt-32 mb-16 text-3xl font-bold tracking-tight leading-tight">
                 Referral Awards
               </Typography>
-              <ReferralAwards usableItems={usableItems} />
+              <ReferralAwards usableItems={usableItems} materials={materials} />
               <Box
                 className="flex items-center mt-40 py-14 pr-16 pl-4 sm:pr-48 sm:pl-36 border-t"
               >
