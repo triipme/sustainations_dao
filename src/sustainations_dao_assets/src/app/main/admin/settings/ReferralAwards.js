@@ -1,7 +1,6 @@
 import _ from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import {
-  Autocomplete,
   Button,
   FormControl,
   FormHelperText,
@@ -14,7 +13,7 @@ import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 import { Controller, useFormContext } from 'react-hook-form';
 
 function ReferralAwards(props) {
-  const { usableItems } = props
+  const { usableItems, materials } = props
   const methods = useFormContext();
   const { control, formState, watch, setValue } = methods;
   const { errors } = formState;
@@ -40,8 +39,8 @@ function ReferralAwards(props) {
         return {
           uuid,
           refType: event.target.value,
-          refId: '',
-          amount: '',
+          refId: null,
+          amount: null,
           deleted: false
         };
       } else {
@@ -73,7 +72,7 @@ function ReferralAwards(props) {
       uuid: uuidv4(),
       refType: 'icp',
       refId: 'icp',
-      amount: '',
+      amount: null,
       deleted: false
     };
     setValue('referralAwards', _.concat(referralAwards, item));
@@ -87,7 +86,7 @@ function ReferralAwards(props) {
             name={`referralAwards[${itemIndex}][refType]`}
             control={control}
             render={({ field: { onChange, value } }) => (
-              <FormControl required sx={{ m: 1, minWidth: 120 }} className="mt-8 mb-16 mx-4">
+              <FormControl required sx={{ m: 1, minWidth: 120 }} className="mt-8 mb-16 mx-4 min-w-256">
                 <InputLabel id={`referralAwards_${itemIndex}_refType_label`}>Award Type</InputLabel>
                 <Select
                   value={value}
@@ -103,7 +102,8 @@ function ReferralAwards(props) {
                   }}
                 >
                   <MenuItem key="icp" value="icp">ICP</MenuItem>
-                  <MenuItem key="usableItem" value="usableItem">Item</MenuItem>
+                  <MenuItem key="usableItem" value="usableItem">Usable Item</MenuItem>
+                  <MenuItem key="material" value="material">Material (Seed)</MenuItem>
                 </Select>
                 {errors?.referralAwards?.[itemIndex]?.refId?.message && (<FormHelperText error>{errors?.referralAwards?.[itemIndex]?.refType?.message}</FormHelperText>)}
               </FormControl>
@@ -156,8 +156,37 @@ function ReferralAwards(props) {
                       handleChangeId(event, item.uuid);
                     }}
                   >
-                    {usableItems?.map((uitem, uindex) => (
-                      <MenuItem key={uindex} value={uitem.id}>{uitem.name}</MenuItem>
+                    {usableItems?.map((uItem, uIndex) => (
+                      <MenuItem key={uIndex} value={uItem.id}>{uItem.name}</MenuItem>
+                    ))}
+                  </Select>
+                  {errors?.referralAwards?.[itemIndex]?.refId?.message && (<FormHelperText error>{errors?.referralAwards?.[itemIndex]?.refId?.message}</FormHelperText>)}
+                </FormControl>
+              )}
+            />
+          )}
+          {item.refType == 'material' && (
+            <Controller
+              name={`referralAwards[${itemIndex}][refId]`}
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <FormControl required sx={{ m: 1, minWidth: 120 }} className="mt-8 mb-16 mx-4 min-w-256">
+                  <InputLabel id={`referralAwards_${itemIndex}_refId_label`}>Select Award</InputLabel>
+                  <Select
+                    error={!!errors.referralAwards?.[itemIndex]?.refId}
+                    required
+                    labelId={`referralAwards_${itemIndex}_refId_label`}
+                    id={`referralAwards_${itemIndex}_refId`}
+                    label="Select award *"
+                    variant="outlined"
+                    value={value}
+                    onChange={(event) => {
+                      onChange(event.target.value);
+                      handleChangeId(event, item.uuid);
+                    }}
+                  >
+                    {materials?.map((mItem, mIndex) => (
+                      <MenuItem key={mIndex} value={mItem.id}>{mItem.name}</MenuItem>
                     ))}
                   </Select>
                   {errors?.referralAwards?.[itemIndex]?.refId?.message && (<FormHelperText error>{errors?.referralAwards?.[itemIndex]?.refId?.message}</FormHelperText>)}
