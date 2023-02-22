@@ -99,7 +99,7 @@ class selectMap extends BaseScene {
           this.load.rexAwait(function (successCallback, failureCallback) {
             getLeaderBoard(this.questId).then(result => {
               console.log("Top one: ", result);
-              if (result != undefined){
+              if (result != undefined) {
                 let user_index = result.find(element => element = this.characterData.userId)
                 console.log("current user ", result.indexOf(user_index))
               }
@@ -192,17 +192,20 @@ class selectMap extends BaseScene {
   }
 
   async create() {
-    console.log("Get Top One", this?.topone);
-    console.log("Get Top One", this.topone[0]?.id);
-    const id = this.topone[0]?.id;
-    const truncatedId = id ? `${id.substring(0, 3)}...${id.substring(29)}` : '';
-    const nanoseconds = Number(this.topone[0]?.timestamp);
-    const milliseconds = nanoseconds / 1000000;
-    const date = new Date(milliseconds);
-    const dateString = date.toLocaleDateString();
-    const timeString = date.toLocaleTimeString();
-    const completedAtTop1 = `${dateString}, ${timeString}`;
-    console.log(date.toLocaleTimeString());
+    let truncatedId = ""
+    let completedAtTop1 = ""
+    let hpTop1 = ""
+    if (this?.topone != undefined) {
+      const id = this?.topone[0]?.id;
+      truncatedId = id ? `${id.substring(0, 3)}...${id.substring(29)}` : '';
+      const nanoseconds = Number(this.topone[0]?.timestamp);
+      const milliseconds = nanoseconds / 1000000;
+      const date = new Date(milliseconds);
+      const dateString = date.toLocaleDateString();
+      const timeString = date.toLocaleTimeString();
+      completedAtTop1 = `${dateString}, ${timeString}`;
+      hpTop1 = this.topone[0]?.hp
+    }
 
     // add audios
     this.hoverSound = this.sound.add("hoverSound");
@@ -386,7 +389,7 @@ class selectMap extends BaseScene {
     }
 
     this.premiumPopupWindowLeaderBoard = this.add
-      .sprite(gameConfig.scale.width / 1.5 + 40, gameConfig.scale.height / 4 - 30 , "popupWindowLeaderBoard")
+      .sprite(gameConfig.scale.width / 1.5 + 40, gameConfig.scale.height / 4 - 30, "popupWindowLeaderBoard")
       .setScale(0.5, heightLB)
       .setVisible(this.visible)
       .setOrigin(1, 0)
@@ -464,13 +467,10 @@ class selectMap extends BaseScene {
     this.text4 = this.add
       .text(col1 + move_x, row2 + move_y, truncatedId, style)
       .setVisible(this.visible);
-    this.text5 = this.add.text(col2 + move_x, row2 + move_y, this.topone[0]?.hp, style).setVisible(this.visible);
+    this.text5 = this.add.text(col2 + move_x, row2 + move_y, hpTop1, style).setVisible(this.visible);
     this.text6 = this.add
       .text(col3 + move_x, row2 + move_y, completedAtTop1, style)
       .setVisible(this.visible);
-    // this.text6 = this.add
-    //   .text(col3 + move_x, row2 + move_y, "2/12/2023, 7:52:16 PM", style)
-    //   .setVisible(this.visible);
 
     this.text7 = this.add
       .text(col1 + move_x, row3 + move_y, "Beck", style)
