@@ -82,6 +82,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   stable var createProposalFee : Nat64 = 20_000;
   stable var voteFee : Nat64 = 20_000;
   stable var treasuryContribution : Float = 0.03;
+  stable var godUser : Text = "wijp2-ps7be-cocx3-zbfru-uuw2q-hdmpl-zudjl-f2ofs-7qgni-t7ik5-lqe";
   stable var gamePlayAnalytics : Types.GamePlayAnalytics = {
     miniGamePlayCount = 0;
     miniGameCompletedCount = 0;
@@ -686,33 +687,11 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
               let stash : Types.Stash = {
                 id = await createUUID();
                 userId = Principal.toText(inviter);
-                usableItemId = usableItem.id;
+                usableItemId = award.refId;
                 quality = "Good";
                 amount = Float.toInt(award.amount);
               };
               let created = Stash.create(stash, state);
-            };
-            case (null) {};
-          };
-        } else if (award.refType == "material") {
-          switch (state.materials.get(award.refId)) {
-            case (?material) {
-              var characterId : Text = "";
-              label characterLabel for (character in state.characters.vals()){
-                if (character.userId == inviter){
-                  characterId := character.id;
-                  break characterLabel;
-                };
-              };
-              if (characterId != "") {
-                let inventory : Types.Inventory = {
-                  id = await createUUID();
-                  characterId;
-                  materialId = material.id;
-                  amount = Float.toInt(award.amount);
-                };
-                let created = state.inventories.put(inventory.id, inventory);
-              };
             };
             case (null) {};
           };
@@ -1400,12 +1379,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       };
       if (award.refType == "usableItem") {
         switch (state.usableItems.get(award.refId)) {
-          case (null) { return #err(#InvalidData); };
-          case _ {};
-        };
-      };
-      if (award.refType == "material") {
-        switch (state.materials.get(award.refId)) {
           case (null) { return #err(#InvalidData); };
           case _ {};
         };
@@ -3429,7 +3402,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   //     };
   //   };
   // };
-  public shared ({ caller }) func createQuestEngine(questEngine : Types.Quest) : async Response<Text> {
+   public shared ({ caller }) func createQuestEngine(questEngine : Types.Quest) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
@@ -3472,14 +3445,20 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
-    // let godUser = "wijp2-ps7be-cocx3-zbfru-uuw2q-hdmpl-zudjl-f2ofs-7qgni-t7ik5-lqe";
-    let godUser = "er6vc-e6wpu-j5rhx-nalco-a5pko-5yff7-2exmn-6qe4v-tbrnz-6bhvb-yae";
     for (quest in state.questEngine.quests.vals()){
       if (Principal.toText(quest.userId) == godUser){
         return #ok(quest);
       };
     };
     #err(#NotFound);
+  };
+
+  public shared ({ caller }) func updateAdminQuest(newGodUser: Text) : async Response<Text> { //for test local
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    godUser := newGodUser;
+    #ok("Success");
   };
 
   public shared query ({ caller }) func getScenePreviewQuest(questId: Text) : async Response<Types.Scene> {
