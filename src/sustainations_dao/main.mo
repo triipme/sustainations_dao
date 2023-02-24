@@ -687,11 +687,33 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
               let stash : Types.Stash = {
                 id = await createUUID();
                 userId = Principal.toText(inviter);
-                usableItemId = award.refId;
+                usableItemId = usableItem.id;
                 quality = "Good";
                 amount = Float.toInt(award.amount);
               };
               let created = Stash.create(stash, state);
+            };
+            case (null) {};
+          };
+        } else if (award.refType == "material") {
+          switch (state.materials.get(award.refId)) {
+            case (?material) {
+              var characterId : Text = "";
+              label characterLabel for (character in state.characters.vals()){
+                if (character.userId == inviter){
+                  characterId := character.id;
+                  break characterLabel;
+                };
+              };
+              if (characterId != "") {
+                let inventory : Types.Inventory = {
+                  id = await createUUID();
+                  characterId;
+                  materialId = material.id;
+                  amount = Float.toInt(award.amount);
+                };
+                let created = state.inventories.put(inventory.id, inventory);
+              };
             };
             case (null) {};
           };
@@ -1379,6 +1401,12 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       };
       if (award.refType == "usableItem") {
         switch (state.usableItems.get(award.refId)) {
+          case (null) { return #err(#InvalidData); };
+          case _ {};
+        };
+      };
+      if (award.refType == "material") {
+        switch (state.materials.get(award.refId)) {
           case (null) { return #err(#InvalidData); };
           case _ {};
         };
@@ -3402,7 +3430,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   //     };
   //   };
   // };
-   public shared ({ caller }) func createQuestEngine(questEngine : Types.Quest) : async Response<Text> {
+  public shared ({ caller }) func createQuestEngine(questEngine : Types.Quest) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
