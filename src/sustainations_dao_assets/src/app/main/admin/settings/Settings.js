@@ -200,6 +200,24 @@ const Settings = () => {
                   />
                 )}
               />
+              <Controller
+                name="AdminQuestID"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    error={!!errors.referralLimit}
+                    required
+                    helperText={errors?.referralLimit?.message}
+                    className="mt-8 mb-16"
+                    label="Admin Quest ID"
+                    id="AdminQuestID"
+                    type="text"
+                    variant="outlined"
+                    fullWidth
+                  />
+                )}
+              />
               <Typography className="mt-32 mb-16 text-3xl font-bold tracking-tight leading-tight">
                 Referral Awards
               </Typography>
