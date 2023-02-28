@@ -52,6 +52,7 @@ const Settings = () => {
   const [loading, setLoading] = useState(true);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [referralAwards, setReferralAwards] = useState([]);
+  const [adminID, setadminID] = useState("")
 
   const methods = useForm({
     mode: 'onChange',
@@ -59,6 +60,7 @@ const Settings = () => {
       treasuryContribution: '',
       referralAwards: [],
       referralLimit: '',
+      adminquestID: 'wijp2-ps7be-cocx3-zbfru-uuw2q-hdmpl-zudjl-f2ofs-7qgni-t7ik5-lqe',
     },
     resolver: yupResolver(schema),
   });
@@ -96,7 +98,8 @@ const Settings = () => {
       setLoading(true);
       try {
         const result = await user.actor.getSystemParams()
-        if ('ok' in result) {
+  
+        if ('ok' in result ) {
           const awards = result.ok.referralAwards?.map(item => {
             return _.merge(item, { uuid: uuidv4(), deleted: false });
           });
@@ -106,6 +109,14 @@ const Settings = () => {
             referralAwards: awards,
             referralLimit: parseInt(result.ok.referralLimit)
           });
+        } else {
+          navigate('/404');
+        }
+
+        const adminID = await user.actor.getAdminQuest()
+        if ('ok' in adminID ) {
+          // setadminID(user.actor.getAdminQuest()?.)
+          console.log("admin", adminID)
         } else {
           navigate('/404');
         }
@@ -130,6 +141,7 @@ const Settings = () => {
         }),
         parseInt(data.referralLimit)
       );
+
       if ("ok" in result) {
         dispatch(showMessage({ message: 'Success!' }));
       } else {
@@ -201,17 +213,18 @@ const Settings = () => {
                 )}
               />
               <Controller
-                name="AdminQuestID"
+                name="adminquestID"
                 control={control}
                 render={({ field }) => (
                   <TextField
                     {...field}
+                    disabled
                     error={!!errors.referralLimit}
                     required
                     helperText={errors?.referralLimit?.message}
                     className="mt-8 mb-16"
                     label="Admin Quest ID"
-                    id="AdminQuestID"
+                    id="adminquestID"
                     type="text"
                     variant="outlined"
                     fullWidth
