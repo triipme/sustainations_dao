@@ -3456,7 +3456,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
   };
 
-  public shared query ({ caller }) func checkCreatedQuestOfUser() : async Response<Types.QuestEngine> {
+  public shared query ({ caller }) func getUserQuest() : async Response<Types.QuestEngine> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
@@ -3488,7 +3488,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     return #ok(godUser);
   };
 
-  public shared ({ caller }) func updateAdminQuest(newGodUser: Text) : async Response<Text> { //for test local
+  public shared ({ caller }) func updateGodUser(newGodUser: Text) : async Response<Text> { //for test local
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
@@ -3501,7 +3501,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     #err(#NotFound);
   };
 
-  public shared query ({ caller }) func getScenePreviewQuest(questId: Text) : async Response<Types.Scene> {
+  public shared query ({ caller }) func getPreviewScene(questId: Text) : async Response<Types.Scene> {
     let rsQuest = state.questEngine.quests.get(questId);
       switch (rsQuest) {
       case (?quest) {
@@ -3605,7 +3605,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     // return Result.fromOption(rsEvent, #NotFound);
   };
 
-  public shared ({ caller }) func updateCharacterStatsEngine(character : Types.Character) : async Response<Text> {
+  public shared ({ caller }) func updateEngineCharacterStats(character : Types.Character) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };

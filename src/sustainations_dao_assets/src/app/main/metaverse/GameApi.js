@@ -64,10 +64,10 @@ function updateCharacterStats(character) {
   })
 };
 
-export function updateCharacterStatsEngine(character) {
+export function updateEngineCharacterStats(character) {
   const promise = new Promise((resolve, reject) => {
     const { user } = store.getState();
-    const rs = user.actor.updateCharacterStatsEngine(character);
+    const rs = user.actor.updateEngineCharacterStats(character);
     resolve(rs);
   })
   promise.then((data) => {
