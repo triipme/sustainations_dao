@@ -3481,12 +3481,24 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     #err(#NotFound);
   };
 
+  public shared query ({ caller }) func getGodUser() : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    return #ok(godUser);
+  };
+
   public shared ({ caller }) func updateAdminQuest(newGodUser: Text) : async Response<Text> { //for test local
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
-    godUser := newGodUser;
-    #ok("Success");
+    for (character in state.characters.vals()){
+      if (Principal.toText(character.userId) == newGodUser){
+        godUser := newGodUser;
+        return #ok("Success");
+      };
+    };
+    #err(#NotFound);
   };
 
   public shared query ({ caller }) func getScenePreviewQuest(questId: Text) : async Response<Types.Scene> {
