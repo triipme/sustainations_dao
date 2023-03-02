@@ -44,7 +44,7 @@ const schema = yup.object().shape({
   referralLimit: yup.number().typeError('You must enter a referral limit')
     .integer('You must enter an integer number')
     .min(0, 'You must enter a non-negative number'),
-    godUser: yup.string()
+  godUser: yup.string().typeError('You must enter God user').required('You must enter God user')
 });
 
 const Settings = () => {
@@ -52,7 +52,6 @@ const Settings = () => {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
   const [submitLoading, setSubmitLoading] = useState(false);
-  const [referralAwards, setReferralAwards] = useState([]);
 
   const methods = useForm({
     mode: 'onChange',
@@ -103,7 +102,6 @@ const Settings = () => {
           const awards = result.ok.referralAwards?.map(item => {
             return _.merge(item, { uuid: uuidv4(), deleted: false });
           });
-          setReferralAwards(awards);
           reset({
             treasuryContribution: parseFloat(result.ok.treasuryContribution),
             referralAwards: awards,
@@ -121,7 +119,6 @@ const Settings = () => {
     })();
   }, [user]);
 
-
   const onSubmit = async (data) => {
     setSubmitLoading(true);
     try {
@@ -137,8 +134,6 @@ const Settings = () => {
         }),
         parseInt(data.referralLimit)
       );
-
-  
 
       if ("ok" in result ) {
         dispatch(showMessage({ message: 'Success!' }));
@@ -216,9 +211,9 @@ const Settings = () => {
                 render={({ field }) => (
                   <TextField
                     {...field}
-                    error={!!errors.referralLimit}
+                    error={!!errors.godUser}
                     required
-                    helperText={errors?.referralLimit?.message}
+                    helperText={errors?.godUser?.message}
                     className="mt-8 mb-16"
                     label="God User"
                     id="godUser"
