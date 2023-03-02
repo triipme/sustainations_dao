@@ -4,13 +4,6 @@ import Slider from "@mui/material/Slider";
 import Button from "@mui/material/Button";
 function ButtonZoom({ handleWheelIncrease, handleWheelDecrease}) {
   const [count, setCount] = useState(0);
-
-  //   function preventHorizontalKeyboardNavigation(event) {
-  //     if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
-  //       event.preventDefault();
-  //     }
-  //   }
-
   return (
     <div
       style={{
