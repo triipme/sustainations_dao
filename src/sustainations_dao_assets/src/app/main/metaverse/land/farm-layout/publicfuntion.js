@@ -1,7 +1,12 @@
-const canvasConfig = (canvas) => {
+const canvasConfig = canvas => {
   const canvasEle = canvas.current;
-  canvasEle.width = screen.width;
-  canvasEle.height = screen.height;
+  if(screen.width >= screen.height){
+    canvasEle.width = screen.width;
+    canvasEle.height = screen.height;
+  } else {
+    canvasEle.width = screen.height;
+    canvasEle.height = screen.width;
+  }
   const ctx = canvasEle.getContext("2d");
   // ctx.mozImageSmoothingEnabled = false;
   // ctx.webkitImageSmoothingEnabled = false;
@@ -99,10 +104,10 @@ const checkTilePosition = (event, listTile, sOft, ratio, d) => {
   if (minX < event.pageX < maxX && minY < event.pageY < maxY) {
     result = listTile.filter(tile => {
       return (
-        (tile.x * ratio + d.x) < event.pageX &&
-        event.pageX < (tile.x * ratio + d.x) + sOft.w * ratio &&
-        (tile.y * ratio + d.y) < event.pageY &&
-        event.pageY < (tile.y * ratio + d.y) + sOft.h * ratio
+        tile.x * ratio + d.x < event.pageX &&
+        event.pageX < tile.x * ratio + d.x + sOft.w * ratio &&
+        tile.y * ratio + d.y < event.pageY &&
+        event.pageY < tile.y * ratio + d.y + sOft.h * ratio
       );
     });
   }
@@ -134,6 +139,7 @@ const getCenterCoordinate = coord => {
   return { x: coord.x + coord.w / 2, y: coord.y + coord.h / 2 };
 };
 
+
 export {
   canvasConfig,
   sOft,
@@ -143,5 +149,5 @@ export {
   drawRhombus,
   checkTilePosition,
   getCenterCoordinate,
-  loadImage
+  loadImage,
 };
