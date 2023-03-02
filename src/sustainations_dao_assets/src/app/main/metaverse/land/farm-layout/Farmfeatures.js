@@ -4,6 +4,7 @@ import { selectUser } from "app/store/userSlice";
 import { loadTileSlots } from "../../LandApi";
 import Hotbar from "./HotBar";
 import FarmProduce from "./FarmProduce";
+import ButtonZoom from "./Button-zoom";
 import {
   init,
   drawImageOnCanvas,
@@ -19,8 +20,8 @@ let tileStyle = {};
 let ctx = null;
 let canvasEle = null;
 const zoomLevel = [];
-let startPointX = (screen.width / 2 - 120 / 2);
-let startPointY = (screen.height / 6);
+let startPointX = screen.width / 2 - 120 / 2;
+let startPointY = screen.height / 6;
 let width = screen.width / 15;
 let height = screen.height / 15;
 for (let i = 1; i < 2; i += 0.1) {
@@ -36,11 +37,10 @@ const URL_IMAGE = {
   Tomato_Seed_growing: "metaverse/farm25D/plant/Tomato_Seed/Tomato_Seed_growing.png",
   Tomato_Seed_fullGrown: "metaverse/farm25D/plant/Tomato_Seed/Tomato_Seed_fullGrown.png",
   Wheat_Seed_growing: "metaverse/farm25D/plant/Wheat_Seed/Wheat_Seed_growing.png",
-  Wheat_Seed_fullGrown: "metaverse/farm25D/plant/Wheat_Seed/Wheat_Seed_fullGrown.png",
-}
+  Wheat_Seed_fullGrown: "metaverse/farm25D/plant/Wheat_Seed/Wheat_Seed_fullGrown.png"
+};
 
 function Farm(props) {
-
   const user = useSelector(selectUser);
   const [tileplant, setTileplant] = useState(props.mapFeatures);
   const [inventory, setInventory] = useState([]);
@@ -52,12 +52,11 @@ function Farm(props) {
   const [objectId, setObjectId] = useState("");
   const [scroll, setScroll] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-  const [newStartPoint, setNewStartPoint] = useState({ x: startPointX, y: startPointY })
+  const [newStartPoint, setNewStartPoint] = useState({ x: startPointX, y: startPointY });
   const [offCoord, setOffCoord] = useState({ x: 0, y: 0 });
   const [isMobile, setIsMobile] = useState(false);
-  const [listImg, setListImg] = useState({})
+  const [listImg, setListImg] = useState({});
   const canvas = useRef();
-
 
   useEffect(() => {
     const userAgent = window.navigator.userAgent;
@@ -74,15 +73,15 @@ function Farm(props) {
       setChacterId(characterid.ok[0]);
       setInventory(result[0].ok);
     })();
-  }, [])
+  }, []);
 
   useEffect(() => {
     const cvConfig = canvasConfig(canvas);
     ctx = cvConfig[0];
     canvasEle = cvConfig[1];
     // ctx.setTransform(zoomLevel[scroll], 0, 0, zoomLevel[scroll],);
-    ctx.translate(offCoord.x, offCoord.y)
-    ctx.scale(zoomLevel[scroll], zoomLevel[scroll])
+    ctx.translate(offCoord.x, offCoord.y);
+    ctx.scale(zoomLevel[scroll], zoomLevel[scroll]);
   }, [scroll, offCoord]);
 
   function checkChangePlantStatus(prevState, curState) {
@@ -101,7 +100,7 @@ function Farm(props) {
       setListImg(prevState => ({
         ...prevState,
         [obj]: img
-      }))
+      }));
     };
   };
 
@@ -109,7 +108,7 @@ function Farm(props) {
     for (let key in URL_IMAGE) {
       loadImage(URL_IMAGE[key], key);
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -123,21 +122,13 @@ function Farm(props) {
     };
   }, [tileplant]);
 
-
   // load data
   useEffect(() => {
     const draw = async () => {
       //map init
       startPointX = newStartPoint.x;
       startPointY = newStartPoint.y;
-      tileStyle = sOft(
-        startPointX,
-        startPointY,
-        10,
-        10,
-        width,
-        height
-      );
+      tileStyle = sOft(startPointX, startPointY, 10, 10, width, height);
       let map = init(
         tileStyle,
         Number(props.landSlotProperties.j) * 10,
@@ -149,9 +140,7 @@ function Farm(props) {
       });
 
       var arr = [];
-      map.forEach((tile, idx) =>
-        ctx.drawImage(listImg.Ground, tile.x, tile.y, tile.w, tile.h)
-      );
+      map.forEach((tile, idx) => ctx.drawImage(listImg.Ground, tile.x, tile.y, tile.w, tile.h));
 
       map.forEach((tile, idx) => {
         let t = plantedTile.filter(object => {
@@ -177,13 +166,18 @@ function Farm(props) {
             tile.tileId = t[0].properties.tileId;
             tile.status = t[0].properties.status;
             tile.objectId = t[0].properties.objectId;
-            let startPointNewlyPlanted = { x: cc.x - canvasEle.width / 35, y: cc.y - canvasEle.height / 16, width: canvasEle.width / 20, height: canvasEle.height / 11 };
+            let startPointNewlyPlanted = {
+              x: cc.x - canvasEle.width / 35,
+              y: cc.y - canvasEle.height / 16,
+              width: canvasEle.width / 20,
+              height: canvasEle.height / 11
+            };
             ctx.drawImage(
               listImg.newlyPlanted,
               startPointNewlyPlanted.x,
               startPointNewlyPlanted.y,
               startPointNewlyPlanted.width,
-              startPointNewlyPlanted.height,
+              startPointNewlyPlanted.height
             );
           } else if (t[0].properties.name !== "Factory" && t[0].properties.name !== "p6_seed") {
             // if object name is not Factory
@@ -191,28 +185,31 @@ function Farm(props) {
             tile.tileId = t[0].properties.tileId;
             tile.status = t[0].properties.status;
             tile.objectId = t[0].properties.objectId;
-            let key = t[0].properties.name + '_' + t[0].properties.status
-            ctx.drawImage(listImg[key],
+            let key = t[0].properties.name + "_" + t[0].properties.status;
+            ctx.drawImage(
+              listImg[key],
               cc.x - canvasEle.width / 35,
               cc.y - canvasEle.height / 16,
               canvasEle.width / 20,
-              canvasEle.height / 11,)
-
+              canvasEle.height / 11
+            );
           } else {
             tile["object"] = "Factory";
             tile["tileId"] = t[0].properties.tileId;
             tile["objectId"] = t[0].properties.objectId;
-            ctx.drawImage(listImg.Ground,
+            ctx.drawImage(
+              listImg.Ground,
               cc.x - canvasEle.width / 10,
               cc.y - canvasEle.height / 15 / 2,
               canvasEle.width / 5,
-              canvasEle.height / 5,
+              canvasEle.height / 5
             );
-            ctx.drawImage(listImg.Factory,
+            ctx.drawImage(
+              listImg.Factory,
               cc.x - canvasEle.width / 22,
               cc.y - canvasEle.height / 15,
               canvasEle.width / 10,
-              canvasEle.height / 5,
+              canvasEle.height / 5
             );
           }
         }
@@ -233,7 +230,7 @@ function Farm(props) {
         });
       });
       setListTile(map);
-    }
+    };
     Object.keys(listImg).length !== 0 ? draw() : console.log("do nothing");
   }, [tileplant, scroll, offCoord]);
 
@@ -272,42 +269,43 @@ function Farm(props) {
   };
 
   function handleWheel(e) {
-    if (e.deltaY < 0 && scroll != zoomLevel.length) {
+    if (e.deltaY > 0 && scroll != zoomLevel.length) {
       setScroll(prevScroll => (prevScroll == zoomLevel.length - 1 ? prevScroll : prevScroll + 1));
     }
-    if (e.deltaY > 0 && scroll != 0) {
+    if (e.deltaY < 0 && scroll != 0) {
       setScroll(prevScroll => (prevScroll == 0 ? prevScroll : prevScroll - 1));
     }
   }
 
-  const [coordStart, setCoordStart] = useState({ x: 0, y: 0 })
-  const [date, setDate] = useState()
+  function handleWheelIncrease(e) {
+    setScroll(prevScroll => (prevScroll == zoomLevel.length - 1 ? prevScroll : prevScroll + 1));
+  }
+  function handleWheelDecrease(e) {
+    setScroll(prevScroll => (prevScroll == 0 ? prevScroll : prevScroll - 1));
+  }
+  const [coordStart, setCoordStart] = useState({ x: 0, y: 0 });
+  const [date, setDate] = useState();
   function handleMouseDown(e) {
-    setDate(Date.now())
+    setDate(Date.now());
     setIsDragging(true);
-    if (e.type !== 'mousedown')
-      setCoordStart({ x: e.touches[0].pageX, y: e.touches[0].pageY })
-    else
-      setCoordStart({ x: e.pageX, y: e.pageY })
-
+    if (e.type !== "mousedown") setCoordStart({ x: e.touches[0].pageX, y: e.touches[0].pageY });
+    else setCoordStart({ x: e.pageX, y: e.pageY });
   }
   function handleMouseMove(e) {
-
     if (!isDragging) {
       return;
     }
     if (isMobile) {
       setOffCoord({
-        x: (e.touches[0].pageX - coordStart.x),
-        y: (e.touches[0].pageY - coordStart.y)
+        x: e.touches[0].pageX - coordStart.x,
+        y: e.touches[0].pageY - coordStart.y
       });
     } else {
       setOffCoord({
-        x: (e.pageX - coordStart.x),
-        y: (e.pageY - coordStart.y)
+        x: e.pageX - coordStart.x,
+        y: e.pageY - coordStart.y
       });
     }
-
   }
 
   function handleMouseUp(e) {
@@ -362,11 +360,10 @@ function Farm(props) {
         }
       }
     } else {
-      setNewStartPoint({ x: (newStartPoint.x + offCoord.x), y: (newStartPoint.y + offCoord.y) });
+      setNewStartPoint({ x: newStartPoint.x + offCoord.x, y: newStartPoint.y + offCoord.y });
       setOffCoord({ x: 0, y: 0 });
     }
   }
-
 
   return (
     <div>
@@ -381,11 +378,13 @@ function Farm(props) {
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
-
         onTouchStart={handleMouseDown}
         onTouchMove={handleMouseMove}
-        onTouchEnd={handleMouseUp}
-      ></canvas>
+        onTouchEnd={handleMouseUp}></canvas>
+      <ButtonZoom
+        handleWheelIncrease={handleWheelIncrease}
+        handleWheelDecrease={handleWheelDecrease}s
+      />
       <Hotbar inventory={inventory} onUpdate={handleChoose} />
       <UIFarm warehouses={warehouses}></UIFarm>
     </div>
