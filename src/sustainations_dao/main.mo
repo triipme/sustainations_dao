@@ -82,6 +82,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   stable var createProposalFee : Nat64 = 20_000;
   stable var voteFee : Nat64 = 20_000;
   stable var treasuryContribution : Float = 0.03;
+  stable var godUser : Text = "wijp2-ps7be-cocx3-zbfru-uuw2q-hdmpl-zudjl-f2ofs-7qgni-t7ik5-lqe";
   stable var gamePlayAnalytics : Types.GamePlayAnalytics = {
     miniGamePlayCount = 0;
     miniGameCompletedCount = 0;
@@ -1361,12 +1362,14 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
 
   type SystemParams = {
     treasuryContribution : Float;
+    godUser : Text;
     referralAwards : [Types.ReferralAward];
     referralLimit : Int;
   };
   public query func getSystemParams() : async Response<SystemParams> {
     let systemParams : SystemParams = {
       treasuryContribution;
+      godUser;
       referralAwards;
       referralLimit;
     };
@@ -1375,6 +1378,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
 
   public shared ({ caller }) func updateSystemParams(
     treasuryContributionValue : Float,
+    godUserValue : Text,
     referralAwardsValue : [Types.ReferralAward],
     referralLimitValue : Int
   ) : async Response<Text> {
@@ -1387,6 +1391,17 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
 
     if (treasuryContributionValue < 0) {
+      return #err(#InvalidData);
+    };
+
+    var check : Bool = false;
+    label findUserId for (character in state.characters.vals()){
+      if (Principal.toText(character.userId) == godUserValue){
+        check := true;
+        break findUserId;
+      };
+    };
+    if (check == false) {
       return #err(#InvalidData);
     };
 
@@ -1413,6 +1428,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
 
     treasuryContribution := treasuryContributionValue;
+    godUser := godUserValue;
     referralAwards := referralAwardsValue;
     referralLimit := referralLimitValue;
     #ok("Success");
@@ -3455,7 +3471,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
   };
 
-  public shared query ({ caller }) func checkCreatedQuestOfUser() : async Response<Types.QuestEngine> {
+  public shared query ({ caller }) func getUserQuest() : async Response<Types.QuestEngine> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
@@ -3472,8 +3488,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
-    //let godUser = "wijp2-ps7be-cocx3-zbfru-uuw2q-hdmpl-zudjl-f2ofs-7qgni-t7ik5-lqe";
-    let godUser = "er6vc-e6wpu-j5rhx-nalco-a5pko-5yff7-2exmn-6qe4v-tbrnz-6bhvb-yae";
     for (quest in state.questEngine.quests.vals()){
       if (Principal.toText(quest.userId) == godUser){
         return #ok(quest);
@@ -3482,7 +3496,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     #err(#NotFound);
   };
 
-  public shared query ({ caller }) func getScenePreviewQuest(questId: Text) : async Response<Types.Scene> {
+  public shared query ({ caller }) func getPreviewScene(questId: Text) : async Response<Types.Scene> {
     let rsQuest = state.questEngine.quests.get(questId);
       switch (rsQuest) {
       case (?quest) {
@@ -3586,7 +3600,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     // return Result.fromOption(rsEvent, #NotFound);
   };
 
-  public shared ({ caller }) func updateCharacterStatsEngine(character : Types.Character) : async Response<Text> {
+  public shared ({ caller }) func updateEngineCharacterStats(character : Types.Character) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };

@@ -44,6 +44,7 @@ const schema = yup.object().shape({
   referralLimit: yup.number().typeError('You must enter a referral limit')
     .integer('You must enter an integer number')
     .min(0, 'You must enter a non-negative number'),
+  godUser: yup.string().typeError('You must enter God user').required('You must enter God user')
 });
 
 const Settings = () => {
@@ -51,7 +52,6 @@ const Settings = () => {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
   const [submitLoading, setSubmitLoading] = useState(false);
-  const [referralAwards, setReferralAwards] = useState([]);
 
   const methods = useForm({
     mode: 'onChange',
@@ -59,6 +59,7 @@ const Settings = () => {
       treasuryContribution: '',
       referralAwards: [],
       referralLimit: '',
+      godUser: '',
     },
     resolver: yupResolver(schema),
   });
@@ -96,19 +97,21 @@ const Settings = () => {
       setLoading(true);
       try {
         const result = await user.actor.getSystemParams()
+  
         if ('ok' in result) {
           const awards = result.ok.referralAwards?.map(item => {
             return _.merge(item, { uuid: uuidv4(), deleted: false });
           });
-          setReferralAwards(awards);
           reset({
             treasuryContribution: parseFloat(result.ok.treasuryContribution),
             referralAwards: awards,
-            referralLimit: parseInt(result.ok.referralLimit)
+            referralLimit: parseInt(result.ok.referralLimit),
+            godUser: result.ok.godUser
           });
         } else {
           navigate('/404');
         }
+
       } catch (error) {
         console.log(error);
       }
@@ -121,6 +124,7 @@ const Settings = () => {
     try {
       const result = await user.actor.updateSystemParams(
         parseFloat(data.treasuryContribution),
+        data.godUser,
         _.filter(data.referralAwards, ['deleted', false]).map(item => {
           return {
             refType: item.refType,
@@ -130,18 +134,19 @@ const Settings = () => {
         }),
         parseInt(data.referralLimit)
       );
-      if ("ok" in result) {
+
+      if ("ok" in result ) {
         dispatch(showMessage({ message: 'Success!' }));
       } else {
         throw result?.err;
       }
     } catch (error) {
       console.log(error);
-      const message = {
+      const message = error && Object.keys(error)[0] ? {
         "NotAuthorized": "Please sign in!.",
         "AdminRoleRequired": "Required admin role.",
         "InvalidData": "Invalid request data."
-      }[Object.keys(error)[0]] || 'Error! Please try again later!'
+      }[Object.keys(error)[0]] : 'Error! Please try again later!'
       dispatch(showMessage({ message }));
     }
     setSubmitLoading(false);
@@ -195,6 +200,24 @@ const Settings = () => {
                     label="Referral Limit"
                     id="referralLimit"
                     type="number"
+                    variant="outlined"
+                    fullWidth
+                  />
+                )}
+              />
+              <Controller
+                name="godUser"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    error={!!errors.godUser}
+                    required
+                    helperText={errors?.godUser?.message}
+                    className="mt-8 mb-16"
+                    label="God User"
+                    id="godUser"
+                    type="text"
                     variant="outlined"
                     fullWidth
                   />
