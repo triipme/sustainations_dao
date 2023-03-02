@@ -139,7 +139,7 @@ const Settings = () => {
         }),
         parseInt(data.referralLimit)
       );
-        console.log(data.adminquestID)
+
       const resultupdateAdminQuest = await user.actor.updateAdminQuest(data.adminquestID)
       
 
@@ -149,13 +149,6 @@ const Settings = () => {
         throw result?.err;
       }
     } catch (error) {
-      // console.log(error);
-      // const message = {
-      //   "NotAuthorized": "Please sign in!.",
-      //   "AdminRoleRequired": "Required admin role.",
-      //   "InvalidData": "Invalid request data."
-      // }[Object.keys(error)[0]] || 'Error! Please try again later!'
-      // dispatch(showMessage({ message }));
       console.log(error);
       const message = error && Object.keys(error)[0] ? {
         "NotAuthorized": "Please sign in!.",
