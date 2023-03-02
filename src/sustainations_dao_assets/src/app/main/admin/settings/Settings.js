@@ -220,7 +220,7 @@ const Settings = () => {
                     required
                     helperText={errors?.referralLimit?.message}
                     className="mt-8 mb-16"
-                    label="Admin Quest ID"
+                    label="God User"
                     id="godUser"
                     type="text"
                     variant="outlined"
