@@ -44,7 +44,7 @@ const schema = yup.object().shape({
   referralLimit: yup.number().typeError('You must enter a referral limit')
     .integer('You must enter an integer number')
     .min(0, 'You must enter a non-negative number'),
-  adminquestID: yup.string()
+    godUser: yup.string()
 });
 
 const Settings = () => {
@@ -61,7 +61,7 @@ const Settings = () => {
       treasuryContribution: '',
       referralAwards: [],
       referralLimit: '',
-      adminquestID: '',
+      godUser: '',
     },
     resolver: yupResolver(schema),
   });
@@ -99,9 +99,8 @@ const Settings = () => {
       setLoading(true);
       try {
         const result = await user.actor.getSystemParams()
-        const adminID = await user.actor.getGodUser()
   
-        if ('ok' in result && 'ok' in adminID) {
+        if ('ok' in result) {
           const awards = result.ok.referralAwards?.map(item => {
             return _.merge(item, { uuid: uuidv4(), deleted: false });
           });
@@ -110,7 +109,7 @@ const Settings = () => {
             treasuryContribution: parseFloat(result.ok.treasuryContribution),
             referralAwards: awards,
             referralLimit: parseInt(result.ok.referralLimit),
-            adminquestID: adminID?.ok
+            godUser: result.ok.godUser
           });
         } else {
           navigate('/404');
@@ -130,6 +129,7 @@ const Settings = () => {
     try {
       const result = await user.actor.updateSystemParams(
         parseFloat(data.treasuryContribution),
+        data.godUser,
         _.filter(data.referralAwards, ['deleted', false]).map(item => {
           return {
             refType: item.refType,
@@ -140,10 +140,9 @@ const Settings = () => {
         parseInt(data.referralLimit)
       );
 
-      const resultupdateAdminQuest = await user.actor.updateAdminQuest(data.adminquestID)
-      
+  
 
-      if ("ok" in result && "ok" in resultupdateAdminQuest) {
+      if ("ok" in result ) {
         dispatch(showMessage({ message: 'Success!' }));
       } else {
         throw result?.err;
@@ -214,7 +213,7 @@ const Settings = () => {
                 )}
               />
               <Controller
-                name="adminquestID"
+                name="godUser"
                 control={control}
                 render={({ field }) => (
                   <TextField
@@ -224,7 +223,7 @@ const Settings = () => {
                     helperText={errors?.referralLimit?.message}
                     className="mt-8 mb-16"
                     label="Admin Quest ID"
-                    id="adminquestID"
+                    id="godUser"
                     type="text"
                     variant="outlined"
                     fullWidth
