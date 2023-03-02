@@ -53,7 +53,6 @@ const Settings = () => {
   const [loading, setLoading] = useState(true);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [referralAwards, setReferralAwards] = useState([]);
-  const [adminID, setadminID] = useState("")
 
   const methods = useForm({
     mode: 'onChange',
@@ -122,7 +121,6 @@ const Settings = () => {
     })();
   }, [user]);
 
-  console.log(adminID)
 
   const onSubmit = async (data) => {
     setSubmitLoading(true);
