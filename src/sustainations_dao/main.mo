@@ -407,6 +407,17 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     for ((k, v) in Iter.fromArray(landTransferHistories)) {
       state.landTransferHistories.put(k, v);
     };
+    for ((k, v) in Iter.fromArray(landTransferHistories)) {
+      let newLandBuying : Types.LandBuyingHistory = {
+        id = v.id;
+        buyer = v.buyerId;
+        owner = v.ownerId;
+        land = v.landId;
+        transferTime = v.transferTime;
+        icp = v.price;
+      };
+      state.landBuyingHistories.put(k, newLandBuying);
+    };
     for ((k, v) in Iter.fromArray(landBuyingStatuses)) {
       state.landBuyingStatuses.put(k, v);
     };
@@ -6678,17 +6689,29 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       landId = landId;
       transferTime = Time.now();
       price = price;
+      test = null;
     };
     let created = state.landTransferHistories.put(newLandTransferHistory.id, newLandTransferHistory);
   };
 
   public shared query ({ caller }) func listLandTransferHistories() : async Response<[(Text, Types.LandTransferHistory)]> {
     var list : [(Text, Types.LandTransferHistory)] = [];
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized); //isNotAuthorized
-    };
+    // if (Principal.toText(caller) == "2vxsx-fae") {
+    //   return #err(#NotAuthorized); //isNotAuthorized
+    // };
     for ((K, V) in state.landTransferHistories.entries()) {
       list := Array.append<(Text, Types.LandTransferHistory)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+
+  public shared query ({ caller }) func listLandBuyingHistories() : async Response<[(Text, Types.LandBuyingHistory)]> {
+    var list : [(Text, Types.LandBuyingHistory)] = [];
+    // if (Principal.toText(caller) == "2vxsx-fae") {
+    //   return #err(#NotAuthorized); //isNotAuthorized
+    // };
+    for ((K, V) in state.landBuyingHistories.entries()) {
+      list := Array.append<(Text, Types.LandBuyingHistory)>(list, [(K, V)]);
     };
     #ok((list));
   };

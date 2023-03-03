@@ -10,6 +10,7 @@ module LandSlotHistory {
       landId = landTransferHistory.landId;
       transferTime = landTransferHistory.transferTime;
       price = landTransferHistory.price;
+      test = landTransferHistory.test;
     };
     return newLandTransferHistory;
   };
