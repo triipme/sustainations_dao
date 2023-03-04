@@ -1,11 +1,11 @@
 const canvasConfig = canvas => {
   const canvasEle = canvas.current;
-  if(screen.width >= screen.height){
-    canvasEle.width = screen.width;
-    canvasEle.height = screen.height;
+  if(window.innerWidth >= window.innerHeight){
+    canvasEle.width = window.innerWidth;
+    canvasEle.height = window.innerHeight;
   } else {
-    canvasEle.width = screen.height;
-    canvasEle.height = screen.width;
+    canvasEle.width = window.innerHeight;
+    canvasEle.height = window.innerHeight;
   }
   const ctx = canvasEle.getContext("2d");
   // ctx.mozImageSmoothingEnabled = false;
