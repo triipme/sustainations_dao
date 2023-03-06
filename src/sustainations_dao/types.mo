@@ -375,16 +375,6 @@ public type UsableItem = {
     landId : Text;
     transferTime : Int;
     price : Float;
-    test : ?Text;
-  };
-
-  public type LandBuyingHistory = {
-    id : Text;
-    buyer : Principal;
-    owner : Principal;
-    land : Text;
-    transferTime : Int;
-    icp : Float;
   };
 
   //--------------------- Land Buying Status ---------------------//
