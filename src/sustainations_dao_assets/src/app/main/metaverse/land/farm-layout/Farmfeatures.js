@@ -67,6 +67,17 @@ function Farm(props) {
 
   const canvas = useRef();
 
+  const loadImage = (url, obj) => {
+    const img = new Image();
+    img.src = url;
+    img.onload = () => {
+      setListImg(prevState => ({
+        ...prevState,
+        [obj]: img
+      }));
+    };
+  };
+
   useEffect(() => {
     const userAgent = window.navigator.userAgent;
     setIsMobile(/Mobi|Android/i.test(userAgent));
@@ -82,6 +93,10 @@ function Farm(props) {
       setChacterId(characterid.ok[0]);
       setInventory(result[0].ok);
     })();
+    for (let key in URL_IMAGE) {
+      loadImage(URL_IMAGE[key], key);
+    }
+    setImageLoaded(true);
   }, []);
 
   useEffect(() => {
@@ -92,24 +107,6 @@ function Farm(props) {
     ctx.translate(offCoord.x, offCoord.y);
     ctx.scale(zoomLevel[scroll], zoomLevel[scroll]);
   }, [scroll, offCoord]);
-
-  const loadImage = (url, obj) => {
-    const img = new Image();
-    img.src = url;
-    img.onload = () => {
-      setListImg(prevState => ({
-        ...prevState,
-        [obj]: img
-      }));
-    };
-  };
-
-  useEffect(() => {
-    for (let key in URL_IMAGE) {
-      loadImage(URL_IMAGE[key], key);
-    }
-    setImageLoaded(true);
-  }, []);
 
   function checkChangePlantStatus(prevState, curState) {
     const differences = curState.filter((key, idx) => {
