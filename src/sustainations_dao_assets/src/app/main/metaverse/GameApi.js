@@ -64,10 +64,10 @@ function updateCharacterStats(character) {
   })
 };
 
-export function updateCharacterStatsEngine(character) {
+export function updateEngineCharacterStats(character) {
   const promise = new Promise((resolve, reject) => {
     const { user } = store.getState();
-    const rs = user.actor.updateCharacterStatsEngine(character);
+    const rs = user.actor.updateEngineCharacterStats(character);
     resolve(rs);
   })
   promise.then((data) => {
@@ -453,9 +453,9 @@ export async function saveGameReward(questId){
   return rs;
 }
 
-export async function getTopOne(questId){
+export async function getLeaderBoard(questId){
   const {user} = store.getState();
-  const func = async () => await user.actor.getTopOne(questId);
+  const func = async () => await user.actor.getLeaderBoard(questId);
   const rs = (await func()).ok;
   return rs;
 }

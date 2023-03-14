@@ -3,13 +3,14 @@ import BaseScene from '../BaseScene'
 import gameConfig from '../../GameConfig';
 import {
   loadEventOptionEngines,
-  updateCharacterStatsEngine,
+  updateEngineCharacterStats,
   listCharacterSelectsItems,
   createCharacterCollectsMaterials,
   readSceneEngine,
   loadItemUrl,
   characterTakeOptionEngine,
   characterCollectsMaterialEngines,
+  updateEngineCh
 } from '../../GameApi';
 import { func } from 'prop-types';
 import { readEventEngine } from '../../GameApi';
@@ -225,7 +226,7 @@ export default class Engine extends BaseScene {
           this.showColorLossStat(490 + 200 * 3 + 35, 65, loss_stat[3]);
 
           // update character after choose option
-          updateCharacterStatsEngine(this.characterTakeOptions[idx]);
+          updateEngineCharacterStats(this.characterTakeOptions[idx]);
           // create charactercollectsmaterials after choose option
           // createCharacterCollectsMaterials(this.characterCollectMaterials[idx]);
         }

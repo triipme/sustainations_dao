@@ -1,8 +1,17 @@
-const canvasConfig = (canvas, size) => {
+const canvasConfig = canvas => {
   const canvasEle = canvas.current;
-  canvasEle.width = window.innerWidth;
-  canvasEle.height = window.innerHeight;
+  if(window.innerWidth >= window.innerHeight){
+    canvasEle.width = window.innerWidth;
+    canvasEle.height = window.innerHeight;
+  } else {
+    canvasEle.width = window.innerHeight;
+    canvasEle.height = window.innerHeight;
+  }
   const ctx = canvasEle.getContext("2d");
+  // ctx.mozImageSmoothingEnabled = false;
+  // ctx.webkitImageSmoothingEnabled = false;
+  // ctx.msImageSmoothingEnabled = false;
+  // ctx.imageSmoothingEnabled = false;
   ctx.save();
   return [ctx, canvasEle];
 };
@@ -41,9 +50,7 @@ const init = (tileStyle, col, row) => {
   }
 };
 
-const drawImageOnCanvas = (ctx, imageObj, cx, cy, width, height, rowSize, colSize) => {
-  const image = new Image();
-  image.src = imageObj;
+const drawImageOnCanvas = (ctx, image, cx, cy, width, height) => {
   image.onload = function () {
     ctx.imageSmoothingEnabled = true;
     ctx.drawImage(image, cx, cy, width, height);
@@ -88,21 +95,19 @@ const drawRect = (ctx, info, style = {}) => {
   ctx.stroke();
 };
 
-const checkTilePosition = (event, listTile, sOft, ratio) => {
-  let minX = (sOft.sX * ratio) - (sOft.w * ratio) * ((sOft.m - 1) / 2);
-  let minY = (sOft.sY * ratio);
-  let maxX = (sOft.sX * ratio) + (sOft.w * ratio) * ((sOft.m - 1) / 2);
-  let maxY = (sOft.sY * ratio) + (sOft.h * ratio) * (sOft.n - 1);
+const checkTilePosition = (event, listTile, sOft, ratio, d) => {
+  let minX = sOft.sX * ratio + d.x - sOft.w * ratio * ((sOft.m - 1) / 2);
+  let minY = sOft.sY * ratio + d.y;
+  let maxX = sOft.sX * ratio + d.x + sOft.w * ratio * ((sOft.m - 1) / 2);
+  let maxY = sOft.sY * ratio + d.y + sOft.h * ratio * (sOft.n - 1);
   let result = [];
-  console.log(event.pageX, event.pageY);
   if (minX < event.pageX < maxX && minY < event.pageY < maxY) {
-    console.log(listTile);
     result = listTile.filter(tile => {
       return (
-        tile.x * ratio < event.pageX &&
-        event.pageX < tile.x * ratio + sOft.w * ratio &&
-        tile.y * ratio < event.pageY &&
-        event.pageY < tile.y * ratio + sOft.h * ratio
+        tile.x * ratio + d.x < event.pageX &&
+        event.pageX < tile.x * ratio + d.x + sOft.w * ratio &&
+        tile.y * ratio + d.y < event.pageY &&
+        event.pageY < tile.y * ratio + d.y + sOft.h * ratio
       );
     });
   }
@@ -113,8 +118,8 @@ const checkTilePosition = (event, listTile, sOft, ratio) => {
 
   for (let i = 0; i < result.length; i++) {
     let coord = {
-      x: result[i].x * ratio + (result[i].w * ratio) / 2,
-      y: result[i].y * ratio + (result[i].h * ratio) / 2
+      x: (result[i].x + d.x) * ratio + (result[i].w * ratio) / 2,
+      y: (result[i].y + d.y) * ratio + (result[i].h * ratio) / 2
     };
     if (positionTile === undefined) {
       positionTile = { ...coord };
@@ -134,6 +139,7 @@ const getCenterCoordinate = coord => {
   return { x: coord.x + coord.w / 2, y: coord.y + coord.h / 2 };
 };
 
+
 export {
   canvasConfig,
   sOft,
@@ -143,5 +149,5 @@ export {
   drawRhombus,
   checkTilePosition,
   getCenterCoordinate,
-  loadImage
+  loadImage,
 };
