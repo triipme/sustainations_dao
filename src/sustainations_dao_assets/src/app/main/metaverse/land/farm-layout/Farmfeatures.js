@@ -6,6 +6,7 @@ import Hotbar from "./HotBar";
 import FarmProduce from "./FarmProduce";
 import ButtonZoom from "./Button-zoom";
 import { init, sOft, checkTilePosition, getCenterCoordinate, canvasConfig } from "./publicfuntion";
+import StandardImageList from "./testToolbar";
 import UIFarm from "./FarmUI";
 
 let tileStyle = {};
@@ -35,6 +36,7 @@ for (let i = 1; i < 2; i += 0.1) {
 
 const URL_IMAGE = {
   Factory: "metaverse/farm25D/building/Factory.png",
+  Windmill: "metaverse/farm25D/building/Windmill.png",
   Ground: "metaverse/farm25D/Ground.png",
   Ground_Selected: "metaverse/farm25D/Ground_Selected.png",
   newlyPlanted: "metaverse/farm25D/plant/newlyPlanted.png",
@@ -43,7 +45,11 @@ const URL_IMAGE = {
   Tomato_Seed_growing: "metaverse/farm25D/plant/Tomato_Seed/Tomato_Seed_growing.png",
   Tomato_Seed_fullGrown: "metaverse/farm25D/plant/Tomato_Seed/Tomato_Seed_fullGrown.png",
   Wheat_Seed_growing: "metaverse/farm25D/plant/Wheat_Seed/Wheat_Seed_growing.png",
-  Wheat_Seed_fullGrown: "metaverse/farm25D/plant/Wheat_Seed/Wheat_Seed_fullGrown.png"
+  Wheat_Seed_fullGrown: "metaverse/farm25D/plant/Wheat_Seed/Wheat_Seed_fullGrown.png",
+  Bean_Seed_growing: "metaverse/farm25D/plant/Bean_Seed/Bean_Seed_growing.png",
+  Bean_Seed_fullGrown: "metaverse/farm25D/plant/Bean_Seed/Bean_Seed_fullGrown.png",
+  Sugarcane_Seed_growing: "metaverse/farm25D/plant/SugarCane_Seed/SugarCane_Seed_growing.png",
+  Sugarcane_Seed_fullGrown: "metaverse/farm25D/plant/SugarCane_Seed/SugarCane_Seed_fullGrown.png"
 };
 
 function Farm(props) {
@@ -77,7 +83,6 @@ function Farm(props) {
       }));
     };
   };
-
   useEffect(() => {
     const userAgent = window.navigator.userAgent;
     setIsMobile(/Mobi|Android/i.test(userAgent));
@@ -146,7 +151,7 @@ function Farm(props) {
         return tile.properties.name !== "None";
       });
 
-      var arr = [];
+      var arr = { Factory: [], Windmill: [] };
       map.forEach((tile, idx) => {
         return ctx.drawImage(
           selected?.row === tile.row && selected?.col === tile.col
@@ -166,7 +171,14 @@ function Farm(props) {
         if (t.length > 0) {
           if (t[0].properties.name === "Factory") {
             // if object name is  Factory
-            arr.push({
+            arr.Factory.push({
+              tile: tile,
+              idx: idx,
+              objectId: t[0].properties.objectId,
+              tileId: t[0].properties.tileId
+            });
+          } else if(t[0].properties.name === "Windmill") {
+            arr.Windmill.push({
               tile: tile,
               idx: idx,
               objectId: t[0].properties.objectId,
@@ -192,15 +204,7 @@ function Farm(props) {
               startPointNewlyPlanted.width,
               startPointNewlyPlanted.height
             );
-          } else if (t[0].properties.name !== "Factory" && t[0].properties.name !== "p6_seed") {
-            // if object name is not Factory
-            tile.object = t[0].properties.name;
-            tile.tileId = t[0].properties.tileId;
-            tile.status = t[0].properties.status;
-            tile.objectId = t[0].properties.objectId;
-            let key = t[0].properties.name + "_" + t[0].properties.status;
-            ctx.drawImage(listImg[key], cc.x - cvW / 35, cc.y - cvH / 16, cvW / 20, cvH / 11);
-          } else {
+          } else if (t[0].properties.name === "Factory") {
             tile["object"] = "Factory";
             tile["tileId"] = t[0].properties.tileId;
             tile["objectId"] = t[0].properties.objectId;
@@ -215,12 +219,33 @@ function Farm(props) {
               cvH / 5
             );
             ctx.drawImage(listImg.Factory, cc.x - cvW / 22, cc.y - cvH / 15, cvW / 10, cvH / 5);
+          } else if (t[0].properties.name === "Windmill") {
+            tile["object"] = "Windmill";
+            tile["tileId"] = t[0].properties.tileId;
+            tile["objectId"] = t[0].properties.objectId;
+
+            ctx.drawImage(
+              selected?.row === tile.row && selected?.col === tile.col
+                ? listImg.Ground_Selected
+                : listImg.Ground,
+              cc.x - cvW / 10,
+              cc.y - cvH / 15 / 2,
+              cvW / 5,
+              cvH / 5
+            );
+            ctx.drawImage(listImg.Windmill, cc.x - cvW / 10, cc.y - cvH / 8, cvW / 5, cvH / 4);
+          } else if (t[0].properties.name !== "p6_seed") {
+            tile.object = t[0].properties.name;
+            tile.tileId = t[0].properties.tileId;
+            tile.status = t[0].properties.status;
+            tile.objectId = t[0].properties.objectId;
+            let key = t[0].properties.name + "_" + t[0].properties.status;
+            ctx.drawImage(listImg[key], cc.x - cvW / 35, cc.y - cvH / 16, cvW / 20, cvH / 11);
           }
         }
-        // });
       });
 
-      arr.map(e => {
+      arr.Factory.map(e => {
         map.forEach((tile, idx) => {
           if (
             (idx >= e.idx + 10 && idx <= e.idx + 12) ||
@@ -228,6 +253,20 @@ function Farm(props) {
             (idx > e.idx && idx <= e.idx + 2)
           ) {
             tile.object = "Factory";
+            tile.tileId = e.tileId;
+            tile.objectId = e.objectId;
+          }
+        });
+      });
+
+      arr.Windmill.map(e => {
+        map.forEach((tile, idx) => {
+          if (
+            (idx >= e.idx + 10 && idx <= e.idx + 12) ||
+            (idx >= e.idx + 20 && idx <= e.idx + 22) ||
+            (idx > e.idx && idx <= e.idx + 2)
+          ) {
+            tile.object = "Windmill";
             tile.tileId = e.tileId;
             tile.objectId = e.objectId;
           }
@@ -267,7 +306,6 @@ function Farm(props) {
   const handleChoose = newObj => {
     setObject(newObj);
   };
-
   const handlePopupFactory = opt => {
     setPopupFactory(opt);
   };
@@ -338,6 +376,23 @@ function Farm(props) {
               pos?.row,
               pos?.col,
               "c1"
+            )
+          );
+          setTileplant(await loadTileSlots(props.landSlotProperties));
+        })();
+      } else if (
+        object.objectId === "Windmill" &&
+        pos &&
+        checkAvailablePosition(pos?.row, pos?.col, 9)
+      ) {
+        (async () => {
+          console.log(
+            "Build Windmill: ",
+            await user.actor.constructBuilding(
+              props.landSlotProperties.id,
+              pos?.row,
+              pos?.col,
+              "c2"
             )
           );
           setTileplant(await loadTileSlots(props.landSlotProperties));
