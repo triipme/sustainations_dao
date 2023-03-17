@@ -27,7 +27,8 @@ const FarmProduce = (props) => {
 
   useEffect(() => {
     (async () => {
-      console.log(props);
+      console.log(await user.actor.listStash())
+      console.log(await user.actor.listProductStorage())
       setRecipes(await listRecipesInfo(props.objectId));
       setQueue((await user.actor.listProductionQueueNodesInfo(props.objectId))?.ok)
     })()
@@ -83,7 +84,7 @@ const FarmProduce = (props) => {
                         marginTop: "14px",
                         boxShadow: "1px 1px 1px 1px rgb(0 0 0 / 28%)",
                       }}
-                    ><img src={path + "potion/" + item.usableItemName + ".png"} style={{ height: "100px" }} /> </a>
+                    ><img src={path + "craftingItem/" + item.itemName + ".png"} style={{ height: "100px" }} /> </a>
                   )
                 } else {
                   return (
@@ -93,7 +94,7 @@ const FarmProduce = (props) => {
                       marginRight: "14px",
                       marginTop: "14px",
                       boxShadow: "1px 1px 1px 1px rgb(0 0 0 / 28%)",
-                    }}><img src={path + "potion/" + item.usableItemName + ".png"} style={{ height: "100px" }} /> </a>
+                    }}><img src={path + "craftingItem/" + item.itemName + ".png"} style={{ height: "100px" }} /> </a>
                   )
                 }
               })}
@@ -121,8 +122,8 @@ const FarmProduce = (props) => {
                       setRcp(recipes[idx])
                     }}>
 
-                    <img src={path + "potion/" + recipe.usableItemName + ".png"} style={{ height: "100px" }} /><div className="text">
-                      {recipe.alchemyRecipeDetails.map(item => {
+                    <img src={path + "craftingItem/" + recipe.itemName + ".png"} style={{ height: "100px" }} /><div className="text">
+                      {recipe.recipeDetails.map(item => {
                         return (
                           <div key={Math.floor(Math.random() * 9999999)} className="cal">
                             <img src={path + item.productName + "-icon.png"} style={{ height: "100px" }} />
@@ -140,9 +141,9 @@ const FarmProduce = (props) => {
             <h3 style={{ backgroundColor: rcp.canCraft == true ? "#ffa200" : "#cccccc", }} onClick={async () => {
               if (rcp.canCraft === true && props.objectId !== "None") {
                 setLoadingFarmProduce("craft")
-                await user.actor.craftfromRecipe(props.objectId, rcp.id)
+                await user.actor.craftFromRecipe(props.objectId, rcp.id)
                 setQueue((await user.actor.listProductionQueueNodesInfo(props.objectId))?.ok)
-                setRecipes((await user.actor.listRecipesInfo(props.objectId))?.ok);
+                setRecipes(await listRecipesInfo(props.objectId));
                 setLoadingFarmProduce("")
                 // setTileplant(await loadTileSlots(landSlotProperties));
               }

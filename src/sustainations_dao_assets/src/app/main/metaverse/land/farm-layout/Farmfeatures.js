@@ -420,7 +420,7 @@ function Farm(props) {
           setInventory((await user.actor.listInventory(characterId)).ok);
         })();
       } else if (pos) {
-        if (pos?.object === "Factory") {
+        if (pos?.object === "Factory" || pos?.object === "Windmill" ) {
           setObjectId(pos?.objectId);
           setPopupFactory(true);
         } else if (pos?.object !== "None" && pos?.status === "fullGrown") {

@@ -100,9 +100,9 @@ const Metaverse = () => {
     actor.createBuildingType,
     actor.createAlchemyRecipe,
     actor.createAlchemyRecipeDetail,
+    actor.createProduct,
     actor.createProduceRecipe,
     actor.createProduceRecipeDetail,
-    actor.createProduct,
   ]
 
   const handleSubmit = async () => {
