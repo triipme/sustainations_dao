@@ -532,6 +532,22 @@ public type UsableItem = {
     amount : Int;
   };
 
+//--------------------- Produce Recipe -------------//
+  public type ProduceRecipe = {
+    id : Text;
+    productId : Text;
+    buildingTypeId: Text;
+    description : Text;
+    craftingTime : Int;
+  };
+
+  public type ProduceRecipeDetail = {
+    id : Text;
+    recipeId : Text;
+    productId : Text;
+    amount : Int;
+  };
+
 //--------------------- BuildingType -------------//
   public type BuildingType = {
     id : Text;
@@ -540,12 +556,7 @@ public type UsableItem = {
     rowSize : Nat;
     columnSize : Nat;
     buildWaitTime : Int;
-    // usableItemId : Text;
-    // resultUsableItemId: Text;
     description : Text;
-    // produceWaitTime : Int;
-    // minAmount : Int;
-    // maxAmount : Int;
   };
 
 //--------------------BuildingBuyingHistory----------//

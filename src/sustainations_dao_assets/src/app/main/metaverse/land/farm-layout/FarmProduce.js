@@ -2,6 +2,7 @@ import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
 import { useEffect, useState } from "react"
 import { selectUser } from "app/store/userSlice";
+import { listRecipesInfo } from "../../LandApi";
 import "./farmproduce.css"
 import { useSelector } from 'react-redux';
 const FarmProduce = (props) => {
@@ -26,7 +27,8 @@ const FarmProduce = (props) => {
 
   useEffect(() => {
     (async () => {
-      setRecipes((await user.actor.listAlchemyRecipesInfo())?.ok);
+      console.log(props);
+      setRecipes(await listRecipesInfo(props.objectId));
       setQueue((await user.actor.listProductionQueueNodesInfo(props.objectId))?.ok)
     })()
   }, [loadingFarmProduce])
@@ -138,9 +140,9 @@ const FarmProduce = (props) => {
             <h3 style={{ backgroundColor: rcp.canCraft == true ? "#ffa200" : "#cccccc", }} onClick={async () => {
               if (rcp.canCraft === true && props.objectId !== "None") {
                 setLoadingFarmProduce("craft")
-                await user.actor.craftUsableItem(props.objectId, rcp.id)
+                await user.actor.craftfromRecipe(props.objectId, rcp.id)
                 setQueue((await user.actor.listProductionQueueNodesInfo(props.objectId))?.ok)
-                setRecipes((await user.actor.listAlchemyRecipesInfo())?.ok);
+                setRecipes((await user.actor.listRecipesInfo(props.objectId))?.ok);
                 setLoadingFarmProduce("")
                 // setTileplant(await loadTileSlots(landSlotProperties));
               }
@@ -157,7 +159,7 @@ const FarmProduce = (props) => {
                   return item.status == "Completed"
                 }).length > 0) {
                   setLoadingFarmProduce("collect")
-                  await user.actor.collectUsableItems(props.objectId)
+                  await user.actor.collectFromBuilding(props.objectId)
                   setQueue((await user.actor.listProductionQueueNodesInfo(props.objectId))?.ok)
                   setLoadingFarmProduce("")
                 }

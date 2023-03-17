@@ -2,6 +2,7 @@ import store from 'app/store';
 import proj4Src from 'proj4';
 import polygonClipping from 'polygon-clipping';
 import axios from 'axios';
+import { result } from 'lodash';
 // call api
 
 // use func union in polygon-clipping
@@ -401,6 +402,15 @@ async function craftUsableItem(buildingId, alchemyRecipeId) {
   return result;
 }
 
+// list Recipes
+async function listRecipesInfo(buildingTypeName) {
+  const { user } = store.getState();
+  result = (await user.actor.listProduceRecipesInfo(buildingTypeName))?.ok
+  if (result.length == 0)
+    return (await user.actor.listAlchemyRecipesInfo())?.ok
+  else 
+    return result
+}
 
 
 export {
@@ -427,4 +437,5 @@ export {
   loadUserLandSlots,
   constructBuilding,
   craftUsableItem,
+  listRecipesInfo
 }

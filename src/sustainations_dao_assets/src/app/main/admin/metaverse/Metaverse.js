@@ -100,6 +100,8 @@ const Metaverse = () => {
     actor.createBuildingType,
     actor.createAlchemyRecipe,
     actor.createAlchemyRecipeDetail,
+    actor.createProduceRecipe,
+    actor.createProduceRecipeDetail,
     actor.createProduct,
   ]
 
