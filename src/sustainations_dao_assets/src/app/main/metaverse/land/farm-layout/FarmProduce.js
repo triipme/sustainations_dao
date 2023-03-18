@@ -33,7 +33,7 @@ const FarmProduce = (props) => {
       setQueue((await user.actor.listProductionQueueNodesInfo(props.objectId))?.ok)
     })()
   }, [loadingFarmProduce])
-
+  console.log(queue)
   if (queue.length != 0) {
     let t = (queue.filter(item => {
       return item.status !== "Completed"
