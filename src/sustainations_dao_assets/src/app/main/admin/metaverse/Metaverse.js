@@ -101,6 +101,8 @@ const Metaverse = () => {
     actor.createAlchemyRecipe,
     actor.createAlchemyRecipeDetail,
     actor.createProduct,
+    actor.createProduceRecipe,
+    actor.createProduceRecipeDetail,
   ]
 
   const handleSubmit = async () => {

@@ -34,7 +34,9 @@ for (let i = 1; i < 2; i += 0.1) {
 }
 
 const URL_IMAGE = {
+  TempBuilding: "metaverse/farm25D/building/tempBuilding.png",
   Factory: "metaverse/farm25D/building/Factory.png",
+  Windmill: "metaverse/farm25D/building/Windmill.png",
   Ground: "metaverse/farm25D/Ground.png",
   Ground_Selected: "metaverse/farm25D/Ground_Selected.png",
   newlyPlanted: "metaverse/farm25D/plant/newlyPlanted.png",
@@ -43,7 +45,11 @@ const URL_IMAGE = {
   Tomato_Seed_growing: "metaverse/farm25D/plant/Tomato_Seed/Tomato_Seed_growing.png",
   Tomato_Seed_fullGrown: "metaverse/farm25D/plant/Tomato_Seed/Tomato_Seed_fullGrown.png",
   Wheat_Seed_growing: "metaverse/farm25D/plant/Wheat_Seed/Wheat_Seed_growing.png",
-  Wheat_Seed_fullGrown: "metaverse/farm25D/plant/Wheat_Seed/Wheat_Seed_fullGrown.png"
+  Wheat_Seed_fullGrown: "metaverse/farm25D/plant/Wheat_Seed/Wheat_Seed_fullGrown.png",
+  Bean_Seed_growing: "metaverse/farm25D/plant/Bean_Seed/Bean_Seed_growing.png",
+  Bean_Seed_fullGrown: "metaverse/farm25D/plant/Bean_Seed/Bean_Seed_fullGrown.png",
+  Sugarcane_Seed_growing: "metaverse/farm25D/plant/SugarCane_Seed/SugarCane_Seed_growing.png",
+  Sugarcane_Seed_fullGrown: "metaverse/farm25D/plant/SugarCane_Seed/SugarCane_Seed_fullGrown.png"
 };
 
 function Farm(props) {
@@ -52,7 +58,7 @@ function Farm(props) {
   const [inventory, setInventory] = useState([]);
   const [characterId, setChacterId] = useState("");
   const [warehouses, setWarehouses] = useState([]);
-  const [popupFactory, setPopupFactory] = useState(false);
+  const [popup, setPopup] = useState(false);
   const [object, setObject] = useState({});
   const [listTile, setListTile] = useState([]);
   const [objectId, setObjectId] = useState("");
@@ -77,7 +83,6 @@ function Farm(props) {
       }));
     };
   };
-
   useEffect(() => {
     const userAgent = window.navigator.userAgent;
     setIsMobile(/Mobi|Android/i.test(userAgent));
@@ -146,7 +151,7 @@ function Farm(props) {
         return tile.properties.name !== "None";
       });
 
-      var arr = [];
+      var arr = { Factory: [], Windmill: [] };
       map.forEach((tile, idx) => {
         return ctx.drawImage(
           selected?.row === tile.row && selected?.col === tile.col
@@ -166,13 +171,21 @@ function Farm(props) {
         if (t.length > 0) {
           if (t[0].properties.name === "Factory") {
             // if object name is  Factory
-            arr.push({
+            arr.Factory.push({
+              tile: tile,
+              idx: idx,
+              objectId: t[0].properties.objectId,
+              tileId: t[0].properties.tileId
+            });
+          } else if (t[0].properties.name === "Windmill") {
+            arr.Windmill.push({
               tile: tile,
               idx: idx,
               objectId: t[0].properties.objectId,
               tileId: t[0].properties.tileId
             });
           }
+
           let cc = getCenterCoordinate(tile);
           if (t[0].properties.status === "newlyPlanted") {
             tile.object = t[0].properties.name;
@@ -192,15 +205,7 @@ function Farm(props) {
               startPointNewlyPlanted.width,
               startPointNewlyPlanted.height
             );
-          } else if (t[0].properties.name !== "Factory" && t[0].properties.name !== "p6_seed") {
-            // if object name is not Factory
-            tile.object = t[0].properties.name;
-            tile.tileId = t[0].properties.tileId;
-            tile.status = t[0].properties.status;
-            tile.objectId = t[0].properties.objectId;
-            let key = t[0].properties.name + "_" + t[0].properties.status;
-            ctx.drawImage(listImg[key], cc.x - cvW / 35, cc.y - cvH / 16, cvW / 20, cvH / 11);
-          } else {
+          } else if (t[0].properties.name === "Factory") {
             tile["object"] = "Factory";
             tile["tileId"] = t[0].properties.tileId;
             tile["objectId"] = t[0].properties.objectId;
@@ -215,12 +220,33 @@ function Farm(props) {
               cvH / 5
             );
             ctx.drawImage(listImg.Factory, cc.x - cvW / 22, cc.y - cvH / 15, cvW / 10, cvH / 5);
+          } else if (t[0].properties.name === "Windmill") {
+            tile["object"] = "Windmill";
+            tile["tileId"] = t[0].properties.tileId;
+            tile["objectId"] = t[0].properties.objectId;
+
+            ctx.drawImage(
+              selected?.row === tile.row && selected?.col === tile.col
+                ? listImg.Ground_Selected
+                : listImg.Ground,
+              cc.x - cvW / 10,
+              cc.y - cvH / 15 / 2,
+              cvW / 5,
+              cvH / 5
+            );
+            ctx.drawImage(listImg.Windmill, cc.x - cvW / 10, cc.y - cvH / 8, cvW / 5, cvH / 4);
+          } else if (t[0].properties.name !== "p6_seed") {
+            tile.object = t[0].properties.name;
+            tile.tileId = t[0].properties.tileId;
+            tile.status = t[0].properties.status;
+            tile.objectId = t[0].properties.objectId;
+            let key = t[0].properties.name + "_" + t[0].properties.status;
+            ctx.drawImage(listImg[key], cc.x - cvW / 35, cc.y - cvH / 16, cvW / 20, cvH / 11);
           }
         }
-        // });
       });
 
-      arr.map(e => {
+      arr.Factory.map(e => {
         map.forEach((tile, idx) => {
           if (
             (idx >= e.idx + 10 && idx <= e.idx + 12) ||
@@ -228,6 +254,20 @@ function Farm(props) {
             (idx > e.idx && idx <= e.idx + 2)
           ) {
             tile.object = "Factory";
+            tile.tileId = e.tileId;
+            tile.objectId = e.objectId;
+          }
+        });
+      });
+
+      arr.Windmill.map(e => {
+        map.forEach((tile, idx) => {
+          if (
+            (idx >= e.idx + 10 && idx <= e.idx + 12) ||
+            (idx >= e.idx + 20 && idx <= e.idx + 22) ||
+            (idx > e.idx && idx <= e.idx + 2)
+          ) {
+            tile.object = "Windmill";
             tile.tileId = e.tileId;
             tile.objectId = e.objectId;
           }
@@ -267,9 +307,8 @@ function Farm(props) {
   const handleChoose = newObj => {
     setObject(newObj);
   };
-
-  const handlePopupFactory = opt => {
-    setPopupFactory(opt);
+  const handlepopup = opt => {
+    setPopup(opt);
   };
 
   function handleWheel(e) {
@@ -343,6 +382,23 @@ function Farm(props) {
           setTileplant(await loadTileSlots(props.landSlotProperties));
         })();
       } else if (
+        object.objectId === "Windmill" &&
+        pos &&
+        checkAvailablePosition(pos?.row, pos?.col, 9)
+      ) {
+        (async () => {
+          console.log(
+            "Build Windmill: ",
+            await user.actor.constructBuilding(
+              props.landSlotProperties.id,
+              pos?.row,
+              pos?.col,
+              "c2"
+            )
+          );
+          setTileplant(await loadTileSlots(props.landSlotProperties));
+        })();
+      } else if (
         pos &&
         checkAvailablePosition(pos?.row, pos?.col, 1) &&
         object.objectId != undefined &&
@@ -365,9 +421,9 @@ function Farm(props) {
           setInventory((await user.actor.listInventory(characterId)).ok);
         })();
       } else if (pos) {
-        if (pos?.object === "Factory") {
+        if (pos?.object === "Factory" || pos?.object === "Windmill") {
           setObjectId(pos?.objectId);
-          setPopupFactory(true);
+          setPopup(true);
         } else if (pos?.object !== "None" && pos?.status === "fullGrown") {
           (async () => {
             console.log("Harvest", await user.actor.harvestPlant(pos?.tileId));
@@ -383,11 +439,7 @@ function Farm(props) {
   }
   return (
     <div>
-      {popupFactory ? (
-        <FarmProduce handlePopupFactory={handlePopupFactory} objectId={objectId} />
-      ) : (
-        <></>
-      )}
+      {popup ? <FarmProduce handlepopup={handlepopup} objectId={objectId} /> : <></>}
       {/* <div className="w-full h-screen flex justify-center items-center"> */}
       <canvas
         // id="canvas"
@@ -405,7 +457,6 @@ function Farm(props) {
       <ButtonZoom
         handleWheelIncrease={handleWheelIncrease}
         handleWheelDecrease={handleWheelDecrease}
-        s
       />
       <Hotbar inventory={inventory} onUpdate={handleChoose} />
       <UIFarm warehouses={warehouses}></UIFarm>

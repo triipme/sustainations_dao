@@ -2,6 +2,7 @@ import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
 import { useEffect, useState } from "react"
 import { selectUser } from "app/store/userSlice";
+import { listRecipesInfo } from "../../LandApi";
 import "./farmproduce.css"
 import { useSelector } from 'react-redux';
 const FarmProduce = (props) => {
@@ -26,11 +27,13 @@ const FarmProduce = (props) => {
 
   useEffect(() => {
     (async () => {
-      setRecipes((await user.actor.listAlchemyRecipesInfo())?.ok);
+      console.log(await user.actor.listStash())
+      console.log(await user.actor.listProductStorage())
+      setRecipes(await listRecipesInfo(props.objectId));
       setQueue((await user.actor.listProductionQueueNodesInfo(props.objectId))?.ok)
     })()
   }, [loadingFarmProduce])
-
+  console.log(queue)
   if (queue.length != 0) {
     let t = (queue.filter(item => {
       return item.status !== "Completed"
@@ -81,7 +84,7 @@ const FarmProduce = (props) => {
                         marginTop: "14px",
                         boxShadow: "1px 1px 1px 1px rgb(0 0 0 / 28%)",
                       }}
-                    ><img src={path + "potion/" + item.usableItemName + ".png"} style={{ height: "100px" }} /> </a>
+                    ><img src={path + "craftingItem/" + item.itemName + ".png"} style={{ height: "100px" }} /> </a>
                   )
                 } else {
                   return (
@@ -91,7 +94,7 @@ const FarmProduce = (props) => {
                       marginRight: "14px",
                       marginTop: "14px",
                       boxShadow: "1px 1px 1px 1px rgb(0 0 0 / 28%)",
-                    }}><img src={path + "potion/" + item.usableItemName + ".png"} style={{ height: "100px" }} /> </a>
+                    }}><img src={path + "craftingItem/" + item.itemName + ".png"} style={{ height: "100px" }} /> </a>
                   )
                 }
               })}
@@ -119,8 +122,8 @@ const FarmProduce = (props) => {
                       setRcp(recipes[idx])
                     }}>
 
-                    <img src={path + "potion/" + recipe.usableItemName + ".png"} style={{ height: "100px" }} /><div className="text">
-                      {recipe.alchemyRecipeDetails.map(item => {
+                    <img src={path + "craftingItem/" + recipe.itemName + ".png"} style={{ height: "100px" }} /><div className="text">
+                      {recipe.recipeDetails.map(item => {
                         return (
                           <div key={Math.floor(Math.random() * 9999999)} className="cal">
                             <img src={path + item.productName + "-icon.png"} style={{ height: "100px" }} />
@@ -138,9 +141,9 @@ const FarmProduce = (props) => {
             <h3 style={{ backgroundColor: rcp.canCraft == true ? "#ffa200" : "#cccccc", }} onClick={async () => {
               if (rcp.canCraft === true && props.objectId !== "None") {
                 setLoadingFarmProduce("craft")
-                await user.actor.craftUsableItem(props.objectId, rcp.id)
+                await user.actor.craftFromRecipe(props.objectId, rcp.id)
                 setQueue((await user.actor.listProductionQueueNodesInfo(props.objectId))?.ok)
-                setRecipes((await user.actor.listAlchemyRecipesInfo())?.ok);
+                setRecipes(await listRecipesInfo(props.objectId));
                 setLoadingFarmProduce("")
                 // setTileplant(await loadTileSlots(landSlotProperties));
               }
@@ -157,7 +160,7 @@ const FarmProduce = (props) => {
                   return item.status == "Completed"
                 }).length > 0) {
                   setLoadingFarmProduce("collect")
-                  await user.actor.collectUsableItems(props.objectId)
+                  await user.actor.collectFromBuilding(props.objectId)
                   setQueue((await user.actor.listProductionQueueNodesInfo(props.objectId))?.ok)
                   setLoadingFarmProduce("")
                 }

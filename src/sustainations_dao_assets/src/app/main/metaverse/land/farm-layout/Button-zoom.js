@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import Box from "@mui/material/Box";
-import Slider from "@mui/material/Slider";
-import Button from "@mui/material/Button";
-function ButtonZoom({ handleWheelIncrease, handleWheelDecrease}) {
-  const [count, setCount] = useState(0);
+import Fab from "@mui/material/Fab";
+import ZoomInMap from "@mui/icons-material/ZoomInMap";
+import ZoomOutMap from "@mui/icons-material/ZoomOutMap";
+import Toolbar from "@mui/material/Toolbar";
+
+function ButtonZoom({ handleWheelIncrease, handleWheelDecrease }) {
   return (
     <div
       style={{
@@ -13,17 +15,14 @@ function ButtonZoom({ handleWheelIncrease, handleWheelDecrease}) {
         "top": "80%"
       }}>
       <Box sx={{ "& button": { m: 1 } }}>
-        <div>
-          <Button variant="contained" color="secondary" onClick={handleWheelIncrease}>
-            +
-          </Button>
-        </div>
-
-        <div>
-          <Button variant="contained" color="secondary" onClick={handleWheelDecrease}>
-            -
-          </Button>
-        </div>
+        <Fab color="secondary" aria-label="add" onClick={handleWheelIncrease}>
+          <ZoomOutMap />
+        </Fab>
+      </Box>
+      <Box sx={{ "& button": { m: 1 } }}>
+        <Fab color="secondary" aria-label="edit" onClick={handleWheelDecrease}>
+          <ZoomInMap />
+        </Fab>
       </Box>
     </div>
   );

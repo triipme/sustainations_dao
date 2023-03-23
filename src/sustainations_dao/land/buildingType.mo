@@ -10,12 +10,7 @@ module BuildingType {
       rowSize = buildingType.rowSize;
       columnSize = buildingType.columnSize;
       buildWaitTime = buildingType.buildWaitTime;
-      // usableItemId = buildingType.usableItemId;
-      // resultUsableItemId = buildingType.resultUsableItemId;
       description = buildingType.description;
-      // produceWaitTime = buildingType.produceWaitTime;
-      // minAmount = buildingType.minAmount;
-      // maxAmount = buildingType.maxAmount;
     };
     return newBuildingType;
   };
