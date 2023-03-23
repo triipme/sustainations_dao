@@ -6,7 +6,6 @@ import Hotbar from "./HotBar";
 import FarmProduce from "./FarmProduce";
 import ButtonZoom from "./Button-zoom";
 import { init, sOft, checkTilePosition, getCenterCoordinate, canvasConfig } from "./publicfuntion";
-import StandardImageList from "./testToolbar";
 import UIFarm from "./FarmUI";
 
 let tileStyle = {};
@@ -35,6 +34,7 @@ for (let i = 1; i < 2; i += 0.1) {
 }
 
 const URL_IMAGE = {
+  TempBuilding: "metaverse/farm25D/building/tempBuilding.png",
   Factory: "metaverse/farm25D/building/Factory.png",
   Windmill: "metaverse/farm25D/building/Windmill.png",
   Ground: "metaverse/farm25D/Ground.png",
@@ -58,7 +58,7 @@ function Farm(props) {
   const [inventory, setInventory] = useState([]);
   const [characterId, setChacterId] = useState("");
   const [warehouses, setWarehouses] = useState([]);
-  const [popupFactory, setPopupFactory] = useState(false);
+  const [popup, setPopup] = useState(false);
   const [object, setObject] = useState({});
   const [listTile, setListTile] = useState([]);
   const [objectId, setObjectId] = useState("");
@@ -177,7 +177,7 @@ function Farm(props) {
               objectId: t[0].properties.objectId,
               tileId: t[0].properties.tileId
             });
-          } else if(t[0].properties.name === "Windmill") {
+          } else if (t[0].properties.name === "Windmill") {
             arr.Windmill.push({
               tile: tile,
               idx: idx,
@@ -185,6 +185,7 @@ function Farm(props) {
               tileId: t[0].properties.tileId
             });
           }
+
           let cc = getCenterCoordinate(tile);
           if (t[0].properties.status === "newlyPlanted") {
             tile.object = t[0].properties.name;
@@ -306,8 +307,8 @@ function Farm(props) {
   const handleChoose = newObj => {
     setObject(newObj);
   };
-  const handlePopupFactory = opt => {
-    setPopupFactory(opt);
+  const handlepopup = opt => {
+    setPopup(opt);
   };
 
   function handleWheel(e) {
@@ -420,9 +421,9 @@ function Farm(props) {
           setInventory((await user.actor.listInventory(characterId)).ok);
         })();
       } else if (pos) {
-        if (pos?.object === "Factory" || pos?.object === "Windmill" ) {
+        if (pos?.object === "Factory" || pos?.object === "Windmill") {
           setObjectId(pos?.objectId);
-          setPopupFactory(true);
+          setPopup(true);
         } else if (pos?.object !== "None" && pos?.status === "fullGrown") {
           (async () => {
             console.log("Harvest", await user.actor.harvestPlant(pos?.tileId));
@@ -438,11 +439,7 @@ function Farm(props) {
   }
   return (
     <div>
-      {popupFactory ? (
-        <FarmProduce handlePopupFactory={handlePopupFactory} objectId={objectId} />
-      ) : (
-        <></>
-      )}
+      {popup ? <FarmProduce handlepopup={handlepopup} objectId={objectId} /> : <></>}
       {/* <div className="w-full h-screen flex justify-center items-center"> */}
       <canvas
         // id="canvas"
@@ -460,7 +457,6 @@ function Farm(props) {
       <ButtonZoom
         handleWheelIncrease={handleWheelIncrease}
         handleWheelDecrease={handleWheelDecrease}
-        s
       />
       <Hotbar inventory={inventory} onUpdate={handleChoose} />
       <UIFarm warehouses={warehouses}></UIFarm>
