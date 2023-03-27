@@ -7669,6 +7669,20 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     #ok((list));
   };
 
+  public shared ({ caller }) func deleteProduceRecipe(id : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsProduceRecipe = state.produceRecipes.get(id);
+    switch (rsProduceRecipe) {
+      case (null) { #err(#NotFound) };
+      case (?V) {
+        let deletedProduceRecipe = state.produceRecipes.delete(id);
+        #ok("Success");
+      };
+    };
+  };
+
   public shared query ({ caller }) func listProduceRecipesInfo(buildingId: Text) : async Response<[RecipeInfo]> {
     var list : [RecipeInfo] = [];
     if (Principal.toText(caller) == "2vxsx-fae") {

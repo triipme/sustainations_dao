@@ -27,7 +27,7 @@ dfx canister call sustainations_dao createProduceRecipe '(record{id = "pr1";prod
 dfx canister call sustainations_dao createProduceRecipe '(record{id = "pr2";productId = "p7soysauce";buildingTypeId = "c2"; description = "Soy Sauce"; craftingTime = 600})'
 dfx canister call sustainations_dao createProduceRecipe '(record{id = "pr3";productId = "p8egg";buildingTypeId = "c3"; description = "Egg"; craftingTime = 600})'
 dfx canister call sustainations_dao createProduceRecipe '(record{id = "pr4";productId = "p9milk";buildingTypeId = "c4"; description = "Milk"; craftingTime = 600})'
-dfx canister call sustainations_dao createProduceRecipe '(record{id = "pr5";productId = "p7animalfeed";buildingTypeId = "c2"; description = "Animal Feed"; craftingTime = 600})'
+dfx canister call sustainations_dao createProduceRecipe '(record{id = "pr5";productId = "p10animalfeed";buildingTypeId = "c2"; description = "Animal Feed"; craftingTime = 600})'
 
 
 dfx canister call sustainations_dao createProduceRecipeDetail '(record{id = "prd1";recipeId = "pr1";productId = "p3wheat";amount = 10})'
