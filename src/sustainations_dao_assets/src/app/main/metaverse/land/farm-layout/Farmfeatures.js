@@ -49,7 +49,9 @@ const URL_IMAGE = {
   Bean_Seed_growing: "metaverse/farm25D/plant/Bean_Seed/Bean_Seed_growing.png",
   Bean_Seed_fullGrown: "metaverse/farm25D/plant/Bean_Seed/Bean_Seed_fullGrown.png",
   Sugarcane_Seed_growing: "metaverse/farm25D/plant/SugarCane_Seed/SugarCane_Seed_growing.png",
-  Sugarcane_Seed_fullGrown: "metaverse/farm25D/plant/SugarCane_Seed/SugarCane_Seed_fullGrown.png"
+  Sugarcane_Seed_fullGrown: "metaverse/farm25D/plant/SugarCane_Seed/SugarCane_Seed_fullGrown.png",
+  Goathouse: "metaverse/farm25D/building/Goathouse.png",
+  Henhouse: "metaverse/farm25D/building/Henhouse.png",
 };
 
 function Farm(props) {
@@ -72,7 +74,6 @@ function Farm(props) {
   const [imageLoaded, setImageLoaded] = useState(false);
 
   const canvas = useRef();
-
   const loadImage = (url, obj) => {
     const img = new Image();
     img.src = url;
@@ -151,7 +152,7 @@ function Farm(props) {
         return tile.properties.name !== "None";
       });
 
-      var arr = { Factory: [], Windmill: [] };
+      var arr = { Factory: [], Windmill: [], Goathouse: [], Henhouse: [] };
       map.forEach((tile, idx) => {
         return ctx.drawImage(
           selected?.row === tile.row && selected?.col === tile.col
@@ -179,6 +180,20 @@ function Farm(props) {
             });
           } else if (t[0].properties.name === "Windmill") {
             arr.Windmill.push({
+              tile: tile,
+              idx: idx,
+              objectId: t[0].properties.objectId,
+              tileId: t[0].properties.tileId
+            });
+          } else if (t[0].properties.name === "Goathouse") {
+            arr.Goathouse.push({
+              tile: tile,
+              idx: idx,
+              objectId: t[0].properties.objectId,
+              tileId: t[0].properties.tileId
+            });
+          } else if (t[0].properties.name === "Henhouse") {
+            arr.Henhouse.push({
               tile: tile,
               idx: idx,
               objectId: t[0].properties.objectId,
@@ -235,6 +250,36 @@ function Farm(props) {
               cvH / 5
             );
             ctx.drawImage(listImg.Windmill, cc.x - cvW / 10, cc.y - cvH / 8, cvW / 5, cvH / 4);
+          } else if (t[0].properties.name === "Goathouse") {
+            tile["object"] = "Goathouse";
+            tile["tileId"] = t[0].properties.tileId;
+            tile["objectId"] = t[0].properties.objectId;
+
+            ctx.drawImage(
+              selected?.row === tile.row && selected?.col === tile.col
+                ? listImg.Ground_Selected
+                : listImg.Ground,
+              cc.x - cvW / 10,
+              cc.y - cvH / 15 / 2,
+              cvW / 5,
+              cvH / 5
+            );
+            ctx.drawImage(listImg.Goathouse, cc.x - cvW / 16, cc.y - cvH / 20, cvW / 7, cvH / 5);
+          } else if (t[0].properties.name === "Henhouse") {
+            tile["object"] = "Henhouse";
+            tile["tileId"] = t[0].properties.tileId;
+            tile["objectId"] = t[0].properties.objectId;
+
+            ctx.drawImage(
+              selected?.row === tile.row && selected?.col === tile.col
+                ? listImg.Ground_Selected
+                : listImg.Ground,
+              cc.x - cvW / 10,
+              cc.y - cvH / 15 / 2,
+              cvW / 5,
+              cvH / 5
+            );
+            ctx.drawImage(listImg.Henhouse, cc.x - cvW / 22, cc.y - cvH / 15, cvW / 10, cvH / 5);
           } else if (t[0].properties.name !== "p6_seed") {
             tile.object = t[0].properties.name;
             tile.tileId = t[0].properties.tileId;
@@ -260,6 +305,32 @@ function Farm(props) {
         });
       });
 
+      arr.Goathouse.map(e => {
+        map.forEach((tile, idx) => {
+          if (
+            (idx >= e.idx + 10 && idx <= e.idx + 12) ||
+            (idx >= e.idx + 20 && idx <= e.idx + 22) ||
+            (idx > e.idx && idx <= e.idx + 2)
+          ) {
+            tile.object = "Goathouse";
+            tile.tileId = e.tileId;
+            tile.objectId = e.objectId;
+          }
+        });
+      });
+      arr.Henhouse.map(e => {
+        map.forEach((tile, idx) => {
+          if (
+            (idx >= e.idx + 10 && idx <= e.idx + 12) ||
+            (idx >= e.idx + 20 && idx <= e.idx + 22) ||
+            (idx > e.idx && idx <= e.idx + 2)
+          ) {
+            tile.object = "Henhouse";
+            tile.tileId = e.tileId;
+            tile.objectId = e.objectId;
+          }
+        });
+      });
       arr.Windmill.map(e => {
         map.forEach((tile, idx) => {
           if (
@@ -399,6 +470,40 @@ function Farm(props) {
           setTileplant(await loadTileSlots(props.landSlotProperties));
         })();
       } else if (
+        object.objectId === "Henhouse" &&
+        pos &&
+        checkAvailablePosition(pos?.row, pos?.col, 9)
+      ) {
+        (async () => {
+          console.log(
+            "Build Henhouse: ",
+            await user.actor.constructBuilding(
+              props.landSlotProperties.id,
+              pos?.row,
+              pos?.col,
+              "c3"
+            )
+          );
+          setTileplant(await loadTileSlots(props.landSlotProperties));
+        })();
+      } else if (
+        object.objectId === "Goathouse" &&
+        pos &&
+        checkAvailablePosition(pos?.row, pos?.col, 9)
+      ) {
+        (async () => {
+          console.log(
+            "Build Goathouse: ",
+            await user.actor.constructBuilding(
+              props.landSlotProperties.id,
+              pos?.row,
+              pos?.col,
+              "c4"
+            )
+          );
+          setTileplant(await loadTileSlots(props.landSlotProperties));
+        })();
+      } else if (
         pos &&
         checkAvailablePosition(pos?.row, pos?.col, 1) &&
         object.objectId != undefined &&
@@ -421,7 +526,7 @@ function Farm(props) {
           setInventory((await user.actor.listInventory(characterId)).ok);
         })();
       } else if (pos) {
-        if (pos?.object === "Factory" || pos?.object === "Windmill") {
+        if (pos?.object === "Factory" || pos?.object === "Windmill" || pos?.object === "Goathouse" || pos?.object === "Henhouse") {
           setObjectId(pos?.objectId);
           setPopup(true);
         } else if (pos?.object !== "None" && pos?.status === "fullGrown") {
@@ -437,9 +542,10 @@ function Farm(props) {
       setOffCoord({ x: 0, y: 0 });
     }
   }
+
   return (
     <div>
-      {popup ? <FarmProduce handlepopup={handlepopup} objectId={objectId} /> : <></>}
+      {popup ? <FarmProduce handlepopup={handlepopup} objectId={objectId} objectName={selected} /> : <></>}
       {/* <div className="w-full h-screen flex justify-center items-center"> */}
       <canvas
         // id="canvas"
