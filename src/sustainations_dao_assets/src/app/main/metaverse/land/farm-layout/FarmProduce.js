@@ -24,7 +24,7 @@ const FarmProduce = (props) => {
     boxShadow: 24,
     borderRadius: "10px",
   };
-
+  console.log(recipes)
   useEffect(() => {
     (async () => {
       console.log(await user.actor.listStash())
@@ -33,7 +33,6 @@ const FarmProduce = (props) => {
       setQueue((await user.actor.listProductionQueueNodesInfo(props.objectId))?.ok)
     })()
   }, [loadingFarmProduce])
-  console.log(queue)
   if (queue.length != 0) {
     let t = (queue.filter(item => {
       return item.status !== "Completed"
@@ -59,12 +58,12 @@ const FarmProduce = (props) => {
       >
         <Box sx={style}>
           <div className="modal-header">
-            <div className="close" onClick={() => { props.handlePopupFactory(false); }}><img src={"/metaverse/" + "close.png"} /></div>
+            <div className="close" onClick={() => { props.handlepopup(false); }}><img src={"/metaverse/" + "close.png"} /></div>
             <h1 style={{
               position: "relative",
               top: "-32px",
               fontSize: "224.5%",
-            }}>FACTORY</h1>
+            }}>{props.objectName.object}</h1>
 
           </div>
           <div id="myProgress" style={{ textAlign: "center", alignItems: "center", border: "solid 1px", lineHeight: "28px" }}>

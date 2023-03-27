@@ -8,6 +8,9 @@ dfx canister call sustainations_dao createProduct '(record{id = "p4sugarcane";na
 dfx canister call sustainations_dao createProduct '(record{id = "p5bean";name = "Bean";description = "Bean";})'
 dfx canister call sustainations_dao createProduct '(record{id = "p6flour";name = "Flour";description = "Flour";})'
 dfx canister call sustainations_dao createProduct '(record{id = "p7soysauce";name = "Soy_Sauce";description = "Soy Sauce";})'
+dfx canister call sustainations_dao createProduct '(record{id = "p8egg";name = "Egg";description = "Egg";})'
+dfx canister call sustainations_dao createProduct '(record{id = "p9milk";name = "Milk";description = "Milk";})'
+dfx canister call sustainations_dao createProduct '(record{id = "p10animalfeed";name = "Animal_Feed";description = "Animal Feed";})'
 
 dfx canister call sustainations_dao updateEventOption '(record{id="eo99";eventId="e36";description="An umbrella";requireItemId="null";lossHP=1.0;lossMana=0.0;lossStamina=0.0;lossMorale=0.0;riskChance=0.0;riskLost="null";lossOther="null";gainExp=10;gainHP=0.0;gainStamina=0.0;gainMorale=0.0;gainMana=0.0;luckyChance=0.4;gainByLuck="tomato_seed/carrot_seed/wheat_seed/sugarcane_seed/bean_seed";gainOther=0.0})'
 dfx canister call sustainations_dao updateEventOption '(record{id="eo104";eventId="e37";description="A hook";requireItemId="null";lossHP=2.0;lossMana=0.0;lossStamina=0.0;lossMorale=0.0;riskChance=0.0;riskLost="null";lossOther="null";gainExp=10;gainHP=0.0;gainStamina=0.0;gainMorale=0.0;gainMana=0.0;luckyChance=0.4;gainByLuck="tomato_seed/carrot_seed/wheat_seed/sugarcane_seed/bean_seed";gainOther=0.0})'
@@ -18,10 +21,18 @@ dfx canister call sustainations_dao updateEventOption '(record{id="eo118";eventI
 dfx canister call sustainations_dao createBuildingType '(record{id = "c2";name = "Windmill";price = 10000.0;rowSize = 3;columnSize = 3;buildWaitTime = 0;description = "this construction allow player to craft wheat flour and soy sauce";})'
 dfx canister call sustainations_dao createBuildingType '(record{id = "c3";name = "Henhouse";price = 10000.0;rowSize = 3;columnSize = 3;buildWaitTime = 0;description = "this construction allow player to produce eggs";})'
 dfx canister call sustainations_dao createBuildingType '(record{id = "c4";name = "Goathouse";price = 10000.0;rowSize = 3;columnSize = 3;buildWaitTime = 0;description = "this construction allow player to produce milks";})'
-dfx canister call sustainations_dao createBuildingType '(record{id = "c5";name = "Feedmaker";price = 10000.0;rowSize = 3;columnSize = 3;buildWaitTime = 0;description = "this construction allow player to produce animal feeds";})'
+dfx canister call sustainations_dao delelteBuildingType '("c5")'
 
 dfx canister call sustainations_dao createProduceRecipe '(record{id = "pr1";productId = "p6flour";buildingTypeId = "c2"; description = "Flour"; craftingTime = 600})'
 dfx canister call sustainations_dao createProduceRecipe '(record{id = "pr2";productId = "p7soysauce";buildingTypeId = "c2"; description = "Soy Sauce"; craftingTime = 600})'
+dfx canister call sustainations_dao createProduceRecipe '(record{id = "pr3";productId = "p8egg";buildingTypeId = "c3"; description = "Egg"; craftingTime = 600})'
+dfx canister call sustainations_dao createProduceRecipe '(record{id = "pr4";productId = "p9milk";buildingTypeId = "c4"; description = "Milk"; craftingTime = 600})'
+dfx canister call sustainations_dao createProduceRecipe '(record{id = "pr5";productId = "p10animalfeed";buildingTypeId = "c2"; description = "Animal Feed"; craftingTime = 600})'
+
 
 dfx canister call sustainations_dao createProduceRecipeDetail '(record{id = "prd1";recipeId = "pr1";productId = "p3wheat";amount = 10})'
 dfx canister call sustainations_dao createProduceRecipeDetail '(record{id = "prd2";recipeId = "pr2";productId = "p5bean";amount = 10})'
+dfx canister call sustainations_dao createProduceRecipeDetail '(record{id = "prd3";recipeId = "pr3";productId = "p10animalfeed";amount = 2})'
+dfx canister call sustainations_dao createProduceRecipeDetail '(record{id = "prd4";recipeId = "pr4";productId = "p10animalfeed";amount = 2})'
+dfx canister call sustainations_dao createProduceRecipeDetail '(record{id = "prd5";recipeId = "pr5";productId = "p4sugarcane";amount = 10})'
+dfx canister call sustainations_dao createProduceRecipeDetail '(record{id = "prd6";recipeId = "pr6";productId = "p5bean";amount = 10})'
