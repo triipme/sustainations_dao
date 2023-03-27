@@ -7815,6 +7815,20 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     #ok((list));
   };
 
+  public shared ({ caller }) func delelteBuildingType(id : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsBuildingType = state.buildingTypes.get(id);
+    switch (rsBuildingType) {
+      case (null) { #err(#NotFound) };
+      case (?V) {
+        let deletedBuildingType = state.buildingTypes.delete(id);
+        #ok("Success");
+      };
+    };
+  };
+
   // construct Building
   public shared ({ caller }) func constructBuilding(landId : Text, indexRow : Nat, indexColumn : Nat, buildingTypeId : Text) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
