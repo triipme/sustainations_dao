@@ -29,10 +29,11 @@ var country = null
 var numRandom = 3
 var nationData = []
 var landSlotRand = null
+var landSlotPrice = 0
 export var mapZoom = 0
 
 const Map = () => {
-
+  
   const user = useSelector(selectUser)
   const { principal } = user;
 
@@ -206,6 +207,7 @@ const Map = () => {
 
   const handlePurchase = async () => {
     setLoading("purchased")
+    landSlotPrice = (await user.actor.getLandSlotPrice())?.ok;
     let landBuyingStatus = await loadLandBuyingStatus()
     if (landBuyingStatus != undefined) {
       numRandom = Number(landBuyingStatus.properties.randomTimes)
@@ -317,7 +319,7 @@ const Map = () => {
                       fontSize: "136%",
                       margin: "2%"
                     }}
-                  >{!alert ? "Do you want to receive this land slot with 0.0004 icp ?" : "You do not have enough ICP to make this transaction !"}</h1>
+                  >{!alert ? "Do you want to receive this land slot with "+ landSlotPrice +" icp ?" : "You do not have enough ICP to make this transaction !"}</h1>
                 </div>
                 {!alert ? <>
                   {loading === "accept" ? <h2 className="popupAccept"
