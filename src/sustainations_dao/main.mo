@@ -80,6 +80,7 @@ import ProductionQueueNode "./land/productionQueueNode";
 import Env ".env";
 
 shared ({ caller = owner }) actor class SustainationsDAO() = this {
+  stable var landSlotPrice : Float = 0.0003;
   stable var transferFee : Nat64 = 10_000;
   stable var createProposalFee : Nat64 = 20_000;
   stable var voteFee : Nat64 = 20_000;
@@ -1375,6 +1376,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   type SystemParams = {
     treasuryContribution : Float;
     godUser : Text;
+    landSlotPrice: Float;
     referralAwards : [Types.ReferralAward];
     referralLimit : Int;
   };
@@ -1382,6 +1384,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     let systemParams : SystemParams = {
       treasuryContribution;
       godUser;
+      landSlotPrice;
       referralAwards;
       referralLimit;
     };
@@ -1391,6 +1394,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   public shared ({ caller }) func updateSystemParams(
     treasuryContributionValue : Float,
     godUserValue : Text,
+    landSlotPriceValue : Float,
     referralAwardsValue : [Types.ReferralAward],
     referralLimitValue : Int
   ) : async Response<Text> {
@@ -1438,9 +1442,13 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
         };
       };
     };
+    if ( landSlotPriceValue < 0) {
+      return #err(#InvalidData);
+    };
 
     treasuryContribution := treasuryContributionValue;
     godUser := godUserValue;
+    landSlotPrice := landSlotPriceValue;
     referralAwards := referralAwardsValue;
     referralLimit := referralLimitValue;
     #ok("Success");
@@ -6268,7 +6276,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
     let created = state.landSlots.put(newLandSlot.id, newLandSlot);
     // save land transter history
-    createLandTransferHistory(newLandSlot.ownerId, newLandSlot.id, 0.0003);
+    createLandTransferHistory(newLandSlot.ownerId, newLandSlot.id, landSlotPrice);
     // delete user's current buying status
     deleteLandBuyingStatus(newLandSlot.ownerId);
     // update user nation
@@ -6283,16 +6291,26 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     #ok(state.landSlots.size());
   };
 
+  public query ({ caller }) func getLandSlotPrice() : async Response<Float> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let transferFeeValue : Float = Float.fromInt(Nat64.toNat(transferFee)) / 100000000;
+    #ok(landSlotPrice+transferFeeValue);
+  };
+
+
   // Land
   public shared ({ caller }) func buyLandSlot() : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
-    switch (await deposit(30000, caller)) {
+    let landSlotPriceValue : Nat64 = Nat64.fromNat(Int.abs(Float.toInt(landSlotPrice*100000000)));
+    switch (await deposit(landSlotPriceValue, caller)) {
       case (#ok(bIndex)) {
         await recordTransaction(
           caller,
-          30000,
+          landSlotPriceValue,
           caller,
           Principal.fromActor(this),
           #buyLandSlot,
@@ -6312,7 +6330,12 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
-    let rsNation = state.nations.get(Principal.toText(caller));
+    // get user's current nation
+    var rsNation = state.nations.get(Principal.toText(caller));
+    switch (userId) {
+      case (null) {};
+      case (?id) { rsNation := state.nations.get(Principal.toText(id)); };
+    };
     switch (rsNation) {
       case null {
         let rsLandConfig = state.landConfigs.get(Principal.toText(Principal.fromActor(this)));
