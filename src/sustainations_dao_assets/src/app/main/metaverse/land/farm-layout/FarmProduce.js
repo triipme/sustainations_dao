@@ -24,11 +24,8 @@ const FarmProduce = (props) => {
     boxShadow: 24,
     borderRadius: "10px",
   };
-  console.log(recipes)
   useEffect(() => {
     (async () => {
-      console.log(await user.actor.listStash())
-      console.log(await user.actor.listProductStorage())
       setRecipes(await listRecipesInfo(props.objectId));
       setQueue((await user.actor.listProductionQueueNodesInfo(props.objectId))?.ok)
     })()
@@ -171,5 +168,4 @@ const FarmProduce = (props) => {
     </div>
   );
 }
-//  update realtime every second reactjs
 export default FarmProduce;
