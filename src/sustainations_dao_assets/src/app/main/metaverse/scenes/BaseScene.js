@@ -22,6 +22,11 @@ import {
 } from '../GameApi';
 import { random } from "lodash";
 
+// Define variables for the carousel
+var images = [];
+var currentImageIndex = 0;
+var imageWidth = 400;
+
 class BaseScene extends Phaser.Scene {
   constructor(key) {
     super(key);
@@ -83,7 +88,7 @@ class BaseScene extends Phaser.Scene {
       randomStashPotion().then((result) => {
         this.usableItem = result?.[0];
         this.usableItemName = result?.[1];
-        console.log(" this.usableItem: ",  this.usableItem);
+        console.log(" this.usableItem: ", this.usableItem);
         successCallback();
       });
     }, this);
@@ -473,7 +478,7 @@ class BaseScene extends Phaser.Scene {
       this.sfx_char_footstep.stop();
 
       if (this.listScene.length === 0) this.scene.start("thanks");
-      else this.scene.start(nextScene, {listScene: this.listScene });
+      else this.scene.start(nextScene, { listScene: this.listScene });
     }
 
     if (this.player.x > locationInteract && this.isInteracted == false) { //4200
@@ -516,6 +521,148 @@ class BaseScene extends Phaser.Scene {
       this.initialLoad(eventId);
     }
     return characterBefore;
+  }
+
+  skinCarousel(themes) {
+    //*********** */
+    //array of all available themes
+    //  var themes = [];
+    //  themes.push(this.add.sprite(0, 0, 'theme1'));
+    //  themes.push(this.add.sprite(0, 0, 'theme2'));
+    //  themes.push(this.add.sprite(0, 0, 'theme3'));
+    //  themes.push(this.add.sprite(0, 0, 'theme4'));
+    //  themes.push(this.add.sprite(0, 0, 'theme5'));
+    //  themes.push(this.add.sprite(0, 0, 'theme6'));
+
+    //number of themes
+    var totalThemes = themes.length;
+
+
+    //the selected theme
+    var prime = 0;
+
+    //speed of moving animation
+    var animationSpeed = 200;
+
+    //initial setup; all items on the right side; anchor set to mid;
+    // themes.forEach(function (item) {
+    //   item.anchor.setTo(0.5, 0.5);
+    //   item.x = this.width + 150;
+    //   item.y = this.height / 2;
+    //   item.inputEnabled = true;
+    //   item.events.onInputDown.add(clickListener, this);
+    // })
+
+    themes.forEach(function (item) {
+      // item.anchor.setTo(0.5, 0.5);
+      item.x = this.width + 150;
+      item.y = this.height / 2;
+      item.inputEnabled = true;
+      item.events.onInputDown.add(clickListener, this);
+    }, this);
+
+
+
+    //initial position of themes on stage based on the selected theme 
+    function setToPosition(prime) {
+      themes[prime].x = this.width / 2;
+
+      //check if there is another theme available to display on the right side; if yes then position it
+      if (prime < (totalThemes - 1)) {
+        themes[prime + 1].x = this.width / 2 + 67 + 75;
+        themes[prime + 1].scale.setTo(0.5, 0.5);
+      }
+
+      //check if there is another theme available to display on the left side; if yes then position it
+      if (prime > 0) {
+        themes[prime - 1].x = this.width / 2 - 67 - 75;
+        themes[prime - 1].scale.setTo(0.5, 0.5);
+      }
+    }
+
+    //set initial state
+    setToPosition(prime);
+
+    //predefined x positions for the 3 visible cards
+    var xleft = this.width / 2 - 67 - 75;
+    var xprime = this.width / 2;
+    var xright = this.width / 2 + 67 + 75;
+
+    //move to next theme
+    function nextTheme() {
+      //move prime left
+      this.add.tween(themes[prime]).to({ x: xleft }, animationSpeed, null, true);
+      this.add.tween(themes[prime].scale).to({ x: 0.5, y: 0.5 }, animationSpeed, null, true);
+      //move right to prime
+      if (prime < 5) {
+        this.add.tween(themes[prime + 1]).to({ x: xprime }, animationSpeed, null, true);
+        this.add.tween(themes[prime + 1].scale).to({ x: 1, y: 1 }, animationSpeed, null, true);
+      }
+      //move new to right
+      if (prime < 4) {
+        themes[prime + 2].x = this.width + 150;
+        themes[prime + 2].scale.setTo(0.5, 0.5);
+        this.add.tween(themes[prime + 2]).to({ x: xright }, animationSpeed, null, true);
+      }
+      //move left out
+      if (prime > 0) {
+        //themes[prime+1].x = -150;
+        themes[prime - 1].scale.setTo(0.5, 0.5);
+        this.add.tween(themes[prime - 1]).to({ x: -150 }, animationSpeed, null, true);
+      }
+      prime++;
+
+    }
+
+    //move to previous theme
+    function previousTheme() {
+      //move prime left
+      this.add.tween(themes[prime]).to({ x: xright }, animationSpeed, null, true);
+      this.add.tween(themes[prime].scale).to({ x: 0.5, y: 0.5 }, animationSpeed, null, true);
+      //move left to prime
+      if (prime > 0) {
+        this.add.tween(themes[prime - 1]).to({ x: xprime }, animationSpeed, null, true);
+        this.add.tween(themes[prime - 1].scale).to({ x: 1, y: 1 }, animationSpeed, null, true);
+      }
+      //move new to left
+      if (prime > 1) {
+        themes[prime - 2].x = - 150;
+        themes[prime - 2].scale.setTo(0.5, 0.5);
+        this.add.tween(themes[prime - 2]).to({ x: xleft }, animationSpeed, null, true);
+      }
+      //move right out
+      if (prime < (totalThemes - 1)) {
+        //themes[prime+1].x = -150;
+        themes[prime + 1].scale.setTo(0.5, 0.5);
+        this.add.tween(themes[prime + 1]).to({ x: this.width + 150 }, animationSpeed, null, true);
+      }
+      prime--;
+    }
+
+    //click on theme listener 
+    function clickListener(el) {
+      console.log(themes.indexOf(el));
+      var clickedPos = themes.indexOf(el);
+      if (clickedPos > prime) {
+        //move to left
+        nextTheme();
+      } else if (clickedPos < prime) {
+        //move to right
+        previousTheme();
+      }
+    }
+
+    function addTextStat(x, y, text, bonusStat) {
+      if (stat != 0) {
+        this.add.text(x, y, text + " + " + bonusStat, { fill: '#fff', align: 'center', fontSize: '27px', fontStyle: 'italic' })
+          .setScrollFactor(0);
+      }else{
+        this.add.text(x, y, text, { fill: '#fff', align: 'center', fontSize: '27px', fontStyle: 'italic' })
+        .setScrollFactor(0);
+      }
+    }
+
+    /********************* */
   }
 }
 export default BaseScene;

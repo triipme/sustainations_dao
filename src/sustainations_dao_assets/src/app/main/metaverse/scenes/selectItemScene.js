@@ -32,6 +32,15 @@ const UI_NameCard = 'metaverse/selectItems/UI_id_name.png';
 const player = 'metaverse/selectItems/UI_player.png';
 const pickItemText = 'metaverse/selectItems/UI_pick_item.png';
 
+const skin1 = 'metaverse/selectItems/item_clothes.png';
+const skin2 = 'metaverse/selectItems/item_hat.png';
+const skin3 = 'metaverse/selectItems/item_food.png';
+
+const skin4 = 'metaverse/selectItems/item_camera.png';
+const skin5 = 'metaverse/selectItems/item_rope_hook.png';
+const skin6 = 'metaverse/selectItems/item_bicycle.png';
+const UI_Arrow = 'metaverse/selectItems/UI_arrow.png'
+
 class selectItemScene extends BaseScene {
   constructor() {
     super('selectItemScene');
@@ -49,7 +58,40 @@ class selectItemScene extends BaseScene {
   init(data) {
     this.map = data.map;
     this.questIdParam = data.questId;
+
+    this.images = [];
+    this.currentImageIndex = 0;
+    this.imageWidth = 400;
   }
+
+
+  addTextStat(x, y, text, bonusStat, visible) {
+    if (bonusStat != 0) {
+      return this.add.text(x, y, text + " + " + bonusStat, { fill: '#fff', align: 'center', fontSize: '27px', fontStyle: 'italic' })
+        .setScrollFactor(0).setVisible(visible);
+    } else {
+      return this.add.text(x, y, text, { fill: '#fff', align: 'center', fontSize: '27px', fontStyle: 'italic' })
+        .setScrollFactor(0).setVisible(visible);
+    }
+  }
+
+  changeStat(index) {
+    this.bonusMorale_visible = !this.bonusMorale_visible
+    if (index == true) {
+      this.bonusHP = 0
+      this.bonusStamina = 1
+      this.bonusMana = 2
+      this.bonusMorale = 3
+    } else {
+      this.bonusHP = 1
+      this.bonusStamina = 1
+      this.bonusMana = 0
+      this.bonusMorale = 2
+    }
+
+  }
+
+
 
   preload() {
     this.addLoadingScreen();
@@ -68,7 +110,7 @@ class selectItemScene extends BaseScene {
       });
     }, this);
 
-    if (this.map == "quest-design"){
+    if (this.map == "quest-design") {
       this.load.rexAwait(function (successCallback, failureCallback) {
         if (this.questIdParam != null) {
           this.questId = this.questIdParam;
@@ -94,7 +136,7 @@ class selectItemScene extends BaseScene {
             }, this);
           });
         }
-      successCallback();
+        successCallback();
       }, this);
     }
 
@@ -152,6 +194,16 @@ class selectItemScene extends BaseScene {
     this.load.spritesheet("itembox", itembox, { frameWidth: 237, frameHeight: 185 });
     this.load.spritesheet("btnClear", btnClear, { frameWidth: 339, frameHeight: 141 });
     this.load.spritesheet("btnGo", btnGo, { frameWidth: 339, frameHeight: 141 });
+
+    this.load.image("skin1", skin1);
+    this.load.image("skin2", skin2);
+    this.load.image("skin3", skin3);
+
+    this.load.image("skin4", skin4);
+    this.load.image("skin5", skin5);
+    this.load.image("skin6", skin6);
+
+    this.load.image("UI_Arrow", UI_Arrow)
   }
 
   //async 
@@ -171,12 +223,26 @@ class selectItemScene extends BaseScene {
       this.clickSound.play();
       this.scene.transition({ target: 'selectMap', duration: 0 });
     });
-    this.add.image(120, 0, 'effect').setOrigin(0);
-    this.add.image(280, 143, 'player').setOrigin(0);
-    this.add.image(390, 260, 'UI_strength').setOrigin(0).setScale(0.55);
+    let vector_player = -50
+    this.add.image(120 + vector_player, 0, 'effect').setOrigin(0);
+    this.add.image(280 + vector_player, 143, 'player').setOrigin(0);
+    this.add.image(280 + vector_player, 260, 'UI_strength').setOrigin(0).setScale(0.55); //default 390, 260
     // strength text
-    this.strengthText = this.add.text(420, 303, String(this.characterStrength), { fill: '#fff', align: 'center', fontSize: '27px', fontStyle: 'italic' })
-      .setScrollFactor(0);
+    this.strengthText = this.add.text(280 + vector_player + 30, 303, String(this.characterStrength), { fill: '#fff', align: 'center', fontSize: '27px', fontStyle: 'italic' })
+      .setScrollFactor(0); //default 420, 303
+
+    this.bonusHP = 0
+    this.bonusStamina = 0
+    this.bonusMana = 0
+    this.bonusMorale = 0
+    this.changeStat(0)
+
+    this.flagBonus = false
+
+    this.strengthTextHP = this.addTextStat(35, 167, String(7), this.bonusHP, true, this.strengthTextHP)
+    this.strengthTextStamina = this.addTextStat(35, 242, String(7), this.bonusStamina, true, this.strengthTextStamina)
+    this.strengthTextMana = this.addTextStat(35, 317, String(7), this.bonusMana, true, this.strengthTextMana)
+    this.strengthTextMorale = this.addTextStat(35, 392, String(7), this.bonusMorale, true, this.strengthTextMorale)
 
     this.add.image(35, 100, 'UI_NameCard').setOrigin(0);
     this.add.text(105, 117, 'Trekker', { fill: '#000', align: 'center', fontSize: '9px', font: 'Arial' })
@@ -185,6 +251,63 @@ class selectItemScene extends BaseScene {
     this.add.image(35, 250, 'UI_Stamina').setOrigin(0);
     this.add.image(35, 325, 'UI_Mana').setOrigin(0);
     this.add.image(35, 400, 'UI_Morale').setOrigin(0);
+
+    let move_skin = 230
+
+    this.add.sprite(300 + move_skin, this.cameras.main.height / 2, "itembox").setScale(0.67, 2)
+    // this.images.push(this.add.image(300 + move_skin, this.cameras.main.height / 2, 'skin1').setVisible(true));
+    // this.images.push(this.add.image(300 + move_skin, this.cameras.main.height / 2 - 100, 'skin2').setVisible(true));
+    // this.images.push(this.add.image(300 + move_skin, this.cameras.main.height / 2 + 100, 'skin3').setVisible(true));
+    this.indexSets = 0
+    this.visibleIndexSets = []
+    this.visibleIndexSets = true
+    this.startChange = false
+    this.set1 = []
+    this.set2 = []
+    this.set3 = []
+    this.set1[this.indexSets] = this.add.image(300 + move_skin, this.cameras.main.height / 2, 'skin1').setVisible(this.visibleIndexSets)
+    this.set2[this.indexSets] = this.add.image(300 + move_skin, this.cameras.main.height / 2 - 100, 'skin2').setVisible(this.visibleIndexSets)
+    this.set3[this.indexSets] = this.add.image(300 + move_skin, this.cameras.main.height / 2 + 100, 'skin3').setVisible(this.visibleIndexSets)
+
+    this.set1[this.indexSets + 1] = this.add.image(300 + move_skin, this.cameras.main.height / 2, 'skin4').setVisible(!this.visibleIndexSets)
+    this.set2[this.indexSets + 1] = this.add.image(300 + move_skin, this.cameras.main.height / 2 - 100, 'skin5').setVisible(!this.visibleIndexSets)
+    this.set3[this.indexSets + 1] = this.add.image(300 + move_skin, this.cameras.main.height / 2 + 100, 'skin6').setVisible(!this.visibleIndexSets)
+
+    this.arrow = this.add.image(320 + move_skin, this.cameras.main.height / 2 + 200, 'UI_Arrow').setInteractive()
+    this.arrow.flipX = true
+    this.arrow.on('pointerover', () => {
+      console.log("Click over")
+      this.hoverSound.play()
+    });
+    this.arrow.on('pointerdown', (pointer) => {
+      this.visibleIndexSets = !this.visibleIndexSets;
+      this.startChange = true
+      this.flagBonus = true
+      console.log("Click down");
+    });
+
+    this.arrow.on('pointerout', function (pointer) {
+
+      console.log("Click out")
+
+    });
+
+    this.arrowLeft = this.add.image(280 + move_skin, this.cameras.main.height / 2 + 200, 'UI_Arrow').setInteractive()
+    this.arrowLeft.on('pointerover', () => {
+      console.log("Click over")
+      this.hoverSound.play()
+    });
+    this.arrowLeft.on('pointerdown', (pointer) => {
+      this.visibleIndexSets = !this.visibleIndexSets;
+      this.startChange = true
+      this.flagBonus = true
+      console.log("Click down");
+    });
+    this.arrowLeft.on('pointerout', function (pointer) {
+      console.log("Click out")
+    });
+
+
 
     this.hp = this.makeBar(107, 210, 100, 15, 0x74e044);
     this.stamina = this.makeBar(107, 210 + 75, 100, 15, 0xcf315f);
@@ -272,7 +395,7 @@ class selectItemScene extends BaseScene {
         case 'quest-design':
           // this.scene.start('BaseEngine', {  listScene: await listSceneQuests("qe1")});
           // this.scene.start('Engine', {listScene: this.listScene, listEvent: this.listEvent});
-          this.scene.start('Test', {listScene: this.listScene, listEvent: this.listEvent});
+          this.scene.start('Test', { listScene: this.listScene, listEvent: this.listEvent });
           break;
         default:
           console.log('invalid map name');
@@ -286,6 +409,51 @@ class selectItemScene extends BaseScene {
       characterSelectsItems(this.characterData.id, returnValue);
       console.log(returnValue);
     });
+  }
+
+  // Update the carousel
+  update() {
+    if (this.visibleIndexSets == false) {
+      this.set1[this.indexSets].setVisible(false)
+      this.set2[this.indexSets].setVisible(false)
+      this.set3[this.indexSets].setVisible(false)
+      this.set1[this.indexSets + 1].setVisible(true)
+      this.set2[this.indexSets + 1].setVisible(true)
+      this.set3[this.indexSets + 1].setVisible(true)
+      this.startChange = false
+
+      this.strengthTextHP.setVisible(false)
+      this.strengthTextStamina.setVisible(false)
+      this.strengthTextMana.setVisible(false)
+      this.strengthTextMorale.setVisible(false) 
+      this.changeStat(this.visibleIndexSets)
+      this.strengthTextHP = this.addTextStat(35, 167, String(7), this.bonusHP, true)
+      this.strengthTextStamina = this.addTextStat(35, 242, String(7), this.bonusStamina,true)
+      this.strengthTextMana = this.addTextStat(35, 317, String(7), this.bonusMana,true)
+      this.strengthTextMorale = this.addTextStat(35, 392, String(7), this.bonusMorale,true)
+   
+    }
+    if (this.visibleIndexSets == true) {
+      this.set1[this.indexSets].setVisible(true)
+      this.set2[this.indexSets].setVisible(true)
+      this.set3[this.indexSets].setVisible(true)
+      this.set1[this.indexSets + 1].setVisible(false)
+      this.set2[this.indexSets + 1].setVisible(false)
+      this.set3[this.indexSets + 1].setVisible(false)
+      this.startChange = false
+
+      this.strengthTextHP.setVisible(false)
+      this.strengthTextStamina.setVisible(false)
+      this.strengthTextMana.setVisible(false)
+      this.strengthTextMorale.setVisible(false) 
+      this.changeStat(this.visibleIndexSets)
+      this.strengthTextHP = this.addTextStat(35, 167, String(7), this.bonusHP, true)
+      this.strengthTextStamina = this.addTextStat(35, 242, String(7), this.bonusStamina,true)
+      this.strengthTextMana = this.addTextStat(35, 317, String(7), this.bonusMana,true)
+      this.strengthTextMorale = this.addTextStat(35, 392, String(7), this.bonusMorale,true)
+
+    }
+
   }
 }
 
