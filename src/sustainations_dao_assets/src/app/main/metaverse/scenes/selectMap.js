@@ -123,14 +123,22 @@ class selectMap extends BaseScene {
     } else {
       //get quest default admin
       this.load.rexAwait(function (successCallback, failureCallback) {
+
         getAdminQuest().then(result => {
           this.questId = result?.id;
-
+        
           //get top one of quest id
+
           this.load.rexAwait(function (successCallback, failureCallback) {
             getLeaderBoard(this.questId).then(result => {
-              console.log("Top one: ", result);
+              this.textLeaderboard = 'Be the best player to get rewards'
+              this.visibleLeaderBoard = true
               this.topone = result;
+              successCallback();
+            }).catch( error =>{
+              this.topone = undefined
+              this.visibleLeaderBoard = false
+              this.textLeaderboard = 'This quest is not available now'
               successCallback();
             });
           }, this);
@@ -148,8 +156,8 @@ class selectMap extends BaseScene {
             }, this);
           }
           successCallback();
-        });
-      }, this);
+        })
+      }, this)
     }
 
     //preload
@@ -195,6 +203,7 @@ class selectMap extends BaseScene {
     let truncatedId = ""
     let completedAtTop1 = ""
     let hpTop1 = ""
+    console.log("this.topone: ", this.topone)
     if (this?.topone != undefined) {
       const id = this?.topone[0]?.id;
       truncatedId = id ? `${id.substring(0, 3)}...${id.substring(29)}` : '';
@@ -412,6 +421,8 @@ class selectMap extends BaseScene {
       this.selectAreaEngine.setInteractive();
     });
 
+
+    console.log(this.visibleLeaderBoard)
     this.popupAcceptLeaderBoard = this.add
       .image(
         gameConfig.scale.width / 2,
@@ -421,7 +432,7 @@ class selectMap extends BaseScene {
       )
       .setInteractive()
       .setScale(0.25)
-      .setVisible(true);
+      .setVisible(this.visibleLeaderBoard);
     this.popupAcceptLeaderBoard.on("pointerdown", async () => {
       this.clickSound.play();
       this.visible = false;
@@ -501,11 +512,12 @@ class selectMap extends BaseScene {
       .text(col3 + move_x, row6 + move_y, "2/14/2023, 3:26:26 PM", style)
       .setVisible(this.visible);
 
+    
     this.firstPlayer = this.make
       .text({
         x: gameConfig.scale.width / 2,
         y: row4 + move_y,
-        text: `Be the best player to get rewards`,
+        text: this.textLeaderboard,
         origin: { x: 0.5, y: 0.5 },
         style: {
           font: "13px Arial",
@@ -661,7 +673,9 @@ class selectMap extends BaseScene {
       this.premiumPopupWindowLeaderBoard.setVisible(true);
       this.desPopupLeaderBoard.setVisible(true);
       this.popupCloseLeaderBoard.setVisible(true);
-      this.popupAcceptLeaderBoard.setVisible(true);
+      if(this.visibleLeaderBoard){
+        this.popupAcceptLeaderBoard.setVisible(true);
+      }
       this.icoinWinner.setVisible(true);
       this.icoinGold.setVisible(true);
       // this.icoinSilver.setVisible(true);
