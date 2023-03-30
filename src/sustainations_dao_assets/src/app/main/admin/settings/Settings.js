@@ -221,7 +221,7 @@ const Settings = () => {
                     required
                     helperText={errors?.godUser?.message}
                     className="mt-8 mb-16"
-                    label="God User"
+                    label="Engine Quest Admin"
                     id="godUser"
                     type="text"
                     variant="outlined"
