@@ -44,7 +44,10 @@ const schema = yup.object().shape({
   referralLimit: yup.number().typeError('You must enter a referral limit')
     .integer('You must enter an integer number')
     .min(0, 'You must enter a non-negative number'),
-    godUser: yup.string()
+  godUser: yup.string().typeError('You must enter God user').required('You must enter God user'),
+  landSlotPrice: yup.number().typeError('You must enter LandSlot Price')
+    .moreThan(0, 'You must enter a positive landSlot Price')
+    .required('You must enter LandSlot Price')
 });
 
 const Settings = () => {
@@ -52,7 +55,6 @@ const Settings = () => {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
   const [submitLoading, setSubmitLoading] = useState(false);
-  const [referralAwards, setReferralAwards] = useState([]);
 
   const methods = useForm({
     mode: 'onChange',
@@ -61,6 +63,7 @@ const Settings = () => {
       referralAwards: [],
       referralLimit: '',
       godUser: '',
+      landSlotPrice: '',
     },
     resolver: yupResolver(schema),
   });
@@ -103,12 +106,12 @@ const Settings = () => {
           const awards = result.ok.referralAwards?.map(item => {
             return _.merge(item, { uuid: uuidv4(), deleted: false });
           });
-          setReferralAwards(awards);
           reset({
             treasuryContribution: parseFloat(result.ok.treasuryContribution),
             referralAwards: awards,
             referralLimit: parseInt(result.ok.referralLimit),
-            godUser: result.ok.godUser
+            godUser: result.ok.godUser,
+            landSlotPrice: parseFloat(result.ok.landSlotPrice)
           });
         } else {
           navigate('/404');
@@ -121,13 +124,13 @@ const Settings = () => {
     })();
   }, [user]);
 
-
   const onSubmit = async (data) => {
     setSubmitLoading(true);
     try {
       const result = await user.actor.updateSystemParams(
         parseFloat(data.treasuryContribution),
         data.godUser,
+        parseFloat(data.landSlotPrice),
         _.filter(data.referralAwards, ['deleted', false]).map(item => {
           return {
             refType: item.refType,
@@ -137,8 +140,6 @@ const Settings = () => {
         }),
         parseInt(data.referralLimit)
       );
-
-  
 
       if ("ok" in result ) {
         dispatch(showMessage({ message: 'Success!' }));
@@ -216,13 +217,31 @@ const Settings = () => {
                 render={({ field }) => (
                   <TextField
                     {...field}
-                    error={!!errors.referralLimit}
+                    error={!!errors.godUser}
                     required
-                    helperText={errors?.referralLimit?.message}
+                    helperText={errors?.godUser?.message}
                     className="mt-8 mb-16"
                     label="Engine Quest Admin"
                     id="godUser"
                     type="text"
+                    variant="outlined"
+                    fullWidth
+                  />
+                )}
+              />
+              <Controller
+                name="landSlotPrice"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    error={!!errors.landSlotPrice}
+                    required
+                    helperText={errors?.landSlotPrice?.message}
+                    className="mt-8 mb-16"
+                    label="LandSlot Price (not include transfer fee: 0.0001 ICP)"
+                    id="landSlotPrice"
+                    type="number"
                     variant="outlined"
                     fullWidth
                   />

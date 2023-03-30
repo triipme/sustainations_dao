@@ -78,6 +78,8 @@ module {
     hasFarmEffects : Map<Text, Types.UserHasFarmEffect>;
     alchemyRecipes : Map<Text, Types.AlchemyRecipe>;
     alchemyRecipeDetails : Map<Text, Types.AlchemyRecipeDetail>;
+    produceRecipes : Map<Text, Types.ProduceRecipe>;
+    produceRecipeDetails : Map<Text, Types.ProduceRecipeDetail>;
     buildingTypes : Map<Text, Types.BuildingType>;
     buildingBuyingHistories : Map<Text,Types.BuildingBuyingHistory>;
     buildings : Map<Text, Types.Building>;
@@ -156,6 +158,8 @@ module {
       hasFarmEffects = TrieMap.TrieMap<Text, Types.UserHasFarmEffect>(Text.equal,Text.hash);
       alchemyRecipes = TrieMap.TrieMap<Text, Types.AlchemyRecipe>(Text.equal,Text.hash);
       alchemyRecipeDetails = TrieMap.TrieMap<Text, Types.AlchemyRecipeDetail>(Text.equal,Text.hash);
+      produceRecipes = TrieMap.TrieMap<Text, Types.ProduceRecipe>(Text.equal,Text.hash);
+      produceRecipeDetails = TrieMap.TrieMap<Text, Types.ProduceRecipeDetail>(Text.equal,Text.hash);
       buildingTypes = TrieMap.TrieMap<Text, Types.BuildingType>(Text.equal,Text.hash);
       buildingBuyingHistories = TrieMap.TrieMap<Text, Types.BuildingBuyingHistory>(Text.equal,Text.hash);
       buildings = TrieMap.TrieMap<Text, Types.Building>(Text.equal,Text.hash);

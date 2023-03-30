@@ -2267,7 +2267,7 @@
 
 "@dfinity/auth-client@^0.14.0":
   version "0.14.1"
-  resolved "https://registry.yarnpkg.com/@dfinity/auth-client/-/auth-client-0.14.1.tgz#528fd3dfcad4fba01158365422eeceefb90b0627"
+  resolved "https://registry.npmjs.org/@dfinity/auth-client/-/auth-client-0.14.1.tgz"
   integrity sha512-7fzKrxcFo90nq6uOFE0HjSeDX1XuFIfLDrP2KwGH+qA38VDl/72+AGoajqzc93WS8/+AHnUh1mRSw+Jb9MlXoA==
   dependencies:
     "@types/jest" "^28.1.4"

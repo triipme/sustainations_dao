@@ -54,7 +54,66 @@ const HotBar = ({ inventory, onUpdate }) => {
           alt=""
         />
       </div>
-
+      <div
+        className="imgItem"
+        style={{
+          border: inventoryStatus["Windmill"] == true ? "2px" : "0px",
+          borderStyle: inventoryStatus["Windmill"] == true ? "dashed dashed dashed dashed" : "none",
+          width: "65px",
+          height: "65px"
+        }}>
+        <img
+          onClick={() => {
+            inventoryStatus["Windmill"] = !inventoryStatus["Windmill"];
+            if (inventoryStatus["Windmill"] === true) onUpdate({ objectId: "Windmill", amount: 1 });
+            else onUpdate({});
+            initialInventory("Windmill");
+            setRender(!render);
+          }}
+          src={"/metaverse/farm25D/building/Windmill.png"}
+          alt=""
+        />
+      </div>
+      <div
+        className="imgItem"
+        style={{
+          border: inventoryStatus["Henhouse"] == true ? "2px" : "0px",
+          borderStyle: inventoryStatus["Henhouse"] == true ? "dashed dashed dashed dashed" : "none",
+          width: "65px",
+          height: "65px"
+        }}>
+        <img
+          onClick={() => {
+            inventoryStatus["Henhouse"] = !inventoryStatus["Henhouse"];
+            if (inventoryStatus["Henhouse"] === true) onUpdate({ objectId: "Henhouse", amount: 1 });
+            else onUpdate({});
+            initialInventory("Henhouse");
+            setRender(!render);
+          }}
+          src={"/metaverse/farm25D/building/Henhouse.png"}
+          alt=""
+        />
+      </div>
+      <div
+        className="imgItem"
+        style={{
+          border: inventoryStatus["Goathouse"] == true ? "2px" : "0px",
+          borderStyle: inventoryStatus["Goathouse"] == true ? "dashed dashed dashed dashed" : "none",
+          width: "65px",
+          height: "65px"
+        }}>
+        <img
+          onClick={() => {
+            inventoryStatus["Goathouse"] = !inventoryStatus["Goathouse"];
+            if (inventoryStatus["Goathouse"] === true) onUpdate({ objectId: "Goathouse", amount: 1 });
+            else onUpdate({});
+            initialInventory("Goathouse");
+            setRender(!render);
+          }}
+          src={"/metaverse/farm25D/building/Goathouse.png"}
+          alt=""
+        />
+      </div>
       {inventory.length > 0 ? (
         <>
           {inventory.map((value, i) => {

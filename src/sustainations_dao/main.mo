@@ -70,6 +70,8 @@ import FarmEffect "./land/farmEffect";
 import HasFarmEffect "./land/hasFarmEffect";
 import AlchemyRecipe "./land/alchemyRecipe";
 import AlchemyRecipeDetail "./land/alchemyRecipeDetail";
+import ProduceRecipe "./land/produceRecipe";
+import ProduceRecipeDetail "./land/produceRecipeDetail";
 import BuildingType "./land/buildingType";
 import BuildingBuyingHistory "./land/buildingBuyingHistory";
 import Building "./land/building";
@@ -78,6 +80,7 @@ import ProductionQueueNode "./land/productionQueueNode";
 import Env ".env";
 
 shared ({ caller = owner }) actor class SustainationsDAO() = this {
+  stable var landSlotPrice : Float = 0.0003;
   stable var transferFee : Nat64 = 10_000;
   stable var createProposalFee : Nat64 = 20_000;
   stable var voteFee : Nat64 = 20_000;
@@ -169,6 +172,8 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   private stable var hasFarmEffects : [(Text, Types.UserHasFarmEffect)] = [];
   private stable var alchemyRecipes : [(Text, Types.AlchemyRecipe)] = [];
   private stable var alchemyRecipeDetails : [(Text, Types.AlchemyRecipeDetail)] = [];
+  private stable var produceRecipes : [(Text, Types.ProduceRecipe)] = [];
+  private stable var produceRecipeDetails : [(Text, Types.ProduceRecipeDetail)] = [];
   private stable var buildingTypes : [(Text, Types.BuildingType)] = [];
   private stable var buildingBuyingHistories : [(Text, Types.BuildingBuyingHistory)] = [];
   private stable var buildings : [(Text, Types.Building)] = [];
@@ -246,6 +251,8 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     hasFarmEffects := Iter.toArray(state.hasFarmEffects.entries());
     alchemyRecipes := Iter.toArray(state.alchemyRecipes.entries());
     alchemyRecipeDetails := Iter.toArray(state.alchemyRecipeDetails.entries());
+    produceRecipes := Iter.toArray(state.produceRecipes.entries());
+    produceRecipeDetails := Iter.toArray(state.produceRecipeDetails.entries());
     buildingTypes := Iter.toArray(state.buildingTypes.entries());
     buildingBuyingHistories := Iter.toArray(state.buildingBuyingHistories.entries());
     buildings := Iter.toArray(state.buildings.entries());
@@ -442,6 +449,12 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
     for ((k, v) in Iter.fromArray(alchemyRecipeDetails)) {
       state.alchemyRecipeDetails.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(produceRecipes)) {
+      state.produceRecipes.put(k, v);
+    };
+    for ((k, v) in Iter.fromArray(produceRecipeDetails)) {
+      state.produceRecipeDetails.put(k, v);
     };
     for ((k, v) in Iter.fromArray(buildingTypes)) {
       state.buildingTypes.put(k, v);
@@ -1363,6 +1376,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   type SystemParams = {
     treasuryContribution : Float;
     godUser : Text;
+    landSlotPrice: Float;
     referralAwards : [Types.ReferralAward];
     referralLimit : Int;
   };
@@ -1370,6 +1384,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     let systemParams : SystemParams = {
       treasuryContribution;
       godUser;
+      landSlotPrice;
       referralAwards;
       referralLimit;
     };
@@ -1379,6 +1394,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   public shared ({ caller }) func updateSystemParams(
     treasuryContributionValue : Float,
     godUserValue : Text,
+    landSlotPriceValue : Float,
     referralAwardsValue : [Types.ReferralAward],
     referralLimitValue : Int
   ) : async Response<Text> {
@@ -1426,9 +1442,13 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
         };
       };
     };
+    if ( landSlotPriceValue < 0) {
+      return #err(#InvalidData);
+    };
 
     treasuryContribution := treasuryContributionValue;
     godUser := godUserValue;
+    landSlotPrice := landSlotPriceValue;
     referralAwards := referralAwardsValue;
     referralLimit := referralLimitValue;
     #ok("Success");
@@ -5964,21 +5984,21 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   };
 
   // Product Storage
-  public shared ({ caller }) func createProductStorage(userId : Text, seedId : Text) : () {
-    let rsSeed = state.seeds.get(seedId);
-    switch rsSeed {
+  public shared ({ caller }) func createProductStorage(userId : Text, productId : Text, minAmount: Int, maxAmount: Int) : async () {
+    let rsProduct = state.products.get(productId);
+    switch rsProduct {
       case null {
       };
-      case (?seed) {
+      case (?product) {
         var rsStash : Bool = false;
         for ((K, productStorage) in state.productStorages.entries()) {
-          if (productStorage.userId == userId and productStorage.productId == seed.harvestedProductId) {
+          if (productStorage.userId == userId and productStorage.productId == productId) {
             let updateProductStorage : Types.ProductStorage = {
               id = productStorage.id;
               userId = productStorage.userId;
               productId = productStorage.productId;
               quality = productStorage.quality;
-              amount = productStorage.amount + Float.toInt(await Random.randomNumber(Float.fromInt(seed.minAmount), Float.fromInt(seed.maxAmount)));
+              amount = productStorage.amount + Float.toInt(await Random.randomNumber(Float.fromInt(minAmount), Float.fromInt(maxAmount)));
             };
             let updated = ProductStorage.update(updateProductStorage, state);
             rsStash := true;
@@ -5989,9 +6009,9 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
           let newProductStorage : Types.ProductStorage = {
             id = await createUUID();
             userId = userId;
-            productId = seed.harvestedProductId;
+            productId = productId;
             quality = "Good";
-            amount = Float.toInt(await Random.randomNumber(Float.fromInt(seed.minAmount), Float.fromInt(seed.maxAmount)));
+            amount = Float.toInt(await Random.randomNumber(Float.fromInt(minAmount), Float.fromInt(maxAmount)));
           };
           let created = ProductStorage.create(newProductStorage, state);
         };
@@ -6033,10 +6053,24 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     #ok((list));
   };
 
+  public shared ({ caller }) func deleteProductStorage(id : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rs = state.productStorages.get(id);
+    switch (rs) {
+      case (null) { #err(#NotFound) };
+      case (?V) {
+        let deleted = state.productStorages.delete(id);
+        #ok("Success");
+      };
+    };
+  };
+
 
   
   // Stash
-  public shared ({ caller }) func createStash(userId : Text, usableItemId : Text) : () {
+  public shared ({ caller }) func createStash(userId : Text, usableItemId : Text) : async () {
     let rsUsableItem = state.usableItems.get(usableItemId);
     switch (rsUsableItem) {
       case null {};
@@ -6101,6 +6135,20 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       };
     };
     #ok((list));
+  };
+
+  public shared ({ caller }) func deleteStash(id : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rs = state.stashes.get(id);
+    switch (rs) {
+      case (null) { #err(#NotFound) };
+      case (?V) {
+        let deleted = state.stashes.delete(id);
+        #ok("Success");
+      };
+    };
   };
 
   public shared ({ caller }) func randomStashPotion() : async Response<(Types.Stash, Text)> {
@@ -6228,7 +6276,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
     let created = state.landSlots.put(newLandSlot.id, newLandSlot);
     // save land transter history
-    createLandTransferHistory(newLandSlot.ownerId, newLandSlot.id, 0.0003);
+    createLandTransferHistory(newLandSlot.ownerId, newLandSlot.id, landSlotPrice);
     // delete user's current buying status
     deleteLandBuyingStatus(newLandSlot.ownerId);
     // update user nation
@@ -6243,16 +6291,26 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     #ok(state.landSlots.size());
   };
 
+  public query ({ caller }) func getLandSlotPrice() : async Response<Float> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let transferFeeValue : Float = Float.fromInt(Nat64.toNat(transferFee)) / 100000000;
+    #ok(landSlotPrice+transferFeeValue);
+  };
+
+
   // Land
   public shared ({ caller }) func buyLandSlot() : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
-    switch (await deposit(30000, caller)) {
+    let landSlotPriceValue : Nat64 = Nat64.fromNat(Int.abs(Float.toInt(landSlotPrice*100000000)));
+    switch (await deposit(landSlotPriceValue, caller)) {
       case (#ok(bIndex)) {
         await recordTransaction(
           caller,
-          30000,
+          landSlotPriceValue,
           caller,
           Principal.fromActor(this),
           #buyLandSlot,
@@ -6272,7 +6330,12 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
-    let rsNation = state.nations.get(Principal.toText(caller));
+    // get user's current nation
+    var rsNation = state.nations.get(Principal.toText(caller));
+    switch (userId) {
+      case (null) {};
+      case (?id) { rsNation := state.nations.get(Principal.toText(id)); };
+    };
     switch (rsNation) {
       case null {
         let rsLandConfig = state.landConfigs.get(Principal.toText(Principal.fromActor(this)));
@@ -6986,7 +7049,13 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
             };
             let updated = Plant.update(updatePlant, state);
             // add harvested product to user's Stash
-            createProductStorage(Principal.toText(caller), plant.seedId);
+            let rsSeed = state.seeds.get(plant.seedId);
+            switch (rsSeed) {
+              case null {};
+              case (?seed) {
+                await createProductStorage(Principal.toText(caller), seed.harvestedProductId, seed.minAmount, seed.maxAmount);
+              };
+            }
           };
         };
         #ok("Success");
@@ -7469,7 +7538,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     #ok((list));
   };
 
-  public type AlchemyRecipeDetailInfo = {
+  public type RecipeDetailInfo = {
     id : Text;
     recipeId : Text;
     productId : Text;
@@ -7478,18 +7547,18 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     requiredAmount : Int;
   };
 
-  public type AlchemyRecipeInfo = {
+  public type RecipeInfo = {
     id : Text;
-    usableItemId : Text;
-    usableItemName : Text;
+    itemId : Text;
+    itemName : Text;
     description : Text;
     craftingTime : Int;
     canCraft : Bool;
-    alchemyRecipeDetails : [AlchemyRecipeDetailInfo];
+    recipeDetails : [RecipeDetailInfo];
   };
 
-  public shared query ({ caller }) func listAlchemyRecipesInfo() : async Response<[AlchemyRecipeInfo]> {
-    var list : [AlchemyRecipeInfo] = [];
+  public shared query ({ caller }) func listAlchemyRecipesInfo() : async Response<[RecipeInfo]> {
+    var list : [RecipeInfo] = [];
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
@@ -7497,7 +7566,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     let productStorages =  ProductStorage.getProductStorages(Principal.toText(caller),state);
     for ((K, alchemyRecipe) in state.alchemyRecipes.entries()) {
       var canCraft : Bool = true;
-      var detailList : [AlchemyRecipeDetailInfo] = [];
+      var detailList : [RecipeDetailInfo] = [];
       // get recipe's details
       let alchemyRecipeDetails = AlchemyRecipeDetail.getAlchemyRecipeDetails(alchemyRecipe.id,state);
       for (alchemyRecipeDetail in alchemyRecipeDetails.vals()) {
@@ -7515,7 +7584,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
           case (?product) {productName:=product.name};
         };
         // add detail info to detailList
-        let alchemyRecipeDetailInfo : AlchemyRecipeDetailInfo = {
+        let recipeDetailInfo : RecipeDetailInfo = {
           id = alchemyRecipeDetail.id;
           recipeId = alchemyRecipeDetail.recipeId;
           productId = alchemyRecipeDetail.productId;
@@ -7523,7 +7592,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
           currentAmount = currentAmount;
           requiredAmount = alchemyRecipeDetail.amount;
         };
-        detailList := Array.append<AlchemyRecipeDetailInfo>(detailList,[alchemyRecipeDetailInfo]);
+        detailList := Array.append<RecipeDetailInfo>(detailList,[recipeDetailInfo]);
         // check if user has enough ingredient
         if (currentAmount < alchemyRecipeDetail.amount) {
           canCraft:=false;
@@ -7539,16 +7608,16 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
         };
       };
       // add recipe info to result list
-      let alchemyRecipeInfo : AlchemyRecipeInfo = {
+      let recipeInfo : RecipeInfo = {
         id = alchemyRecipe.id;
-        usableItemId = alchemyRecipe.usableItemId;
-        usableItemName = usableItemName;
+        itemId = alchemyRecipe.usableItemId;
+        itemName = usableItemName;
         description = alchemyRecipe.description;
         craftingTime = alchemyRecipe.craftingTime;
         canCraft = canCraft;
-        alchemyRecipeDetails = detailList;
+        recipeDetails = detailList;
       };
-      list := Array.append<AlchemyRecipeInfo>(list,[alchemyRecipeInfo]);
+      list := Array.append<RecipeInfo>(list,[recipeInfo]);
 
     };
     #ok((list));
@@ -7588,6 +7657,167 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     #ok((list));
   };
 
+
+  // ProduceRecipe
+  public shared ({ caller }) func createProduceRecipe(produceRecipe : Types.ProduceRecipe) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsProduceRecipe = state.produceRecipes.get(produceRecipe.id);
+    switch (rsProduceRecipe) {
+      case (?V) { #err(#AlreadyExisting) };
+      case null {
+        ProduceRecipe.create(produceRecipe, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared query ({ caller }) func readProduceRecipe(id : Text) : async Response<(Types.ProduceRecipe)> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsProduceRecipe = state.produceRecipes.get(id);
+    return Result.fromOption(rsProduceRecipe, #NotFound);
+  };
+
+  public shared query ({ caller }) func listProduceRecipes() : async Response<[(Text, Types.ProduceRecipe)]> {
+    var list : [(Text, Types.ProduceRecipe)] = [];
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    for ((K, V) in state.produceRecipes.entries()) {
+      list := Array.append<(Text, Types.ProduceRecipe)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+
+  public shared ({ caller }) func deleteProduceRecipe(id : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsProduceRecipe = state.produceRecipes.get(id);
+    switch (rsProduceRecipe) {
+      case (null) { #err(#NotFound) };
+      case (?V) {
+        let deletedProduceRecipe = state.produceRecipes.delete(id);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared query ({ caller }) func listProduceRecipesInfo(buildingId: Text) : async Response<[RecipeInfo]> {
+    var list : [RecipeInfo] = [];
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    var buildingTypeId = "";
+    let rsBuilding = state.buildings.get(buildingId);
+    switch (rsBuilding) {
+      case null {
+        return #err(#NotFound);
+      };
+      case (?building) {
+        buildingTypeId := building.buildingTypeId;
+      };
+    };
+    // get user's product Storage
+    let productStorages =  ProductStorage.getProductStorages(Principal.toText(caller),state);
+    for ((K, produceRecipe) in state.produceRecipes.entries()) {
+      if (produceRecipe.buildingTypeId == buildingTypeId) {
+        var canCraft : Bool = true;
+        var detailList : [RecipeDetailInfo] = [];
+        // get recipe's details
+        let produceRecipeDetails = ProduceRecipeDetail.getProduceRecipeDetails(produceRecipe.id,state);
+        for (produceRecipeDetail in produceRecipeDetails.vals()) {
+          var currentAmount : Int = 0;
+          for (productStorage in productStorages.vals()) {
+            if (productStorage.productId == produceRecipeDetail.productId) {
+              currentAmount := productStorage.amount;
+            };
+          };
+          // get product Name
+          var productName : Text = "None";
+          let rsProduct = state.products.get(produceRecipeDetail.productId);
+          switch (rsProduct) {
+            case null {};
+            case (?product) {productName:=product.name};
+          };
+          // add detail info to detailList
+          let recipeDetailInfo : RecipeDetailInfo = {
+            id = produceRecipeDetail.id;
+            recipeId = produceRecipeDetail.recipeId;
+            productId = produceRecipeDetail.productId;
+            productName = productName;
+            currentAmount = currentAmount;
+            requiredAmount = produceRecipeDetail.amount;
+          };
+          detailList := Array.append<RecipeDetailInfo>(detailList,[recipeDetailInfo]);
+          // check if user has enough ingredient
+          if (currentAmount < produceRecipeDetail.amount) {
+            canCraft:=false;
+          };
+        };
+        // get usableItem name for recipe
+        var resultProductName = "None";
+        let rsProduct = state.products.get(produceRecipe.productId);
+        switch (rsProduct) {
+          case null {};
+          case (?product) {
+            resultProductName := product.name;
+          };
+        };
+        // add recipe info to result list
+        let recipeInfo : RecipeInfo = {
+          id = produceRecipe.id;
+          itemId = produceRecipe.productId;
+          itemName = resultProductName;
+          description = produceRecipe.description;
+          craftingTime = produceRecipe.craftingTime;
+          canCraft = canCraft;
+          recipeDetails = detailList;
+        };
+        list := Array.append<RecipeInfo>(list,[recipeInfo]);
+      };
+    };
+    #ok((list));
+  };
+
+  // ProduceRecipeDetails
+  public shared ({ caller }) func createProduceRecipeDetail(produceRecipeDetail : Types.ProduceRecipeDetail) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsProduceRecipeDetail = state.produceRecipeDetails.get(produceRecipeDetail.id);
+    switch (rsProduceRecipeDetail) {
+      case (?V) { #err(#AlreadyExisting) };
+      case null {
+        ProduceRecipeDetail.create(produceRecipeDetail, state);
+        #ok("Success");
+      };
+    };
+  };
+
+  public shared query ({ caller }) func readProduceRecipeDetail(id : Text) : async Response<(Types.ProduceRecipeDetail)> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsProduceRecipeDetail = state.produceRecipeDetails.get(id);
+    return Result.fromOption(rsProduceRecipeDetail, #NotFound);
+  };
+
+  public shared query ({ caller }) func listProduceRecipeDetails() : async Response<[(Text, Types.ProduceRecipeDetail)]> {
+    var list : [(Text, Types.ProduceRecipeDetail)] = [];
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    for ((K, V) in state.produceRecipeDetails.entries()) {
+      list := Array.append<(Text, Types.ProduceRecipeDetail)>(list, [(K, V)]);
+    };
+    #ok((list));
+  };
+
+
   // BuildingType
   public shared ({ caller }) func createBuildingType(buildingType : Types.BuildingType) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
@@ -7620,6 +7850,20 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       list := Array.append<(Text, Types.BuildingType)>(list, [(K, V)]);
     };
     #ok((list));
+  };
+
+  public shared ({ caller }) func delelteBuildingType(id : Text) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsBuildingType = state.buildingTypes.get(id);
+    switch (rsBuildingType) {
+      case (null) { #err(#NotFound) };
+      case (?V) {
+        let deletedBuildingType = state.buildingTypes.delete(id);
+        #ok("Success");
+      };
+    };
   };
 
   // construct Building
@@ -7675,9 +7919,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       startProducingTime = -1;
     };
     let created = Building.create(newBuilding, state);
-    if (buildingTypeId=="c1") {
-      createProductionQueue(uuid);
-    };
+    createProductionQueue(uuid);
     return uuid;
   };
 
@@ -7693,8 +7935,8 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   };
 
 
-  // craft UsableItem 
-  public shared ({ caller }) func craftUsableItem(buildingId : Text, alchemyRecipeId : Text) : async Response<Text> {
+  // craft UsableItem or Product 
+  public shared ({ caller }) func craftFromRecipe(buildingId : Text, recipeId : Text) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
@@ -7704,62 +7946,54 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
         return #err(#NotFound);
       };
       case (?building) {
-        let rsAlchemyRecipe = state.alchemyRecipes.get(alchemyRecipeId);
-        switch (rsAlchemyRecipe) {
-          case null {
-            return #err(#NotFound);
-          };
-          case (?alchemyRecipe) {
-            // create node in production queue
-            let rsProductionQueue = state.productionQueues.get(buildingId);
-            switch (rsProductionQueue) {
-              case null {
-                // create new productionQueue if the building doesnt have one
-                let  newProductionQueue : Types.ProductionQueue = {
-                  id = buildingId;
-                  nodeAmount = 0;
-                  queueMaxSize = 5;
-                };
-                let createdProductionQueue = ProductionQueue.create(newProductionQueue, state);
-                createProductionQueueNode(newProductionQueue,alchemyRecipe.id);
-                updateProductionQueueNodeStatuses(newProductionQueue);
-              };
-              case (?productionQueue) {
-                if (productionQueue.nodeAmount == productionQueue.queueMaxSize) {
-                  return #ok("QueueIsMaxed");
-                };
-                createProductionQueueNode(productionQueue,alchemyRecipe.id);
-                updateProductionQueueNodeStatuses(productionQueue);
-              };
+        let rsAlchemyRecipe = state.alchemyRecipes.get(recipeId);
+        if (rsAlchemyRecipe == null) {
+            let rsProduceRecipe = state.produceRecipes.get(recipeId);
+            if (rsProduceRecipe == null) {
+              return #err(#NotFound);
+            }
+        };
+        // create node in production queue
+        let rsProductionQueue = state.productionQueues.get(buildingId);
+        switch (rsProductionQueue) {
+          case null {};
+          case (?productionQueue) {
+            if (productionQueue.nodeAmount == productionQueue.queueMaxSize) {
+              return #ok("QueueIsMaxed");
             };
-            // get user's product storage
-            let productStorages =  ProductStorage.getProductStorages(Principal.toText(caller),state);
-            // get recipe's details
-            let alchemyRecipeDetails = AlchemyRecipeDetail.getAlchemyRecipeDetails(alchemyRecipeId,state);
-            // subtract required ingredients
-            for (productStorage in productStorages.vals()) {
-              for (alchemyRecipeDetail in alchemyRecipeDetails.vals()) {
-                if (productStorage.productId == alchemyRecipeDetail.productId) {
-                  let subtractedProductStorage = {
-                    id = productStorage.id;
-                    userId = productStorage.userId;
-                    productId = productStorage.productId;
-                    quality = productStorage.quality;
-                    amount = productStorage.amount-alchemyRecipeDetail.amount;
-                  };
-                  let updated = ProductStorage.update(subtractedProductStorage,state);
-                };
-              };
-            };
-            return #ok("Success");
+            createProductionQueueNode(productionQueue,recipeId);
+            updateProductionQueueNodeStatuses(productionQueue);
           };
         };
+        // get user's product storage
+        let productStorages =  ProductStorage.getProductStorages(Principal.toText(caller),state);
+        // get recipe's details
+        var recipeDetails = AlchemyRecipeDetail.getAlchemyRecipeDetails(recipeId,state);
+        if (recipeDetails.size() == 0) {
+          recipeDetails := ProduceRecipeDetail.getProduceRecipeDetails(recipeId,state);
+        };
+        // subtract required ingredients
+        for (productStorage in productStorages.vals()) {
+          for (recipeDetail in recipeDetails.vals()) {
+            if (productStorage.productId == recipeDetail.productId) {
+              let subtractedProductStorage = {
+                id = productStorage.id;
+                userId = productStorage.userId;
+                productId = productStorage.productId;
+                quality = productStorage.quality;
+                amount = productStorage.amount-recipeDetail.amount;
+              };
+              let updated = ProductStorage.update(subtractedProductStorage,state);
+            };
+          };
+        };
+        return #ok("Success");
       };
     };
   };
 
   // collect completed usable Items
-  public shared ({ caller }) func collectUsableItems(buildingId : Text) : async Response<Text> {
+  public shared ({ caller }) func collectFromBuilding(buildingId : Text) : async Response<Text> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
@@ -7781,12 +8015,20 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
                 processingNodes := Array.append<Types.ProductionQueueNode>(processingNodes,[productionQueueNode]);
               }
               else {
-                // collect usableItem
+                // collect usableItem or Product
                 let rsAlchmyRecipe = state.alchemyRecipes.get(productionQueueNode.recipeId);
                 switch (rsAlchmyRecipe) {
-                  case null {};
+                  case null {
+                    let rsProduceRecipe = state.produceRecipes.get(productionQueueNode.recipeId);
+                    switch (rsProduceRecipe) {
+                      case null {};
+                      case (?produceRecipe) {
+                        await createProductStorage(Principal.toText(caller), produceRecipe.productId, 1, 1);
+                      };
+                    }
+                  };
                   case (?alchemyRecipe) {
-                    createStash(Principal.toText(caller),alchemyRecipe.usableItemId);
+                    await createStash(Principal.toText(caller),alchemyRecipe.usableItemId);
                   };
                 }; 
               };
@@ -7794,10 +8036,6 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
             };
           };
         };
-        // update ProductionNode (remove all completed nodes)
-        // if (processingNodes.size() == 0) {
-        //   return #ok("noneCompleted");
-        // };
         let nodeAmount = processingNodes.size();
         for ( key in processingNodes.keys()) {
           let newProductionQueueNode : Types.ProductionQueueNode = {
@@ -7878,7 +8116,15 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       case (?productionQueueNode) {
         let rsAlchemyRecipe = state.alchemyRecipes.get(productionQueueNode.recipeId);
         switch (rsAlchemyRecipe) {
-          case null {};
+          case null {
+            let rsProduceRecipe = state.produceRecipes.get(productionQueueNode.recipeId);
+            switch (rsProduceRecipe) {
+              case null {};
+              case (?produceRecipe) {
+                  lastNodeCompleteTime := productionQueueNode.startCraftingTime + produceRecipe.craftingTime;
+              };
+            }
+          };
           case (?alchemyRecipe) {
             lastNodeCompleteTime := productionQueueNode.startCraftingTime + alchemyRecipe.craftingTime;
           };
@@ -7916,7 +8162,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   public type ProductionQueueNodeInfo = {
     id : Text;
     recipeId : Text;
-    usableItemName : Text;
+    itemName : Text;
     status : Text;
     startCraftingTime : Int;
     remainingTime : Int;
@@ -7938,20 +8184,34 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
           switch (rsProductionQueueNode) {
             case null {};
             case (?productionQueueNode) {
-              
               // get usableItem name of node
-              var usableItemName : Text = "None";
+              var itemName : Text = "None";
               var craftingTime : Int = 0;
               let rsAlchemyRecipe = state.alchemyRecipes.get(productionQueueNode.recipeId);
               switch (rsAlchemyRecipe) {
-                case null {};
+                case null {
+                  let rsProduceRecipe = state.produceRecipes.get(productionQueueNode.recipeId);
+                  switch (rsProduceRecipe) {
+                    case null {};
+                    case (?produceRecipe) {
+                      craftingTime := produceRecipe.craftingTime;
+                      let rsProduct = state.products.get(produceRecipe.productId);
+                      switch (rsProduct) {
+                        case null {};
+                        case (?product) {
+                          itemName := product.name;
+                        };
+                      }
+                    };
+                  }
+                };
                 case (?alchemyRecipe) {
                   craftingTime := alchemyRecipe.craftingTime;
                   let rsUsableItem = state.usableItems.get(alchemyRecipe.usableItemId);
                   switch (rsUsableItem) {
                     case null {};
                     case (?usableItem) {
-                      usableItemName := usableItem.name;
+                      itemName := usableItem.name;
                     };
                   };
                 };
@@ -7962,7 +8222,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
               let productionQueueNodeInfo : ProductionQueueNodeInfo = {
                 id = productionQueueNode.id;
                 recipeId = productionQueueNode.recipeId;
-                usableItemName = usableItemName;
+                itemName = itemName;
                 status = productionQueueNode.status;
                 startCraftingTime = productionQueueNode.startCraftingTime;
                 remainingTime = remainingTime;
@@ -7986,21 +8246,30 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       switch (rsProductionQueueNode) {
         case null {};
         case (?productionQueueNode) {
+          var remainingTime : Int = 0; 
           let rsAlchemyRecipe = state.alchemyRecipes.get(productionQueueNode.recipeId);
           switch (rsAlchemyRecipe) {
-            case null {};
-            case (?alchemyRecipe) {
-              let remainingTime = Int.max(alchemyRecipe.craftingTime - (Time.now() / 1000000000 - productionQueueNode.startCraftingTime), 0);
-              if (remainingTime==0) {
-                let updateProductionQueueNode : Types.ProductionQueueNode = {
-                  id = productionQueueNode.id;
-                  recipeId = productionQueueNode.recipeId;
-                  status = "Completed";
-                  startCraftingTime = productionQueueNode.startCraftingTime;
+            case null {
+              let rsProduceRecipe = state.produceRecipes.get(productionQueueNode.recipeId);
+              switch (rsProduceRecipe) {
+                case null {};
+                case (?produceRecipe) {
+                  remainingTime := Int.max(produceRecipe.craftingTime - (Time.now() / 1000000000 - productionQueueNode.startCraftingTime), 0);
                 };
-                let updated = ProductionQueueNode.update(updateProductionQueueNode,state);
               };
             };
+            case (?alchemyRecipe) {
+              remainingTime := Int.max(alchemyRecipe.craftingTime - (Time.now() / 1000000000 - productionQueueNode.startCraftingTime), 0);
+            };
+          };
+          if (remainingTime==0) {
+            let updateProductionQueueNode : Types.ProductionQueueNode = {
+              id = productionQueueNode.id;
+              recipeId = productionQueueNode.recipeId;
+              status = "Completed";
+              startCraftingTime = productionQueueNode.startCraftingTime;
+            };
+            let updated = ProductionQueueNode.update(updateProductionQueueNode,state);
           };
         };
       };
