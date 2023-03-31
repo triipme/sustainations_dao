@@ -202,6 +202,7 @@ function Farm(props) {
           }
 
           let cc = getCenterCoordinate(tile);
+
           if (t[0].properties.status === "newlyPlanted") {
             tile.object = t[0].properties.name;
             tile.tileId = t[0].properties.tileId;
@@ -236,6 +237,7 @@ function Farm(props) {
             );
             ctx.drawImage(listImg.Factory, cc.x - cvW / 22, cc.y - cvH / 15, cvW / 10, cvH / 5);
           } else if (t[0].properties.name === "Windmill") {
+
             tile["object"] = "Windmill";
             tile["tileId"] = t[0].properties.tileId;
             tile["objectId"] = t[0].properties.objectId;
@@ -280,13 +282,15 @@ function Farm(props) {
               cvH / 5
             );
             ctx.drawImage(listImg.Henhouse, cc.x - cvW / 22, cc.y - cvH / 15, cvW / 10, cvH / 5);
-          } else if (t[0].properties.name !== "p6_seed") {
+          }
+          else if (t[0].properties.name !== "p6_seed") {
             tile.object = t[0].properties.name;
             tile.tileId = t[0].properties.tileId;
             tile.status = t[0].properties.status;
             tile.objectId = t[0].properties.objectId;
             let key = t[0].properties.name + "_" + t[0].properties.status;
-            ctx.drawImage(listImg[key], cc.x - cvW / 35, cc.y - cvH / 16, cvW / 20, cvH / 11);
+            console.log(key)
+            // ctx.drawImage(listImg[key], cc.x - cvW / 35, cc.y - cvH / 16, cvW / 20, cvH / 11);
           }
         }
       });
@@ -426,7 +430,7 @@ function Farm(props) {
 
   function handleMouseUp(e) {
     setIsDragging(false);
-    if (Date.now() - date < 200) {
+    if (Date.now() - date < 300) {
       const pos = checkTilePosition(e, listTile, tileStyle, zoomLevel[scroll], offCoord);
       setSelected(pos);
       if (pos !== null && object.objectId === "dig" && pos?.object) {
@@ -509,6 +513,9 @@ function Farm(props) {
         object.objectId != undefined &&
         object.amount > 0 &&
         object.objectId !== "factory" &&
+        object.objectId !== "Goathouse" &&
+        object.objectId !== "Windmill" &&
+        object.objectId !== "Henhouse" &&
         object.objectId !== "m6pine_seed"
       ) {
         (async () => {
