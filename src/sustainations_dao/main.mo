@@ -3110,9 +3110,9 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
 
   public shared query ({ caller }) func listAllCharacters() : async Response<[(Text, Types.Character)]> {
     var list : [(Text, Types.Character)] = [];
-    if (Principal.toText(caller) == "2vxsx-fae") {
-      return #err(#NotAuthorized); //isNotAuthorized
-    };
+    // if (Principal.toText(caller) == "2vxsx-fae") {
+    //   return #err(#NotAuthorized); //isNotAuthorized
+    // };
     for ((key, character) in state.characters.entries()) {
       list := Array.append<(Text, Types.Character)>(list, [(key, character)]);
     };
