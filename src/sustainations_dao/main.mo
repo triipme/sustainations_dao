@@ -6296,7 +6296,8 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       return #err(#NotAuthorized); //isNotAuthorized
     };
     let transferFeeValue : Float = Float.fromInt(Nat64.toNat(transferFee)) / 100000000;
-    #ok(landSlotPrice+transferFeeValue);
+    let totalPrice : Float = (landSlotPrice+transferFeeValue);
+    #ok(totalPrice);
   };
 
 
@@ -6305,7 +6306,10 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
-    let landSlotPriceValue : Nat64 = Nat64.fromNat(Int.abs(Float.toInt(landSlotPrice*100000000)));
+    let landSlotPriceValue = Int64.toNat64(Float.toInt64(landSlotPrice  * (10 ** 8)));
+    //let landSlotPriceValue : Nat64 = Nat64.fromNat(Int.abs(Float.toInt(landSlotPrice*100000000)));
+    Debug.print(Float.toText(landSlotPrice));
+    Debug.print(Nat64.toText(landSlotPriceValue));
     switch (await deposit(landSlotPriceValue, caller)) {
       case (#ok(bIndex)) {
         await recordTransaction(
