@@ -6296,13 +6296,12 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     #ok(state.landSlots.size());
   };
 
-  public query ({ caller }) func getLandSlotPrice() : async Response<Float> {
+  public query ({ caller }) func getLandSlotPrice() : async Response<(Float, Float)> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
-    let transferFeeValue : Float = Float.fromInt(Nat64.toNat(transferFee)) / 100000000;
-    let totalPrice : Float = (landSlotPrice+transferFeeValue);
-    #ok(totalPrice);
+    let transferFeeValue : Float = Float.fromInt64( Int64.fromNat64(transferFee)) / 10**8;
+    #ok((landSlotPrice, transferFeeValue));
   };
 
 
@@ -6311,8 +6310,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
-    let landSlotPriceValue = Int64.toNat64(Float.toInt64(landSlotPrice  * (10 ** 8)));
-    //let landSlotPriceValue : Nat64 = Nat64.fromNat(Int.abs(Float.toInt(landSlotPrice*100000000)));
+    let landSlotPriceValue = Int64.toNat64(Float.toInt64(Float.nearest(landSlotPrice  * (10 ** 8))));
     Debug.print(Float.toText(landSlotPrice));
     Debug.print(Nat64.toText(landSlotPriceValue));
     switch (await deposit(landSlotPriceValue, caller)) {
