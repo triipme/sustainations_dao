@@ -1410,16 +1410,21 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       return #err(#InvalidData);
     };
 
-    var check : Bool = false;
-    label findUserId for (character in state.characters.vals()){
-      if (Principal.toText(character.userId) == godUserValue){
-        check := true;
-        break findUserId;
-      };
-    };
-    if (check == false) {
+    let profilePrincipal = Principal.fromText(godUserValue);
+    let rsProfile = state.profiles.get(profilePrincipal);
+    if ( rsProfile == null ) {
       return #err(#InvalidData);
     };
+    // var check : Bool = false;
+    // label findUserId for (character in state.characters.vals()){
+    //   if (Principal.toText(character.userId) == godUserValue){
+    //     check := true;
+    //     break findUserId;
+    //   };
+    // };
+    // if (check == false) {
+    //   return #err(#InvalidData);
+    // };
 
     if (referralLimitValue < 0) {
       return #err(#InvalidData);
