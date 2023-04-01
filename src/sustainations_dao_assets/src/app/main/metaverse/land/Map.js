@@ -38,8 +38,7 @@ const Map = () => {
   const { principal } = user;
 
   const loadNationsfromCenter = async (x, y) => {
-    let landSlotPriceInfo = ((await user.actor.getLandSlotPrice())?.ok);
-    landSlotPrice = (landSlotPriceInfo[0] * 10**8 + landSlotPriceInfo[1] * 10**8) / 10**8;
+    landSlotPrice = ((await user.actor.getLandSlotPrice())?.ok);
     const func = await user.actor.loadNationsArea(
       x, y, 4
     );
@@ -209,8 +208,7 @@ const Map = () => {
 
   const handlePurchase = async () => {
     setLoading("purchased")
-    let landSlotPriceInfo = ((await user.actor.getLandSlotPrice())?.ok);
-    landSlotPrice = (landSlotPriceInfo[0] * 10**8 + landSlotPriceInfo[1] * 10**8) / 10**8;
+    landSlotPrice = ((await user.actor.getLandSlotPrice())?.ok);
     let landBuyingStatus = await loadLandBuyingStatus()
     if (landBuyingStatus != undefined) {
       numRandom = Number(landBuyingStatus.properties.randomTimes)

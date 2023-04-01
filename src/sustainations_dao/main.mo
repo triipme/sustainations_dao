@@ -6296,12 +6296,13 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     #ok(state.landSlots.size());
   };
 
-  public query ({ caller }) func getLandSlotPrice() : async Response<(Float, Float)> {
+  public query ({ caller }) func getLandSlotPrice() : async Response<Float> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
     };
-    let transferFeeValue : Float = Float.fromInt64( Int64.fromNat64(transferFee)) / 10**8;
-    #ok((landSlotPrice, transferFeeValue));
+    #ok(
+      ( landSlotPrice * 10**8 + Float.fromInt(Nat64.toNat(transferFee)) ) / 10**8
+    );
   };
 
 
