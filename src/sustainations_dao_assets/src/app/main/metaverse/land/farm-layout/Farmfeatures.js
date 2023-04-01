@@ -284,13 +284,14 @@ function Farm(props) {
             ctx.drawImage(listImg.Henhouse, cc.x - cvW / 22, cc.y - cvH / 15, cvW / 10, cvH / 5);
           }
           else if (t[0].properties.name !== "p6_seed") {
+            console.log(t[0].properties.name)
             tile.object = t[0].properties.name;
             tile.tileId = t[0].properties.tileId;
             tile.status = t[0].properties.status;
             tile.objectId = t[0].properties.objectId;
             let key = t[0].properties.name + "_" + t[0].properties.status;
             console.log(key)
-            // ctx.drawImage(listImg[key], cc.x - cvW / 35, cc.y - cvH / 16, cvW / 20, cvH / 11);
+            ctx.drawImage(listImg[key], cc.x - cvW / 35, cc.y - cvH / 16, cvW / 20, cvH / 11);
           }
         }
       });
