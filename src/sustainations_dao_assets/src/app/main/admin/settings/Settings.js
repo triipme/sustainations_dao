@@ -101,7 +101,6 @@ const Settings = () => {
       setLoading(true);
       try {
         const result = await user.actor.getSystemParams()
-  
         if ('ok' in result) {
           const awards = result.ok.referralAwards?.map(item => {
             return _.merge(item, { uuid: uuidv4(), deleted: false });
@@ -116,7 +115,6 @@ const Settings = () => {
         } else {
           navigate('/404');
         }
-
       } catch (error) {
         console.log(error);
       }
@@ -127,6 +125,7 @@ const Settings = () => {
   const onSubmit = async (data) => {
     setSubmitLoading(true);
     try {
+      console.log(parseFloat(data.landSlotPrice))
       const result = await user.actor.updateSystemParams(
         parseFloat(data.treasuryContribution),
         data.godUser,
