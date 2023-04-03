@@ -85,7 +85,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   stable var createProposalFee : Nat64 = 20_000;
   stable var voteFee : Nat64 = 20_000;
   stable var treasuryContribution : Float = 0.03;
-  stable var godUser : Text = "wijp2-ps7be-cocx3-zbfru-uuw2q-hdmpl-zudjl-f2ofs-7qgni-t7ik5-lqe";
+  stable var questEngineAdmin : Text = "wijp2-ps7be-cocx3-zbfru-uuw2q-hdmpl-zudjl-f2ofs-7qgni-t7ik5-lqe";
   stable var gamePlayAnalytics : Types.GamePlayAnalytics = {
     miniGamePlayCount = 0;
     miniGameCompletedCount = 0;
@@ -1375,7 +1375,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
 
   type SystemParams = {
     treasuryContribution : Float;
-    godUser : Text;
+    questEngineAdmin : Text;
     landSlotPrice: Float;
     referralAwards : [Types.ReferralAward];
     referralLimit : Int;
@@ -1383,7 +1383,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   public query func getSystemParams() : async Response<SystemParams> {
     let systemParams : SystemParams = {
       treasuryContribution;
-      godUser;
+      questEngineAdmin;
       landSlotPrice;
       referralAwards;
       referralLimit;
@@ -1393,7 +1393,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
 
   public shared ({ caller }) func updateSystemParams(
     treasuryContributionValue : Float,
-    godUserValue : Text,
+    questEngineAdminValue : Text,
     landSlotPriceValue : Float,
     referralAwardsValue : [Types.ReferralAward],
     referralLimitValue : Int
@@ -1410,21 +1410,12 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       return #err(#InvalidData);
     };
 
-    let profilePrincipal = Principal.fromText(godUserValue);
+    let profilePrincipal = Principal.fromText(questEngineAdminValue);
     let rsProfile = state.profiles.get(profilePrincipal);
     if ( rsProfile == null ) {
       return #err(#InvalidData);
     };
-    // var check : Bool = false;
-    // label findUserId for (character in state.characters.vals()){
-    //   if (Principal.toText(character.userId) == godUserValue){
-    //     check := true;
-    //     break findUserId;
-    //   };
-    // };
-    // if (check == false) {
-    //   return #err(#InvalidData);
-    // };
+
 
     if (referralLimitValue < 0) {
       return #err(#InvalidData);
@@ -1452,7 +1443,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
 
     treasuryContribution := treasuryContributionValue;
-    godUser := godUserValue;
+    questEngineAdmin := questEngineAdminValue;
     landSlotPrice := landSlotPriceValue;
     referralAwards := referralAwardsValue;
     referralLimit := referralLimitValue;
@@ -3514,7 +3505,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       return #err(#NotAuthorized); //isNotAuthorized
     };
     for (quest in state.questEngine.quests.vals()){
-      if (Principal.toText(quest.userId) == godUser){
+      if (Principal.toText(quest.userId) == questEngineAdmin){
         return #ok(quest);
       };
     };

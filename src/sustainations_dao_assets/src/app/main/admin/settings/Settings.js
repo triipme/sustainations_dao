@@ -44,7 +44,7 @@ const schema = yup.object().shape({
   referralLimit: yup.number().typeError('You must enter a referral limit')
     .integer('You must enter an integer number')
     .min(0, 'You must enter a non-negative number'),
-  godUser: yup.string().typeError('You must enter God user').required('You must enter God user'),
+  questEngineAdmin: yup.string().typeError('You must enter God user').required('You must enter God user'),
   landSlotPrice: yup.number().typeError('You must enter LandSlot Price')
     .moreThan(0, 'You must enter a positive landSlot Price')
     .required('You must enter LandSlot Price')
@@ -62,7 +62,7 @@ const Settings = () => {
       treasuryContribution: '',
       referralAwards: [],
       referralLimit: '',
-      godUser: '',
+      questEngineAdmin: '',
       landSlotPrice: '',
     },
     resolver: yupResolver(schema),
@@ -109,7 +109,7 @@ const Settings = () => {
             treasuryContribution: parseFloat(result.ok.treasuryContribution),
             referralAwards: awards,
             referralLimit: parseInt(result.ok.referralLimit),
-            godUser: result.ok.godUser,
+            questEngineAdmin: result.ok.questEngineAdmin,
             landSlotPrice: parseFloat(result.ok.landSlotPrice)
           });
         } else {
@@ -128,7 +128,7 @@ const Settings = () => {
       console.log(parseFloat(data.landSlotPrice))
       const result = await user.actor.updateSystemParams(
         parseFloat(data.treasuryContribution),
-        data.godUser,
+        data.questEngineAdmin,
         parseFloat(data.landSlotPrice),
         _.filter(data.referralAwards, ['deleted', false]).map(item => {
           return {
@@ -211,17 +211,17 @@ const Settings = () => {
                 )}
               />
               <Controller
-                name="godUser"
+                name="questEngineAdmin"
                 control={control}
                 render={({ field }) => (
                   <TextField
                     {...field}
-                    error={!!errors.godUser}
+                    error={!!errors.questEngineAdmin}
                     required
-                    helperText={errors?.godUser?.message}
+                    helperText={errors?.questEngineAdmin?.message}
                     className="mt-8 mb-16"
-                    label="Engine Quest Admin"
-                    id="godUser"
+                    label="Quest Engine Admin"
+                    id="questEngineAdmin"
                     type="text"
                     variant="outlined"
                     fullWidth
