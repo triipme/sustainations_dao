@@ -1,15 +1,15 @@
 import Option "mo:base/Option";
 import Time "mo:base/Time";
 import Principal "mo:base/Principal";
+import Array "mo:base/Array";
+import Debug "mo:base/Debug";
 import RandomMethod "../utils/random";
+
 
 import Types "../types";
 import State "../state";
 
 module Character {
-  let godUser1 = "eoaxc-owf3f-kl22c-6a7xx-me7xi-idp7u-6mkef-3ek3w-vkyrf-deavj-pqe";
-  let godUser2 = "wijp2-ps7be-cocx3-zbfru-uuw2q-hdmpl-zudjl-f2ofs-7qgni-t7ik5-lqe";
-  let godUser3 = "u3z7x-q4qn7-kju5f-yew6e-kx3qy-rzmdy-nrqwl-tpynd-6nd2k-lkc37-fqe";
   public func init(caller : Principal, id : Text, characterClass : Types.CharacterClass) : Types.Character{
     let newCharacter : Types.Character = {
       userId = caller;
@@ -69,18 +69,16 @@ module Character {
     };
     return newCharacter;
   };
-  public func create(caller : Principal, id : Text, characterClass : Types.CharacterClass, state : State.State) {
-    if(Principal.toText(caller) == godUser1 
-    or Principal.toText(caller) == godUser2 
-    or Principal.toText(caller) == godUser3) {
+  public func create(caller : Principal, id : Text, characterClass : Types.CharacterClass, state : State.State, godUsers : [Text]) {
+    if ( Array.find(godUsers, func(godUser : Text) : Bool {godUser == Principal.toText(caller)} ) != null) {
+      Debug.print("YES");
       state.characters.put(id, godMode(caller, id, characterClass.id));
     } else { state.characters.put(id, init(caller, id, characterClass)); };
   };
 
-  public func resetStat(caller : Principal, id : Text, characterClass : Types.CharacterClass, state : State.State) {
-    if(Principal.toText(caller) == godUser1 
-    or Principal.toText(caller) == godUser2 
-    or Principal.toText(caller) == godUser3) {
+  public func resetStat(caller : Principal, id : Text, characterClass : Types.CharacterClass, state : State.State, godUsers : [Text]) {
+    if ( Array.find(godUsers, func(godUser : Text) : Bool {godUser == Principal.toText(caller)} ) != null) {
+      Debug.print("YES");
       let godModeUpdated = state.characters.replace(id, godMode(caller, id, characterClass.id));
     } else { let updated = state.characters.replace(id, init(caller, id, characterClass)); };
   };

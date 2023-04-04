@@ -86,6 +86,12 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
   stable var voteFee : Nat64 = 20_000;
   stable var treasuryContribution : Float = 0.03;
   stable var questEngineAdmin : Text = "wijp2-ps7be-cocx3-zbfru-uuw2q-hdmpl-zudjl-f2ofs-7qgni-t7ik5-lqe";
+  stable var godUsers : [Text] = [
+    "eoaxc-owf3f-kl22c-6a7xx-me7xi-idp7u-6mkef-3ek3w-vkyrf-deavj-pqe",
+    "wijp2-ps7be-cocx3-zbfru-uuw2q-hdmpl-zudjl-f2ofs-7qgni-t7ik5-lqe",
+    "u3z7x-q4qn7-kju5f-yew6e-kx3qy-rzmdy-nrqwl-tpynd-6nd2k-lkc37-fqe",
+  ];
+
   stable var gamePlayAnalytics : Types.GamePlayAnalytics = {
     miniGamePlayCount = 0;
     miniGameCompletedCount = 0;
@@ -3037,16 +3043,24 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     let uuid : Text = await createUUID();
     var canCreate = true;
     let rsCharacterClass = state.characterClasses.get(characterClassId);
-    let godUser1 = "eoaxc-owf3f-kl22c-6a7xx-me7xi-idp7u-6mkef-3ek3w-vkyrf-deavj-pqe";
-    let godUser2 = "wijp2-ps7be-cocx3-zbfru-uuw2q-hdmpl-zudjl-f2ofs-7qgni-t7ik5-lqe";
-    let godUser3 = "u3z7x-q4qn7-kju5f-yew6e-kx3qy-rzmdy-nrqwl-tpynd-6nd2k-lkc37-fqe";
-    if (Principal.toText(caller) == godUser1 or Principal.toText(caller) == godUser2 or Principal.toText(caller) == godUser3) {
+    // let godUser1 = "eoaxc-owf3f-kl22c-6a7xx-me7xi-idp7u-6mkef-3ek3w-vkyrf-deavj-pqe";
+    // let godUser2 = "wijp2-ps7be-cocx3-zbfru-uuw2q-hdmpl-zudjl-f2ofs-7qgni-t7ik5-lqe";
+    // let godUser3 = "u3z7x-q4qn7-kju5f-yew6e-kx3qy-rzmdy-nrqwl-tpynd-6nd2k-lkc37-fqe";
+    // if (Principal.toText(caller) == godUser1 or Principal.toText(caller) == godUser2 or Principal.toText(caller) == godUser3) {
+    //   for ((K, character) in state.characters.entries()) {
+    //     if (character.userId == Principal.fromText(godUser1) or character.userId == Principal.fromText(godUser2) or character.userId == Principal.fromText(godUser3)) {
+    //       state.characters.delete(character.id);
+    //     };
+    //   };
+    //};
+    if ( Array.find(godUsers, func(godUser : Text) : Bool {godUser == Principal.toText(caller)} ) != null) {
       for ((K, character) in state.characters.entries()) {
-        if (character.userId == Principal.fromText(godUser1) or character.userId == Principal.fromText(godUser2) or character.userId == Principal.fromText(godUser3)) {
+        if ( Array.find(godUsers, func(godUser : Text) : Bool {godUser == Principal.toText(character.userId)} ) != null) {
           state.characters.delete(character.id);
         };
       };
     };
+
     switch (rsCharacterClass) {
       case (?characterClass) {
         for ((K, character) in state.characters.entries()) {
@@ -3055,7 +3069,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
           };
         };
         if (canCreate == true) {
-          Character.create(caller, uuid, characterClass, state);
+          Character.create(caller, uuid, characterClass, state, godUsers);
         };
         #ok("Success");
       };
@@ -3152,13 +3166,15 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       if (character.userId == caller) {
         for ((K, characterClass) in state.characterClasses.entries()) {
           if (character.classId == characterClass.id) {
-            Character.resetStat(caller, character.id, characterClass, state);
+            Character.resetStat(caller, character.id, characterClass, state, godUsers);
           };
         };
       };
     };
     #ok("Success");
   };
+
+  
 
   // public shared ({ caller }) func takeOption(eventId : Text) : async Response<[Types.Character]> {
   //   if (Principal.toText(caller) == "2vxsx-fae") {
