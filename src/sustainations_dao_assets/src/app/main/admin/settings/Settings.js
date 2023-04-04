@@ -18,6 +18,7 @@ import { selectUser } from 'app/store/userSlice';
 import { showMessage } from 'app/store/fuse/messageSlice';
 import { useAsyncMemo } from "use-async-memo";
 import ReferralAwards from './ReferralAwards';
+import GodUsers from './GodUsers'
 /**
  * Form Validation Schema
  */
@@ -101,7 +102,7 @@ const Settings = () => {
       setLoading(true);
       try {
         const result = await user.actor.getSystemParams()
-  
+
         if ('ok' in result) {
           const awards = result.ok.referralAwards?.map(item => {
             return _.merge(item, { uuid: uuidv4(), deleted: false });
@@ -141,7 +142,7 @@ const Settings = () => {
         parseInt(data.referralLimit)
       );
 
-      if ("ok" in result ) {
+      if ("ok" in result) {
         dispatch(showMessage({ message: 'Success!' }));
       } else {
         throw result?.err;
@@ -247,6 +248,10 @@ const Settings = () => {
                   />
                 )}
               />
+              <Typography className="mt-32 mb-16 text-3xl font-bold tracking-tight leading-tight">
+                God Users
+              </Typography>
+              <GodUsers></GodUsers>
               <Typography className="mt-32 mb-16 text-3xl font-bold tracking-tight leading-tight">
                 Referral Awards
               </Typography>
