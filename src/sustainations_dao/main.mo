@@ -1383,6 +1383,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     treasuryContribution : Float;
     questEngineAdmin : Text;
     landSlotPrice: Float;
+    godUsers : [Text];
     referralAwards : [Types.ReferralAward];
     referralLimit : Int;
   };
@@ -1391,6 +1392,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       treasuryContribution;
       questEngineAdmin;
       landSlotPrice;
+      godUsers;
       referralAwards;
       referralLimit;
     };
@@ -1401,6 +1403,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     treasuryContributionValue : Float,
     questEngineAdminValue : Text,
     landSlotPriceValue : Float,
+    godUsersValue : [Text],
     referralAwardsValue : [Types.ReferralAward],
     referralLimitValue : Int
   ) : async Response<Text> {
@@ -1427,6 +1430,14 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
       return #err(#InvalidData);
     };
 
+    for (godUser in Iter.fromArray(godUsersValue)) {
+      let profilePrincipal = Principal.fromText(godUser);
+      let rsProfile = state.profiles.get(profilePrincipal);
+      if ( rsProfile == null ) {
+        return #err(#InvalidData);
+      };
+    };
+
     for (award in Iter.fromArray(referralAwardsValue)) {
       if (award.amount <= 0) {
         return #err(#InvalidData);
@@ -1451,6 +1462,7 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     treasuryContribution := treasuryContributionValue;
     questEngineAdmin := questEngineAdminValue;
     landSlotPrice := landSlotPriceValue;
+    godUsers := godUsersValue;
     referralAwards := referralAwardsValue;
     referralLimit := referralLimitValue;
     #ok("Success");

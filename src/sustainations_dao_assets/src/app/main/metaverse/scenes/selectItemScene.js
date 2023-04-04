@@ -427,10 +427,10 @@ class selectItemScene extends BaseScene {
       this.strengthTextMana.setVisible(false)
       this.strengthTextMorale.setVisible(false) 
       this.changeStat(this.visibleIndexSets)
-      this.strengthTextHP = this.addTextStat(35, 167, String(7), this.bonusHP, true)
-      this.strengthTextStamina = this.addTextStat(35, 242, String(7), this.bonusStamina,true)
-      this.strengthTextMana = this.addTextStat(35, 317, String(7), this.bonusMana,true)
-      this.strengthTextMorale = this.addTextStat(35, 392, String(7), this.bonusMorale,true)
+      this.strengthTextHP = this.addTextStat(35, 167, String(this.characterData.currentHP), this.bonusHP, true)
+      this.strengthTextStamina = this.addTextStat(35, 242, String(this.characterData.currentStamina), this.bonusStamina,true)
+      this.strengthTextMana = this.addTextStat(35, 317, String(this.characterData.currentMana), this.bonusMana,true)
+      this.strengthTextMorale = this.addTextStat(35, 392, String(this.characterData.currentMorale), this.bonusMorale,true)
    
     }
     if (this.visibleIndexSets == true) {
@@ -447,10 +447,10 @@ class selectItemScene extends BaseScene {
       this.strengthTextMana.setVisible(false)
       this.strengthTextMorale.setVisible(false) 
       this.changeStat(this.visibleIndexSets)
-      this.strengthTextHP = this.addTextStat(35, 167, String(7), this.bonusHP, true)
-      this.strengthTextStamina = this.addTextStat(35, 242, String(7), this.bonusStamina,true)
-      this.strengthTextMana = this.addTextStat(35, 317, String(7), this.bonusMana,true)
-      this.strengthTextMorale = this.addTextStat(35, 392, String(7), this.bonusMorale,true)
+      this.strengthTextHP = this.addTextStat(35, 167, String(this.characterData.currentHP), this.bonusHP, true)
+      this.strengthTextStamina = this.addTextStat(35, 242, String(this.characterData.currentStamina), this.bonusStamina,true)
+      this.strengthTextMana = this.addTextStat(35, 317, String(this.characterData.currentMana), this.bonusMana,true)
+      this.strengthTextMorale = this.addTextStat(35, 392, String(this.characterData.currentMorale), this.bonusMorale,true)
 
     }
 

@@ -17,8 +17,10 @@ function ReferralAwards(props) {
   const methods = useFormContext();
   const { control, formState, watch, setValue } = methods;
   const { errors } = formState;
+  console.log("methods ",methods)
 
   const referralAwards = watch('referralAwards');
+  console.log(referralAwards)
   const onRemoveReferralAward = (uuid) => {
     const list = referralAwards.map(item => {
       if (item.uuid == uuid) {
@@ -27,7 +29,7 @@ function ReferralAwards(props) {
         return item;
       }
     });
-    if (_.findIndex(list, { deleted : false }) == -1) {
+    if (_.findIndex(list, { deleted: false }) == -1) {
       return;
     }
     setValue('referralAwards', list);
