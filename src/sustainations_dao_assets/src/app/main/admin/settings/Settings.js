@@ -119,7 +119,7 @@ const Settings = () => {
             let result = {
               godUserID: item,
             };
-            return _.merge(result, { uuid: uuidv4(), deleted1: false });
+            return _.merge(result, { ID: uuidv4(), deleted1: false });
           });
           reset({
             treasuryContribution: parseFloat(result.ok.treasuryContribution),
@@ -145,7 +145,9 @@ const Settings = () => {
       const godUsersValue = _.filter(data.godUsers, ['deleted1', false]).map(item => {
         return item.godUserID
       })
-      console.log(godUsersValue)
+      console.log("godUsers and referralAwards")
+      console.log(data.godUsers)
+      console.log(data.referralAwards)
       const result = await user.actor.updateSystemParams(
         parseFloat(data.treasuryContribution),
         data.questEngineAdmin,

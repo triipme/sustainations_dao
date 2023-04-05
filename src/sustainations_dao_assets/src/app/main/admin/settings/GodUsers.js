@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid';
 import {
     Button,
     TextField,
@@ -12,18 +13,16 @@ function GodUsers() {
     const methods = useFormContext();
     const { control: control1, formState: formState1, watch: watch1, setValue: setValue1 } = methods;
     const { errors } = formState1;
-    const [id, setId] = useState(0)
 
     const godUsers = watch1('godUsers');
 
 
     const addGodUsers = () => {
         const item = {
-            ID: id,
+            ID: uuidv4(),
             godUserID: "",
             deleted1: false,
         }
-        setId(id+1)
         setValue1('godUsers', _.concat(godUsers, item));
     };
     const onRemoveGodUserID = (ID) => {
