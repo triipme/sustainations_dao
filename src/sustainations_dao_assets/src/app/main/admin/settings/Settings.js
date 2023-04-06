@@ -119,7 +119,7 @@ const Settings = () => {
             let result = {
               godUserID: item,
             };
-            return _.merge(result, { ID: uuidv4(), deleted1: false });
+            return _.merge(result, { ID: uuidv4(), deletedGodUser: false });
           });
           reset({
             treasuryContribution: parseFloat(result.ok.treasuryContribution),
@@ -142,7 +142,7 @@ const Settings = () => {
   const onSubmit = async (data) => {
     setSubmitLoading(true);
     try {
-      const godUsersValue = _.filter(data.godUsers, ['deleted1', false]).map(item => {
+      const godUsersValue = _.filter(data.godUsers, ['deletedGodUser', false]).map(item => {
         return item.godUserID
       })
       console.log("godUsers and referralAwards")
