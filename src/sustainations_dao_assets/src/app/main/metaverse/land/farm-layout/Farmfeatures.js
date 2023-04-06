@@ -74,7 +74,8 @@ function Farm(props) {
   const [imageLoaded, setImageLoaded] = useState(false);
 
   const canvas = useRef();
-  const loadImage = (url, obj) => {
+
+  const loadImage = useCallback((url, obj) => {
     const img = new Image();
     img.src = url;
     img.onload = () => {
@@ -83,7 +84,8 @@ function Farm(props) {
         [obj]: img
       }));
     };
-  };
+  });
+
   useEffect(() => {
     const userAgent = window.navigator.userAgent;
     setIsMobile(/Mobi|Android/i.test(userAgent));
@@ -114,19 +116,45 @@ function Farm(props) {
     ctx.scale(zoomLevel[scroll], zoomLevel[scroll]);
   }, [scroll, offCoord]);
 
-  function checkChangePlantStatus(prevState, curState) {
+  const checkChangePlantStatus = useCallback((prevState, curState) => {
     const differences = curState.filter((key, idx) => {
       return prevState[idx]?.properties.status !== key?.properties.status;
     });
     if (differences.length > 0) {
       setTileplant(curState);
     }
-  }
+  });
+
+  const groupBuildingInfo = useCallback((t, tile, arr, idx) => {
+    arr[t[0].properties.name].push({
+      tile: tile,
+      idx: idx,
+      objectId: t[0].properties.objectId,
+      tileId: t[0].properties.tileId
+    });
+  })
+
+  const combineBuildingCells = useCallback((arr, map) => {
+    for (const property in arr) {
+      arr[String(property)].map(e => {
+        map.forEach((tile, idx) => {
+          if (
+            (idx >= e.idx + 10 && idx <= e.idx + 12) ||
+            (idx >= e.idx + 20 && idx <= e.idx + 22) ||
+            (idx > e.idx && idx <= e.idx + 2)
+          ) {
+            tile.object = String(property);
+            tile.tileId = e.tileId;
+            tile.objectId = e.objectId;
+          }
+        });
+      });
+    }
+  })
 
   useEffect(() => {
     const interval = setInterval(() => {
       (async () => {
-        // setTime(Date.now());
         checkChangePlantStatus(tileplant, await loadTileSlots(props.landSlotProperties));
       })();
     }, 4000);
@@ -157,52 +185,20 @@ function Farm(props) {
         return ctx.drawImage(
           selected?.row === tile.row && selected?.col === tile.col
             ? listImg.Ground_Selected
-            : listImg.Ground,
-          tile.x,
-          tile.y,
-          tile.w,
-          tile.h
+            : listImg.Ground, tile.x, tile.y, tile.w, tile.h
         );
       });
+
 
       map.forEach((tile, idx) => {
         let t = plantedTile.filter(object => {
           return object.properties.i === tile.row && object.properties.j === tile.col;
         });
         if (t.length > 0) {
-          if (t[0].properties.name === "Factory") {
-            // if object name is  Factory
-            arr.Factory.push({
-              tile: tile,
-              idx: idx,
-              objectId: t[0].properties.objectId,
-              tileId: t[0].properties.tileId
-            });
-          } else if (t[0].properties.name === "Windmill") {
-            arr.Windmill.push({
-              tile: tile,
-              idx: idx,
-              objectId: t[0].properties.objectId,
-              tileId: t[0].properties.tileId
-            });
-          } else if (t[0].properties.name === "Goathouse") {
-            arr.Goathouse.push({
-              tile: tile,
-              idx: idx,
-              objectId: t[0].properties.objectId,
-              tileId: t[0].properties.tileId
-            });
-          } else if (t[0].properties.name === "Henhouse") {
-            arr.Henhouse.push({
-              tile: tile,
-              idx: idx,
-              objectId: t[0].properties.objectId,
-              tileId: t[0].properties.tileId
-            });
-          }
-
+          try {
+            groupBuildingInfo(t, tile, arr, idx)
+          } catch { }
           let cc = getCenterCoordinate(tile);
-
           if (t[0].properties.status === "newlyPlanted") {
             tile.object = t[0].properties.name;
             tile.tileId = t[0].properties.tileId;
@@ -214,141 +210,46 @@ function Farm(props) {
               width: cvW / 20,
               height: cvH / 11
             };
-            ctx.drawImage(
-              listImg.newlyPlanted,
-              startPointNewlyPlanted.x,
-              startPointNewlyPlanted.y,
-              startPointNewlyPlanted.width,
-              startPointNewlyPlanted.height
-            );
+            ctx.drawImage(listImg.newlyPlanted, startPointNewlyPlanted.x, startPointNewlyPlanted.y, startPointNewlyPlanted.width, startPointNewlyPlanted.height);
           } else if (t[0].properties.name === "Factory") {
             tile["object"] = "Factory";
             tile["tileId"] = t[0].properties.tileId;
             tile["objectId"] = t[0].properties.objectId;
-
-            ctx.drawImage(
-              selected?.row === tile.row && selected?.col === tile.col
-                ? listImg.Ground_Selected
-                : listImg.Ground,
-              cc.x - cvW / 10,
-              cc.y - cvH / 15 / 2,
-              cvW / 5,
-              cvH / 5
-            );
+            ctx.drawImage(selected?.row === tile.row && selected?.col === tile.col ? listImg.Ground_Selected : listImg.Ground, cc.x - cvW / 10, cc.y - cvH / 15 / 2, cvW / 5, cvH / 5);
             ctx.drawImage(listImg.Factory, cc.x - cvW / 22, cc.y - cvH / 15, cvW / 10, cvH / 5);
-          } else if (t[0].properties.name === "Windmill") {
 
+          } else if (t[0].properties.name === "Windmill") {
             tile["object"] = "Windmill";
             tile["tileId"] = t[0].properties.tileId;
             tile["objectId"] = t[0].properties.objectId;
-
-            ctx.drawImage(
-              selected?.row === tile.row && selected?.col === tile.col
-                ? listImg.Ground_Selected
-                : listImg.Ground,
-              cc.x - cvW / 10,
-              cc.y - cvH / 15 / 2,
-              cvW / 5,
-              cvH / 5
-            );
+            ctx.drawImage(selected?.row === tile.row && selected?.col === tile.col ? listImg.Ground_Selected : listImg.Ground, cc.x - cvW / 10, cc.y - cvH / 15 / 2, cvW / 5, cvH / 5);
             ctx.drawImage(listImg.Windmill, cc.x - cvW / 10, cc.y - cvH / 8, cvW / 5, cvH / 4);
+
           } else if (t[0].properties.name === "Goathouse") {
             tile["object"] = "Goathouse";
             tile["tileId"] = t[0].properties.tileId;
             tile["objectId"] = t[0].properties.objectId;
-
-            ctx.drawImage(
-              selected?.row === tile.row && selected?.col === tile.col
-                ? listImg.Ground_Selected
-                : listImg.Ground,
-              cc.x - cvW / 10,
-              cc.y - cvH / 15 / 2,
-              cvW / 5,
-              cvH / 5
-            );
+            ctx.drawImage(selected?.row === tile.row && selected?.col === tile.col ? listImg.Ground_Selected : listImg.Ground, cc.x - cvW / 10, cc.y - cvH / 15 / 2, cvW / 5, cvH / 5);
             ctx.drawImage(listImg.Goathouse, cc.x - cvW / 16, cc.y - cvH / 20, cvW / 7, cvH / 5);
+
           } else if (t[0].properties.name === "Henhouse") {
             tile["object"] = "Henhouse";
             tile["tileId"] = t[0].properties.tileId;
             tile["objectId"] = t[0].properties.objectId;
-
-            ctx.drawImage(
-              selected?.row === tile.row && selected?.col === tile.col
-                ? listImg.Ground_Selected
-                : listImg.Ground,
-              cc.x - cvW / 10,
-              cc.y - cvH / 15 / 2,
-              cvW / 5,
-              cvH / 5
-            );
+            ctx.drawImage(selected?.row === tile.row && selected?.col === tile.col ? listImg.Ground_Selected : listImg.Ground, cc.x - cvW / 10, cc.y - cvH / 15 / 2, cvW / 5, cvH / 5);
             ctx.drawImage(listImg.Henhouse, cc.x - cvW / 22, cc.y - cvH / 15, cvW / 10, cvH / 5);
-          }
-          else if (t[0].properties.name !== "p6_seed") {
-            console.log(t[0].properties.name)
+
+          } else if (t[0].properties.name !== "p6_seed") {
             tile.object = t[0].properties.name;
             tile.tileId = t[0].properties.tileId;
             tile.status = t[0].properties.status;
             tile.objectId = t[0].properties.objectId;
             let key = t[0].properties.name + "_" + t[0].properties.status;
-            console.log(key)
             ctx.drawImage(listImg[key], cc.x - cvW / 35, cc.y - cvH / 16, cvW / 20, cvH / 11);
           }
         }
       });
-
-      arr.Factory.map(e => {
-        map.forEach((tile, idx) => {
-          if (
-            (idx >= e.idx + 10 && idx <= e.idx + 12) ||
-            (idx >= e.idx + 20 && idx <= e.idx + 22) ||
-            (idx > e.idx && idx <= e.idx + 2)
-          ) {
-            tile.object = "Factory";
-            tile.tileId = e.tileId;
-            tile.objectId = e.objectId;
-          }
-        });
-      });
-
-      arr.Goathouse.map(e => {
-        map.forEach((tile, idx) => {
-          if (
-            (idx >= e.idx + 10 && idx <= e.idx + 12) ||
-            (idx >= e.idx + 20 && idx <= e.idx + 22) ||
-            (idx > e.idx && idx <= e.idx + 2)
-          ) {
-            tile.object = "Goathouse";
-            tile.tileId = e.tileId;
-            tile.objectId = e.objectId;
-          }
-        });
-      });
-      arr.Henhouse.map(e => {
-        map.forEach((tile, idx) => {
-          if (
-            (idx >= e.idx + 10 && idx <= e.idx + 12) ||
-            (idx >= e.idx + 20 && idx <= e.idx + 22) ||
-            (idx > e.idx && idx <= e.idx + 2)
-          ) {
-            tile.object = "Henhouse";
-            tile.tileId = e.tileId;
-            tile.objectId = e.objectId;
-          }
-        });
-      });
-      arr.Windmill.map(e => {
-        map.forEach((tile, idx) => {
-          if (
-            (idx >= e.idx + 10 && idx <= e.idx + 12) ||
-            (idx >= e.idx + 20 && idx <= e.idx + 22) ||
-            (idx > e.idx && idx <= e.idx + 2)
-          ) {
-            tile.object = "Windmill";
-            tile.tileId = e.tileId;
-            tile.objectId = e.objectId;
-          }
-        });
-      });
+      combineBuildingCells(arr, map)
       setListTile(map);
     };
     Object.keys(listImg).length !== 0 ? draw() : console.log("do nothing");
@@ -554,10 +455,7 @@ function Farm(props) {
   return (
     <div>
       {popup ? <FarmProduce handlepopup={handlepopup} objectId={objectId} objectName={selected} /> : <></>}
-      {/* <div className="w-full h-screen flex justify-center items-center"> */}
       <canvas
-        // id="canvas"
-        // className="mx-auto"
         ref={canvas}
         onWheel={handleWheel}
         onMouseDown={handleMouseDown}
@@ -566,8 +464,6 @@ function Farm(props) {
         onTouchStart={handleMouseDown}
         onTouchMove={handleMouseMove}
         onTouchEnd={handleMouseUp}></canvas>
-      {/* </div> */}
-
       <ButtonZoom
         handleWheelIncrease={handleWheelIncrease}
         handleWheelDecrease={handleWheelDecrease}
