@@ -27,10 +27,11 @@ function ReferralAwards(props) {
         return item;
       }
     });
-    if (_.findIndex(list, { deleted : false }) == -1) {
+    setValue('referralAwards', list);
+    if (_.findIndex(list, { deleted: false }) == -1) {
       return;
     }
-    setValue('referralAwards', list);
+ 
   }
 
   const handleChangeType = (event, uuid) => {

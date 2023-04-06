@@ -18,6 +18,7 @@ import { selectUser } from 'app/store/userSlice';
 import { showMessage } from 'app/store/fuse/messageSlice';
 import { useAsyncMemo } from "use-async-memo";
 import ReferralAwards from './ReferralAwards';
+import GodUsers from './GodUsers'
 /**
  * Form Validation Schema
  */
@@ -41,6 +42,14 @@ const schema = yup.object().shape({
     )
     .min(1, 'You must select award')
     .required('You must select award'),
+  godUsers: yup.array()
+    .of(
+      yup.object().shape({
+        godUserID: yup.string().typeError('You must enter God user').required('You must enter God user'),
+      })
+    )
+    .min(1, 'You must select godUser')
+    .required('You must select godUser'),
   referralLimit: yup.number().typeError('You must enter a referral limit')
     .integer('You must enter an integer number')
     .min(0, 'You must enter a non-negative number'),
@@ -60,6 +69,7 @@ const Settings = () => {
     mode: 'onChange',
     defaultValues: {
       treasuryContribution: '',
+      godUsers: [],
       referralAwards: [],
       referralLimit: '',
       questEngineAdmin: '',
@@ -105,9 +115,16 @@ const Settings = () => {
           const awards = result.ok.referralAwards?.map(item => {
             return _.merge(item, { uuid: uuidv4(), deleted: false });
           });
+          const godUsers = result.ok.godUsers?.map(item => {
+            let result = {
+              godUserID: item,
+            };
+            return _.merge(result, { ID: uuidv4(), deletedGodUser: false });
+          });
           reset({
             treasuryContribution: parseFloat(result.ok.treasuryContribution),
             referralAwards: awards,
+            godUsers: godUsers,
             referralLimit: parseInt(result.ok.referralLimit),
             questEngineAdmin: result.ok.questEngineAdmin,
             landSlotPrice: parseFloat(result.ok.landSlotPrice)
@@ -125,11 +142,17 @@ const Settings = () => {
   const onSubmit = async (data) => {
     setSubmitLoading(true);
     try {
-      console.log(parseFloat(data.landSlotPrice))
+      const godUsersValue = _.filter(data.godUsers, ['deletedGodUser', false]).map(item => {
+        return item.godUserID
+      })
+      console.log("godUsers and referralAwards")
+      console.log(data.godUsers)
+      console.log(data.referralAwards)
       const result = await user.actor.updateSystemParams(
         parseFloat(data.treasuryContribution),
         data.questEngineAdmin,
         parseFloat(data.landSlotPrice),
+        godUsersValue,
         _.filter(data.referralAwards, ['deleted', false]).map(item => {
           return {
             refType: item.refType,
@@ -140,7 +163,7 @@ const Settings = () => {
         parseInt(data.referralLimit)
       );
 
-      if ("ok" in result ) {
+      if ("ok" in result) {
         dispatch(showMessage({ message: 'Success!' }));
       } else {
         throw result?.err;
@@ -246,6 +269,10 @@ const Settings = () => {
                   />
                 )}
               />
+              <Typography className="mt-32 mb-16 text-3xl font-bold tracking-tight leading-tight">
+                God Users
+              </Typography>
+              <GodUsers></GodUsers>
               <Typography className="mt-32 mb-16 text-3xl font-bold tracking-tight leading-tight">
                 Referral Awards
               </Typography>
