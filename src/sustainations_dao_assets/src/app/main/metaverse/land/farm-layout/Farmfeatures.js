@@ -223,21 +223,21 @@ function Farm(props) {
             tile["tileId"] = t[0].properties.tileId;
             tile["objectId"] = t[0].properties.objectId;
             ctx.drawImage(selected?.row === tile.row && selected?.col === tile.col ? listImg.Ground_Selected : listImg.Ground, cc.x - cvW / 10, cc.y - cvH / 15 / 2, cvW / 5, cvH / 5);
-            ctx.drawImage(listImg.Windmill, cc.x - cvW / 10, cc.y - cvH / 8, cvW / 5, cvH / 4);
+            ctx.drawImage(listImg.Windmill, cc.x - cvW / 14, cc.y - cvH / 8, cvW / 7, cvH / 4);
 
           } else if (t[0].properties.name === "Goathouse") {
             tile["object"] = "Goathouse";
             tile["tileId"] = t[0].properties.tileId;
             tile["objectId"] = t[0].properties.objectId;
             ctx.drawImage(selected?.row === tile.row && selected?.col === tile.col ? listImg.Ground_Selected : listImg.Ground, cc.x - cvW / 10, cc.y - cvH / 15 / 2, cvW / 5, cvH / 5);
-            ctx.drawImage(listImg.Goathouse, cc.x - cvW / 16, cc.y - cvH / 20, cvW / 7, cvH / 5);
+            ctx.drawImage(listImg.Goathouse, cc.x - cvW / 15, cc.y - cvH / 24, cvW / 7, cvH / 5);
 
           } else if (t[0].properties.name === "Henhouse") {
             tile["object"] = "Henhouse";
             tile["tileId"] = t[0].properties.tileId;
             tile["objectId"] = t[0].properties.objectId;
             ctx.drawImage(selected?.row === tile.row && selected?.col === tile.col ? listImg.Ground_Selected : listImg.Ground, cc.x - cvW / 10, cc.y - cvH / 15 / 2, cvW / 5, cvH / 5);
-            ctx.drawImage(listImg.Henhouse, cc.x - cvW / 22, cc.y - cvH / 15, cvW / 10, cvH / 5);
+            ctx.drawImage(listImg.Henhouse, cc.x - cvW / 22, cc.y - cvH / 12, cvW / 10, cvH / 5);
 
           } else if (t[0].properties.name !== "p6_seed") {
             tile.object = t[0].properties.name;
