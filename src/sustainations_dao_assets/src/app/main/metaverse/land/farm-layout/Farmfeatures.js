@@ -34,9 +34,9 @@ for (let i = 1; i < 2; i += 0.1) {
 }
 
 const URL_IMAGE = {
-  TempBuilding: "metaverse/farm25D/building/tempBuilding.png",
-  Factory: "metaverse/farm25D/building/Factory.png",
-  Windmill: "metaverse/farm25D/building/Windmill.png",
+  TempBuilding: "metaverse/farm25D/building_webp/tempBuilding.webp",
+  Factory: "metaverse/farm25D/building_webp/Factory.webp",
+  Windmill: "metaverse/farm25D/building_webp/Windmill.webp",
   Ground: "metaverse/farm25D/Ground.png",
   Ground_Selected: "metaverse/farm25D/Ground_Selected.png",
   newlyPlanted: "metaverse/farm25D/plant/newlyPlanted.png",
@@ -50,8 +50,8 @@ const URL_IMAGE = {
   Bean_Seed_fullGrown: "metaverse/farm25D/plant/Bean_Seed/Bean_Seed_fullGrown.png",
   Sugarcane_Seed_growing: "metaverse/farm25D/plant/SugarCane_Seed/SugarCane_Seed_growing.png",
   Sugarcane_Seed_fullGrown: "metaverse/farm25D/plant/SugarCane_Seed/SugarCane_Seed_fullGrown.png",
-  Goathouse: "metaverse/farm25D/building/Goathouse.png",
-  Henhouse: "metaverse/farm25D/building/Henhouse.png",
+  Goathouse: "metaverse/farm25D/building_webp/Goathouse.webp",
+  Henhouse: "metaverse/farm25D/building_webp/Henhouse.webp",
 };
 
 function Farm(props) {
