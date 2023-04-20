@@ -11,25 +11,25 @@ import _ from 'lodash';
 
 function GodUsers() {
     const methods = useFormContext();
-    const { control: control1, formState: formState1, watch: watch1, setValue: setValue1 } = methods;
-    const { errors } = formState1;
+    const { control: controlGodUser, formState: formStateGodUser, watch: watchGodUser, setValue: setValueGodUser } = methods;
+    const { errors } = formStateGodUser;
 
-    const godUsers = watch1('godUsers');
+    const godUsers = watchGodUser('godUsers');
 
 
     const addGodUsers = () => {
         const item = {
             ID: uuidv4(),
             godUserID: "",
-            deleted1: false,
+            deletedGodUser: false,
         }
-        setValue1('godUsers', _.concat(godUsers, item));
+        setValueGodUser('godUsers', _.concat(godUsers, item));
     };
     const onRemoveGodUserID = (ID) => {
         const list = godUsers.map(item => {
             try {
                 if (item.ID == ID) {
-                    return _.merge(item, { deleted1: true });
+                    return _.merge(item, { deletedGodUser: true });
                 } else {
                     return item;
                 }
@@ -37,19 +37,19 @@ function GodUsers() {
                 console.log("undefine")
             }
         });
-        if (_.findIndex(list, { deleted1: false }) == -1) {
+        setValueGodUser('godUsers', list);
+        if (_.findIndex(list, { deletedGodUser: false }) == -1) {
             return;
         }
-        setValue1('godUsers', list);
     }
     return (
         <div>
             {godUsers && godUsers.map((item, itemIndex) => (
-                item != undefined && !item.deleted1 &&
-                <div className={`flex -mx-4 ${item.deleted1}`}>
+                item != undefined && !item.deletedGodUser &&
+                <div className={`flex -mx-4 ${item.deletedGodUser}`}>
                     <Controller
                         name={`godUsers[${itemIndex}][godUserID]`}
-                        control={control1}
+                        control={controlGodUser}
                         render={({ field }) => (
                             <TextField
                                 sx={{ m: 1, minWidth: 120 }}
