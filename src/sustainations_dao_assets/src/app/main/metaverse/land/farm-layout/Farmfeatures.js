@@ -37,19 +37,19 @@ const URL_IMAGE = {
   TempBuilding: "metaverse/farm25D/building_webp/tempBuilding.webp",
   Factory: "metaverse/farm25D/building_webp/Factory.webp",
   Windmill: "metaverse/farm25D/building_webp/Windmill.webp",
-  Ground: "metaverse/farm25D/Ground.png",
-  Ground_Selected: "metaverse/farm25D/Ground_Selected.png",
-  newlyPlanted: "metaverse/farm25D/plant/newlyPlanted.png",
-  Carrot_Seed_growing: "metaverse/farm25D/plant/Carrot_Seed/Carrot_Seed_growing.png",
-  Carrot_Seed_fullGrown: "metaverse/farm25D/plant/Carrot_Seed/Carrot_Seed_fullGrown.png",
-  Tomato_Seed_growing: "metaverse/farm25D/plant/Tomato_Seed/Tomato_Seed_growing.png",
-  Tomato_Seed_fullGrown: "metaverse/farm25D/plant/Tomato_Seed/Tomato_Seed_fullGrown.png",
-  Wheat_Seed_growing: "metaverse/farm25D/plant/Wheat_Seed/Wheat_Seed_growing.png",
-  Wheat_Seed_fullGrown: "metaverse/farm25D/plant/Wheat_Seed/Wheat_Seed_fullGrown.png",
-  Bean_Seed_growing: "metaverse/farm25D/plant/Bean_Seed/Bean_Seed_growing.png",
-  Bean_Seed_fullGrown: "metaverse/farm25D/plant/Bean_Seed/Bean_Seed_fullGrown.png",
-  Sugarcane_Seed_growing: "metaverse/farm25D/plant/SugarCane_Seed/SugarCane_Seed_growing.png",
-  Sugarcane_Seed_fullGrown: "metaverse/farm25D/plant/SugarCane_Seed/SugarCane_Seed_fullGrown.png",
+  Ground: "metaverse/farm25D/Ground.webp",
+  Ground_Selected: "metaverse/farm25D/Ground_Selected.webp",
+  newlyPlanted: "metaverse/farm25D/plant_webp/newlyPlanted.webp",
+  Carrot_Seed_growing: "metaverse/farm25D/plant_webp/Carrot_Seed/Carrot_Seed_growing.webp",
+  Carrot_Seed_fullGrown: "metaverse/farm25D/plant_webp/Carrot_Seed/Carrot_Seed_fullGrown.webp",
+  Tomato_Seed_growing: "metaverse/farm25D/plant_webp/Tomato_Seed/Tomato_Seed_growing.webp",
+  Tomato_Seed_fullGrown: "metaverse/farm25D/plant_webp/Tomato_Seed/Tomato_Seed_fullGrown.webp",
+  Wheat_Seed_growing: "metaverse/farm25D/plant_webp/Wheat_Seed/Wheat_Seed_growing.webp",
+  Wheat_Seed_fullGrown: "metaverse/farm25D/plant_webp/Wheat_Seed/Wheat_Seed_fullGrown.webp",
+  Bean_Seed_growing: "metaverse/farm25D/plant_webp/Bean_Seed/Bean_Seed_growing.webp",
+  Bean_Seed_fullGrown: "metaverse/farm25D/plant_webp/Bean_Seed/Bean_Seed_fullGrown.webp",
+  Sugarcane_Seed_growing: "metaverse/farm25D/plant_webp/SugarCane_Seed/SugarCane_Seed_growing.webp",
+  Sugarcane_Seed_fullGrown: "metaverse/farm25D/plant_webp/SugarCane_Seed/SugarCane_Seed_fullGrown.webp",
   Goathouse: "metaverse/farm25D/building_webp/Goathouse.webp",
   Henhouse: "metaverse/farm25D/building_webp/Henhouse.webp",
 };
@@ -199,6 +199,7 @@ function Farm(props) {
             groupBuildingInfo(t, tile, arr, idx)
           } catch { }
           let cc = getCenterCoordinate(tile);
+          console.log(t[0].properties.name)
           if (t[0].properties.status === "newlyPlanted") {
             tile.object = t[0].properties.name;
             tile.tileId = t[0].properties.tileId;
@@ -245,6 +246,8 @@ function Farm(props) {
             tile.status = t[0].properties.status;
             tile.objectId = t[0].properties.objectId;
             let key = t[0].properties.name + "_" + t[0].properties.status;
+            console.log(key)
+            console.log(listImg[key])
             ctx.drawImage(listImg[key], cc.x - cvW / 35, cc.y - cvH / 16, cvW / 20, cvH / 11);
           }
         }

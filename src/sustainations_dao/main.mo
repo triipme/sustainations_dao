@@ -7860,6 +7860,20 @@ shared ({ caller = owner }) actor class SustainationsDAO() = this {
     };
   };
 
+  public shared ({ caller }) func updateBuildingType(buildingType : Types.BuildingType) : async Response<Text> {
+    if (Principal.toText(caller) == "2vxsx-fae") {
+      return #err(#NotAuthorized); //isNotAuthorized
+    };
+    let rsBuildingType = state.buildingTypes.get(buildingType.id);
+    switch (rsBuildingType) {
+      case (null) { #err(#NotFound) };
+      case (?V) {
+        BuildingType.update(buildingType, state);
+        #ok("Success");
+      };
+    };
+  };
+
   public shared query ({ caller }) func readBuildingType(id : Text) : async Response<(Types.BuildingType)> {
     if (Principal.toText(caller) == "2vxsx-fae") {
       return #err(#NotAuthorized); //isNotAuthorized
