@@ -18,9 +18,9 @@ dfx canister call sustainations_dao updateEventOption '(record{id="eo109";eventI
 dfx canister call sustainations_dao updateEventOption '(record{id="eo110";eventId="e39";description="ENT";requireItemId="null";lossHP=1.0;lossMana=0.0;lossStamina=0.0;lossMorale=0.0;riskChance=0.0;riskLost="null";lossOther="null";gainExp=10;gainHP=0.0;gainStamina=0.0;gainMorale=0.0;gainMana=0.0;luckyChance=0.4;gainByLuck="tomato_seed/carrot_seed/wheat_seed/sugarcane_seed/bean_seed";gainOther=0.0})'
 dfx canister call sustainations_dao updateEventOption '(record{id="eo118";eventId="e40";description="A map";requireItemId="null";lossHP=2.0;lossMana=2.0;lossStamina=0.0;lossMorale=1.0;riskChance=0.0;riskLost="null";lossOther="null";gainExp=10;gainHP=0.0;gainStamina=0.0;gainMorale=0.0;gainMana=0.0;luckyChance=0.4;gainByLuck="tomato_seed/carrot_seed/wheat_seed/sugarcane_seed/bean_seed";gainOther=0.0})'
 
-dfx canister call sustainations_dao createBuildingType '(record{id = "c2";name = "Windmill";price = 10000.0;rowSize = 3;columnSize = 3;buildWaitTime = 0;description = "this construction allow player to craft wheat flour and soy sauce";})'
-dfx canister call sustainations_dao createBuildingType '(record{id = "c3";name = "Henhouse";price = 10000.0;rowSize = 3;columnSize = 3;buildWaitTime = 0;description = "this construction allow player to produce eggs";})'
-dfx canister call sustainations_dao createBuildingType '(record{id = "c4";name = "Goathouse";price = 10000.0;rowSize = 3;columnSize = 3;buildWaitTime = 0;description = "this construction allow player to produce milks";})'
+dfx canister call sustainations_dao updateBuildingType '(record{id = "c2";name = "Windmill";price = 10000.0;rowSize = 3;columnSize = 3;buildWaitTime = 0;description = "this construction allow player to craft wheat flour and soy sauce";})'
+dfx canister call sustainations_dao updateBuildingType '(record{id = "c3";name = "Henhouse";price = 10000.0;rowSize = 3;columnSize = 3;buildWaitTime = 0;description = "this construction allow player to produce eggs";})'
+dfx canister call sustainations_dao updateBuildingType '(record{id = "c4";name = "Goathouse";price = 10000.0;rowSize = 3;columnSize = 3;buildWaitTime = 0;description = "this construction allow player to produce milks";})'
 dfx canister call sustainations_dao delelteBuildingType '("c5")'
 
 dfx canister call sustainations_dao createProduceRecipe '(record{id = "pr1";productId = "p6flour";buildingTypeId = "c2"; description = "Flour"; craftingTime = 600})'
