@@ -8,6 +8,29 @@ import Back from "./Back";
 import Farm from "./farm-layout/Farmfeatures";
 import "./styles.css";
 
+const URL_IMAGE = {
+  TempBuilding: "metaverse/farm25D/building_webp/tempBuilding.webp",
+  Factory: "metaverse/farm25D/building_webp/Factory.webp",
+  Windmill: "metaverse/farm25D/building_webp/Windmill.webp",
+  Ground: "metaverse/farm25D/Ground.webp",
+  Ground_Selected: "metaverse/farm25D/Ground_Selected.webp",
+  newlyPlanted: "metaverse/farm25D/plant_webp/newlyPlanted.webp",
+  Carrot_Seed_growing: "metaverse/farm25D/plant_webp/Carrot_Seed/Carrot_Seed_growing.webp",
+  Carrot_Seed_fullGrown: "metaverse/farm25D/plant_webp/Carrot_Seed/Carrot_Seed_fullGrown.webp",
+  Tomato_Seed_growing: "metaverse/farm25D/plant_webp/Tomato_Seed/Tomato_Seed_growing.webp",
+  Tomato_Seed_fullGrown: "metaverse/farm25D/plant_webp/Tomato_Seed/Tomato_Seed_fullGrown.webp",
+  Wheat_Seed_growing: "metaverse/farm25D/plant_webp/Wheat_Seed/Wheat_Seed_growing.webp",
+  Wheat_Seed_fullGrown: "metaverse/farm25D/plant_webp/Wheat_Seed/Wheat_Seed_fullGrown.webp",
+  Bean_Seed_growing: "metaverse/farm25D/plant_webp/Bean_Seed/Bean_Seed_growing.webp",
+  Bean_Seed_fullGrown: "metaverse/farm25D/plant_webp/Bean_Seed/Bean_Seed_fullGrown.webp",
+  Sugarcane_Seed_growing: "metaverse/farm25D/plant_webp/SugarCane_Seed/SugarCane_Seed_growing.webp",
+  Sugarcane_Seed_fullGrown: "metaverse/farm25D/plant_webp/SugarCane_Seed/SugarCane_Seed_fullGrown.webp",
+  Goathouse: "metaverse/farm25D/building_webp/Goathouse.webp",
+  Henhouse: "metaverse/farm25D/building_webp/Henhouse.webp",
+};
+
+
+
 function FarmContainer() {
   const user = useSelector(selectUser);
   const { state: properties } = useLocation();
@@ -72,7 +95,7 @@ function FarmContainer() {
               ) : (
                 <></>
               )}
-              <Farm mapFeatures={farmFeatures} landSlotProperties={farmProperties} />
+              <Farm mapFeatures={farmFeatures} landSlotProperties={farmProperties} URL_IMAGE={URL_IMAGE}/>
             </>
           ) : (
             <div
