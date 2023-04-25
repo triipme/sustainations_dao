@@ -69,22 +69,22 @@ function Farm(props) {
   const [newStartPoint, setNewStartPoint] = useState({ x: startPointX, y: startPointY });
   const [offCoord, setOffCoord] = useState({ x: 0, y: 0 });
   const [isMobile, setIsMobile] = useState(false);
-  const [listImg, setListImg] = useState({});
+  const [listImg, setListImg] = useState(props.farmImages);
   const [selected, setSelected] = useState({ row: -1, col: -1 });
   const [imageLoaded, setImageLoaded] = useState(false);
 
   const canvas = useRef();
 
-  const loadImage = useCallback((url, obj) => {
-    const img = new Image();
-    img.src = url;
-    img.onload = () => {
-      setListImg(prevState => ({
-        ...prevState,
-        [obj]: img
-      }));
-    };
-  });
+  // const loadImage = useCallback((url, obj) => {
+  //   const img = new Image();
+  //   img.src = url;
+  //   img.onload = () => {
+  //     setListImg(prevState => ({
+  //       ...prevState,
+  //       [obj]: img
+  //     }));
+  //   };
+  // });
 
   useEffect(() => {
     const userAgent = window.navigator.userAgent;
@@ -101,9 +101,9 @@ function Farm(props) {
       setChacterId(characterid.ok[0]);
       setInventory(result[0].ok);
     })();
-    for (let key in props.URL_IMAGE) {
-      loadImage(props.URL_IMAGE[key], key);
-    }
+    // for (let key in props.URL_IMAGE) {
+    //   loadImage(props.URL_IMAGE[key], key);
+    // }
     setImageLoaded(true);
   }, []);
 
@@ -199,7 +199,6 @@ function Farm(props) {
             groupBuildingInfo(t, tile, arr, idx)
           } catch { }
           let cc = getCenterCoordinate(tile);
-          console.log(t[0].properties.name)
           if (t[0].properties.status === "newlyPlanted") {
             tile.object = t[0].properties.name;
             tile.tileId = t[0].properties.tileId;
@@ -246,8 +245,6 @@ function Farm(props) {
             tile.status = t[0].properties.status;
             tile.objectId = t[0].properties.objectId;
             let key = t[0].properties.name + "_" + t[0].properties.status;
-            console.log(key)
-            console.log(listImg[key])
             ctx.drawImage(listImg[key], cc.x - cvW / 35, cc.y - cvH / 16, cvW / 20, cvH / 11);
           }
         }
