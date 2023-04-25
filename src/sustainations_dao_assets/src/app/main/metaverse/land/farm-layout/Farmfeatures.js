@@ -33,26 +33,26 @@ for (let i = 1; i < 2; i += 0.1) {
   zoomLevel.push(i);
 }
 
-const URL_IMAGE = {
-  TempBuilding: "metaverse/farm25D/building_webp/tempBuilding.webp",
-  Factory: "metaverse/farm25D/building_webp/Factory.webp",
-  Windmill: "metaverse/farm25D/building_webp/Windmill.webp",
-  Ground: "metaverse/farm25D/Ground.webp",
-  Ground_Selected: "metaverse/farm25D/Ground_Selected.webp",
-  newlyPlanted: "metaverse/farm25D/plant_webp/newlyPlanted.webp",
-  Carrot_Seed_growing: "metaverse/farm25D/plant_webp/Carrot_Seed/Carrot_Seed_growing.webp",
-  Carrot_Seed_fullGrown: "metaverse/farm25D/plant_webp/Carrot_Seed/Carrot_Seed_fullGrown.webp",
-  Tomato_Seed_growing: "metaverse/farm25D/plant_webp/Tomato_Seed/Tomato_Seed_growing.webp",
-  Tomato_Seed_fullGrown: "metaverse/farm25D/plant_webp/Tomato_Seed/Tomato_Seed_fullGrown.webp",
-  Wheat_Seed_growing: "metaverse/farm25D/plant_webp/Wheat_Seed/Wheat_Seed_growing.webp",
-  Wheat_Seed_fullGrown: "metaverse/farm25D/plant_webp/Wheat_Seed/Wheat_Seed_fullGrown.webp",
-  Bean_Seed_growing: "metaverse/farm25D/plant_webp/Bean_Seed/Bean_Seed_growing.webp",
-  Bean_Seed_fullGrown: "metaverse/farm25D/plant_webp/Bean_Seed/Bean_Seed_fullGrown.webp",
-  Sugarcane_Seed_growing: "metaverse/farm25D/plant_webp/SugarCane_Seed/SugarCane_Seed_growing.webp",
-  Sugarcane_Seed_fullGrown: "metaverse/farm25D/plant_webp/SugarCane_Seed/SugarCane_Seed_fullGrown.webp",
-  Goathouse: "metaverse/farm25D/building_webp/Goathouse.webp",
-  Henhouse: "metaverse/farm25D/building_webp/Henhouse.webp",
-};
+// const URL_IMAGE = {
+//   TempBuilding: "metaverse/farm25D/building_webp/tempBuilding.webp",
+//   Factory: "metaverse/farm25D/building_webp/Factory.webp",
+//   Windmill: "metaverse/farm25D/building_webp/Windmill.webp",
+//   Ground: "metaverse/farm25D/Ground.webp",
+//   Ground_Selected: "metaverse/farm25D/Ground_Selected.webp",
+//   newlyPlanted: "metaverse/farm25D/plant_webp/newlyPlanted.webp",
+//   Carrot_Seed_growing: "metaverse/farm25D/plant_webp/Carrot_Seed/Carrot_Seed_growing.webp",
+//   Carrot_Seed_fullGrown: "metaverse/farm25D/plant_webp/Carrot_Seed/Carrot_Seed_fullGrown.webp",
+//   Tomato_Seed_growing: "metaverse/farm25D/plant_webp/Tomato_Seed/Tomato_Seed_growing.webp",
+//   Tomato_Seed_fullGrown: "metaverse/farm25D/plant_webp/Tomato_Seed/Tomato_Seed_fullGrown.webp",
+//   Wheat_Seed_growing: "metaverse/farm25D/plant_webp/Wheat_Seed/Wheat_Seed_growing.webp",
+//   Wheat_Seed_fullGrown: "metaverse/farm25D/plant_webp/Wheat_Seed/Wheat_Seed_fullGrown.webp",
+//   Bean_Seed_growing: "metaverse/farm25D/plant_webp/Bean_Seed/Bean_Seed_growing.webp",
+//   Bean_Seed_fullGrown: "metaverse/farm25D/plant_webp/Bean_Seed/Bean_Seed_fullGrown.webp",
+//   Sugarcane_Seed_growing: "metaverse/farm25D/plant_webp/SugarCane_Seed/SugarCane_Seed_growing.webp",
+//   Sugarcane_Seed_fullGrown: "metaverse/farm25D/plant_webp/SugarCane_Seed/SugarCane_Seed_fullGrown.webp",
+//   Goathouse: "metaverse/farm25D/building_webp/Goathouse.webp",
+//   Henhouse: "metaverse/farm25D/building_webp/Henhouse.webp",
+// };
 
 function Farm(props) {
   const user = useSelector(selectUser);
@@ -101,8 +101,8 @@ function Farm(props) {
       setChacterId(characterid.ok[0]);
       setInventory(result[0].ok);
     })();
-    for (let key in URL_IMAGE) {
-      loadImage(URL_IMAGE[key], key);
+    for (let key in props.URL_IMAGE) {
+      loadImage(props.URL_IMAGE[key], key);
     }
     setImageLoaded(true);
   }, []);
