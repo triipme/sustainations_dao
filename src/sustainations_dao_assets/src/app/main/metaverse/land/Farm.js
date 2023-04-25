@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { selectUser } from "app/store/userSlice";
 import { useLocation } from "react-router-dom";
@@ -39,7 +39,18 @@ function FarmContainer() {
   const [indexFarm, setIndexFarm] = useState(0);
   const [isDone, setIsDone] = useState(false);
   const [listFarm, setListFarm] = useState(0);
+  const [listImg, setListImg] = useState({});
 
+  const loadImage = useCallback((url, obj) => {
+    const img = new Image();
+    img.src = url;
+    img.onload = () => {
+      setListImg(prevState => ({
+        ...prevState,
+        [obj]: img
+      }));
+    };
+  });
 
   useEffect(() => {
     (async () => {
@@ -58,6 +69,9 @@ function FarmContainer() {
       }
       setIsDone(true);
     })();
+    for (let key in URL_IMAGE) {
+      loadImage(URL_IMAGE[key], key);
+    }
   }, [indexFarm]);
 
   return (
@@ -95,7 +109,7 @@ function FarmContainer() {
               ) : (
                 <></>
               )}
-              <Farm mapFeatures={farmFeatures} landSlotProperties={farmProperties} URL_IMAGE={URL_IMAGE}/>
+              <Farm mapFeatures={farmFeatures} landSlotProperties={farmProperties} farmImages={listImg}/>
             </>
           ) : (
             <div
